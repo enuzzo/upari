@@ -1,4 +1,71 @@
-# Upari — verifiche della revisione locale 0.2.1
+# Upari — verifiche locali 0.3.0
+
+11 ottobre 2026. Base Git `ab609bb`; implementazione locale `96c26f4`, versione corrente 0.3.0. **Nessun push o deploy.** Questa sezione è lo stato corrente; la 0.2.1 conservata sotto descrive controlli storici, con numeri e limiti dell'epoca.
+
+## Gate automatici
+
+| Controllo | Risultato | Portata |
+|---|---|---|
+| `npm run check` / TypeScript nel build | Superato | Sorgenti e test |
+| `npm run test` | **79 test, 30 file** superati | Due worker; geometria, buffer imagery, dati, backup, orizzonti, vettori, satelliti, cache, trasporti e regressioni precedenti |
+| `npm run build` | Superato | Due ingressi HTML, Cesium locale, sintassi SW |
+| Convertitore CF NetCDF | **6 prove** superate | Tre fixture con NetCDF3/scipy e tre con NetCDF4/h5netcdf; assi, maschere, unità, istanti e livelli |
+| HTTP del bridge | Superato | Ricevitore vero su loopback: HA/Gotify/webhook, errore parziale 503, persistenza, restart senza duplicazione, cancellazione futura |
+| Revisione indipendente | Completata | Rilievi corretti; ultimo controllo su import backup applicato atomicamente e orbita originale, nessun ulteriore problema concreto segnalato |
+| Shell offline | **377 route/file, 12.645.723 byte** | Moduli, font, Cesium, entrambi gli HTML e due pacchetti vettoriali; non comprende tutto il pianeta |
+
+SHA-256 dell'elenco ordinato delle route (`JSON.stringify(await offlineFiles())`): `54f80fdbd0208c027b8aa0289f595b7132be81f271104c3aa0736ac2de8abf64`. È un checksum del manifest, non degli asset. Checksum e metadati dei vettori in `VECTORS.md`. Nessuna nuova dipendenza npm. Gli ambienti scientifici Python sono separati dalla PWA.
+
+Corretto anche un callback ResizeObserver arrivato dopo la rimozione del contenitore: termina su effetto fermato, nodo assente o viewer distrutto. Cambio Terra/ISS e ridimensionamento responsive ripetuti; la console conserva solo il log precedente delle 20:45:16 UTC, senza nuove occorrenze. Fix verificato separatamente dal revisore.
+
+Regressioni nuove: scritture diario atomiche, whitelist/limite/duplicati nei backup, campi OMM obbligatori prima dei default, conservazione dell'epoca importata, identità satellite obbligatoria per gli avvisi, esclusione credenziali dagli URL, stato ntfy salvato prima del POST e conservato su timeout/JSON troncato/5xx. Non sono prove di ricezione push.
+
+## Riferimenti scientifici
+
+Le fixture originali sono conservate. Il Sole usa termini Meeus/NOAA più completi senza allargare le tolleranze; confronto opzionale con Skyfield 1.55, sgp4 2.27 e JPL DE421.
+
+| Confronto | Differenze massime |
+|---|---|
+| Nove campioni originali | Angoli ISS 0,001909°; Sole 0,002793°; coordinate 0,000423° |
+| Sette casi originali, quattro finestre | Estremi/massimo 0,967 s; elevazione massima 0,181° |
+| Sei casi estesi con orizzonti, otto finestre | Estremi 1,201 s; elevazione massima 0,457° |
+
+I casi estesi includono maschere circolari degli ostacoli e due date iniziali, 11 e 12 ottobre. Stesso snapshot OMM dell'11 ottobre: non certifica tutte le epoche/stagioni, rifrazione, meteo o allineamento osservativo. Tolleranze originali invariate. Il timeout dei test scientifici è 15 s per evitare fallimenti da contesa CPU, senza modificare gli assert di precisione.
+
+Vettori reali: ASCAT marino 10 ottobre 2026 ore 12 UTC; OSCAR **storico 26 settembre 2014**, composito di cinque giorni. Celle mancanti conservate, griglia decimata circa 2°, velocità m/s e advezione WGS84. Le prove del convertitore usano fixture tecniche, non dati pubblicati come osservazioni. OSCAR v2 autorizzato non scaricato.
+
+## Prove nel browser
+
+Browser interno Codex. Build statica su `127.0.0.1:4173`, sviluppo della stessa revisione su origine isolata `127.0.0.1:4174` per backup e dati di QA. Viewport responsive 390×844, desktop compilato osservato 1143×951 e salvaschermo 1280×720; DPR effettivo 1. Nessuna camera/GPS autorizzata, nessun canale dell'utente invocato.
+
+| Flusso | Esito osservato |
+|---|---|
+| Oceani termici: play/pausa | Date avanzano; il precedente rimane visibile mentre si prepara il successivo, con la sua data effettiva nell'overlay. Precaricato un solo frame, buffer limitato |
+| Confronto | Build: sinistra 10/10/2026, destra 04/10/2026; indicazione del frame precedente durante caricamento e nuova coppia al commit |
+| Salvaschermo | Link conserva camera, layer e confronto; due date visibili, orologio corrente indipendente e secondi in avanzamento; nessun errore/warning console osservato |
+| SWISSIMAGE | Selezione e camera alpina da backup applicate; testo mosaico con anni diversi, crediti swisstopo. Verifica responsive sulla stessa sorgente |
+| Vettori | Pacchetti autentici e timestamp separati dal raster; scie turchesi osservate sul luogo pubblico di QA Atlantico a zoom vicino, 180 primitive nel profilo Auto; molto corte a scala planetaria |
+| Backup | Esportato v2 via UI e importato un file locale di QA con snapshot ISS pubblico reale; ISS da spenta ad attiva, camera/scena/orizzonte applicati. Il pannello mostra fonte “Backup locale · epoca originale”, senza ringiovanire il dato |
+| Cache | UI mostra due pacchetti / due disponibili, conteggio/byte e avviso di aggiornamento in attesa. Non equivale a una prova di rete completamente disattivata |
+| Ripristino | Build finale ricaricata (`app-CbnEaG-S.js`), console senza errori/warning. Scheda dell'utente: aerosol, 10 ottobre, confronto spento, vettori spenti, ISS spenta; camera preservata |
+
+Dissolvenza nominale 320 ms, almeno 1,2 s di permanenza dopo il commit. Un campione responsive locale: 19 aggiornamenti in 319 ms, intervallo massimo 26 ms. Campioni desktop compilati: 8 aggiornamenti in 348–369 ms, intervallo massimo 87–90 ms. Sono osservazioni limitate del browser su questo Mac, non una garanzia di 60 fps: viewport, GPU, caricamento e dati mancanti influenzano la fluidità. Nessuna interpolazione scientifica fra le immagini.
+
+Screenshot reali temporanei in `/private/tmp/upari-qa/`: `03-ocean-compare-desktop.png`, `03-saver-dated.png`, `03-backup-epoch-mobile.png`, `03-swiss-mobile.png`, `03-owner-restored.png`. Non sono concept né parte della build. I file in `/private/tmp` possono essere rimossi dal sistema; il resoconto versionato conserva metodo/esiti.
+
+## Prove ancora necessarie
+
+- **iPhone/Android:** camera e bussola/FOV, entrambe le rotazioni landscape, permessi negati/revocati, background/riattivazione, spegnimento tracce, DPR 2/3 reale, fluidità prolungata e consumo. La guida manuale e i controlli matematici non certificano l'allineamento fisico.
+- **PWA installata:** prima installazione, aggiornamento dalla versione precedente, chiusura di tutte le schede e riapertura con rete davvero disattivata. Verificare luoghi/date visitati; quelli assenti non sono garantiti offline. Fullscreen reale non confermato nel browser interno.
+- **Canali propri:** scelta/configurazione e messaggio concordato, ricezione con pagina chiusa/telefono bloccato, cancellazione remota, rifiuto/risposta persa e restart. Procedura in `CHANNELS.md`; nessun invio live effettuato.
+- **File reali ulteriori:** OSCAR v2 autenticato e un satellite aggiuntivo recente fornito dall'utente. Validatori/conversione verificati, queste due ingestioni operative non provate con file reali.
+- **Diario:** validazione e serializzazione verificate automaticamente; scritture concorrenti protette da transazione IndexedDB, controllate nel codice, senza una prova UI simultanea fra più schede. Nessuna osservazione astronomica reale effettuata. Confermare comodità del flusso e persistenza nel proprio uso quotidiano.
+
+Cesium: circa 4,25 MB minificati / 1,14 MB gzip, warning di dimensione presente. Non sono state pubblicate modifiche. Stato/ripresa in `HANDOFF.md`.
+
+---
+
+# Archivio delle verifiche 0.2.1
 
 Data: 11 ottobre 2026. I risultati distinguono test automatici, prove nel browser e accettazione su hardware. Nessun push o deploy; la pubblicazione è rinviata per istruzione dell’utente.
 

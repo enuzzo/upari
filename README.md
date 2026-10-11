@@ -2,11 +2,21 @@
 
 Esplorare la Terra. Ritrovare il cielo.
 
-PWA italiana gratuita e ospitabile come directory statica. Globo con fotografia dettagliata, dieci prodotti NASA e una pagina salvaschermo autonoma. ISS, guida AR e avvisi sono strumenti opzionali, inizialmente spenti. Luoghi e preferenze rimangono sul dispositivo.
+PWA italiana gratuita e ospitabile come directory statica. Globo con fotografia dettagliata, dieci prodotti NASA, SWISSIMAGE e una pagina salvaschermo autonoma. ISS, guida AR e avvisi sono strumenti opzionali, inizialmente spenti. Luoghi, orizzonti, diario e preferenze rimangono sul dispositivo.
 
-Revisione **0.2.1**, preparata senza deploy come richiesto. Il sito pubblicato continua a servire la versione precedente. Leggere il [passaggio UI/UX](docs/UIUX_PASS_02.md).
+Revisione **0.3.0**, preparata senza deploy come richiesto. Lo stato del sito pubblicato non è stato verificato in questa sessione. Leggere il [passaggio UI/UX](docs/UIUX_PASS_02.md).
 
 **Prima di continuare:** leggere [AGENTS.md](AGENTS.md), [stato del lavoro](docs/HANDOFF.md) e [verifiche](docs/VERIFICATION.md). La verifica nel browser è stata eseguita su mobile e desktop; le prove AR e notifiche su dispositivi e servizi reali restano aperte.
+
+## Nuove funzioni 0.3
+
+- Data e fonte del fotogramma sempre visibili; confronto con due date. Playback con attesa delle tile, precaricamento Cesium limitato e dissolvenza di 320 ms.
+- Vento marino ASCAT datato 10 ottobre 2026 e correnti OSCAR storiche del 26 settembre 2014, con velocità reali e celle mancanti. [Metodo, fonti e convertitori](docs/VECTORS.md).
+- Orizzonte degli ostacoli: apri il luogo, poi le otto direzioni. Diario accessibile dagli strumenti anche con ISS spenta.
+- Satelliti locali: attiva lo strumento, apri ISS → Satellite e importa un file OMM/TLE recente. Gli avvisi restano dedicati alla ISS.
+- [Provider regionali configurabili](docs/REGIONAL_IMAGERY.md), SWISSIMAGE incluso, date di acquisizione variabili per zona.
+- Backup v2 include scena/camera, diario, orizzonti, preferiti e orbite, senza credenziali; import v1 compatibile.
+- [Bridge HA, Gotify e webhook](docs/CHANNELS.md), con coda persistente. Stato della cache e pacchetti offline negli strumenti.
 
 ## Avvio locale — ✈️ STE100
 
@@ -55,14 +65,14 @@ npm run test
 npm run build
 ```
 
-I test automatici coprono SGP4, Sole/ombra, proiezione del cielo, notifiche/bridge, budget del rendering, migrazione delle preferenze, salvataggio delle viste e validazione dei dati meteo. Gli invii sono simulati; non sono state mandate notifiche all’utente o a terzi. La resa e le interazioni delle due pagine sono state provate nel browser interno; DPR 2 reale, installazione/offline completa e hardware restano da verificare.
+I test automatici coprono SGP4, Sole/ombra, proiezione del cielo, notifiche/bridge, budget del rendering, migrazione delle preferenze, salvataggio delle viste e validazione dei dati meteo. I trasporti sono verificati con simulazioni e un ricevitore HTTP locale reale; non sono state mandate notifiche all’utente o a terzi. La resa e le interazioni delle due pagine sono state provate nel browser interno; DPR 2 reale, installazione/offline completa e hardware restano da verificare.
 
 ## Struttura
 
 - `src/`: app React/TypeScript, UI, adattatori e worker.
 - `public/`: manifest, service worker, icone, font e snapshot ISS datato.
 - `scripts/`: build e controllo indipendente opzionale Skyfield.
-- `bridge/`: scheduler personale Node per Home Assistant; zero dipendenze npm aggiuntive.
+- `bridge/`: scheduler personale Node per Home Assistant/Gotify/webhook; zero dipendenze npm aggiuntive.
 - `docs/`: specifica originale, conversazione recuperata, concept scelto, metodo, verifiche e stato.
 - `dist/`: build statica pronta, con asset Cesium.
 - `screensaver.html`: secondo ingresso della build; non dipende dalla scheda principale.

@@ -30,6 +30,10 @@ Read this file before changing anything. Then read `docs/HANDOFF.md`, `docs/VERI
     Native DPR is explicitly enabled in Cesium. The resolution scale is effectiveRatio/nativeDPR, not a second reduction with browser-recommended resolution enabled. See the regression tests. ISS off means no new ephemeris fetches, forecast workers, tracking or periodic refreshes.
 12. If Sites is available, `.openai/hosting.json` is the authoritative project identity. Reuse its exact `project_id`; preserve private access. Never create a second Site. Otherwise work locally or use the user's hosting.
 
+## Current local milestone — 0.3.0, 11 October 2026
+
+The continuation below is historical planning. Playback/source dates, real dated vector packages, horizon masks, diary, local satellite import, regional imagery configuration, additional bridge channels and offline cache visibility are implemented locally. Read the current HANDOFF and VERIFICATION before repeating work. The packaged currents are a 2014 archive; wind is dated 10 October 2026. No push/deploy. Real phone AR/performance, installed PWA offline/update and the user’s channels remain unverified. A real authorized OSCAR v2 file is still needed for operational ingestion.
+
 ## Priorities for continuation
 
 1. Browser QA of the compiled 0.2 app at 390×844 and desktop, including the separate screensaver. Compare palette/planet hierarchy with the concept while retaining the user's later UI changes. See docs/UIUX_PASS_02.md and docs/SCREENSAVER.md. Verify high-DPR sharpness, tiles, dialogs, optional ISS, fullscreen, clock, weather, backgrounding and keyboard.

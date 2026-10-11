@@ -56,3 +56,18 @@
 La consegna contiene sorgenti, build, documentazione, concept e bundle Git. `DELIVERY.json` identifica il commit e contiene gli hash dei file. `AGENTS.md` dà le istruzioni al prossimo Codex; `PROMPT_PER_CODEX.md` contiene un prompt già pronto.
 
 Il progetto è una versione 0.1 concreta. La specifica più ampia non è interamente completata. La prossima attività utile è la verifica nel browser, seguita da AR su telefono e avvisi sui canali dell'utente. Non sono state inviate notifiche reali e non sono stati verificati dispositivi reali.
+
+
+## 11 ottobre 2026 — continuazione locale 0.3.0
+
+- Eseguito il piano `IMPLEMENTATION_03.md` sulle priorità autonome dell'AGENTS: orizzonti, diario, altri satelliti via import locale, configurazione regionale/SWISSIMAGE, canali bridge aggiuntivi e disponibilità offline visibile.
+- Date/fonti UTC del fotogramma effettivo sempre esposte, inclusi confronto e salvaschermo. Playback conserva il frame precedente fino al caricamento, pre-carica un frame Cesium e dissolve in 320 ms con permanenza minima di 1,2 s dopo il commit; gestisce errori/background/movimento ridotto.
+- Distribuiti campi vettoriali NOAA autentici con maschere e provenienza: vento ASCAT del 10 ottobre 2026, correnti OSCAR storiche del 26 settembre 2014. Advezione WGS84 in un solo renderer Cesium. Pipeline ERDDAP e adattatore CF NetCDF3/4 offline; file operativo OSCAR v2 autorizzato ancora mancante.
+- Completati backup v2 e import atomico di scena/camera/preferenze/orbite, compatibilità v1, epoche originali conservate. Diario protetto da scritture concorrenti. Avvisi sempre riservati a NORAD 25544.
+- Correzioni emerse dalla revisione: campi OMM obbligatori non nascosti dai default, cambio orbita dopo import, stato ntfy incerto persistito prima dell'HTTP, nessun retry duplicato dopo risposta persa. Ultimo controllo indipendente senza ulteriori problemi concreti.
+- Ultima QA: corretto callback di ridimensionamento arrivato con contenitore già rimosso. Verifica indipendente e ripetizione cambio scena/viewport senza nuove occorrenze; gate finali ripetuti.
+- Gate: 79 test in 30 file; TypeScript/build/SW superati; 6 prove Python NetCDF3/4; 13 casi Skyfield/JPL con 12 finestre e fixture originali conservate. HTTP reale solo loopback. Manifest shell: 377 route/file, 12.645.723 byte. Riferimenti e limiti in `VERIFICATION.md`.
+- QA reale nel browser su build e origine isolata: oceani play/pausa/confronto, salvaschermo con clock indipendente, scie datate, SWISSIMAGE, export/import backup e fonte/epoca ISS, cache con aggiornamento in attesa. Screenshot temporanei in `/private/tmp/upari-qa/`. Ripristinata la scena aerosol dell'utente con ISS spenta e camera conservata.
+- **Nessun push o deploy.** Restano telefono AR/performance, PWA installata/offline/fullscreen e canali propri. Non ci sono notifiche live o osservazioni fisiche inventate. ZIP/bundle/DELIVERY originali preservati; leggere `HANDOFF.md` per la ripresa.
+
+Implementazione 0.3.0 salvata nel commit locale `96c26f4`; documentazione e resoconto finale nel commit successivo. Build finale ricaricata, console senza errori/warning, scena dell’utente ripristinata.

@@ -4,7 +4,7 @@
 
 The 11 October 2026 feedback supersedes the concept's permanent pass/AR strip and fixed desktop rail. Preserve the black/turquoise system and prominent planet; Earth now fills the viewport between minimal header/navigation. ISS is opt-in, initially off. Layer controls are an on-demand side panel on desktop and bottom sheet on mobile. A compact view selector and Screensaver action sit over the globe. No permanent AR CTA on Earth.
 
-Screensaver is a second static entry with the chosen camera/layer/date/comparison, slow rotation, real-time clock and optional model weather. Its controls auto-hide. These are requested intentional changes, not fidelity drift. Read `UIUX_PASS_02.md`; the older concept inventory below is retained as design history. No 0.2 browser screenshots are available yet.
+Screensaver is a second static entry with the chosen camera/layer/date/comparison, slow rotation, real-time clock and optional model weather. Its controls auto-hide. These are requested intentional changes, not fidelity drift. Read `UIUX_PASS_02.md`; the older concept inventory below is retained as design history. Browser screenshots of0.2/0.3are recorded inVERIFICATION.md; realdeviceacceptance remains separate.
 
 The selected concept is `concept-upari-notte.png`, native 853×1844. Its viewport equivalent is approximately 390×844. The later user instruction is explicitly **black and turquoise, like the first prototypes**. The warm-white and violet/apricot concepts are not the selected direction.
 

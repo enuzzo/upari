@@ -26,8 +26,9 @@ self.addEventListener('fetch', e => {
   // Notification and private gateway traffic must never enter a shared cache.
   if (e.request.headers.has('Authorization')) return;
   const local = u.origin === self.location.origin;
-  const localStatic = local && (/^\/(assets|cesium|fonts)\//.test(u.pathname) || ['/', '/index.html', '/screensaver.html', '/icon.svg', '/icon-192.png', '/icon-512.png', '/manifest.webmanifest'].includes(u.pathname));
+  const localStatic = local && (/^\/(assets|cesium|fonts|vectors)\//.test(u.pathname) || ['/', '/index.html', '/screensaver.html', '/icon.svg', '/icon-192.png', '/icon-512.png', '/manifest.webmanifest'].includes(u.pathname));
   const nasa = u.origin === 'https://gibs.earthdata.nasa.gov' && u.pathname.startsWith('/wmts/') && !u.pathname.endsWith('WMTSCapabilities.xml');
+  const swiss = u.origin === 'https://wmts.geo.admin.ch' && /^\/1.0.0\/ch\.swisstopo\.swissimage\/default\/current\/3857\/\d+\/\d+\/\d+\.jpeg$/.test(u.pathname);
   const esriRoot = '/ArcGIS/rest/services/World_Imagery/MapServer';
   const esri = u.origin === 'https://services.arcgisonline.com';
   const esriTile = esri && new RegExp('^' + esriRoot + '/tile/\\d+/\\d+/\\d+$').test(u.pathname);
@@ -35,7 +36,7 @@ self.addEventListener('fetch', e => {
   const navigation = e.request.mode === 'navigate' && local && ['/', '/index.html', '/screensaver.html'].includes(u.pathname);
   const navigationQuery = navigation && [...u.searchParams].every(([key,value]) => key === 'view' && ['earth','sky','alerts'].includes(value));
   const publicQuery = !u.search || navigationQuery || (esriMetadata && [...u.searchParams].every(([key,value]) => key === 'f' && value === 'json'));
-  if (!(localStatic || nasa || esriTile || esriMetadata) || !publicQuery) return;
+  if (!(localStatic || nasa || swiss || esriTile || esriMetadata) || !publicQuery) return;
   e.respondWith((async () => {
     if (e.request.mode === 'navigate') {
       try { return await fetch(e.request); } catch { return (await caches.match(u.pathname === '/screensaver.html' ? '/screensaver.html' : '/index.html')) || Response.error(); }

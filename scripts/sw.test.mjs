@@ -9,6 +9,10 @@ function worker(){
   return {context,entries,async fetch(url,headers,mode='cors'){const waits=[];let response;handlers.get('fetch')({request:mode==='navigate'?{url,method:'GET',mode,headers:new Headers(headers)}:new Request(url,{headers}),respondWith:r=>response=r,waitUntil:p=>waits.push(p)});if(!response)return null;const result=await response;await Promise.all(waits);return result;}};
 }
 describe('bounded public imagery caching',()=>{
+  it('caches public Swiss tiles and local vector packages while excluding keyed variants',async()=>{
+    const w=worker();vm.runInNewContext(await readFile('public/sw.js','utf8'),w.context);
+    for(const url of ['https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/10/536/365.jpeg','https://upari.example/vectors/wind.json']){expect(await w.fetch(url)).not.toBeNull();expect(w.entries.has(url)).toBe(true);expect(await w.fetch(url+'?token=secret')).toBeNull();}
+  });
   it('caches Esri World Imagery tiles for offline photography',async()=>{
     const w=worker();vm.runInNewContext(await readFile('public/sw.js','utf8'),w.context);
     const url='https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/3/2/4';

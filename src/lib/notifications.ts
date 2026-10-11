@@ -3,6 +3,7 @@ import { direction, duration, time } from './format';
 import { readState, writeState } from './storage';
 export function inQuietHours(hour:number,from:number,until:number) { if(from===until)return false;return from<until?hour>=from&&hour<until:hour>=from||hour<until; }
 export function notificationPlan(forecast:Forecast,prefs:Preferences,now=Date.now()): QueueItem[] {
+  if(forecast.satelliteId!==25544)return [];
   const out:QueueItem[]=[];const count=new Map<string,number>();
   for(const pass of forecast.passes){const at=pass.start-prefs.leadMinutes*60000;
     if(at<now+30000||at>now+48*3600000||at>forecast.expires||now-Date.parse(forecast.epoch)>2*86400000)continue;
@@ -28,14 +29,18 @@ export async function scheduleNtfy(s:NotificationSettings,plan:QueueItem[],url:s
   for(const q of saved.filter(q=>!wanted.has(q.id))){await ntfyDelete(s,q);saved=saved.filter(x=>x.id!==q.id);await writeState('queue',saved);}
   for(const item of plan){if(item.at<Date.now()+30000)continue;
     if(saved.some(q=>q.id===item.id&&q.at===item.at&&q.message===item.message))continue;
+    const previous=[...saved];
+    // Persist before submitting: a lost response may hide an accepted remote message.
+    saved=[...saved.filter(x=>x.id!==item.id),{...item,channel:base,supportsUpdates:false}];await writeState('queue',saved);
     const r=await fetch(base+'/'+encodeURIComponent(item.id),{method:'POST',headers:{'Content-Type':'text/plain; charset=utf-8','Title':'Upari · ISS','At':String(Math.floor(item.at/1000)),'Click':url+'?view=sky','Priority':'default',...(s.token?{Authorization:'Bearer '+s.token}:{})},body:item.message,signal:AbortSignal.timeout(15000)});
-    if(!r.ok)throw new Error(`ntfy ha rifiutato la programmazione (${r.status}). Gli invii già accettati restano nella coda.`);
+    if(!r.ok){if([400,401,403,404,413,422,429].includes(r.status)){saved=previous;await writeState('queue',saved);}throw new Error(`ntfy non ha confermato la programmazione (${r.status}). Gli invii accettati o incerti restano nella coda.`);}
     const result=await r.json();const confirmed=result.sequence_id===item.id;const scheduled=Math.abs(+result.time*1000-item.at)<1500;
-    saved=[...saved.filter(x=>x.id!==item.id),{...item,channel:base,supportsUpdates:confirmed,serverId:result.id}];await writeState('queue',saved);
+    saved=[...saved.filter(x=>x.id!==item.id),{...item,channel:base,supportsUpdates:confirmed&&scheduled,serverId:typeof result.id==='string'?result.id:undefined}];await writeState('queue',saved);
     if(!confirmed||!scheduled)throw new Error('Il server ha accettato un messaggio ma non ha confermato sequenza e orario. Controllalo nell’app ntfy; la coda si ferma qui per evitare duplicati.');
   }return saved;
 }
 export async function sendBridge(s:NotificationSettings,forecast:Forecast,plan:QueueItem[]) {
+  if(forecast.satelliteId!==25544)throw new Error('Gli avvisi esterni richiedono effemeridi ISS (NORAD 25544).');
   const u=serverURL(s.bridge);const r=await fetch(u+'/plan',{method:'PUT',headers:{'Content-Type':'application/json',...(s.bridgeToken?{Authorization:'Bearer '+s.bridgeToken}:{})},body:JSON.stringify({version:1,generatedAt:new Date().toISOString(),expires:new Date(Math.min(forecast.expires,Date.now()+48*3600000)).toISOString(),placeId:forecast.place.id,epoch:forecast.epoch,events:plan}),signal:AbortSignal.timeout(15000)});if(!r.ok)throw new Error(`Il bridge ha rifiutato il piano (${r.status}).`);return r.json();
 }
-export function calendar(pass:Pass) {const stamp=(t:number)=>new Date(t).toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z/,'Z');return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Upari//ISS//IT','BEGIN:VEVENT',`UID:${pass.id}@upari`,`DTSTAMP:${stamp(Date.now())}`,`DTSTART:${stamp(pass.start)}`,`DTEND:${stamp(pass.end)}`,'SUMMARY:Osserva la ISS',`DESCRIPTION:Cerca verso ${direction(pass.startAzimuth)}. Culmine ${Math.round(pass.maxElevation)} gradi. Previsione SGP4. Nessun meteo collegato.`,'END:VEVENT','END:VCALENDAR'].join('\r\n');}
+export function calendar(pass:Pass,satellite='ISS') {const stamp=(t:number)=>new Date(t).toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z/,'Z');return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Upari//ISS//IT','BEGIN:VEVENT',`UID:${pass.id}@upari`,`DTSTAMP:${stamp(Date.now())}`,`DTSTART:${stamp(pass.start)}`,`DTEND:${stamp(pass.end)}`,'SUMMARY:Osserva '+satellite.replace(/[\r\n,;\\]/g,' '),`DESCRIPTION:Cerca verso ${direction(pass.startAzimuth)}. Culmine ${Math.round(pass.maxElevation)} gradi. Previsione SGP4. Nessun meteo collegato.`,'END:VEVENT','END:VCALENDAR'].join('\r\n');}

@@ -3,20 +3,22 @@ import * as C from 'cesium';
 import 'cesium/Build/Cesium/Widgets/widgets.css';
 import { Crosshair,Plus,Minus,Globe2,RefreshCw,ScanLine } from 'lucide-react';
 import type { Layer,Place,OrbitData,RenderQuality,CameraView } from '../types';
+import { validateField,type VectorField } from '../lib/vectors';
+import { vectorRenderer } from '../lib/vector-renderer';
 import { tileURL } from '../lib/layers';
 import { renderProfile } from '../lib/render-quality';
 import { initialCamera } from '../lib/scene';
-import { preloadTiles } from '../lib/imagery-preload';
+import { ImageryBuffer,type FrameSpec } from '../lib/imagery-buffer';
 import { removeGlobeEntities } from '../lib/globe-lifecycle';
 
-type Props={layer:Layer|null;date:string;opacity:number;compare:boolean;compareDate:string;split:number;place:Place;orbit?:OrbitData|null;showISS?:boolean;sunOffset:number;lighting:boolean;quality:RenderQuality;initialCamera?:CameraView;onCameraChange?:(view:CameraView)=>void;autoRotate?:boolean;rotationSpeed?:number;hideTools?:boolean;preloadDate?:string;onLoadingChange?:(loading:boolean)=>void;onImageryError?:(message:string)=>void};
-function provider(layer:Layer,date:string){return new C.UrlTemplateImageryProvider({url:tileURL(layer,date),tilingScheme:new C.WebMercatorTilingScheme(),tileWidth:256,tileHeight:256,maximumLevel:layer.maxLevel,credit:new C.Credit('NASA EOSDIS GIBS · '+layer.id)});}
+type Props={layer:Layer|null;date:string;opacity:number;compare:boolean;compareDate:string;split:number;place:Place;orbit?:OrbitData|null;showISS?:boolean;sunOffset:number;lighting:boolean;quality:RenderQuality;initialCamera?:CameraView;onCameraChange?:(view:CameraView)=>void;autoRotate?:boolean;rotationSpeed?:number;hideTools?:boolean;preloadDate?:string;onLoadingChange?:(loading:boolean)=>void;onImageryError?:(message:string)=>void;onFrameChange?:(frame:FrameSpec|undefined,transition?:FrameSpec)=>void;vectorKey?:"none"|"wind"|"currents";vectorMotion?:boolean;onVectorChange?:(field:VectorField|null)=>void};
+function provider(layer:Layer,date:string){return new C.UrlTemplateImageryProvider({url:tileURL(layer,date),tilingScheme:new C.WebMercatorTilingScheme(),tileWidth:256,tileHeight:256,maximumLevel:layer.maxLevel,rectangle:layer.coverage?C.Rectangle.fromDegrees(...layer.coverage):undefined,credit:new C.Credit(layer.source??('NASA EOSDIS GIBS · '+layer.id))});}
 function addImagery(viewer:C.Viewer,source:C.ImageryProvider,index?:number){
   const layer=new C.ImageryLayer(source,{maximumAnisotropy:8,minificationFilter:C.TextureMinificationFilter.LINEAR,magnificationFilter:C.TextureMagnificationFilter.LINEAR});
   viewer.imageryLayers.add(layer,index);return layer;
 }
 function Globe(p:Props){
-  const node=useRef<HTMLDivElement>(null),viewer=useRef<C.Viewer|null>(null),primary=useRef<C.ImageryLayer|null>(null),second=useRef<C.ImageryLayer|null>(null),latest=useRef(p);latest.current=p;
+  const node=useRef<HTMLDivElement>(null),viewer=useRef<C.Viewer|null>(null),buffer=useRef<ImageryBuffer<C.ImageryLayer[]>|null>(null),wakeBuffer=useRef<()=>void>(()=>{}),latest=useRef(p);latest.current=p;
   const [ready,setReady]=useState(false),[error,setError]=useState(''),[loading,setLoading]=useState(false),[tileError,setTileError]=useState(''),[baseError,setBaseError]=useState(''),[rotating,setRotating]=useState(p.autoRotate??false);
   useEffect(()=>{
     (window as unknown as {CESIUM_BASE_URL:string}).CESIUM_BASE_URL='/cesium/';
@@ -34,7 +36,7 @@ function Globe(p:Props){
       const fallbackLayer=addImagery(v,fallback);
       const camera=p.initialCamera??initialCamera;
       v.camera.setView({destination:C.Cartesian3.fromDegrees(camera.longitude,camera.latitude,camera.height),orientation:{heading:camera.heading,pitch:camera.pitch,roll:camera.roll}});
-      off.push(v.scene.globe.tileLoadProgressEvent.addEventListener((count:number)=>{setLoading(count>0);latest.current.onLoadingChange?.(count>0);}));
+      off.push(v.scene.globe.tileLoadProgressEvent.addEventListener((count:number)=>{setLoading(count>0);}));
       off.push(v.camera.moveEnd.addEventListener(()=>{
         if(!v||v.isDestroyed())return;
         const c=v.camera.positionCartographic;
@@ -66,51 +68,67 @@ function Globe(p:Props){
   },[]);
   useEffect(()=>{
     const v=viewer.current;if(!ready||!v||!node.current)return;
+    let stopped=false;
     const resize=()=>{
-      if(v.isDestroyed())return;
-      const box=node.current!.getBoundingClientRect(),profile=renderProfile(box.width,box.height,window.devicePixelRatio,p.quality);
+      const element=node.current;if(stopped||!element||v.isDestroyed())return;
+      const box=element.getBoundingClientRect(),profile=renderProfile(box.width,box.height,window.devicePixelRatio,p.quality);
       v.resolutionScale=profile.resolutionScale;v.scene.globe.maximumScreenSpaceError=profile.screenSpaceError;v.scene.globe.tileCacheSize=profile.cacheSize;v.scene.msaaSamples=profile.msaaSamples;
       v.scene.postProcessStages.fxaa.enabled=profile.effectiveRatio<1.5;v.targetFrameRate=p.hideTools||p.quality==='battery'?30:60;
       v.resize();v.scene.requestRender();
     };
     const observer=new ResizeObserver(resize);observer.observe(node.current);window.addEventListener('resize',resize);resize();
-    return()=>{observer.disconnect();window.removeEventListener('resize',resize);};
+    return()=>{stopped=true;observer.disconnect();window.removeEventListener('resize',resize);};
   },[ready,p.quality,p.hideTools]);
   useEffect(()=>{
-    const v=viewer.current;if(!ready||!v)return;setTileError('');latest.current.onLoadingChange?.(!!p.layer);
-    for(const r of [primary,second]){if(r.current)v.imageryLayers.remove(r.current,true);r.current=null;}
-    if(!p.layer){v.scene.requestRender();return;}
-    const source=provider(p.layer,p.date),a=addImagery(v,source);primary.current=a;a.alpha=p.opacity;a.splitDirection=p.compare?C.SplitDirection.LEFT:C.SplitDirection.NONE;
-    if(p.layer.key==='night'){a.dayAlpha=0;a.nightAlpha=1;}
-    const off=[source.errorEvent.addEventListener(()=>{setTileError('Copertura incompleta per questo layer o questa data.');latest.current.onImageryError?.('Copertura incompleta per questo layer o questa data.');})];
-    if(p.compare){
-      const bSource=provider(p.layer,p.compareDate),b=addImagery(v,bSource);second.current=b;b.alpha=p.opacity;b.splitDirection=C.SplitDirection.RIGHT;
-      off.push(bSource.errorEvent.addEventListener(()=>setTileError('Copertura incompleta nella data di confronto.')));
-    }
-    v.scene.requestRender();return()=>off.forEach(f=>f());
+    const v=viewer.current;if(!ready||!v)return;
+    let timer:ReturnType<typeof setTimeout>|undefined,previous=performance.now(),settles=0,transitionStart=0,transitionFrames=0,transitionGap=0;
+    const listeners=new Map<C.ImageryLayer,()=>void>();
+    const manager=new ImageryBuffer<C.ImageryLayer[]>({
+      create:spec=>{
+        const layer=latest.current.layer!;
+        return [spec.date,...(spec.compareDate?[spec.compareDate]:[])].map((date,i)=>{
+          const source=provider(layer,date),image=addImagery(v,source);image.alpha=0;
+          image.splitDirection=spec.compareDate?(i===0?C.SplitDirection.LEFT:C.SplitDirection.RIGHT):C.SplitDirection.NONE;
+          if(layer.key==='night'){image.dayAlpha=0;image.nightAlpha=1;}
+          listeners.set(image,source.errorEvent.addEventListener(()=>manager.fail(spec.key)));
+          return image;
+        });
+      },
+      remove:images=>{for(const image of images){listeners.get(image)?.();listeners.delete(image);if(!v.isDestroyed())v.imageryLayers.remove(image,true);}},
+      opacity:(images,alpha)=>{for(const image of images)image.alpha=alpha;},
+      shown:(spec,transition)=>{if(transition){transitionStart=performance.now();transitionFrames=0;transitionGap=0;}else{node.current?.setAttribute('data-frame-date',spec.date);if(transitionStart){node.current?.setAttribute('data-transition-metrics',JSON.stringify({frames:transitionFrames,ms:Math.round(performance.now()-transitionStart),maxFrameGap:Math.round(transitionGap)}));transitionStart=0;}}latest.current.onFrameChange?.(spec,transition);latest.current.onLoadingChange?.(!!transition);if(!transition)queueMicrotask(()=>{if(buffer.current!==manager)return;const p=latest.current;manager.preload(p.layer&&p.preloadDate&&!p.compare?{key:p.layer.key+'|'+p.preloadDate,date:p.preloadDate}:undefined);wakeBuffer.current();});},
+      error:()=>{const message='Copertura incompleta per questo layer o questa data.';setTileError(message);latest.current.onImageryError?.(message);}
+    },matchMedia('(prefers-reduced-motion: reduce)').matches?0:320);
+    buffer.current=manager;
+    const draw=()=>{
+      timer=undefined;if(v.isDestroyed()||document.hidden)return;
+      v.scene.requestRender();
+      if(manager.busy||!v.scene.globe.tilesLoaded||settles<2)timer=setTimeout(draw,v.scene.globe.tilesLoaded?16:100);
+    };
+    wakeBuffer.current=()=>{settles=0;previous=performance.now();if(timer)clearTimeout(timer);draw();};
+    const off=v.scene.postRender.addEventListener(()=>{
+      const now=performance.now();if(transitionStart){transitionFrames++;transitionGap=Math.max(transitionGap,now-previous);}manager.tick(now-previous,v.scene.globe.tilesLoaded,document.hidden);previous=now;settles++;
+      latest.current.onLoadingChange?.(manager.busy);
+    });
+    const visible=()=>{if(document.hidden){if(timer)clearTimeout(timer);timer=undefined;}else wakeBuffer.current();};
+    document.addEventListener('visibilitychange',visible);
+    return()=>{if(timer)clearTimeout(timer);off();document.removeEventListener('visibilitychange',visible);manager.clear();buffer.current=null;wakeBuffer.current=()=>{};};
+  },[ready]);
+  useEffect(()=>{
+    const manager=buffer.current;if(!ready||!manager)return;
+    setTileError('');manager.setOpacity(p.opacity);
+    const spec=p.layer?{key:p.layer.key+'|'+p.date+(p.compare?'|'+p.compareDate:''),date:p.date,compareDate:p.compare?p.compareDate:undefined}:undefined;
+    manager.request(spec);if(!spec)latest.current.onFrameChange?.(undefined);latest.current.onLoadingChange?.(manager.busy);wakeBuffer.current();
   },[ready,p.layer,p.date,p.compare,p.compareDate]);
   useEffect(()=>{
-    const v=viewer.current,layer=p.layer,date=p.preloadDate;
-    if(!ready||!v||!layer||!date||layer.static)return;
-    let controller:AbortController|undefined;
-    const warm=()=>{
-      controller?.abort();if(document.hidden||v.isDestroyed())return;
-      const rectangle=v.camera.computeViewRectangle();if(!rectangle)return;
-      const level=Math.log2(40075016*Math.max(node.current?.clientWidth??1,node.current?.clientHeight??1)/(Math.max(200,v.camera.positionCartographic.height)*256));
-      const tiles=preloadTiles({west:C.Math.toDegrees(rectangle.west),east:C.Math.toDegrees(rectangle.east),south:C.Math.toDegrees(rectangle.south),north:C.Math.toDegrees(rectangle.north)},level,layer.maxLevel);
-      controller=new AbortController();const signal=controller.signal;
-      void Promise.all(tiles.map(async tile=>{
-        try{const url=tileURL(layer,date).replace('{z}',String(tile.z)).replace('{x}',String(tile.x)).replace('{y}',String(tile.y));
-          const response=await fetch(url,{signal,credentials:'omit',cache:'force-cache'});if(response.ok)await response.arrayBuffer();
-        }catch{/* Optional warm-up; real renderer reports missing imagery. */}
-      }));
-    };
-    warm();document.addEventListener('visibilitychange',warm);
-    return()=>{controller?.abort();document.removeEventListener('visibilitychange',warm);};
-  },[ready,p.layer,p.preloadDate]);
+    const manager=buffer.current;if(!ready||!manager)return;
+    // A hidden but shown Cesium layer loads the actual viewport's tiles into GPU memory.
+    // Exactly one upcoming frame is retained; no HTTP-only cache approximation.
+    if(!manager.busy){manager.preload(p.layer&&p.preloadDate&&!p.compare?{key:p.layer.key+'|'+p.preloadDate,date:p.preloadDate}:undefined);wakeBuffer.current();}
+  },[ready,p.layer,p.preloadDate,p.compare,loading]);
   useEffect(()=>{
     const v=viewer.current;if(!ready||!v)return;
-    if(primary.current)primary.current.alpha=p.opacity;if(second.current)second.current.alpha=p.opacity;
+    buffer.current?.setOpacity(p.opacity);
     v.scene.splitPosition=p.split;v.scene.globe.enableLighting=p.lighting||p.layer?.key==='night';
     v.clock.currentTime=C.JulianDate.fromDate(new Date(Date.now()+p.sunOffset*3600000));v.scene.requestRender();
   },[ready,p.opacity,p.split,p.sunOffset,p.lighting,p.layer]);
@@ -128,13 +146,19 @@ function Globe(p:Props){
       const rec=json2satrec(p.orbit!.omm),points:C.Cartesian3[]=[],now=Date.now();
       for(let t=now-45*60000;t<=now+45*60000;t+=60000){const q=api.skyPoint(rec,t,p.place);if(q)points.push(C.Cartesian3.fromDegrees(q.longitude,q.latitude,q.altitude*1000));}
       const track=v.entities.add({polyline:{positions:points,width:1.5,material:C.Color.fromCssColorString('#69f6dc').withAlpha(.55),arcType:C.ArcType.NONE}});
-      const station=v.entities.add({point:{pixelSize:7,color:C.Color.WHITE,outlineColor:C.Color.fromCssColorString('#69f6dc'),outlineWidth:2},label:{text:'ISS',font:'11px system-ui',pixelOffset:new C.Cartesian2(0,-18),fillColor:C.Color.WHITE}});
+      const station=v.entities.add({point:{pixelSize:7,color:C.Color.WHITE,outlineColor:C.Color.fromCssColorString('#69f6dc'),outlineWidth:2},label:{text:+p.orbit!.omm.NORAD_CAT_ID===25544?'ISS':String(p.orbit!.omm.OBJECT_NAME).slice(0,50),font:'11px system-ui',pixelOffset:new C.Cartesian2(0,-18),fillColor:C.Color.WHITE}});
       entities.push(track,station);
       const update=()=>{if(document.hidden||gone)return;const q=api.skyPoint(rec,Date.now(),p.place);if(q)station.position=new C.ConstantPositionProperty(C.Cartesian3.fromDegrees(q.longitude,q.latitude,q.altitude*1000));v.scene.requestRender();};
       update();timer=setInterval(update,5000);
     }).catch(()=>{if(!gone)setTileError('Traccia ISS non disponibile.');});
     return()=>{gone=true;if(timer)clearInterval(timer);removeGlobeEntities(v,entities);};
   },[ready,p.showISS,p.orbit,p.place]);
+  useEffect(()=>{
+    latest.current.onVectorChange?.(null);const v=viewer.current;if(!ready||!v||!p.vectorKey||p.vectorKey==='none')return;
+    const controller=new AbortController();let cleanup:(()=>void)|undefined;
+    fetch('/vectors/'+p.vectorKey+'.json',{signal:controller.signal}).then(r=>{if(!r.ok)throw new Error('missing');return r.json();}).then(validateField).then(field=>{if(!controller.signal.aborted&&!v.isDestroyed()){cleanup=vectorRenderer(v,field,p.quality,p.vectorMotion!==false);latest.current.onVectorChange?.(field);}}).catch(()=>{if(!controller.signal.aborted)setTileError('Campo vettoriale non disponibile. Nessuna scia simulata.');});
+    return()=>{controller.abort();cleanup?.();};
+  },[ready,p.vectorKey,p.vectorMotion,p.quality]);
   useEffect(()=>{setRotating(p.autoRotate??false);},[p.autoRotate]);
   useEffect(()=>{
     const v=viewer.current;if(!ready||!v||!rotating)return;

@@ -1,0 +1,25 @@
+[
+  {
+    "key": "swissimage",
+    "name": "Svizzera · SWISSIMAGE",
+    "subtitle": "Ortofoto regionali swisstopo",
+    "id": "ch.swisstopo.swissimage",
+    "maxLevel": 20,
+    "format": "image/jpeg",
+    "date": "current",
+    "dataLabel": "Mosaico · anni diversi per zona",
+    "period": "Mosaico aggiornato per zona",
+    "resolution": "10 cm in pianura / 25 cm nelle Alpi (prodotto originale)",
+    "unit": "Fotografia aerea",
+    "explanation": "Ortofoto ufficiali della Svizzera. Il mosaico contiene riprese di anni diversi: current identifica l’edizione del servizio, non l’istante di acquisizione. Svizzera e dintorni: fuori dalla Svizzera il servizio include immagini SPOT 5 del 2004–2005 a 5 m. Per l’anno di una zona consulta la fonte ufficiale.",
+    "source": "© swisstopo",
+    "sourceURL": "https://www.swisstopo.admin.ch/it/ortofoto-swissimage-10-cm",
+    "coverage": [
+      5.140242,
+      45.398181,
+      11.47757,
+      48.230651
+    ],
+    "template": "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/{z}/{x}/{y}.jpeg"
+  }
+]

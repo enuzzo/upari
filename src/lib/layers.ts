@@ -1,4 +1,6 @@
 import catalog from './gibs-catalog.json';
+import regionalConfig from './regional-layers.json';
+import {regionalLayers} from './regional';
 import type { Layer } from '../types';
 import { readState, writeState } from './storage';
 import { utcDate } from './format';
@@ -19,6 +21,8 @@ export const initialLayers:Layer[]=specs.map(([key,name,subtitle,id,resolution,u
   const c=catalog[id as keyof typeof catalog];const earliest=c.ranges[0]?.split('/')[0]??'2012-01-01';
   return {...c,legend:c.legend??undefined,key,name,subtitle,resolution,unit,explanation,earliest,period:key==='night'?'Composito storico':'Giornaliero',static:key==='night'};
 });
+initialLayers.push(...regionalLayers(regionalConfig));
+export const regionalLayer=initialLayers.find(l=>l.key==='swissimage')!;
 export function dateAllowed(layer:Layer, date:string) {return (layer.ranges??[]).some(v=>{const [a,b]=v.split('/');return date>=a&&date<=(b??a);});}
 export function layerDate(layer:Layer, target=utcDate(Date.now()-86400000)) {
   if(layer.static)return layer.date;
@@ -28,13 +32,13 @@ export function layerDate(layer:Layer, target=utcDate(Date.now()-86400000)) {
 }
 export function frameDates(layer:Layer,end:string) { const ds:string[]=[];if(layer.static)return [layer.date];for(let i=6;i>=0;i--){const d=utcDate(Date.parse(end+'T12:00:00Z')-i*86400000);if(dateAllowed(layer,d))ds.push(d);}return ds; }
 export async function refreshLayers():Promise<Layer[]> {
-  const old=await readState<{at:number;layers:Layer[]}|null>('catalog',null);if(old&&Date.now()-old.at<86400000)return old.layers;
+  const old=await readState<{at:number;layers:Layer[]}|null>('catalog',null);if(old&&Date.now()-old.at<86400000)return initialLayers.map(layer=>{const saved=old.layers.find(l=>l.key===layer.key);return layer.regional?layer:{...layer,...(saved?{date:saved.date,ranges:saved.ranges,earliest:saved.earliest,catalogAt:new Date(old.at).toISOString()}: {})};});
   try{
     const r=await fetch(GIBS+'/1.0.0/WMTSCapabilities.xml',{signal:AbortSignal.timeout(15000)});if(!r.ok)throw new Error('catalog');const doc=new DOMParser().parseFromString(await r.text(),'application/xml');
-    const updated=initialLayers.map(l=>{const n=Array.from(doc.getElementsByTagNameNS('*','Layer')).find(n=>n.getElementsByTagNameNS('*','Identifier')[0]?.textContent===l.id);if(!n)return l;
+    const updated=initialLayers.map(l=>{if(l.regional)return l;const n=Array.from(doc.getElementsByTagNameNS('*','Layer')).find(n=>n.getElementsByTagNameNS('*','Identifier')[0]?.textContent===l.id);if(!n)return l;
       const d=n.getElementsByTagNameNS('*','Dimension')[0];const ranges=Array.from(d?.getElementsByTagNameNS('*','Value')??[]).map(v=>v.textContent??'').filter(Boolean);const date=d?.getElementsByTagNameNS('*','Default')[0]?.textContent??l.date;
-      return {...l,date,ranges:ranges.length?ranges:l.ranges,earliest:ranges[0]?.split('/')[0]??l.earliest};});
+      return {...l,catalogAt:new Date().toISOString(),date,ranges:ranges.length?ranges:l.ranges,earliest:ranges[0]?.split('/')[0]??l.earliest};});
     await writeState('catalog',{at:Date.now(),layers:updated});return updated;
-  }catch{return old?.layers??initialLayers;}
+  }catch{return initialLayers.map(l=>{const saved=old?.layers.find(v=>v.key===l.key);return l.regional||!saved?l:{...l,date:saved.date,ranges:saved.ranges,earliest:saved.earliest,catalogAt:new Date(old!.at).toISOString()};});}
 }
-export function tileURL(layer:Layer,date:string) {return `${GIBS}/${layer.id}/default/${date}/${layer.matrix}/{z}/{y}/{x}.${layer.format==='image/jpeg'?'jpeg':'png'}`;}
+export function tileURL(layer:Layer,date:string) {if(layer.template)return layer.template;return `${GIBS}/${layer.id}/default/${date}/${layer.matrix}/{z}/{y}/{x}.${layer.format==='image/jpeg'?'jpeg':'png'}`;}

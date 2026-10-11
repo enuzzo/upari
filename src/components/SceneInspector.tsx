@@ -1,3 +1,4 @@
+import VectorControls from './VectorControls';
 import { ChevronLeft } from 'lucide-react';
 import type { Layer,SceneState } from '../types';
 import { LayerDetails,LayerPicker } from './LayerControls';
@@ -14,6 +15,7 @@ export default function SceneInspector(p:Props){
       {!p.layer&&<label className="toggle-row"><span>Giorno e notte<small>Illuminazione calcolata per l'ora attuale</small></span><input type="checkbox" checked={s.lighting} onChange={e=>p.onScene({lighting:e.target.checked})}/></label>}
       {(s.lighting||p.layer?.key==='night')&&<label className="range-label">Ora del Sole <strong>{s.sunOffset===0?'Adesso':(s.sunOffset>0?'+':'')+s.sunOffset+' h'}</strong><input type="range" aria-label="Anteprima dell'illuminazione solare" min="-12" max="12" value={s.sunOffset} onChange={e=>p.onScene({sunOffset:+e.target.value})}/></label>}
     </div>}
+    <VectorControls scene={s} onScene={p.onScene}/>
     {p.layer&&<p className="footnote resolution-note">Dati a {p.layer.resolution}. Lo zoom avvicina la vista; la risoluzione scientifica resta quella del prodotto.</p>}
   </>;
 }

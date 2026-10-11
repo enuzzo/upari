@@ -10,7 +10,7 @@ it('keeps UTC instants distinct when Rome repeats 02:30 in autumn',()=>{
   const first=Date.parse('2026-10-25T00:30:00Z'),second=Date.parse('2026-10-25T01:30:00Z');
   expect(time(first)).toBe('02:30');expect(time(second)).toBe('02:30');
   const passes=[first,second].map((start,i)=>({id:'dst-'+i,start,end:start+60000,startAzimuth:90,maxElevation:20}) as Pass);
-  const forecast={epoch:new Date(first-3600000).toISOString(),expires:second+3600000,passes} as Forecast;
+  const forecast={satelliteId:25544,epoch:new Date(first-3600000).toISOString(),expires:second+3600000,passes} as Forecast;
   const plan=notificationPlan(forecast,{...initialPreferences,quietFrom:0,quietUntil:0,maxDaily:2},first-3600000);
   expect(plan.map(p=>p.at)).toEqual([first-600000,second-600000]);
   expect(calendar(passes[0])).toContain('DTSTART:20261025T003000Z');

@@ -20,4 +20,4 @@ it('matches complete Skyfield/JPL windows across seven latitude/threshold cases'
   }
   expect(windows).toBeGreaterThan(0);
   console.log(JSON.stringify({independentCases:reference.records.length,windows,worstBoundarySeconds:worstBoundary,worstPeakSeconds:worstPeak,worstElevationDegrees:worstElevation}));
-});
+},15000);

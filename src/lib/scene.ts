@@ -2,7 +2,7 @@ import type { CameraView,Place,SaverConfig,SceneState } from '../types';
 import { initialLayers,dateAllowed } from './layers';
 
 export const initialCamera:CameraView={longitude:12,latitude:28,height:17000000,heading:0,pitch:-Math.PI/2,roll:0};
-export const initialScene:SceneState={layerKey:'satellite',date:'',opacity:1,compare:false,compareDate:'',split:.5,sunOffset:0,lighting:false,camera:initialCamera};
+export const initialScene:SceneState={layerKey:'satellite',date:'',opacity:1,compare:false,compareDate:'',split:.5,sunOffset:0,lighting:false,camera:initialCamera,vectorKey:"none",vectorMotion:true};
 const bounded=(x:unknown,min:number,max:number,fallback:number)=>typeof x==='number'&&Number.isFinite(x)?Math.max(min,Math.min(max,x)):fallback;
 const isoDate=(x:unknown)=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x)&&Number.isFinite(Date.parse(x+'T12:00:00Z'))&&new Date(x+'T12:00:00Z').toISOString().slice(0,10)===x;
 export function validateCamera(raw:unknown):CameraView {
@@ -18,7 +18,7 @@ export function validateScene(raw:unknown):SceneState {
   const date=allowed(s.date)?s.date!:layer?.date??'';
   const compareDate=allowed(s.compareDate)?s.compareDate!:date;
   return {layerKey:layer?.key??'satellite',date,compareDate,opacity:bounded(s.opacity,0,1,1),compare:!!layer&&!layer.static&&s.compare===true,
-    split:bounded(s.split,.05,.95,.5),sunOffset:bounded(s.sunOffset,-12,12,0),lighting:s.lighting===true,camera:validateCamera(s.camera)};
+    split:bounded(s.split,.05,.95,.5),sunOffset:bounded(s.sunOffset,-12,12,0),lighting:s.lighting===true,camera:validateCamera(s.camera),vectorKey:["wind","currents"].includes(s.vectorKey??"")?s.vectorKey:"none",vectorMotion:s.vectorMotion!==false};
 }
 export function validateSaver(raw:unknown):SaverConfig {
   const c=(raw??{}) as Partial<SaverConfig>;

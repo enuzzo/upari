@@ -1,0 +1,10 @@
+import type { OMMJsonObject } from 'satellite.js';
+export type Place = { id: string; name: string; latitude: number; longitude: number; height: number };
+export type Preferences = { activePlace: string; places: Place[]; theme: 'night'|'atlas'|'red'; minElevation: number; leadMinutes: number; quietFrom: number; quietUntil: number; maxDaily: number };
+export type OrbitData = { omm: OMMJsonObject; epoch: string; fetched: string; source: string };
+export type SkyPoint = { time: number; azimuth: number; elevation: number; latitude: number; longitude: number; altitude: number; sunElevation: number; sunlit: boolean };
+export type Pass = { id: string; start: number; end: number; peak: number; maxElevation: number; startAzimuth: number; endAzimuth: number; points: SkyPoint[] };
+export type Forecast = { passes: Pass[]; calculatedAt: number; expires: number; epoch: string; minElevation: number; place: Place; current: SkyPoint|null };
+export type Layer = { key: string; name: string; subtitle: string; id: string; matrix: string; maxLevel: number; format: string; date: string; earliest: string; period: string; resolution: string; unit: string; explanation: string; legend?: string; static?: boolean; ranges?: string[] };
+export type NotificationSettings = { server: string; topic: string; token: string; bridge: string; bridgeToken: string };
+export type QueueItem = { id: string; at: number; passId: string; message: string; channel: string; expires: number; supportsUpdates?: boolean; serverId?: string };

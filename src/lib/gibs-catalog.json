@@ -1,0 +1,184 @@
+{
+  "MODIS_Aqua_Aerosol_Optical_Depth_3km": {
+    "id": "MODIS_Aqua_Aerosol_Optical_Depth_3km",
+    "matrix": "GoogleMapsCompatible_Level6",
+    "maxLevel": 6,
+    "format": "image/png",
+    "date": "2026-10-11",
+    "ranges": [
+      "2002-07-03/2002-07-29/P1D",
+      "2002-08-07/2002-09-12/P1D",
+      "2002-09-14/2018-11-22/P1D",
+      "2018-11-24/2022-03-31/P1D",
+      "2022-04-17/2026-10-11/P1D"
+    ],
+    "legend": "https://gibs.earthdata.nasa.gov/legends/MODIS_VIIRS_AOD_H.svg"
+  },
+  "VIIRS_Black_Marble": {
+    "id": "VIIRS_Black_Marble",
+    "matrix": "GoogleMapsCompatible_Level8",
+    "maxLevel": 8,
+    "format": "image/png",
+    "date": "2016-01-01",
+    "ranges": [
+      "2012-01-01/2012-01-01/P1Y",
+      "2016-01-01/2016-01-01/P1Y"
+    ],
+    "legend": null
+  },
+  "BlueMarble_ShadedRelief_Bathymetry": {
+    "id": "BlueMarble_ShadedRelief_Bathymetry",
+    "matrix": "GoogleMapsCompatible_Level8",
+    "maxLevel": 8,
+    "format": "image/jpeg",
+    "date": "default",
+    "ranges": [],
+    "legend": null
+  },
+  "VIIRS_NOAA20_Brightness_Temp_BandI5_Night": {
+    "id": "VIIRS_NOAA20_Brightness_Temp_BandI5_Night",
+    "matrix": "GoogleMapsCompatible_Level9",
+    "maxLevel": 9,
+    "format": "image/png",
+    "date": "2026-10-11",
+    "ranges": [
+      "2018-01-05/2018-02-21/P1D",
+      "2018-02-24/2018-03-12/P1D",
+      "2018-03-14/2022-01-12/P1D",
+      "2022-01-14/2026-10-11/P1D"
+    ],
+    "legend": "https://gibs.earthdata.nasa.gov/legends/VIIRS_Brightness_Temp_BandI5_H.svg"
+  },
+  "MODIS_Aqua_L2_Chlorophyll_A": {
+    "id": "MODIS_Aqua_L2_Chlorophyll_A",
+    "matrix": "GoogleMapsCompatible_Level7",
+    "maxLevel": 7,
+    "format": "image/png",
+    "date": "2026-10-11",
+    "ranges": [
+      "2002-07-04/2002-07-29/P1D",
+      "2002-08-06/2007-12-01/P1D",
+      "2007-12-03/2022-03-31/P1D",
+      "2022-04-14/2022-04-14/P1D",
+      "2022-04-16/2025-12-27/P1D",
+      "2025-12-29/2026-10-11/P1D"
+    ],
+    "legend": "https://gibs.earthdata.nasa.gov/legends/MODIS_Chlorophyll_H.svg"
+  },
+  "OCI_PACE_Chlorophyll_a": {
+    "id": "OCI_PACE_Chlorophyll_a",
+    "matrix": "GoogleMapsCompatible_Level7",
+    "maxLevel": 7,
+    "format": "image/png",
+    "date": "2026-10-11",
+    "ranges": [
+      "2024-02-25/2024-03-12/P1D",
+      "2024-03-15/2024-03-25/P1D",
+      "2024-03-28/2024-05-24/P1D",
+      "2024-05-30/2024-09-08/P1D",
+      "2024-09-11/2024-10-16/P1D",
+      "2024-10-18/2024-12-03/P1D",
+      "2024-12-05/2025-01-01/P1D",
+      "2025-01-03/2025-05-07/P1D",
+      "2025-05-09/2025-12-15/P1D",
+      "2025-12-17/2026-02-09/P1D",
+      "2026-02-11/2026-03-19/P1D",
+      "2026-03-21/2026-10-11/P1D"
+    ],
+    "legend": "https://gibs.earthdata.nasa.gov/legends/MODIS_Chlorophyll_H.svg"
+  },
+  "VIIRS_NOAA20_CorrectedReflectance_TrueColor": {
+    "id": "VIIRS_NOAA20_CorrectedReflectance_TrueColor",
+    "matrix": "GoogleMapsCompatible_Level9",
+    "maxLevel": 9,
+    "format": "image/jpeg",
+    "date": "2026-10-11",
+    "ranges": [
+      "2018-01-05/2018-02-21/P1D",
+      "2018-02-24/2018-03-12/P1D",
+      "2018-03-14/2019-12-31/P1D",
+      "2020-01-02/2022-01-12/P1D",
+      "2022-01-14/2026-10-11/P1D"
+    ],
+    "legend": null
+  },
+  "MODIS_Terra_Land_Surface_Temp_Day_TES": {
+    "id": "MODIS_Terra_Land_Surface_Temp_Day_TES",
+    "matrix": "GoogleMapsCompatible_Level7",
+    "maxLevel": 7,
+    "format": "image/png",
+    "date": "2026-10-11",
+    "ranges": [
+      "2000-02-24/2000-04-25/P1D",
+      "2000-04-28/2000-08-06/P1D",
+      "2000-08-18/2001-06-15/P1D",
+      "2001-07-03/2002-03-19/P1D",
+      "2002-03-28/2002-10-11/P1D",
+      "2002-11-16/2003-12-16/P1D",
+      "2003-12-24/2008-12-20/P1D",
+      "2008-12-23/2016-02-18/P1D",
+      "2016-02-27/2022-10-10/P1D",
+      "2022-10-23/2026-10-11/P1D"
+    ],
+    "legend": "https://gibs.earthdata.nasa.gov/legends/MODIS_Land_Surface_Temp_H.svg"
+  },
+  "GHRSST_L4_MUR_Sea_Surface_Temperature": {
+    "id": "GHRSST_L4_MUR_Sea_Surface_Temperature",
+    "matrix": "GoogleMapsCompatible_Level7",
+    "maxLevel": 7,
+    "format": "image/png",
+    "date": "2026-10-10",
+    "ranges": [
+      "2002-06-01/2021-02-19/P1D",
+      "2021-02-22/2022-11-08/P1D",
+      "2022-11-10/2023-02-01/P1D",
+      "2023-02-04/2023-04-21/P1D",
+      "2023-04-23/2024-07-01/P1D",
+      "2024-07-03/2025-08-12/P1D",
+      "2025-08-14/2025-11-27/P1D",
+      "2025-11-29/2025-12-28/P1D",
+      "2025-12-30/2026-02-06/P1D",
+      "2026-02-08/2026-10-10/P1D"
+    ],
+    "legend": "https://gibs.earthdata.nasa.gov/legends/GHRSST_Sea_Surface_Temperature_H.svg"
+  },
+  "GHRSST_L4_MUR_Sea_Surface_Temperature_Anomalies": {
+    "id": "GHRSST_L4_MUR_Sea_Surface_Temperature_Anomalies",
+    "matrix": "GoogleMapsCompatible_Level7",
+    "maxLevel": 7,
+    "format": "image/png",
+    "date": "2026-10-10",
+    "ranges": [
+      "2019-07-23/2021-02-19/P1D",
+      "2021-02-22/2022-11-08/P1D",
+      "2022-11-10/2023-02-01/P1D",
+      "2023-02-04/2023-04-21/P1D",
+      "2023-04-23/2024-07-01/P1D",
+      "2024-07-03/2025-08-15/P1D",
+      "2025-08-17/2025-08-29/P1D",
+      "2025-08-31/2025-09-03/P1D",
+      "2025-09-05/2025-09-17/P1D",
+      "2025-09-19/2026-01-09/P1D",
+      "2026-01-11/2026-10-10/P1D"
+    ],
+    "legend": "https://gibs.earthdata.nasa.gov/legends/GHRSST_Sea_Surface_Temperature_Anomalies_H.svg"
+  },
+  "MODIS_Terra_NDSI_Snow_Cover": {
+    "id": "MODIS_Terra_NDSI_Snow_Cover",
+    "matrix": "GoogleMapsCompatible_Level8",
+    "maxLevel": 8,
+    "format": "image/png",
+    "date": "2026-10-11",
+    "ranges": [
+      "2000-02-24/2000-08-06/P1D",
+      "2000-08-18/2001-06-15/P1D",
+      "2001-07-03/2002-03-19/P1D",
+      "2002-03-28/2003-12-16/P1D",
+      "2003-12-24/2008-12-20/P1D",
+      "2008-12-23/2016-02-18/P1D",
+      "2016-02-27/2022-10-10/P1D",
+      "2022-10-23/2026-10-11/P1D"
+    ],
+    "legend": "https://gibs.earthdata.nasa.gov/legends/MODIS_NDSI_Snow_Cover_H.svg"
+  }
+}

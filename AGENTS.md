@@ -10,6 +10,9 @@ Read this file before changing anything. Then read `docs/HANDOFF.md`, `docs/VERI
 - Earth exploration with day/night, real NASA overlays, time, comparison, detailed imagery, and ISS observation in one product. Smartphone camera guidance is wanted.
 - Notifications: useful directions and timing, via ntfy or a small personal HA bridge; distinguish local browser UI from a real external scheduler.
 - The user asked for this complete package so Codex can continue. Continue the existing work; do not start over or replace the geospatial renderer without a concrete reason.
+- **Latest instructions, 11 October 2026:** improve image quality and mobile/desktop UX; remove the permanent AR/pass box; ISS must be optional and initially off. These instructions supersede the old concept's bottom pass strip. Earth occupies the available viewport. Panels appear on demand.
+- **Screensaver:** every Earth view can open a separate static page with its exact camera, layer/date/comparison, slow rotation, current clock and optional real weather. Keep the clock independent of WebGL rendering. Preserve native source resolution and credits.
+- **Publication is deferred:** the user said “Dopo faremo deploy”. Version 0.2 is local, not pushed or deployed. The existing Site still serves 0.1. Do not publish until the user asks for the next deployment step.
 
 ## Working rules
 
@@ -24,11 +27,12 @@ Read this file before changing anything. Then read `docs/HANDOFF.md`, `docs/VERI
 9. No tokens in source, bundles, Git, logs, backup exports or URLs. The HA token belongs in the bridge environment, never the browser. The browser may retain its own narrowly scoped bridge/ntfy token locally if configured by the user.
 10. CelesTrak requests: current canonical domain, one catalogue ID, cache 2–4 hours, stop/back off after non-200. Do not bypass source limits by changing domains.
 11. Keep rendering adaptive, on-demand where possible, bounded image caches and reduced-motion behavior. Do not add a second 3D engine for decorative trails.
+    Native DPR is explicitly enabled in Cesium. The resolution scale is effectiveRatio/nativeDPR, not a second reduction with browser-recommended resolution enabled. See the regression tests. ISS off means no new ephemeris fetches, forecast workers, tracking or periodic refreshes.
 12. If Sites is available, `.openai/hosting.json` is the authoritative project identity. Reuse its exact `project_id`; preserve private access. Never create a second Site. Otherwise work locally or use the user's hosting.
 
 ## Priorities for continuation
 
-1. Browser QA of the compiled app at 390×844 and desktop; compare the approved concept directly with real screenshots and fix concrete differences.
+1. Browser QA of the compiled 0.2 app at 390×844 and desktop, including the separate screensaver. Compare palette/planet hierarchy with the concept while retaining the user's later UI changes. See docs/UIUX_PASS_02.md and docs/SCREENSAVER.md. Verify high-DPR sharpness, tiles, dialogs, optional ISS, fullscreen, clock, weather, backgrounding and keyboard.
 2. Real camera/compass QA and complete sensor lifecycle (including denial, repeated activation and backgrounding).
 3. Real ntfy/HA end-to-end test with the user's chosen endpoints, cancellation, partial failure, restart and page closed. There are no live credentials in this package.
 4. Independent event/visibility validation across dates, latitudes, DST, horizon masks and shadow boundaries. Preserve the existing reference fixtures.

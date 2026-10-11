@@ -1,44 +1,110 @@
-import { lazy,Suspense,useEffect,useState,useRef } from 'react';
-import { Globe2,Orbit,Bell,Settings,MapPin,ChevronDown,Layers,Camera,ChevronRight,Download,Upload,Smartphone,Check,X,WifiOff } from 'lucide-react';
-import type { Preferences,OrbitData,Forecast,Pass,Layer } from './types';
-import { loadPreferences,initialPreferences,writeState,readState,exportBackup,importBackup } from './lib/storage';
-import { fetchOrbit,parseOrbitFile,validateOrbit } from './lib/orbits';
+import { lazy,Suspense,useCallback,useEffect,useRef,useState } from 'react';
+import { Globe2,Orbit,Bell,Settings,MapPin,ChevronDown,Layers,Monitor,X,WifiOff } from 'lucide-react';
+import type { Preferences,Pass,Layer,SceneState,CameraView } from './types';
+import { loadPreferences,initialPreferences,writeState,readState } from './lib/storage';
 import { initialLayers,layerDate,refreshLayers,frameDates } from './lib/layers';
-import { time,direction,duration,download } from './lib/format';
+import { initialScene,validateScene } from './lib/scene';
+import { useISS } from './hooks/useISS';
 import Modal from './components/Modal';
 import PlaceEditor from './components/PlaceEditor';
-import SkyPanel from './components/SkyPanel';
-import NotificationPanel from './components/NotificationPanel';
-import { LayerDetails,LayerPicker } from './components/LayerControls';
+import SceneInspector from './components/SceneInspector';
+import SettingsPanel,{type InstallEvent} from './components/SettingsPanel';
+import SaverLauncher from './components/SaverLauncher';
 import RenderBoundary from './components/RenderBoundary';
-const Globe=lazy(()=>import('./components/Globe'));const SkyAR=lazy(()=>import('./components/SkyAR'));
-type InstallEvent=Event&{prompt:()=>Promise<void>;userChoice:Promise<{outcome:string}>};
-export default function App() {
-  const [prefs,setPrefs]=useState<Preferences>(initialPreferences),[hydrated,setHydrated]=useState(false),[tab,setTab]=useState<'earth'|'sky'|'alerts'>(new URLSearchParams(location.search).get('view')==='sky'?'sky':'earth');
-  const [modal,setModal]=useState<'places'|'settings'|'layers'|null>(null),[layers,setLayers]=useState(initialLayers),[key,setKey]=useState('night'),[date,setDate]=useState('2016-01-01'),[opacity,setOpacity]=useState(1),[compare,setCompare]=useState(false),[compareDate,setCompareDate]=useState('2012-01-01'),[split,setSplit]=useState(.5),[playing,setPlaying]=useState(false),[detail,setDetail]=useState(false),[sunOffset,setSunOffset]=useState(0),[favorites,setFavorites]=useState<string[]>([]);
-  const [orbit,setOrbit]=useState<OrbitData|null>(null),[forecast,setForecast]=useState<Forecast|null>(null),[busy,setBusy]=useState(false),[orbitError,setOrbitError]=useState(''),[ar,setAR]=useState<Pass|null>(null),[toast,setToast]=useState(''),[online,setOnline]=useState(navigator.onLine),[install,setInstall]=useState<InstallEvent|null>(null),[tick,setTick]=useState(Date.now());
-  const worker=useRef<Worker|null>(null),playFrames=useRef<string[]>([]),run=useRef(0),prefsRef=useRef(prefs);prefsRef.current=prefs;
-  const layer=layers.find(l=>l.key===key)??layers[0];const place=prefs.places.find(l=>l.id===prefs.activePlace)??prefs.places[0];const next=forecast?.passes.find(p=>p.end>tick);const storedForecastRef=useRef(forecast);storedForecastRef.current=forecast;
-  useEffect(()=>{let live=true;loadPreferences().then(p=>{if(live){setPrefs(p);setHydrated(true);}}).catch(()=>{setHydrated(true);setToast('Impossibile leggere le preferenze locali.');});readState<string[]>('favorites',[]).then(setFavorites);refreshLayers().then(l=>{if(live)setLayers(l);});
-    const onlineHandler=()=>setOnline(navigator.onLine);window.addEventListener('online',onlineHandler);window.addEventListener('offline',onlineHandler);const installHandler=(e:Event)=>{e.preventDefault();setInstall(e as InstallEvent);};window.addEventListener('beforeinstallprompt',installHandler);const t=setInterval(()=>{if(!document.hidden)setTick(Date.now());},15000);return()=>{live=false;clearInterval(t);worker.current?.terminate();window.removeEventListener('online',onlineHandler);window.removeEventListener('offline',onlineHandler);window.removeEventListener('beforeinstallprompt',installHandler);};},[]);
-  function changePrefs(p:Preferences){setPrefs(p);writeState('preferences',p).catch(()=>setToast('Salvataggio locale non riuscito. Esporta un backup.'));}
-  async function refresh(force=false){const id=++run.current;setBusy(true);setOrbitError('');try{const o=await fetchOrbit(force);if(id===run.current)setOrbit(o);}catch(e){if(id===run.current){setOrbitError(e instanceof Error?e.message:'Dati non disponibili.');setBusy(false);}}}
-  useEffect(()=>{if(hydrated)refresh();},[hydrated]);
-  useEffect(()=>{if(!orbit||!hydrated)return;setBusy(true);setForecast(null);worker.current?.terminate();const w=new Worker(new URL('./workers/forecast.worker.ts',import.meta.url),{type:'module'});worker.current=w;w.onmessage=e=>{if(w!==worker.current)return;setBusy(false);if(e.data.error)setOrbitError(e.data.error);else{setForecast(e.data.forecast);setOrbitError('');}};w.onerror=()=>{setBusy(false);setOrbitError('Il calcolo dei passaggi non è riuscito. Riprova.');};w.postMessage({orbit,place,minElevation:prefs.minElevation});return()=>w.terminate();},[orbit,place,prefs.minElevation,hydrated]);
-  useEffect(()=>{const t=setInterval(()=>{if(!document.hidden)refresh();},4*3600000);const visible=()=>{if(!document.hidden){setTick(Date.now());if(storedForecastRef.current&&Date.now()-storedForecastRef.current.calculatedAt>1800000)refresh();}};document.addEventListener('visibilitychange',visible);return()=>{clearInterval(t);document.removeEventListener('visibilitychange',visible);};},[]);
+const Globe=lazy(()=>import('./components/Globe'));
+const SkyAR=lazy(()=>import('./components/SkyAR'));
+const SkyPanel=lazy(()=>import('./components/SkyPanel'));
+const NotificationPanel=lazy(()=>import('./components/NotificationPanel'));
+type Tab='earth'|'sky'|'alerts';
+type Dialog='places'|'settings'|'layers'|'saver'|null;
+const loading=<div className="globe-loading" role="status"><Orbit className="spinning"/><span>Preparo la vista…</span></div>;
+
+export default function App(){
+  const requestedView=new URLSearchParams(location.search).get('view');
+  const deepSky=requestedView==='sky'||requestedView==='alerts';
+  const [prefs,setPrefs]=useState<Preferences>(initialPreferences),[hydrated,setHydrated]=useState(false),[tab,setTab]=useState<Tab>(deepSky?requestedView as Tab:'earth');
+  const [scene,setScene]=useState<SceneState>(initialScene),[layers,setLayers]=useState(initialLayers),[favorites,setFavorites]=useState<string[]>([]);
+  const [modal,setModal]=useState<Dialog>(null),[pane,setPane]=useState<'choose'|'details'>('choose'),[playing,setPlaying]=useState(false);
+  const [ar,setAR]=useState<Pass|null>(null),[toast,setToast]=useState(''),[online,setOnline]=useState(navigator.onLine),[install,setInstall]=useState<InstallEvent|null>(null);
+  const camera=useRef<CameraView>(initialScene.camera),latestScene=useRef(scene),mounted=useRef(false),catalogLoaded=useRef(false),playFrames=useRef<string[]>([]);latestScene.current=scene;
+  const layer=layers.find(l=>l.key===scene.layerKey)??null,place=prefs.places.find(p=>p.id===prefs.activePlace)??prefs.places[0];
+  const iss=useISS(prefs.issEnabled,hydrated,place,prefs.minElevation);
+  useEffect(()=>{
+    let live=true;mounted.current=true;
+    Promise.all([loadPreferences(),readState<unknown>('scene',initialScene),readState<string[]>('favorites',[])]).then(([p,s,f])=>{
+      if(!live)return;
+      const clean=validateScene(s);camera.current=clean.camera;setScene(clean);setPrefs(deepSky?{...p,issEnabled:true}:p);setFavorites(Array.isArray(f)?f.filter(x=>typeof x==='string'):[]);setHydrated(true);
+    }).catch(()=>{if(live){setHydrated(true);setToast('Le preferenze locali non sono disponibili.');}});
+    const network=()=>setOnline(navigator.onLine),installer=(e:Event)=>{e.preventDefault();setInstall(e as InstallEvent);};
+    window.addEventListener('online',network);window.addEventListener('offline',network);window.addEventListener('beforeinstallprompt',installer);
+    return()=>{live=false;mounted.current=false;window.removeEventListener('online',network);window.removeEventListener('offline',network);window.removeEventListener('beforeinstallprompt',installer);};
+  },[]);
   useEffect(()=>{document.documentElement.dataset.theme=prefs.theme;},[prefs.theme]);
-  useEffect(()=>{if(!playing)return;const t=setInterval(()=>{if(document.hidden)return;setDate(d=>{const a=playFrames.current;return a[(a.indexOf(d)+1)%a.length]??d;});},2500);return()=>clearInterval(t);},[playing]);
-  useEffect(()=>{if(!toast)return;const t=setTimeout(()=>setToast(''),6000);return()=>clearTimeout(t);},[toast]);
-  function choose(l:Layer){setKey(l.key);const d=layerDate(l);setDate(d);const fs=frameDates(l,d);setCompareDate(fs[0]??d);setCompare(false);setPlaying(false);setSunOffset(0);setModal(null);}
-  function favorite(k:string){const f=favorites.includes(k)?favorites.filter(x=>x!==k):[...favorites,k];setFavorites(f);writeState('favorites',f).catch(()=>setToast('Preferiti non salvati.'));}
-  async function importOrbit(f:File){try{if(f.size>1000000)throw new Error('File troppo grande.');const o=validateOrbit(parseOrbitFile(await f.text()));o.source='File importato sul dispositivo';await writeState('orbit',o);setOrbit(o);setOrbitError('');}catch(e){setOrbitError(e instanceof Error?e.message:'File non valido.');}}
-  const controls=<LayerDetails layer={layer} date={date} opacity={opacity} onOpacity={setOpacity} compare={compare} onCompare={()=>{setCompare(!compare);setPlaying(false);}} compareDate={compareDate} onCompareDate={setCompareDate} playing={playing} onPlay={()=>{if(playing)setPlaying(false);else{playFrames.current=frameDates(layer,date);setCompare(false);setPlaying(true);setDate(playFrames.current[0]??date);}}} onDate={d=>{setPlaying(false);setDate(d);}}/>;
-  const observation=<div className="observation-strip"><button className="observation-heading" onClick={()=>setTab('sky')}><Orbit className="station-icon" size={28}/><span><small>Il prossimo passaggio</small><strong>{busy?'Calcolo in corso…':next?'ISS alle '+time(next.start):'Il tuo prossimo cielo'}</strong><span>{next?'Da '+direction(next.startAzimuth)+' · '+duration(next.start,next.end):orbitError?'Aggiorna i dati nella sezione Cielo':'Nessun passaggio adatto nelle prossime 72 ore'}</span></span><ChevronRight size={20}/></button><button className="primary" disabled={!next||busy} onClick={()=>{if(next)setAR(next);}}><Camera size={22}/> Apri cielo AR</button><button className="text-button all-passes" onClick={()=>setTab('sky')}>Tutti i passaggi <ChevronRight size={17}/></button></div>;
-  return <div className={'app-shell '+(ar?'ar-open':'')}><header className="app-header"><button className="wordmark" aria-label="Upari, torna alla Terra" onClick={()=>setTab('earth')}>upari <svg viewBox="0 0 60 60" width="37" height="37" aria-hidden="true"><circle cx="30" cy="30" r="16"/><ellipse cx="30" cy="30" rx="28" ry="8" transform="rotate(-35 30 30)"/><circle cx="46" cy="19" r="3" fill="currentColor" stroke="none"/></svg></button><nav className="desktop-nav" aria-label="Navigazione principale">{(['earth','sky','alerts'] as const).map((t,i)=><button className={tab===t?'active':''} key={t} onClick={()=>setTab(t)}>{['Terra','Cielo','Avvisi'][i]}</button>)}</nav><div className="header-actions"><button className="place-selector" onClick={()=>setModal('places')}><MapPin size={18}/><span>{place.name}</span><ChevronDown size={16}/></button><button className="icon-button" aria-label="Impostazioni" onClick={()=>setModal('settings')}><Settings size={21}/></button></div></header>
-    {!online&&<div className="offline-banner"><WifiOff size={15}/> Offline · immagini già visitate e ultimi dati salvati</div>}
-    <main>{tab==='earth'?<div className="earth-layout"><div className="earth-sidebar"><div className="desktop-only"><h1>{layer.name}</h1><p className="scene-subtitle">{layer.subtitle}</p><p className="scene-copy">{layer.explanation}</p><button className="secondary" onClick={()=>setModal('layers')}><Layers size={19}/> Cambia sguardo <ChevronDown size={16}/></button>{controls}<div className="basemap-controls"><label className="toggle-row"><span>Dettaglio fotografico<small>Esri · mosaico, date variabili</small></span><input type="checkbox" checked={detail} onChange={e=>setDetail(e.target.checked)}/></label>{layer.key==='night'&&<label className="range-label">Ora del Sole <strong>{sunOffset===0?'Adesso':(sunOffset>0?'+':'')+sunOffset+' h'}</strong><input type="range" min="-12" max="12" value={sunOffset} onChange={e=>setSunOffset(+e.target.value)}/></label>}</div></div>{observation}</div><div className="earth-canvas"><div className="earth-surface">{!ar&&<RenderBoundary><Suspense fallback={<div className="globe-loading"><Orbit className="spinning"/><span>Accendo il pianeta.</span></div>}><Globe layer={layer} date={date} opacity={opacity} compare={compare} compareDate={compareDate} split={split} place={place} orbit={orbit} detail={detail} sunOffset={sunOffset}/></Suspense></RenderBoundary>}<button className="floating-layer mobile-only" onClick={()=>setModal('layers')}><Layers/><span><b>{layer.name}</b><small>NASA · {layer.static?'composito '+date.slice(0,4):date}</small></span><ChevronDown size={18}/></button>{compare&&<div className="compare-control"><span>{date}</span><input type="range" min="5" max="95" value={split*100} onChange={e=>setSplit(+e.target.value/100)} aria-label="Posizione del confronto tra le date"/><span>{compareDate}</span></div>}</div><div className="canvas-footer desktop-only"><span>Trascina per ruotare. Scorri per avvicinarti.</span><span>{Math.abs(place.latitude).toFixed(3)}° {place.latitude<0?'S':'N'} · {Math.abs(place.longitude).toFixed(3)}° {place.longitude<0?'O':'E'}</span></div></div></div>:tab==='sky'?<SkyPanel forecast={forecast} orbit={orbit} busy={busy} error={orbitError} onRefresh={()=>refresh(true)} onImport={importOrbit} onAR={setAR}/>:<NotificationPanel forecast={forecast} prefs={prefs} onPrefs={changePrefs}/>}</main>
-    <nav className="mobile-nav" aria-label="Navigazione principale">{(['earth','sky','alerts'] as const).map((t,i)=>{const Icon=[Globe2,Orbit,Bell][i];return <button className={tab===t?'active':''} key={t} onClick={()=>setTab(t)} aria-current={tab===t?'page':undefined}><Icon size={23}/><span>{['Terra','Cielo','Avvisi'][i]}</span></button>;})}</nav>
-    {modal&&<Modal title={modal==='places'?'I tuoi luoghi':modal==='layers'?'Cambia sguardo':'Il tuo Upari'} onClose={()=>setModal(null)}>{modal==='places'?<PlaceEditor prefs={prefs} onChange={p=>{changePrefs(p);if(p.activePlace!==prefs.activePlace)setModal(null);}}/>:modal==='layers'?<><LayerPicker layers={layers} active={key} onSelect={choose} favorites={favorites} onFavorite={favorite}/><div className="mobile-only">{controls}<label className="toggle-row"><span>Dettaglio fotografico<small>Esri · mosaico, date variabili</small></span><input type="checkbox" checked={detail} onChange={e=>setDetail(e.target.checked)}/></label>{layer.key==='night'&&<label className="range-label">Ora del Sole · {sunOffset===0?'adesso':sunOffset+' h'}<input type="range" min="-12" max="12" value={sunOffset} onChange={e=>setSunOffset(+e.target.value)}/></label>}</div></>:<><div className="settings-group"><h3>Come vuoi vederlo</h3><div className="theme-picker">{(['night','atlas','red'] as const).map((t,i)=><button key={t} className={'theme-'+t+' '+(prefs.theme===t?'selected':'')} onClick={()=>changePrefs({...prefs,theme:t})}><span/><b>{['Notte','Atlante','Osservazione'][i]}</b>{prefs.theme===t&&<Check size={15}/>}</button>)}</div><p className="footnote">Per l’osservazione notturna abbassa anche la luminosità dello schermo.</p></div><div className="settings-group"><h3>I dati restano con te</h3><p>Luoghi e preferenze rimangono sul dispositivo. I provider vedono le immagini richieste; ntfy e il bridge ricevono il piano quando li colleghi.</p><button className="secondary" onClick={async()=>download('upari-backup.json',await exportBackup())}><Download size={17}/> Esporta backup</button><label className="text-button file-button"><Upload size={17}/> Importa backup<input type="file" accept=".json" onChange={async e=>{const f=e.target.files?.[0];if(f){try{if(f.size>1000000)throw new Error('File troppo grande.');const p=await importBackup(await f.text());setPrefs(p);setToast('Backup importato.');}catch(err){setToast(err instanceof Error?err.message:'Backup non valido.');}}e.target.value='';}}/></label><button className="text-button" onClick={async()=>{const ok=await navigator.storage?.persist?.();setToast(ok?'Memoria persistente attivata.':'Il browser gestisce la conservazione dei dati. Mantieni un backup.');}}>Conserva i dati su questo dispositivo</button></div><div className="settings-group"><h3>Portalo con te</h3>{install?<button className="primary" onClick={async()=>{await install.prompt();await install.userChoice;setInstall(null);}}><Smartphone size={19}/> Installa Upari</button>:<p>Su iPhone apri Upari in Safari, tocca Condividi e scegli <b>Add to Home Screen</b>. Su desktop usa il comando di installazione del browser.</p>}</div><div className="data-notes">Upari 0.1 · codice originale MIT. Dati NASA GIBS e CelesTrak; cartografia fotografica Esri quando attiva. Nessuna telemetria. AR e consegna notifiche richiedono verifica sul tuo telefono.</div></>}</Modal>}
-    {ar&&<Suspense fallback={<div className="ar-screen globe-loading">Preparo il cielo…</div>}><SkyAR pass={ar} onClose={()=>setAR(null)}/></Suspense>}{toast&&<div className="toast" role="status">{toast}<button aria-label="Chiudi messaggio" onClick={()=>setToast('')}><X size={17}/></button></div>}
+  useEffect(()=>{if(hydrated)writeState('scene',{...scene,camera:camera.current}).catch(()=>{});},[scene,hydrated]);
+  useEffect(()=>{
+    if(modal!=='layers'||catalogLoaded.current)return;
+    catalogLoaded.current=true;
+    refreshLayers().then(data=>{if(mounted.current)setLayers(data);});
+  },[modal]);
+  useEffect(()=>{
+    if(!playing)return;
+    const timer=setInterval(()=>{if(document.hidden)return;setScene(s=>{const frames=playFrames.current;return {...s,date:frames[(frames.indexOf(s.date)+1)%frames.length]??s.date};});},2500);
+    return()=>clearInterval(timer);
+  },[playing]);
+  useEffect(()=>{if(!toast)return;const timer=setTimeout(()=>setToast(''),6000);return()=>clearTimeout(timer);},[toast]);
+  function changePrefs(p:Preferences){
+    setPrefs(p);
+    if(!p.issEnabled){setTab('earth');setAR(null);}
+    writeState('preferences',p).catch(()=>setToast('Salvataggio non riuscito. Esporta un backup.'));
+  }
+  function changeScene(changes:Partial<SceneState>){setPlaying(false);setScene(s=>({...s,...changes}));}
+  function choose(l:Layer|null){
+    const date=l?layerDate(l):'',frames=l?frameDates(l,date):[];
+    setPlaying(false);setScene(s=>({...s,layerKey:l?.key??'satellite',date,compareDate:frames[0]??date,compare:false,sunOffset:0,lighting:l?.key==='night'}));setPane('details');
+  }
+  function favorite(key:string){const f=favorites.includes(key)?favorites.filter(x=>x!==key):[...favorites,key];setFavorites(f);writeState('favorites',f).catch(()=>setToast('Preferiti non salvati.'));}
+  const onCameraChange=useCallback((view:CameraView)=>{camera.current=view;writeState('scene',{...latestScene.current,camera:view}).catch(()=>{});},[]);
+  function openLayers(mode:'choose'|'details'='choose'){setTab('earth');setPane(mode);setModal('layers');}
+  function play(){
+    if(playing){setPlaying(false);return;}
+    if(!layer)return;
+    playFrames.current=frameDates(layer,scene.date);setScene(s=>({...s,compare:false,date:playFrames.current[0]??s.date}));setPlaying(true);
+  }
+  const viewName=layer?.name??'Fotografia satellitare';
+  const viewCaption=layer?'NASA · '+(layer.static?'composito '+scene.date.slice(0,4):scene.date)+' · '+layer.resolution:'Esri · mosaico fotografico';
+  const go=(view:Tab)=>{setTab(view);setModal(null);};
+  return <div className={'app-shell '+(ar?'ar-open':'')} data-view={tab}>
+    <header className="app-header">
+      <button className="wordmark" aria-label="Upari, torna alla Terra" onClick={()=>go('earth')}>upari <svg viewBox="0 0 60 60" width="29" height="29" aria-hidden="true"><circle cx="30" cy="30" r="16"/><ellipse cx="30" cy="30" rx="28" ry="8" transform="rotate(-35 30 30)"/><circle cx="46" cy="19" r="3" fill="currentColor" stroke="none"/></svg></button>
+      <nav className="desktop-nav" aria-label="Navigazione principale">
+        <button className={tab==='earth'?'active':''} aria-current={tab==='earth'?'page':undefined} onClick={()=>go('earth')}>Terra</button>
+        <button className={modal==='layers'?'active':''} onClick={()=>openLayers()}>Layer</button>
+        {prefs.issEnabled&&<><button className={tab==='sky'?'active':''} aria-current={tab==='sky'?'page':undefined} onClick={()=>go('sky')}>ISS</button><button className={tab==='alerts'?'active':''} aria-current={tab==='alerts'?'page':undefined} onClick={()=>go('alerts')}>Avvisi</button></>}
+      </nav>
+      <div className="header-actions"><button className="place-selector" aria-label={'Cambia luogo: '+place.name} onClick={()=>setModal('places')}><MapPin size={16}/><span>{place.name}</span><ChevronDown size={15}/></button><button className="icon-button" aria-label="Impostazioni e strumenti opzionali" onClick={()=>setModal('settings')}><Settings size={20}/></button></div>
+    </header>
+    {!online&&<div className="offline-banner"><WifiOff size={14}/> Offline · immagini già visitate e dati salvati</div>}
+    <main className="shell-main">
+      {tab==='earth'?<div className="earth-layout"><div className="earth-surface">
+        {!ar&&(hydrated?<RenderBoundary><Suspense fallback={loading}><Globe layer={layer} date={scene.date} opacity={scene.opacity} compare={scene.compare} compareDate={scene.compareDate} split={scene.split} place={place} orbit={iss.orbit} showISS={prefs.issEnabled} sunOffset={scene.sunOffset} lighting={scene.lighting} quality={prefs.renderQuality} initialCamera={camera.current} onCameraChange={onCameraChange}/></Suspense></RenderBoundary>:loading)}
+        <button className="floating-layer" aria-label={'Modifica la vista: '+viewName} onClick={()=>openLayers('details')}><Layers size={19}/><span><b>{viewName}</b><small>{playing?'Animazione · ':''}{viewCaption}</small></span><ChevronDown size={16}/></button>
+        <button className="saver-button" onClick={()=>setModal('saver')}><Monitor size={18}/><span>Salvaschermo</span></button>
+        {scene.compare&&layer&&<div className="compare-control"><span>{scene.date}</span><input type="range" min="5" max="95" value={scene.split*100} onChange={e=>setScene(s=>({...s,split:+e.target.value/100}))} aria-label="Posizione del confronto tra le date"/><span>{scene.compareDate}</span></div>}
+        <div className="canvas-hint desktop-only">Trascina per ruotare · scorri per lo zoom</div>
+      </div></div>:<Suspense fallback={loading}>{tab==='sky'?<SkyPanel forecast={iss.forecast} orbit={iss.orbit} busy={iss.busy} error={iss.error} onRefresh={()=>iss.refresh(true)} onImport={iss.importOrbit} onAR={setAR}/>:<NotificationPanel forecast={iss.forecast} prefs={prefs} onPrefs={changePrefs}/>}</Suspense>}
+    </main>
+    <nav className="mobile-nav" aria-label="Navigazione principale">
+      <button className={tab==='earth'?'active':''} aria-current={tab==='earth'?'page':undefined} onClick={()=>go('earth')}><Globe2 size={21}/><span>Terra</span></button>
+      <button className={modal==='layers'?'active':''} onClick={()=>openLayers()}><Layers size={21}/><span>Layer</span></button>
+      {prefs.issEnabled?<><button className={tab==='sky'?'active':''} aria-current={tab==='sky'?'page':undefined} onClick={()=>go('sky')}><Orbit size={21}/><span>ISS</span></button><button className={tab==='alerts'?'active':''} aria-current={tab==='alerts'?'page':undefined} onClick={()=>go('alerts')}><Bell size={21}/><span>Avvisi</span></button></>:<button className={modal==='settings'?'active':''} onClick={()=>setModal('settings')}><Settings size={21}/><span>Strumenti</span></button>}
+    </nav>
+    {modal&&<Modal className={modal==='layers'?'scene-modal':''} title={modal==='places'?'I tuoi luoghi':modal==='layers'?'La tua vista':modal==='saver'?'Salvaschermo':'Il tuo Upari'} onClose={()=>setModal(null)}>
+      {modal==='places'?<PlaceEditor prefs={prefs} onChange={p=>{changePrefs(p);if(p.activePlace!==prefs.activePlace)setModal(null);}}/>:
+       modal==='layers'?<SceneInspector layers={layers} layer={layer} scene={scene} onScene={changeScene} pane={pane} onPane={setPane} onChoose={choose} favorites={favorites} onFavorite={favorite} playing={playing} onPlay={play}/>:
+       modal==='saver'?<SaverLauncher scene={{...scene,camera:camera.current}} place={place} viewName={viewName} onClose={()=>setModal(null)}/>:
+       <SettingsPanel prefs={prefs} onPrefs={changePrefs} onMessage={setToast} install={install} onInstall={async()=>{if(install){await install.prompt();await install.userChoice;setInstall(null);}}}/>}
+    </Modal>}
+    {ar&&prefs.issEnabled&&<Suspense fallback={<div className="ar-screen globe-loading">Preparo il cielo…</div>}><SkyAR pass={ar} onClose={()=>setAR(null)}/></Suspense>}
+    {toast&&<div className="toast" role="status">{toast}<button aria-label="Chiudi messaggio" onClick={()=>setToast('')}><X size={17}/></button></div>}
   </div>;
 }

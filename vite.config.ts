@@ -1,3 +1,3 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-export default defineConfig({ plugins: [react()], build: { chunkSizeWarningLimit: 1700 }, worker: { format: 'es' } });
+export default defineConfig({ plugins: [react()], build: { chunkSizeWarningLimit: 1700, rollupOptions:{input:{app:'index.html',screensaver:'screensaver.html'}} }, worker: { format: 'es' } });

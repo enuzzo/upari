@@ -1,5 +1,15 @@
 # Upari — lavoro svolto
 
+## Revisione 0.2 — qualità, UI/UX e salvaschermo
+
+- Recepite le nuove istruzioni: globo prioritario, ISS opzionale, box AR fisso eliminato, deploy rinviato.
+- Corretta la combinazione DPR/resolutionScale di Cesium e aggiunti budget/profili di rendering. Fotografia Esri come base; NASA come fallback; cache/LOD/antialiasing adattati.
+- Sostituiti rail fisso e terzo inferiore con globo a viewport disponibile e pannelli su richiesta. Separati moduli ISS, AR e avvisi; aggiornamento catalogo differito e deduplicato.
+- Aggiunti conservazione della camera, ingresso `screensaver.html`, link con configurazione validata, rotazione, fullscreen, clock indipendente e meteo facoltativo.
+- Aggiornati service worker e build multi-ingresso. Nessuna nuova dipendenza npm.
+- 28 test superati; TypeScript e build completati. La verifica visuale/device/browser non è stata effettuata perché il controllo browser richiesto non era disponibile.
+- Nessuna pubblicazione o push remoto della 0.2. Il pacchetto identifica il commit locale e comprende la build pronta. Prossimo passo: prova dei flussi documentati e poi deploy quando richiesto.
+
 ## Recupero e decisioni
 
 - Recuperata la conversazione condivisa dall'utente. Il testo rilevante è in `conversazione-recuperata.md`; la specifica precedente è conservata senza riscritture in `Upari_specifica_originale.md`.

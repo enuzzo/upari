@@ -28,7 +28,7 @@ self.addEventListener('fetch', e => {
   if (!allowed || u.pathname.includes('/bridge') || u.pathname.includes('/api/')) return;
   e.respondWith((async () => {
     if (e.request.mode === 'navigate') {
-      try { return await fetch(e.request); } catch { return (await caches.match('/index.html')) || Response.error(); }
+      try { return await fetch(e.request); } catch { return (await caches.match(u.pathname === '/screensaver.html' ? '/screensaver.html' : '/index.html')) || Response.error(); }
     }
     const hit = await caches.match(e.request);
     if (hit) return hit;

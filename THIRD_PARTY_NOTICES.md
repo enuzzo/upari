@@ -11,6 +11,7 @@ Application code is original and MIT licensed. No application code or assets fro
 - DM Sans and Space Grotesk: SIL Open Font License; license files are in `public/fonts`.
 - NASA EOSDIS GIBS / Blue Marble / Black Marble: keep the source/product/date and scientific attribution. NASA imagery does not imply NASA endorsement.
 - CelesTrak orbital data: retain source and epoch; follow the linked usage policy.
-- Esri World Imagery: optional external service with its own imagery contributors/terms, displayed by Cesium’s imagery credit system. Access conditions are separate from the original application’s MIT license.
+- Esri World Imagery: default photographic base with its own imagery contributors/terms, displayed by Cesium’s imagery credit system. NASA Blue Marble is a fallback when the photographic provider cannot initialize. Access conditions are separate from the original application’s MIT license.
+- Open-Meteo: optional external weather data for the screensaver. Source/model attribution is displayed; see https://open-meteo.com/en/docs and https://open-meteo.com/en/terms for service and data conditions.
 
 The selected design concept is a generated UI reference, not a scientific Earth asset and not a rendered screenshot of this implementation.

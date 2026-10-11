@@ -2,7 +2,9 @@
 
 Esplorare la Terra. Ritrovare il cielo.
 
-PWA italiana gratuita e ospitabile come directory statica. Luoghi e preferenze rimangono sul dispositivo. Globo Cesium, dieci prodotti NASA, passaggi ISS calcolati localmente, guida del cielo, avvisi ntfy e bridge Home Assistant facoltativo.
+PWA italiana gratuita e ospitabile come directory statica. Globo con fotografia dettagliata, dieci prodotti NASA e una pagina salvaschermo autonoma. ISS, guida AR e avvisi sono strumenti opzionali, inizialmente spenti. Luoghi e preferenze rimangono sul dispositivo.
+
+Revisione **0.2.0**, preparata senza deploy come richiesto. Il sito pubblicato continua a servire la versione precedente. Leggere il [passaggio UI/UX](docs/UIUX_PASS_02.md).
 
 **Prima di continuare:** leggere [AGENTS.md](AGENTS.md), [stato del lavoro](docs/HANDOFF.md) e [verifiche](docs/VERIFICATION.md). Questa versione non ha ancora una verifica visiva nel browser né prove AR/notifiche su dispositivi reali.
 
@@ -26,12 +28,24 @@ Per modificare il codice, esegui `npm run dev`. Il comando copia prima gli asset
 1. Copia **il contenuto** di `dist/` nella radice web di un dominio HTTPS.
 2. Apri il dominio nel browser.
 3. Controlla il caricamento del globo.
-4. Apri `Cielo`.
-5. Controlla la data delle effemeridi.
+4. Apri `Layer` e prova una vista NASA.
+5. Apri `Salvaschermo` e controlla la pagina separata.
 
 Risultato atteso: Upari funziona senza backend obbligatorio. Fotocamera e sensori richiedono HTTPS, o localhost durante lo sviluppo. La build usa percorsi assoluti: per ospitare sotto una sottodirectory occorre adattare base URL, manifest, service worker e asset Cesium.
 
 Su iPhone: Safari → Share → Add to Home Screen. Anche senza installazione l’app funziona nel browser.
+
+## Salvaschermo — ✈️ STE100
+
+1. Scegli il layer, la data e lo zoom sulla Terra.
+2. Premi `Salvaschermo`.
+3. Scegli se mostrare l'ora e il meteo.
+4. Premi `Apri salvaschermo`.
+5. Nella nuova pagina, premi `Schermo intero` se il browser offre il comando.
+
+Risultato atteso: `screensaver.html` mostra la vista scelta, con rotazione lenta. La pagina funziona anche se chiudi la scheda principale. Tocca o muovi il puntatore per mostrare i controlli. Le opzioni sono salvate nell'indirizzo della pagina; puoi copiarlo e riaprirlo sullo stesso hosting. Il meteo viene richiesto a Open-Meteo solo quando attivato.
+
+Per usare ISS, apri `Strumenti` o le impostazioni e attiva `ISS e osservazione`. Compaiono `ISS` e `Avvisi`. Il comando AR si trova nella sezione ISS, per un passaggio calcolato.
 
 ## Verifiche
 
@@ -41,7 +55,7 @@ npm run test
 npm run build
 ```
 
-I test coprono SGP4, finestre osservabili, Sole/ombra, proiezione del cielo, filtri/coda notifiche, fallimenti parziali e scheduler persistente. Gli invii sono simulati; non sono state mandate notifiche all’utente o a terzi.
+I 28 test coprono SGP4, Sole/ombra, proiezione del cielo, notifiche/bridge, budget del rendering, migrazione delle preferenze, salvataggio delle viste e validazione dei dati meteo. Gli invii sono simulati; non sono state mandate notifiche all’utente o a terzi. La resa visiva e il flusso salvaschermo richiedono ancora una prova nel browser.
 
 ## Struttura
 
@@ -51,6 +65,7 @@ I test coprono SGP4, finestre osservabili, Sole/ombra, proiezione del cielo, fil
 - `bridge/`: scheduler personale Node per Home Assistant; zero dipendenze npm aggiuntive.
 - `docs/`: specifica originale, conversazione recuperata, concept scelto, metodo, verifiche e stato.
 - `dist/`: build statica pronta, con asset Cesium.
+- `screensaver.html`: secondo ingresso della build; non dipende dalla scheda principale.
 - `upari-history.bundle`: storia Git trasportabile, quando presente nella consegna.
 
 ## Bridge Home Assistant — ✈️ STE100

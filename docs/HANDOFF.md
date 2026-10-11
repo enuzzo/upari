@@ -1,9 +1,11 @@
-# Upari — passaggio locale 0.3.0
+# Upari — passaggio locale 0.4.0
 
-Continuazione dello ZIP originale, base Git `ab609bb`, implementazione locale `96c26f4`. Palette nera/turchese e gerarchia approvate conservate: Terra dominante, pannelli su richiesta, ISS inizialmente spenta. **Nessun push o deploy**, per istruzione dell'utente. ZIP, bundle e DELIVERY originali rimangono invariati; documentano 0.2.0, non questa revisione.
+Continuazione dello ZIP originale, base Git `ab609bb`, implementazioni locali `96c26f4` (0.3) e `bf85a66` (0.4). Palette nera/turchese e gerarchia approvate conservate: Terra dominante, pannelli su richiesta, ISS inizialmente spenta. **Nessun push o deploy**, per istruzione dell'utente. ZIP, bundle e DELIVERY originali rimangono invariati; documentano 0.2.0, non questa revisione.
 
-| Ambito | Stato 0.3.0 |
+| Ambito | Stato corrente |
 |---|---|
+| Qualità Terra | NASA orbitale ↔ Esri territoriale, atmosfera per frammento Auto/Alta, notte con luci NASA 2016; illuminazione attenuata nel dettaglio. Nessuna nuvola inventata |
+| Stili | Naturale + Cartoon/Cel/Pixel/Voxel/ASCII/Incisione, intensità regolabile, backup e salvaschermo. Voxel grafico 2D. Palette scientifiche protette in Naturale, anche durante caricamento/fallimento/dissolvenza; avviso negli altri stili |
 | Date dei layer | Fonte/data UTC del fotogramma effettivo sempre visibili; due date nel confronto e salvaschermo; Black Marble 2016, Esri e SWISSIMAGE mosaici con anni variabili |
 | Playback | Ultime 7 date valide, almeno 1,2 s dopo il commit visibile; conserva il precedente fino al caricamento, pre-carica un solo frame Cesium, dissolve in 320 ms senza schiarire la base; pausa su errori/background, movimento ridotto |
 | Venti/correnti | Due pacchetti reali NOAA: ASCAT 10 ottobre 2026, OSCAR storico 26 settembre 2014; griglia 2°, celle assenti mascherate, advezione WGS84, un solo motore Cesium |
@@ -15,7 +17,7 @@ Continuazione dello ZIP originale, base Git `ab609bb`, implementazione locale `9
 | Backup | v2: preferenze/orizzonti, scena/camera, preferiti, diario, orbite. v1 ancora accettato; whitelist, transazione atomica, 8 MiB; epoche non ringiovanite. Import applica scena e preferenze insieme e ricarica l'orbita attiva |
 | Canali | ntfy; bridge personale HA/Gotify/webhook. Segreti server, coda persistente e deduplica. Invio ntfy incerto conservato prima del POST, retry bloccato |
 | Offline | Shell di entrambe le pagine, moduli/font/Cesium/vettori; stato cache visibile, aggiornamento in attesa segnalato; tile pubbliche 48 MiB / 120 elementi, Swiss allowlisted |
-| Verifica | 79 test JS/TS, 6 prove convertitore Python (NetCDF3+4), riferimenti Skyfield/JPL estesi, HTTP loopback e browser mobile/desktop; dettagli in VERIFICATION.md |
+| Verifica | 82 test JS/TS, 6 prove convertitore Python (NetCDF3+4), riferimenti Skyfield/JPL estesi, HTTP loopback e browser mobile/desktop; dettagli in VERIFICATION.md |
 
 ## Limiti che rimangono
 
@@ -26,6 +28,12 @@ Continuazione dello ZIP originale, base Git `ab609bb`, implementazione locale `9
 - Astronomia: stessi OMM della distribuzione 11 ottobre 2026, 13 casi / 12 finestre su due date iniziali. Non verifica tutte le epoche/stagioni né rifrazione/meteo o osservazioni reali. Dopo 7 giorni le orbite vengono rifiutate; avvisi entro 48 h.
 - Rendering: Cesium è circa 4,25 MB minificati / 1,14 MB gzip, warning build noto. Le scie possono essere corte a scala planetaria. Transizioni misurate nel browser locale non certificano prestazioni del telefono.
 - Provider regionali nuovi: configurabili, ma condizioni/CORS/precisione devono essere verificati; non entrano automaticamente nella cache allowlisted. WMS/terreno/edifici richiedono adattatori successivi.
+
+## Ripresa visiva 0.4
+
+Apri la vista corrente → “Un altro modo di guardare”. La reference iniziale era `kedube/ha-iss-tracker`; sono stati consultati solo README e screenshot pubblici, nessun sorgente applicativo. Confronto e scelte in `EARTH_STYLES.md`. Browser compilato provato su desktop e 390×844, tutti gli stili esaminati nello sviluppo, Voxel/ASCII anche in salvaschermo. Corretto e riprovato il dettaglio notturno a 12 km. Le prove reali di telefono/canali/PWA sopra restano aperte.
+
+Prompt di ripresa: “Leggi AGENTS.md, HANDOFF.md, VERIFICATION.md ed EARTH_STYLES.md. Continua da 0.4.0 mantenendo la qualità orbitale e il dettaglio leggibile. Verifica iPhone/Android se disponibili e annota le prestazioni effettive. Nessun deploy e nessun invio sui miei canali senza richiesta.”
 
 ## Ripresa
 

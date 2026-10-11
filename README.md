@@ -4,9 +4,16 @@ Esplorare la Terra. Ritrovare il cielo.
 
 PWA italiana gratuita e ospitabile come directory statica. Globo con fotografia dettagliata, dieci prodotti NASA, SWISSIMAGE e una pagina salvaschermo autonoma. ISS, guida AR e avvisi sono strumenti opzionali, inizialmente spenti. Luoghi, orizzonti, diario e preferenze rimangono sul dispositivo.
 
-Revisione **0.3.0**, preparata senza deploy come richiesto. Lo stato del sito pubblicato non è stato verificato in questa sessione. Leggere il [passaggio UI/UX](docs/UIUX_PASS_02.md).
+Revisione **0.4.0**, preparata senza deploy come richiesto. Lo stato del sito pubblicato non è stato verificato in questa sessione. Leggere il [passaggio UI/UX](docs/UIUX_PASS_02.md).
 
 **Prima di continuare:** leggere [AGENTS.md](AGENTS.md), [stato del lavoro](docs/HANDOFF.md) e [verifiche](docs/VERIFICATION.md). La verifica nel browser è stata eseguita su mobile e desktop; le prove AR e notifiche su dispositivi e servizi reali restano aperte.
+
+## Qualità visiva 0.4
+
+- Vista Naturale: base NASA dallo spazio, dettaglio Esri avvicinandosi, atmosfera e transizione giorno/notte, luci reali del composito NASA 2016. Nel dettaglio l'illuminazione si attenua per leggere le fotografie.
+- Apri la vista corrente → **Un altro modo di guardare**: Naturale, Cartoon, Cel shading, Pixel art, Voxel, ASCII e Incisione. Intensità regolabile; stile conservato nelle viste, nei backup e nel salvaschermo.
+- Voxel è un effetto grafico 2D a cubi isometrici. Naturale conserva le palette scientifiche; gli altri stili segnalano i colori modificati. Stelle decorative, senza funzione astronomica.
+- [Metodo e limiti del rendering](docs/EARTH_STYLES.md). Nessun deploy. Prestazioni su telefono reale ancora da misurare.
 
 ## Nuove funzioni 0.3
 

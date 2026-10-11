@@ -1,3 +1,36 @@
+# Upari — verifiche locali 0.4.0
+
+11 ottobre 2026. Codice locale `bf85a66`, base precedente `96c26f4`. **Nessun push o deploy.** Questa sezione è lo stato corrente; le verifiche 0.3/0.2 sotto sono storiche.
+
+## Gate
+
+- TypeScript (`npm run check` e `tsc -b` della build), build di produzione e sintassi SW superati.
+- **82 test in 31 file**, compresi HTTP reale loopback, riferimenti astronomici, buffer e i tre nuovi casi di stili/persistenza/migrazione/palette. Il primo tentativo sandbox ha negato `listen` HTTP; ripetuto con permesso di loopback, senza modificare test/assert.
+- Revisione indipendente: rilevato e corretto P2 grading del vecchio raster scientifico durante cambio verso foto; 12 test mirati verdi. Nessun altro rilievo concreto su lifecycle/persistenza.
+- Nessuna nuova dipendenza npm. Gli ambienti scientifici Python e le sei prove 0.3 non cambiano in questa revisione.
+- Shell offline: **377 route/file**, **12.658.980 byte**; SHA-256 dell'elenco ordinato `JSON.stringify(await offlineFiles())`: `bfc2d328988b04cb742c4d937281a824cd7e10e07f1b79df582dcc853aefff26`. Questo checksum riguarda il manifest, non gli asset. Chunk Cesium/globo 4.256,11 kB / 1.145,89 kB gzip: warning di dimensione noto.
+
+## Browser e immagini
+
+Browser interno su questo Mac, sviluppo 4174 e build finale 4175 separati dai dati dell'utente 4173. Riferimento solo README/screenshot pubblici di ha-iss-tracker; nessun sorgente copiato. Metodo in EARTH_STYLES.md.
+
+- Esaminati i sette stili sulla Terra reale; nessun errore/warning WebGL nella QA. Interfaccia non filtrata.
+- Build: Naturale notte, anteprima Sole −6 h esplicitamente indicata, zoom out e ritorno a 12 km, ASCII e Voxel. Asset finale verificato nel DOM: `/assets/app-CC24NZF_.js`.
+- Individuata regressione di dettaglio notturno troppo buio; risolta includendo il raggio nelle distanze native Cesium. Riprovata la foto Esri a 12 km con Sole all'ora reale, ora leggibile. Il mosaico conserva le sue discontinuità reali.
+- Scene reload conserva ASCII, intensità via tastiera Home/End 0/100%; controlli persistiti e roundtrip backup/link coperti anche automaticamente.
+- Oceani termici reali: data 10/10/2026, legenda ufficiale e warning con Voxel/Cel. Naturale rimuove l'avviso artistico. Playback conservato: un campione locale 10 aggiornamenti, 302 ms, massimo intervallo 38 ms; nominale 320 ms, nessuna interpolazione dei valori. Campione limitato, non certificazione 60 fps.
+- Salvaschermo: Voxel dal link esatto, orologio reale e stile nel caption; cambio ASCII nelle opzioni aggiorna il link. Controlli riattivati con un tocco.
+- 390×844: pannello stili in tre colonne, legenda e data termica, warning scientifico, Naturale e salvaschermo ASCII. Nessun overflow orizzontale HTML (`scrollWidth=clientWidth=390`). Viewport temporaneo ripristinato.
+- Scheda dell'utente ricaricata sulla build, scena aerosol 10/10 conservata, ISS spenta. Anteprima fotografica separata lasciata disponibile.
+
+Screenshot reali temporanei in `/private/tmp/upari-qa/`: `04-natural-orbit.png` (Sole −6 h), `04-natural-night.png`, `04-natural-zoomout.png`, `04-ascii.png`, `04-voxel.png`, `04-saver-voxel.png`, `04-saver-mobile-ascii.png`, `04-mobile-styles.png`, `04-mobile-natural.png`, `04-detail-final.png`. `04-mobile-detail.png` documenta la regressione precedente e **non** è l'esito finale. I file temporanei non sono parte della distribuzione e possono essere rimossi dal sistema.
+
+## Prove ancora necessarie
+
+Telefono reale: DPR 2/3, fluidità/consumo/memoria dei sette shader, gesti, sospensione e ripresa prolungata; fotocamera/bussola e AR. PWA installata: aggiornamento tra versioni, offline reale e fullscreen. Canali dell'utente: consegna/cancellazione con pagina chiusa, telefono bloccato e restart bridge. OSCAR v2 operativo: file reale autorizzato ancora mancante. Nessun invio live, misura hardware o accettazione visiva dell'utente dichiarata effettuata. Gli altri limiti scientifici/dati della 0.3 restano applicabili.
+
+---
+
 # Upari — verifiche locali 0.3.0
 
 11 ottobre 2026. Base Git `ab609bb`; implementazione locale `96c26f4`, versione corrente 0.3.0. **Nessun push o deploy.** Questa sezione è lo stato corrente; la 0.2.1 conservata sotto descrive controlli storici, con numeri e limiti dell'epoca.

@@ -1,5 +1,10 @@
 # Design lock
 
+## Revision 0.4 — Earth quality and optional styles
+
+The user requested richer orbital Earth and optional visual shaders, while keeping Natural as the default. Original single-pass effects retain the existing Cesium renderer, black/turquoise navigation and planet-first hierarchy. NASA orbital base blends into Esri detail, solar shading remains tied to the current clock (explicitly labelled when previewing a time offset), and city lights come from the real 2016 mosaic. A subtle procedural starfield is decorative. Scientific Natural palettes are protected even while an older frame remains visible. Styles only affect the globe canvas; interface stays sharp. Voxel is explicitly a 2D isometric rendering effect. See `EARTH_STYLES.md` and the current `VERIFICATION.md`; old pending screenshot statements below are historical.
+
+
 ## Revision 0.2 — latest user instructions
 
 The 11 October 2026 feedback supersedes the concept's permanent pass/AR strip and fixed desktop rail. Preserve the black/turquoise system and prominent planet; Earth now fills the viewport between minimal header/navigation. ISS is opt-in, initially off. Layer controls are an on-demand side panel on desktop and bottom sheet on mobile. A compact view selector and Screensaver action sit over the globe. No permanent AR CTA on Earth.

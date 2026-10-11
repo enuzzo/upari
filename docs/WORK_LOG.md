@@ -71,3 +71,15 @@ Il progetto è una versione 0.1 concreta. La specifica più ampia non è interam
 - **Nessun push o deploy.** Restano telefono AR/performance, PWA installata/offline/fullscreen e canali propri. Non ci sono notifiche live o osservazioni fisiche inventate. ZIP/bundle/DELIVERY originali preservati; leggere `HANDOFF.md` per la ripresa.
 
 Implementazione 0.3.0 salvata nel commit locale `96c26f4`; documentazione e resoconto finale nel commit successivo. Build finale ricaricata, console senza errori/warning, scena dell’utente ripristinata.
+
+
+## 11 ottobre 2026 — qualità Terra 0.4.0
+
+- Nuova richiesta: massima cura soprattutto della vista Naturale in zoom out, e shader alternativi. Reference recuperata: kedube/ha-iss-tracker; consultati solo README/screenshot pubblici e documentazione primaria Cesium. Nessun codice del riferimento, nuovo motore o dipendenza.
+- Implementazione locale `bf85a66`: base NASA orbitale ↔ Esri nel dettaglio, atmosfera per frammento, notte con composito NASA 2016 e rinforzo caldo dei pixel luminosi reali, bordo atmosferico e stelle decorative. Nel dettaglio la luce si attenua per consultare le foto.
+- Naturale, Cartoon, Cel shading, Pixel art, Voxel (2D isometrico), ASCII con glifi originali e Incisione. Intensità regolabile; persistenza scena, backup v2 e salvaschermo. Interfaccia e date intatte.
+- P2 dalla revisione indipendente chiuso: il grading Naturale ora protegge anche i raster scientifici trattenuti durante un cambio foto, una dissolvenza o un errore. Avviso artistico sul frame effettivamente visibile. Test dedicato.
+- QA ha trovato lo zoom notturno troppo scuro: Cesium usa distanza dal centro, non quota. Corretta conversione con raggio WGS84; riprovato a 12 km nella build finale, fotografia leggibile. Fonte/mosaici reali conservati.
+- Gate finali: TypeScript/build/SW; 82 test in 31 file, incluso HTTP loopback; revisione 12 test mirati verdi. Browser desktop + 390×844, sette stili in sviluppo, Naturale/ASCII/Voxel compilati, salvaschermo e reload. Un campione play termico: 10 aggiornamenti in 302 ms, max gap 38 ms, senza promettere 60 fps.
+- Prove e limiti in VERIFICATION.md/EARTH_STYLES.md. Shell 377 file/route, 12.658.980 byte. Scena originale aerosol dell'utente conservata e ISS off; anteprima 4175 separata.
+- Nessun deploy/push o invio sui canali. Restano performance/AR su telefono reale, PWA installata e canali propri; voxel geometrico e fonti operative aggiuntive non sono dichiarati implementati.

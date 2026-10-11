@@ -1,9 +1,10 @@
+import type {EarthStyle} from "./lib/earth-style";
 import type { OMMJsonObject } from 'satellite.js';
 export type Place = { id: string; name: string; latitude: number; longitude: number; height: number; horizon?:number[] };
 export type RenderQuality = 'auto'|'high'|'battery';
 export type Preferences = { activePlace: string; places: Place[]; theme: 'night'|'atlas'|'red'; minElevation: number; leadMinutes: number; quietFrom: number; quietUntil: number; maxDaily: number; issEnabled: boolean; renderQuality: RenderQuality; satelliteId?:number };
 export type CameraView = { longitude: number; latitude: number; height: number; heading: number; pitch: number; roll: number };
-export type SceneState = { layerKey: string; date: string; opacity: number; compare: boolean; compareDate: string; split: number; sunOffset: number; lighting: boolean; camera: CameraView; vectorKey?:"none"|"wind"|"currents";vectorMotion?:boolean };
+export type SceneState = { layerKey: string; date: string; opacity: number; compare: boolean; compareDate: string; split: number; sunOffset: number; lighting: boolean; camera: CameraView; vectorKey?:"none"|"wind"|"currents";vectorMotion?:boolean;visualStyle?:EarthStyle;visualStrength?:number };
 export type SaverConfig = { version: 1; scene: SceneState; place: Place; showClock: boolean; showWeather: boolean; rotationSpeed: number };
 export type OrbitData = { omm: OMMJsonObject; epoch: string; fetched: string; source: string };
 export type SkyPoint = { time: number; azimuth: number; elevation: number; latitude: number; longitude: number; altitude: number; sunElevation: number; sunlit: boolean };

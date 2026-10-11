@@ -1,3 +1,5 @@
+import {earthStyleName} from './lib/earth-style';
+import StyleControls from './components/StyleControls';
 import { lazy,Suspense,useEffect,useRef,useState } from 'react';
 import { ArrowLeft,Maximize,Minimize,Pause,Play,Settings,Wind,CloudSun,X } from 'lucide-react';
 import type { VectorField } from './lib/vectors';
@@ -60,7 +62,7 @@ export default function Screensaver(){
   const update=(changes:Partial<SaverConfig>)=>setConfig(c=>c?{...c,...changes}:c);
   const canFullscreen=!!document.documentElement.requestFullscreen&&document.fullscreenEnabled;
   return <main className={'screensaver-shell '+(visible?'controls-visible':'controls-hidden')} onPointerMove={wake} onPointerDown={wake}>
-    <RenderBoundary><Suspense fallback={<div className="globe-loading">Preparo il pianeta…</div>}><Globe onVectorChange={setField} vectorKey={s.vectorKey} vectorMotion={s.vectorMotion} layer={layer} date={s.date} opacity={s.opacity} compare={s.compare} compareDate={s.compareDate} split={s.split} place={config.place} sunOffset={s.sunOffset} lighting={s.lighting} quality="high" initialCamera={s.camera} autoRotate={rotating} rotationSpeed={config.rotationSpeed} hideTools/></Suspense></RenderBoundary>
+    <RenderBoundary><Suspense fallback={<div className="globe-loading">Preparo il pianeta…</div>}><Globe onVectorChange={setField} vectorKey={s.vectorKey} vectorMotion={s.vectorMotion} visualStyle={s.visualStyle} visualStrength={s.visualStrength} layer={layer} date={s.date} opacity={s.opacity} compare={s.compare} compareDate={s.compareDate} split={s.split} place={config.place} sunOffset={s.sunOffset} lighting={s.lighting} quality="high" initialCamera={s.camera} autoRotate={rotating} rotationSpeed={config.rotationSpeed} hideTools/></Suspense></RenderBoundary>
     <div className="saver-toolbar" onFocusCapture={()=>{focused.current=true;wake();}} onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget as Node)){focused.current=false;wake();}}}>
       <a href="/" className="saver-return" aria-label="Torna a Upari"><ArrowLeft size={17}/> upari</a>
       <div className="saver-actions">
@@ -70,11 +72,12 @@ export default function Screensaver(){
       </div>
     </div>
     {(config.showClock||config.showWeather)&&<div className="ambient-information">{config.showClock&&<Clock/>}{config.showWeather&&<WeatherReading place={config.place}/>}</div>}
-    <div className="saver-view-caption">{layer?layer.name+' · '+(layer.source??'NASA')+' · '+dataDateLabel(layer,s.date,s.compare?s.compareDate:undefined):'Fotografia satellitare · Esri'}{field?' · '+field.source+' · dati '+field.time.slice(0,10):''}{s.sunOffset?' · Sole '+(s.sunOffset>0?'+':'')+s.sunOffset+' h':''}</div>
+    <div className="saver-view-caption">{layer?layer.name+' · '+(layer.source??'NASA')+' · '+dataDateLabel(layer,s.date,s.compare?s.compareDate:undefined):'Fotografia satellitare · NASA / Esri · mosaici, date variabili'+(s.lighting?' · luci NASA 2016':'')}{field?' · '+field.source+' · dati '+field.time.slice(0,10):''}{s.visualStyle&&s.visualStyle!=='natural'?' · stile '+earthStyleName(s.visualStyle)+(layer&&!layer.regional?' · colori rielaborati':''):''}{s.sunOffset?' · Sole '+(s.sunOffset>0?'+':'')+s.sunOffset+' h':''}</div>
     {settings&&<Modal title="Il tuo salvaschermo" onClose={()=>{setSettings(false);wake();}}>
       <label className="toggle-row"><span>Ora corrente</span><input type="checkbox" checked={config.showClock} onChange={e=>update({showClock:e.target.checked})}/></label>
       <label className="toggle-row"><span>Meteo di {config.place.name}<small>Stima Open-Meteo; usa le coordinate del luogo</small></span><input type="checkbox" checked={config.showWeather} onChange={e=>update({showWeather:e.target.checked})}/></label>
       <label className="range-label">Rotazione <strong>{config.rotationSpeed.toFixed(2)}°/s</strong><input type="range" aria-label="Velocità di rotazione" min=".05" max=".8" step=".05" value={config.rotationSpeed} onChange={e=>update({rotationSpeed:+e.target.value})}/></label>
+      <StyleControls scene={s} onScene={changes=>update({scene:{...s,...changes}})} scientific={!!layer&&!layer.regional}/>
       <p className="footnote">I controlli scompaiono dopo pochi secondi. Tocca la pagina o premi un tasto per ritrovarli. Il mondo rispetta la preferenza di movimento ridotto del dispositivo.</p>
       <button className="secondary" onClick={async()=>{try{await navigator.clipboard.writeText(location.href);setMessage('Link della vista copiato.');}catch{setMessage('Copia l’indirizzo dalla barra del browser.');}}}>Copia link della vista</button>
     </Modal>}

@@ -1,3 +1,5 @@
+import {earthShader} from '../lib/earth-shader';
+import {earthStyles,spaceBlend,naturalGradeAllowed,type EarthStyle} from '../lib/earth-style';
 import { memo,useEffect,useRef,useState } from 'react';
 import * as C from 'cesium';
 import 'cesium/Build/Cesium/Widgets/widgets.css';
@@ -5,13 +7,13 @@ import { Crosshair,Plus,Minus,Globe2,RefreshCw,ScanLine } from 'lucide-react';
 import type { Layer,Place,OrbitData,RenderQuality,CameraView } from '../types';
 import { validateField,type VectorField } from '../lib/vectors';
 import { vectorRenderer } from '../lib/vector-renderer';
-import { tileURL } from '../lib/layers';
+import { initialLayers,tileURL } from '../lib/layers';
 import { renderProfile } from '../lib/render-quality';
 import { initialCamera } from '../lib/scene';
 import { ImageryBuffer,type FrameSpec } from '../lib/imagery-buffer';
 import { removeGlobeEntities } from '../lib/globe-lifecycle';
 
-type Props={layer:Layer|null;date:string;opacity:number;compare:boolean;compareDate:string;split:number;place:Place;orbit?:OrbitData|null;showISS?:boolean;sunOffset:number;lighting:boolean;quality:RenderQuality;initialCamera?:CameraView;onCameraChange?:(view:CameraView)=>void;autoRotate?:boolean;rotationSpeed?:number;hideTools?:boolean;preloadDate?:string;onLoadingChange?:(loading:boolean)=>void;onImageryError?:(message:string)=>void;onFrameChange?:(frame:FrameSpec|undefined,transition?:FrameSpec)=>void;vectorKey?:"none"|"wind"|"currents";vectorMotion?:boolean;onVectorChange?:(field:VectorField|null)=>void};
+type Props={layer:Layer|null;date:string;opacity:number;compare:boolean;compareDate:string;split:number;place:Place;orbit?:OrbitData|null;showISS?:boolean;sunOffset:number;lighting:boolean;quality:RenderQuality;initialCamera?:CameraView;onCameraChange?:(view:CameraView)=>void;autoRotate?:boolean;rotationSpeed?:number;hideTools?:boolean;preloadDate?:string;onLoadingChange?:(loading:boolean)=>void;onImageryError?:(message:string)=>void;onFrameChange?:(frame:FrameSpec|undefined,transition?:FrameSpec)=>void;vectorKey?:"none"|"wind"|"currents";vectorMotion?:boolean;onVectorChange?:(field:VectorField|null)=>void;visualStyle?:EarthStyle;visualStrength?:number};
 function provider(layer:Layer,date:string){return new C.UrlTemplateImageryProvider({url:tileURL(layer,date),tilingScheme:new C.WebMercatorTilingScheme(),tileWidth:256,tileHeight:256,maximumLevel:layer.maxLevel,rectangle:layer.coverage?C.Rectangle.fromDegrees(...layer.coverage):undefined,credit:new C.Credit(layer.source??('NASA EOSDIS GIBS · '+layer.id))});}
 function addImagery(viewer:C.Viewer,source:C.ImageryProvider,index?:number){
   const layer=new C.ImageryLayer(source,{maximumAnisotropy:8,minificationFilter:C.TextureMinificationFilter.LINEAR,magnificationFilter:C.TextureMagnificationFilter.LINEAR});
@@ -19,7 +21,7 @@ function addImagery(viewer:C.Viewer,source:C.ImageryProvider,index?:number){
 }
 function Globe(p:Props){
   const node=useRef<HTMLDivElement>(null),viewer=useRef<C.Viewer|null>(null),buffer=useRef<ImageryBuffer<C.ImageryLayer[]>|null>(null),wakeBuffer=useRef<()=>void>(()=>{}),latest=useRef(p);latest.current=p;
-  const [ready,setReady]=useState(false),[error,setError]=useState(''),[loading,setLoading]=useState(false),[tileError,setTileError]=useState(''),[baseError,setBaseError]=useState(''),[rotating,setRotating]=useState(p.autoRotate??false);
+  const [ready,setReady]=useState(false),[error,setError]=useState(''),[loading,setLoading]=useState(false),[tileError,setTileError]=useState(''),[baseError,setBaseError]=useState(''),[styleError,setStyleError]=useState(''),[rotating,setRotating]=useState(p.autoRotate??false);
   useEffect(()=>{
     (window as unknown as {CESIUM_BASE_URL:string}).CESIUM_BASE_URL='/cesium/';
     let v:C.Viewer|null=null,gone=false;const off:(()=>void)[]=[];
@@ -29,11 +31,20 @@ function Globe(p:Props){
       v.scene.backgroundColor=C.Color.TRANSPARENT;
       v.scene.globe.baseColor=C.Color.fromCssColorString('#173249');
       v.scene.globe.dynamicAtmosphereLighting=true;v.scene.globe.dynamicAtmosphereLightingFromSun=true;v.scene.globe.showGroundAtmosphere=true;
+      if(v.scene.skyAtmosphere){v.scene.skyAtmosphere.perFragmentAtmosphere=p.quality!=='battery';v.scene.skyAtmosphere.atmosphereLightIntensity=42;v.scene.skyAtmosphere.saturationShift=.08;}
+      // Cesium measures these from Earth's centre, unlike positionCartographic.height.
+      const radius=C.Ellipsoid.WGS84.maximumRadius;
+      v.scene.globe.lightingFadeOutDistance=radius+150000;v.scene.globe.lightingFadeInDistance=radius+1500000;
+      v.scene.globe.nightFadeOutDistance=radius+150000;v.scene.globe.nightFadeInDistance=radius+1500000;
       v.scene.globe.preloadAncestors=true;v.scene.globe.preloadSiblings=false;
       v.scene.screenSpaceCameraController.minimumZoomDistance=200;v.scene.screenSpaceCameraController.maximumZoomDistance=30000000;
       v.clock.shouldAnimate=false;
       const fallback=new C.UrlTemplateImageryProvider({url:'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_ShadedRelief_Bathymetry/default/default/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpeg',tilingScheme:new C.WebMercatorTilingScheme(),maximumLevel:8,credit:'NASA Blue Marble · base di riserva'});
-      const fallbackLayer=addImagery(v,fallback);
+      addImagery(v,fallback);let aerial:C.ImageryLayer|undefined;
+      const nightLayer=initialLayers.find(layer=>layer.key==='night')!;const night=provider(nightLayer,nightLayer.date);
+      const lights=addImagery(v,night);lights.dayAlpha=0;lights.nightAlpha=1;lights.brightness=3.0;lights.gamma=2.0;lights.alpha=0;lights.show=false;
+      const updateBase=()=>{if(!v||v.isDestroyed())return;const far=spaceBlend(v.camera.positionCartographic.height);if(aerial)aerial.alpha=1-far;lights.alpha=!latest.current.layer&&latest.current.lighting?far:0;lights.show=lights.alpha>0;};
+      off.push(v.scene.preRender.addEventListener(updateBase));
       const camera=p.initialCamera??initialCamera;
       v.camera.setView({destination:C.Cartesian3.fromDegrees(camera.longitude,camera.latitude,camera.height),orientation:{heading:camera.heading,pitch:camera.pitch,roll:camera.roll}});
       off.push(v.scene.globe.tileLoadProgressEvent.addEventListener((count:number)=>{setLoading(count>0);}));
@@ -44,8 +55,7 @@ function Globe(p:Props){
       }));
       C.ArcGisMapServerImageryProvider.fromUrl('https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',{enablePickFeatures:false}).then(source=>{
         if(gone||!v||v.isDestroyed())return;
-        addImagery(v,source,1);
-        v.imageryLayers.remove(fallbackLayer,true);
+        aerial=addImagery(v,source,1);updateBase();
         off.push(source.errorEvent.addEventListener(()=>setBaseError('Alcune immagini fotografiche non sono disponibili.')));
         v.scene.requestRender();
       }).catch(()=>{if(!gone)setBaseError('Fotografia non disponibile · base NASA di riserva.');});
@@ -72,6 +82,7 @@ function Globe(p:Props){
     const resize=()=>{
       const element=node.current;if(stopped||!element||v.isDestroyed())return;
       const box=element.getBoundingClientRect(),profile=renderProfile(box.width,box.height,window.devicePixelRatio,p.quality);
+      if(v.scene.skyAtmosphere)v.scene.skyAtmosphere.perFragmentAtmosphere=p.quality!=='battery';
       v.resolutionScale=profile.resolutionScale;v.scene.globe.maximumScreenSpaceError=profile.screenSpaceError;v.scene.globe.tileCacheSize=profile.cacheSize;v.scene.msaaSamples=profile.msaaSamples;
       v.scene.postProcessStages.fxaa.enabled=profile.effectiveRatio<1.5;v.targetFrameRate=p.hideTools||p.quality==='battery'?30:60;
       v.resize();v.scene.requestRender();
@@ -79,6 +90,28 @@ function Globe(p:Props){
     const observer=new ResizeObserver(resize);observer.observe(node.current);window.addEventListener('resize',resize);resize();
     return()=>{stopped=true;observer.disconnect();window.removeEventListener('resize',resize);};
   },[ready,p.quality,p.hideTools]);
+  useEffect(()=>{
+    const v=viewer.current;if(!ready||!v)return;
+    setStyleError('');let stage:C.PostProcessStage|undefined,stopped=false;
+    try{
+      stage=new C.PostProcessStage({name:'upari-earth-style',fragmentShader:earthShader,uniforms:{
+        style:()=>Math.max(0,earthStyles.findIndex(s=>s.key===(latest.current.visualStyle??'natural'))),
+        strength:()=>latest.current.visualStrength??1,spaceAmount:()=>spaceBlend(v.camera.positionCartographic.height),
+        photographic:()=>{const key=buffer.current?.displaying?.key.split('|')[0];const shown=key?(initialLayers.find(l=>l.key===key)??{regional:false}):null;return naturalGradeAllowed(latest.current.layer,shown)?1:0;},
+        solarLighting:()=>latest.current.lighting||latest.current.layer?.key==='night'?1:0,
+        pixelRatio:()=>v.scene.drawingBufferWidth/Math.max(1,node.current?.clientWidth??v.scene.drawingBufferWidth)
+      }});v.scene.postProcessStages.add(stage);
+      node.current?.setAttribute('data-earth-style',p.visualStyle??'natural');v.scene.requestRender();
+    }catch{setStyleError('Effetto non disponibile · vista naturale.');}
+    const off=v.scene.renderError.addEventListener((_scene:C.Scene,error:unknown)=>{
+      if(stopped||!stage||!/shader|fragment|compile|program/i.test(String(error)))return;
+      if(!v.isDestroyed())v.scene.postProcessStages.remove(stage);stage=undefined;
+      node.current?.setAttribute('data-earth-style','fallback-natural');setStyleError('Effetto non disponibile · vista naturale.');
+      queueMicrotask(()=>{if(!stopped&&!v.isDestroyed()){v.useDefaultRenderLoop=!document.hidden;v.scene.requestRender();}});
+    });
+    return()=>{stopped=true;off();if(stage&&!v.isDestroyed())v.scene.postProcessStages.remove(stage);};
+  },[ready,p.visualStyle]);
+  useEffect(()=>{const v=viewer.current;if(ready&&v&&!v.isDestroyed())v.scene.requestRender();},[ready,p.visualStrength]);
   useEffect(()=>{
     const v=viewer.current;if(!ready||!v)return;
     let timer:ReturnType<typeof setTimeout>|undefined,previous=performance.now(),settles=0,transitionStart=0,transitionFrames=0,transitionGap=0;
@@ -180,7 +213,7 @@ function Globe(p:Props){
       <button aria-label="Vista pianeta" title="Vista pianeta" onClick={()=>flight(initialCamera)}><Globe2 size={20}/></button>
       <button aria-label={rotating?'Ferma rotazione':'Ruota lentamente'} title={rotating?'Ferma rotazione':'Ruota lentamente'} aria-pressed={rotating} className={rotating?'selected':''} onClick={()=>setRotating(!rotating)}><RefreshCw size={19}/></button>
     </div>}
-    {(loading||tileError||baseError)&&<div className="globe-status" role="status">{tileError||baseError||<><ScanLine size={14}/> Caricamento immagini</>}</div>}
+    {(loading||tileError||baseError||styleError)&&<div className="globe-status" role="status">{styleError||tileError||baseError||<><ScanLine size={14}/> Caricamento immagini</>}</div>}
   </div>;
 }
 export default memo(Globe);

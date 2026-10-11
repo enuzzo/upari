@@ -4,9 +4,9 @@ Esplorare la Terra. Ritrovare il cielo.
 
 PWA italiana gratuita e ospitabile come directory statica. Globo con fotografia dettagliata, dieci prodotti NASA e una pagina salvaschermo autonoma. ISS, guida AR e avvisi sono strumenti opzionali, inizialmente spenti. Luoghi e preferenze rimangono sul dispositivo.
 
-Revisione **0.2.0**, preparata senza deploy come richiesto. Il sito pubblicato continua a servire la versione precedente. Leggere il [passaggio UI/UX](docs/UIUX_PASS_02.md).
+Revisione **0.2.1**, preparata senza deploy come richiesto. Il sito pubblicato continua a servire la versione precedente. Leggere il [passaggio UI/UX](docs/UIUX_PASS_02.md).
 
-**Prima di continuare:** leggere [AGENTS.md](AGENTS.md), [stato del lavoro](docs/HANDOFF.md) e [verifiche](docs/VERIFICATION.md). Questa versione non ha ancora una verifica visiva nel browser né prove AR/notifiche su dispositivi reali.
+**Prima di continuare:** leggere [AGENTS.md](AGENTS.md), [stato del lavoro](docs/HANDOFF.md) e [verifiche](docs/VERIFICATION.md). La verifica nel browser è stata eseguita su mobile e desktop; le prove AR e notifiche su dispositivi e servizi reali restano aperte.
 
 ## Avvio locale — ✈️ STE100
 
@@ -55,7 +55,7 @@ npm run test
 npm run build
 ```
 
-I 28 test coprono SGP4, Sole/ombra, proiezione del cielo, notifiche/bridge, budget del rendering, migrazione delle preferenze, salvataggio delle viste e validazione dei dati meteo. Gli invii sono simulati; non sono state mandate notifiche all’utente o a terzi. La resa visiva e il flusso salvaschermo richiedono ancora una prova nel browser.
+I test automatici coprono SGP4, Sole/ombra, proiezione del cielo, notifiche/bridge, budget del rendering, migrazione delle preferenze, salvataggio delle viste e validazione dei dati meteo. Gli invii sono simulati; non sono state mandate notifiche all’utente o a terzi. La resa e le interazioni delle due pagine sono state provate nel browser interno; DPR 2 reale, installazione/offline completa e hardware restano da verificare.
 
 ## Struttura
 

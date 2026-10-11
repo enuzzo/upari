@@ -6,8 +6,10 @@ import type { Layer,Place,OrbitData,RenderQuality,CameraView } from '../types';
 import { tileURL } from '../lib/layers';
 import { renderProfile } from '../lib/render-quality';
 import { initialCamera } from '../lib/scene';
+import { preloadTiles } from '../lib/imagery-preload';
+import { removeGlobeEntities } from '../lib/globe-lifecycle';
 
-type Props={layer:Layer|null;date:string;opacity:number;compare:boolean;compareDate:string;split:number;place:Place;orbit?:OrbitData|null;showISS?:boolean;sunOffset:number;lighting:boolean;quality:RenderQuality;initialCamera?:CameraView;onCameraChange?:(view:CameraView)=>void;autoRotate?:boolean;rotationSpeed?:number;hideTools?:boolean};
+type Props={layer:Layer|null;date:string;opacity:number;compare:boolean;compareDate:string;split:number;place:Place;orbit?:OrbitData|null;showISS?:boolean;sunOffset:number;lighting:boolean;quality:RenderQuality;initialCamera?:CameraView;onCameraChange?:(view:CameraView)=>void;autoRotate?:boolean;rotationSpeed?:number;hideTools?:boolean;preloadDate?:string;onLoadingChange?:(loading:boolean)=>void;onImageryError?:(message:string)=>void};
 function provider(layer:Layer,date:string){return new C.UrlTemplateImageryProvider({url:tileURL(layer,date),tilingScheme:new C.WebMercatorTilingScheme(),tileWidth:256,tileHeight:256,maximumLevel:layer.maxLevel,credit:new C.Credit('NASA EOSDIS GIBS · '+layer.id)});}
 function addImagery(viewer:C.Viewer,source:C.ImageryProvider,index?:number){
   const layer=new C.ImageryLayer(source,{maximumAnisotropy:8,minificationFilter:C.TextureMinificationFilter.LINEAR,magnificationFilter:C.TextureMagnificationFilter.LINEAR});
@@ -32,7 +34,7 @@ function Globe(p:Props){
       const fallbackLayer=addImagery(v,fallback);
       const camera=p.initialCamera??initialCamera;
       v.camera.setView({destination:C.Cartesian3.fromDegrees(camera.longitude,camera.latitude,camera.height),orientation:{heading:camera.heading,pitch:camera.pitch,roll:camera.roll}});
-      off.push(v.scene.globe.tileLoadProgressEvent.addEventListener((count:number)=>setLoading(count>0)));
+      off.push(v.scene.globe.tileLoadProgressEvent.addEventListener((count:number)=>{setLoading(count>0);latest.current.onLoadingChange?.(count>0);}));
       off.push(v.camera.moveEnd.addEventListener(()=>{
         if(!v||v.isDestroyed())return;
         const c=v.camera.positionCartographic;
@@ -60,7 +62,7 @@ function Globe(p:Props){
     const timer=setInterval(clock,30000);
     const visible=()=>{if(instance.isDestroyed())return;instance.useDefaultRenderLoop=!document.hidden;if(!document.hidden){instance.resize();clock();instance.scene.requestRender();}};
     document.addEventListener('visibilitychange',visible);visible();
-    return()=>{gone=true;clearInterval(timer);document.removeEventListener('visibilitychange',visible);off.forEach(f=>f());viewer.current=null;if(!instance.isDestroyed())instance.destroy();};
+    return()=>{gone=true;clearInterval(timer);document.removeEventListener('visibilitychange',visible);off.forEach(f=>f());viewer.current=null;latest.current.onLoadingChange?.(false);if(!instance.isDestroyed())instance.destroy();};
   },[]);
   useEffect(()=>{
     const v=viewer.current;if(!ready||!v||!node.current)return;
@@ -75,18 +77,37 @@ function Globe(p:Props){
     return()=>{observer.disconnect();window.removeEventListener('resize',resize);};
   },[ready,p.quality,p.hideTools]);
   useEffect(()=>{
-    const v=viewer.current;if(!ready||!v)return;setTileError('');
+    const v=viewer.current;if(!ready||!v)return;setTileError('');latest.current.onLoadingChange?.(!!p.layer);
     for(const r of [primary,second]){if(r.current)v.imageryLayers.remove(r.current,true);r.current=null;}
     if(!p.layer){v.scene.requestRender();return;}
     const source=provider(p.layer,p.date),a=addImagery(v,source);primary.current=a;a.alpha=p.opacity;a.splitDirection=p.compare?C.SplitDirection.LEFT:C.SplitDirection.NONE;
     if(p.layer.key==='night'){a.dayAlpha=0;a.nightAlpha=1;}
-    const off=[source.errorEvent.addEventListener(()=>setTileError('Copertura incompleta per questo layer o questa data.'))];
+    const off=[source.errorEvent.addEventListener(()=>{setTileError('Copertura incompleta per questo layer o questa data.');latest.current.onImageryError?.('Copertura incompleta per questo layer o questa data.');})];
     if(p.compare){
       const bSource=provider(p.layer,p.compareDate),b=addImagery(v,bSource);second.current=b;b.alpha=p.opacity;b.splitDirection=C.SplitDirection.RIGHT;
       off.push(bSource.errorEvent.addEventListener(()=>setTileError('Copertura incompleta nella data di confronto.')));
     }
     v.scene.requestRender();return()=>off.forEach(f=>f());
   },[ready,p.layer,p.date,p.compare,p.compareDate]);
+  useEffect(()=>{
+    const v=viewer.current,layer=p.layer,date=p.preloadDate;
+    if(!ready||!v||!layer||!date||layer.static)return;
+    let controller:AbortController|undefined;
+    const warm=()=>{
+      controller?.abort();if(document.hidden||v.isDestroyed())return;
+      const rectangle=v.camera.computeViewRectangle();if(!rectangle)return;
+      const level=Math.log2(40075016*Math.max(node.current?.clientWidth??1,node.current?.clientHeight??1)/(Math.max(200,v.camera.positionCartographic.height)*256));
+      const tiles=preloadTiles({west:C.Math.toDegrees(rectangle.west),east:C.Math.toDegrees(rectangle.east),south:C.Math.toDegrees(rectangle.south),north:C.Math.toDegrees(rectangle.north)},level,layer.maxLevel);
+      controller=new AbortController();const signal=controller.signal;
+      void Promise.all(tiles.map(async tile=>{
+        try{const url=tileURL(layer,date).replace('{z}',String(tile.z)).replace('{x}',String(tile.x)).replace('{y}',String(tile.y));
+          const response=await fetch(url,{signal,credentials:'omit',cache:'force-cache'});if(response.ok)await response.arrayBuffer();
+        }catch{/* Optional warm-up; real renderer reports missing imagery. */}
+      }));
+    };
+    warm();document.addEventListener('visibilitychange',warm);
+    return()=>{controller?.abort();document.removeEventListener('visibilitychange',warm);};
+  },[ready,p.layer,p.preloadDate]);
   useEffect(()=>{
     const v=viewer.current;if(!ready||!v)return;
     if(primary.current)primary.current.alpha=p.opacity;if(second.current)second.current.alpha=p.opacity;
@@ -96,7 +117,7 @@ function Globe(p:Props){
   useEffect(()=>{
     const v=viewer.current;if(!ready||!v||p.hideTools)return;
     const marker=v.entities.add({position:C.Cartesian3.fromDegrees(p.place.longitude,p.place.latitude),point:{pixelSize:8,color:C.Color.fromCssColorString('#69f6dc'),outlineColor:C.Color.fromCssColorString('#0a161e'),outlineWidth:2,disableDepthTestDistance:0},label:{text:p.place.name,font:'12px system-ui',fillColor:C.Color.WHITE,pixelOffset:new C.Cartesian2(0,-22),showBackground:true,backgroundColor:C.Color.fromCssColorString('#060b13').withAlpha(.85),distanceDisplayCondition:new C.DistanceDisplayCondition(0,10000000)}});
-    v.scene.requestRender();return()=>{v.entities.remove(marker);};
+    v.scene.requestRender();return()=>removeGlobeEntities(v,[marker]);
   },[ready,p.place,p.hideTools]);
   useEffect(()=>{
     const v=viewer.current;if(!ready||!v||!p.showISS||!p.orbit)return;
@@ -112,7 +133,7 @@ function Globe(p:Props){
       const update=()=>{if(document.hidden||gone)return;const q=api.skyPoint(rec,Date.now(),p.place);if(q)station.position=new C.ConstantPositionProperty(C.Cartesian3.fromDegrees(q.longitude,q.latitude,q.altitude*1000));v.scene.requestRender();};
       update();timer=setInterval(update,5000);
     }).catch(()=>{if(!gone)setTileError('Traccia ISS non disponibile.');});
-    return()=>{gone=true;if(timer)clearInterval(timer);entities.forEach(e=>v.entities.remove(e));v.scene.requestRender();};
+    return()=>{gone=true;if(timer)clearInterval(timer);removeGlobeEntities(v,entities);};
   },[ready,p.showISS,p.orbit,p.place]);
   useEffect(()=>{setRotating(p.autoRotate??false);},[p.autoRotate]);
   useEffect(()=>{

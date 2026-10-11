@@ -1,5 +1,5 @@
 const SHELL = 'upari-shell-__VERSION__';
-const DATA = 'upari-data-__VERSION__';
+const DATA = 'upari-data-public-v1';
 const FILES = /*__SHELL__*/ [];
 self.addEventListener('install', e => e.waitUntil(caches.open(SHELL).then(c => c.addAll(FILES))));
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => (k.startsWith('upari-shell-') && k !== SHELL) || (k.startsWith('upari-data-') && k !== DATA)).map(k => caches.delete(k)))).then(() => self.clients.claim())));
@@ -24,8 +24,18 @@ self.addEventListener('fetch', e => {
   const u = new URL(e.request.url);
   if (e.request.method !== 'GET') return;
   // Notification and private gateway traffic must never enter a shared cache.
-  const allowed = u.origin === self.location.origin || u.hostname === 'gibs.earthdata.nasa.gov';
-  if (!allowed || u.pathname.includes('/bridge') || u.pathname.includes('/api/')) return;
+  if (e.request.headers.has('Authorization')) return;
+  const local = u.origin === self.location.origin;
+  const localStatic = local && (/^\/(assets|cesium|fonts)\//.test(u.pathname) || ['/', '/index.html', '/screensaver.html', '/icon.svg', '/icon-192.png', '/icon-512.png', '/manifest.webmanifest'].includes(u.pathname));
+  const nasa = u.origin === 'https://gibs.earthdata.nasa.gov' && u.pathname.startsWith('/wmts/') && !u.pathname.endsWith('WMTSCapabilities.xml');
+  const esriRoot = '/ArcGIS/rest/services/World_Imagery/MapServer';
+  const esri = u.origin === 'https://services.arcgisonline.com';
+  const esriTile = esri && new RegExp('^' + esriRoot + '/tile/\\d+/\\d+/\\d+$').test(u.pathname);
+  const esriMetadata = esri && u.pathname.replace(/\/$/, '') === esriRoot && u.searchParams.get('f') === 'json';
+  const navigation = e.request.mode === 'navigate' && local && ['/', '/index.html', '/screensaver.html'].includes(u.pathname);
+  const navigationQuery = navigation && [...u.searchParams].every(([key,value]) => key === 'view' && ['earth','sky','alerts'].includes(value));
+  const publicQuery = !u.search || navigationQuery || (esriMetadata && [...u.searchParams].every(([key,value]) => key === 'f' && value === 'json'));
+  if (!(localStatic || nasa || esriTile || esriMetadata) || !publicQuery) return;
   e.respondWith((async () => {
     if (e.request.mode === 'navigate') {
       try { return await fetch(e.request); } catch { return (await caches.match(u.pathname === '/screensaver.html' ? '/screensaver.html' : '/index.html')) || Response.error(); }

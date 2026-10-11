@@ -2,7 +2,7 @@
 
 Copia questo testo nella sessione Codex aperta sulla directory estratta `upari`:
 
-> Continua Upari 0.2 esistente. Prima leggi `AGENTS.md`, `docs/HANDOFF.md`, `docs/VERIFICATION.md`, `docs/UIUX_PASS_02.md` e `docs/SCREENSAVER.md`. Mantieni nero e turchese e la nuova gerarchia: Terra a viewport disponibile, pannelli su richiesta, ISS opzionale inizialmente spenta, nessun box AR permanente. La pagina salvaschermo autonoma conserva la vista, ruota il mondo e offre ora/meteo opzionale. Inizia dalla verifica reale delle due pagine nel browser, a 390×844 e su desktop/DPR 2, poi correggi gli errori osservati. Mantieni il lavoro e completa le priorità documentate. Non presentare test unitari come prove visuali, AR o notifiche reali. L'utente ha rinviato il deploy: non pubblicare finché non lo richiede. Usa commit piccoli e aggiorna i documenti di stato. Comunica in italiano e prosegui autonomamente dove hai già le informazioni necessarie.
+> Continua Upari 0.2.1 esistente. Prima leggi `AGENTS.md`, `docs/HANDOFF.md`, `docs/VERIFICATION.md`, `docs/UIUX_PASS_02.md` e `docs/SCREENSAVER.md`. Mantieni nero e turchese e la nuova gerarchia: Terra a viewport disponibile, pannelli su richiesta, ISS opzionale inizialmente spenta, nessun box AR permanente. La pagina salvaschermo autonoma conserva la vista, ruota il mondo e offre ora/meteo opzionale. La verifica mobile/desktop è già documentata. Completa DPR 2 reale, installazione/aggiornamento/offline PWA, fullscreen e AR su telefono; il meteo live è già stato verificato, resta il refresh prolungato. Preserva le correzioni Cesium e il ciclo di vita dei sensori. Mantieni il lavoro e completa le priorità documentate. Non presentare test unitari come prove visuali, AR o notifiche reali. L'utente ha rinviato il deploy: non pubblicare finché non lo richiede. Usa commit piccoli e aggiorna i documenti di stato. Comunica in italiano e prosegui autonomamente dove hai già le informazioni necessarie.
 
 ## Avvio — ✈️ STE100
 
@@ -13,3 +13,5 @@ Copia questo testo nella sessione Codex aperta sulla directory estratta `upari`:
 La build inclusa si avvia con `npm ci` e `npm run preview`. Per ricostruirla, esegui `npm run build`.
 
 Per recuperare la storia Git in una directory separata, esegui `git clone upari-history.bundle ../upari-git`. Il clone contiene i sorgenti; la directory `dist` è inclusa nello ZIP e può essere ricostruita. `DELIVERY.json` indica il commit consegnato.
+
+`DELIVERY.json` e `upari-history.bundle` identificano lo ZIP originale 0.2.0. La revisione corrente e i controlli successivi sono nella storia Git locale e in `docs/VERIFICATION.md`.

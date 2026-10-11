@@ -29,3 +29,10 @@ Il marker locale, la posizione orbitale e le immagini condividono la stessa geog
 Ogni segmento visibile richiede altezza ≥ soglia, Sole dell’osservatore ≤ −6° e satellite fuori dall’intero cono di penombra terrestre. Il Sole usa una formula astronomica approssimata; la penombra è conservativa. Campionamento 15 s, transizioni raffinate sotto 0,5 s, culmine campionato ogni 5 s. Queste sono risoluzioni algoritmiche, non una certificazione di precisione fisica.
 
 Nessun meteo è dedotto dalle immagini. Clorofilla non traccia organismi; aerosol non è PM2.5; temperatura superficiale/radiometrica non è temperatura dell’aria. Il provider può osservare le tile richieste e dedurre l’area esplorata.
+
+## Riferimenti della revisione 0.2.1
+
+- [Permesso DeviceOrientation e attivazione utente](https://developer.mozilla.org/en-US/docs/Web/API/DeviceOrientationEvent/requestPermission_static): richiesta avviata nel gesto; negazione indipendente dalla fotocamera e guida manuale.
+- [Orientamento assoluto](https://developer.mozilla.org/en-US/docs/Web/API/Window/deviceorientationabsolute_event): supporto al canale assoluto oltre al compass heading Safari, senza scambiare letture relative per il nord.
+- [Cambio di visibilità](https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilitychange_event): pulizia della sessione AR e sospensione delle operazioni visibili in background.
+- [Satellite events con Skyfield](https://rhodesmill.org/skyfield/earth-satellites.html): confronto opzionale di finestre complete con implementazione separata SGP4/JPL. I dati orbitali condivisi restano un limite della validazione, non una misura fisica indipendente.

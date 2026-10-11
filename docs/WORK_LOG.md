@@ -1,5 +1,20 @@
 # Upari — lavoro svolto
 
+## Revisione 0.2.1 — prosecuzione locale, 11 ottobre 2026
+
+- Estratto lo ZIP nella directory `upari`; recuperata la storia dal bundle e preservati gli artefatti originali. Installazione riproducibile con `npm ci`, nessuna nuova dipendenza npm.
+- Eseguita QA reale di Terra e salvaschermo nel browser interno: mobile 390×844 e desktop, layer/data/confronto, animazione, pannelli, tastiera e ISS opzionale.
+- Corretto il focus dei dialoghi e la pulizia dei marker dopo la distruzione del viewer Cesium: la navigazione Terra → ISS poteva rendere vuota l’app. Aggiunta regressione sulla raccolta già distrutta.
+- Isolata la sessione fotocamera/bussola: permessi richiesti nel gesto, sensori assoluti Android/Safari, guida manuale, revoca, background, attivazioni ripetute e risultati tardivi senza riaccendere la camera.
+- Riproduzione in attesa delle immagini, prefetch limitato a otto tile e allo zoom della fonte, stop su errore e rispetto del movimento ridotto. Legenda non disponibile esplicitata.
+- Shell offline completa per entrambe le pagine; cache solo per risorse pubbliche NASA/Esri, limiti conservati e link `?view=sky|alerts` recuperabili offline. I test simulano l’offline; prova PWA nel browser completo aperta.
+- Controlli più rigorosi su OMM/TLE, cancellazione della richiesta ISS disabilitata, aggiornamento di cache orbitale scaduta, backup senza campi sconosciuti/token, unità/codici meteo e freschezza continua. Orologio con secondi a due cifre.
+- Aggiunte prove sul cambio ora legale di Roma, distinguendo due istanti UTC con la stessa ora locale. Fixture orbitali originarie conservate.
+- Revisione indipendente: corretti il fallback offline dei link agli avvisi e l’orientamento rimasto dopo una camera terminata. Nessun invio ntfy/HA reale, nessun push/deploy per la decisione dell’utente.
+- Meteo live Open-Meteo verificato sul luogo pubblico predefinito. Aggiunta sfumatura per leggere clock/meteo sulle immagini chiare; AR manuale/Escape/focus e navigazione Terra/ISS riprovati.
+- Esteso il confronto Skyfield/JPL a sette casi e quattro finestre complete; corretto il massimo quando la visibilità termina durante la salita. Differenze massime 1,905 s e 0,357°, con limiti documentati.
+- Gate finale: 54/54 test in 18 file, TypeScript, build, sintassi SW, riferimenti HTML e diff whitespace superati. Shell completa 376 file/route, circa 12,25 MB. DPR 2 fisico, PWA offline reale e fullscreen restano aperti.
+
 ## Revisione 0.2 — qualità, UI/UX e salvaschermo
 
 - Recepite le nuove istruzioni: globo prioritario, ISS opzionale, box AR fisso eliminato, deploy rinviato.

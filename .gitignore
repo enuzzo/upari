@@ -9,3 +9,7 @@ dist/
 bridge-data/
 *.tsbuildinfo
 .qa-ephemerides/
+
+.DS_Store
+/upari-history.bundle
+/DELIVERY.json

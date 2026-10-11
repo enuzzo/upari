@@ -1,0 +1,125 @@
+{
+  "source": "Skyfield 1.55 / sgp4 2.27 / JPL DE421",
+  "method": "WGS84 geometric elevation, apparent JPL solar elevation <= -6 deg; entire solar disc above spherical Earth limb (radii 6378.137 / 695700 km); 15 s scan, 0.1 s boundary refinement; no refraction or local obstacles.",
+  "records": [
+    {
+      "place": {
+        "id": "New York",
+        "name": "New York",
+        "latitude": 40.7,
+        "longitude": -74,
+        "height": 0
+      },
+      "minElevation": 10,
+      "now": 1791734400000.0,
+      "passes": [
+        {
+          "start": 1791887743740.2344,
+          "end": 1791887855419.9219,
+          "peak": 1791887855419.9219,
+          "maxElevation": 25.83129492384551,
+          "startAzimuth": 205.09945140540307,
+          "endAzimuth": 182.7110808768436
+        },
+        {
+          "start": 1791971340849.6094,
+          "end": 1791971661416.0156,
+          "peak": 1791971500849.6094,
+          "maxElevation": 21.64400521576597,
+          "startAzimuth": 184.9784602311159,
+          "endAzimuth": 80.68396952922757
+        }
+      ]
+    },
+    {
+      "place": {
+        "id": "Sydney",
+        "name": "Sydney",
+        "latitude": -33.87,
+        "longitude": 151.2,
+        "height": 0
+      },
+      "minElevation": 10,
+      "now": 1791734400000.0,
+      "passes": [
+        {
+          "start": 1791795886904.2969,
+          "end": 1791796195927.7344,
+          "peak": 1791796041904.2969,
+          "maxElevation": 19.639869858160168,
+          "startAzimuth": 262.20865930395433,
+          "endAzimuth": 163.71449410118802
+        }
+      ]
+    },
+    {
+      "place": {
+        "id": "Luino",
+        "name": "Luino",
+        "latitude": 46.001,
+        "longitude": 8.746,
+        "height": 0.2
+      },
+      "minElevation": 10,
+      "now": 1791734400000.0,
+      "passes": []
+    },
+    {
+      "place": {
+        "id": "Quito",
+        "name": "Quito",
+        "latitude": -0.18,
+        "longitude": -78.47,
+        "height": 2.85
+      },
+      "minElevation": 5,
+      "now": 1791734400000.0,
+      "passes": [
+        {
+          "start": 1791798169775.3906,
+          "end": 1791798261123.0469,
+          "peak": 1791798169775.3906,
+          "maxElevation": 13.182876465065803,
+          "startAzimuth": 1.7426259048572297,
+          "endAzimuth": 13.602075567869202
+        }
+      ]
+    },
+    {
+      "place": {
+        "id": "Reykjavik",
+        "name": "Reykjavik",
+        "latitude": 64.15,
+        "longitude": -21.94,
+        "height": 0
+      },
+      "minElevation": 5,
+      "now": 1791734400000.0,
+      "passes": []
+    },
+    {
+      "place": {
+        "id": "Longyearbyen",
+        "name": "Longyearbyen",
+        "latitude": 78.22,
+        "longitude": 15.65,
+        "height": 0
+      },
+      "minElevation": 5,
+      "now": 1791734400000.0,
+      "passes": []
+    },
+    {
+      "place": {
+        "id": "New York",
+        "name": "New York",
+        "latitude": 40.7,
+        "longitude": -74,
+        "height": 0
+      },
+      "minElevation": 70,
+      "now": 1791734400000.0,
+      "passes": []
+    }
+  ]
+}

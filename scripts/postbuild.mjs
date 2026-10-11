@@ -1,14 +1,15 @@
 import { cp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
+import { offlineFiles } from './offline-shell.mjs';
 await mkdir('dist/cesium', { recursive: true });
 for (const dir of ['Assets', 'Widgets', 'Workers', 'ThirdParty']) await cp(`node_modules/cesium/Build/Cesium/${dir}`, `dist/cesium/${dir}`, { recursive: true });
 const html = await readFile('dist/index.html', 'utf8');
 const saver = await readFile('dist/screensaver.html', 'utf8');
-const files = [...html.matchAll(/(?:src|href)="(\/assets\/[^"\s]+)"/g)].map(m => m[1]);
+const files = await offlineFiles();
 const version = createHash('sha256').update(html+saver).digest('hex').slice(0, 12);
 let sw = await readFile('public/sw.js', 'utf8');
-sw = sw.replaceAll('__VERSION__', version).replace('/*__SHELL__*/ []', JSON.stringify(['/', '/index.html', '/screensaver.html', '/icon.svg', '/manifest.webmanifest', ...files]));
+sw = sw.replaceAll('__VERSION__', version).replace('/*__SHELL__*/ []', JSON.stringify(files));
 await writeFile('dist/sw.js', sw);
 execFileSync(process.execPath,['--check','dist/sw.js']);
 console.log('Cesium assets and versioned offline shell ready.');

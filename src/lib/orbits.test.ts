@@ -15,3 +15,11 @@ describe('SGP4 and observable intervals',()=>{
   it('gets the correct equinox/solstice solar declination',()=>{const a=solarECI(Date.parse('2026-06-21T12:00:00Z'));expect(Math.asin(a.z/Math.hypot(a.x,a.y,a.z))*180/Math.PI).toBeCloseTo(23.44,1);const b=solarECI(Date.parse('2026-03-20T12:00:00Z'));expect(Math.abs(Math.asin(b.z/Math.hypot(b.x,b.y,b.z))*180/Math.PI)).toBeLessThan(.3);});
   it('only returns fully illuminated, dark-sky, above-threshold windows',()=>{const f=calculateForecast(orbit,place,10,now);expect(f.passes.length).toBeGreaterThan(0);const r=json2satrec(orbit.omm);for(const p of f.passes){expect(p.end).toBeGreaterThan(p.start);expect(p.peak).toBeGreaterThanOrEqual(p.start);expect(p.peak).toBeLessThanOrEqual(p.end);for(const q of p.points.slice(1,-1)){expect(q.sunlit).toBe(true);expect(q.sunElevation).toBeLessThanOrEqual(-6+.01);expect(q.elevation).toBeGreaterThanOrEqual(10-.01);}expect(eligible(skyPoint(r,p.start+1000,place),10)).toBe(true);expect(eligible(skyPoint(r,p.end-1000,place),10)).toBe(true);if(p.start>now)expect(eligible(skyPoint(r,p.start-1000,place),10)).toBe(false);expect(eligible(skyPoint(r,p.end+1000,place),10)).toBe(false);}});
 });
+
+it('rejects a non-ISS TLE instead of relabelling its orbit as ISS',async()=>{
+  const {parseOrbitFile}=await import('./orbits');
+  expect(()=>parseOrbitFile('1 00005U 58002B   00179.78495062  .00000023  00000-0  28098-4 0  4753\n2 00005  34.2682 348.7242 1859667 331.7664  19.3264 10.82419157413667')).toThrow(/ISS/);
+});
+it('rejects non-finite orbital angles and drag',()=>{
+  for(const patch of [{INCLINATION:NaN},{RA_OF_ASC_NODE:NaN},{ARG_OF_PERICENTER:Infinity},{MEAN_ANOMALY:NaN},{BSTAR:NaN}])expect(()=>validateOrbit({...input,...patch},now)).toThrow();
+});

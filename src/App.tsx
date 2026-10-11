@@ -26,7 +26,7 @@ export default function App(){
   const [scene,setScene]=useState<SceneState>(initialScene),[layers,setLayers]=useState(initialLayers),[favorites,setFavorites]=useState<string[]>([]);
   const [modal,setModal]=useState<Dialog>(null),[pane,setPane]=useState<'choose'|'details'>('choose'),[playing,setPlaying]=useState(false);
   const [ar,setAR]=useState<Pass|null>(null),[toast,setToast]=useState(''),[online,setOnline]=useState(navigator.onLine),[install,setInstall]=useState<InstallEvent|null>(null);
-  const camera=useRef<CameraView>(initialScene.camera),latestScene=useRef(scene),mounted=useRef(false),catalogLoaded=useRef(false),playFrames=useRef<string[]>([]);latestScene.current=scene;
+  const camera=useRef<CameraView>(initialScene.camera),latestScene=useRef(scene),mounted=useRef(false),catalogLoaded=useRef(false),tilesLoading=useRef(false),playFrames=useRef<string[]>([]);latestScene.current=scene;
   const layer=layers.find(l=>l.key===scene.layerKey)??null,place=prefs.places.find(p=>p.id===prefs.activePlace)??prefs.places[0];
   const iss=useISS(prefs.issEnabled,hydrated,place,prefs.minElevation);
   useEffect(()=>{
@@ -48,7 +48,7 @@ export default function App(){
   },[modal]);
   useEffect(()=>{
     if(!playing)return;
-    const timer=setInterval(()=>{if(document.hidden)return;setScene(s=>{const frames=playFrames.current;return {...s,date:frames[(frames.indexOf(s.date)+1)%frames.length]??s.date};});},2500);
+    const timer=setInterval(()=>{if(document.hidden||tilesLoading.current)return;setScene(s=>{const frames=playFrames.current;return {...s,date:frames[(frames.indexOf(s.date)+1)%frames.length]??s.date};});},2500);
     return()=>clearInterval(timer);
   },[playing]);
   useEffect(()=>{if(!toast)return;const timer=setTimeout(()=>setToast(''),6000);return()=>clearTimeout(timer);},[toast]);
@@ -63,16 +63,20 @@ export default function App(){
     setPlaying(false);setScene(s=>({...s,layerKey:l?.key??'satellite',date,compareDate:frames[0]??date,compare:false,sunOffset:0,lighting:l?.key==='night'}));setPane('details');
   }
   function favorite(key:string){const f=favorites.includes(key)?favorites.filter(x=>x!==key):[...favorites,key];setFavorites(f);writeState('favorites',f).catch(()=>setToast('Preferiti non salvati.'));}
+  const onLoadingChange=useCallback((busy:boolean)=>{tilesLoading.current=busy;},[]);
+  const onImageryError=useCallback((message:string)=>{setPlaying(false);setToast(message+' Riproduzione fermata.');},[]);
   const onCameraChange=useCallback((view:CameraView)=>{camera.current=view;writeState('scene',{...latestScene.current,camera:view}).catch(()=>{});},[]);
   function openLayers(mode:'choose'|'details'='choose'){setTab('earth');setPane(mode);setModal('layers');}
   function play(){
     if(playing){setPlaying(false);return;}
     if(!layer)return;
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches){setToast('Movimento ridotto attivo. Puoi cambiare le date manualmente.');return;}
     playFrames.current=frameDates(layer,scene.date);setScene(s=>({...s,compare:false,date:playFrames.current[0]??s.date}));setPlaying(true);
   }
   const viewName=layer?.name??'Fotografia satellitare';
   const viewCaption=layer?'NASA · '+(layer.static?'composito '+scene.date.slice(0,4):scene.date)+' · '+layer.resolution:'Esri · mosaico fotografico';
-  const go=(view:Tab)=>{setTab(view);setModal(null);};
+  const go=(view:Tab)=>{setPlaying(false);setTab(view);setModal(null);};
+  const preloadDate=playing?playFrames.current[(playFrames.current.indexOf(scene.date)+1)%playFrames.current.length]:undefined;
   return <div className={'app-shell '+(ar?'ar-open':'')} data-view={tab}>
     <header className="app-header">
       <button className="wordmark" aria-label="Upari, torna alla Terra" onClick={()=>go('earth')}>upari <svg viewBox="0 0 60 60" width="29" height="29" aria-hidden="true"><circle cx="30" cy="30" r="16"/><ellipse cx="30" cy="30" rx="28" ry="8" transform="rotate(-35 30 30)"/><circle cx="46" cy="19" r="3" fill="currentColor" stroke="none"/></svg></button>
@@ -86,7 +90,7 @@ export default function App(){
     {!online&&<div className="offline-banner"><WifiOff size={14}/> Offline · immagini già visitate e dati salvati</div>}
     <main className="shell-main">
       {tab==='earth'?<div className="earth-layout"><div className="earth-surface">
-        {!ar&&(hydrated?<RenderBoundary><Suspense fallback={loading}><Globe layer={layer} date={scene.date} opacity={scene.opacity} compare={scene.compare} compareDate={scene.compareDate} split={scene.split} place={place} orbit={iss.orbit} showISS={prefs.issEnabled} sunOffset={scene.sunOffset} lighting={scene.lighting} quality={prefs.renderQuality} initialCamera={camera.current} onCameraChange={onCameraChange}/></Suspense></RenderBoundary>:loading)}
+        {!ar&&(hydrated?<RenderBoundary><Suspense fallback={loading}><Globe layer={layer} date={scene.date} opacity={scene.opacity} compare={scene.compare} compareDate={scene.compareDate} split={scene.split} place={place} orbit={iss.orbit} showISS={prefs.issEnabled} sunOffset={scene.sunOffset} lighting={scene.lighting} quality={prefs.renderQuality} initialCamera={camera.current} onCameraChange={onCameraChange} onLoadingChange={onLoadingChange} onImageryError={playing?onImageryError:undefined} preloadDate={preloadDate}/></Suspense></RenderBoundary>:loading)}
         <button className="floating-layer" aria-label={'Modifica la vista: '+viewName} onClick={()=>openLayers('details')}><Layers size={19}/><span><b>{viewName}</b><small>{playing?'Animazione · ':''}{viewCaption}</small></span><ChevronDown size={16}/></button>
         <button className="saver-button" onClick={()=>setModal('saver')}><Monitor size={18}/><span>Salvaschermo</span></button>
         {scene.compare&&layer&&<div className="compare-control"><span>{scene.date}</span><input type="range" min="5" max="95" value={scene.split*100} onChange={e=>setScene(s=>({...s,split:+e.target.value/100}))} aria-label="Posizione del confronto tra le date"/><span>{scene.compareDate}</span></div>}

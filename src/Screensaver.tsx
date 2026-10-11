@@ -15,10 +15,10 @@ function Clock(){
     document.addEventListener('visibilitychange',update);
     return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',update);};
   },[]);
-  return <div className="ambient-clock"><time dateTime={now.toISOString()}>{now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}<span>{now.toLocaleTimeString('it-IT',{second:'2-digit'})}</span></time><p>{now.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'})}</p></div>;
+  return <div className="ambient-clock"><time dateTime={now.toISOString()}>{now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}<span>{String(now.getSeconds()).padStart(2,'0')}</span></time><p>{now.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'})}</p></div>;
 }
 function WeatherReading({place}:{place:Place}){
-  const [weather,setWeather]=useState<Weather|null>(null),[error,setError]=useState('');
+  const [weather,setWeather]=useState<Weather|null>(null),[error,setError]=useState(''),[now,setNow]=useState(Date.now());
   useEffect(()=>{
     let gone=false,busy=false,controller:AbortController|undefined;
     async function refresh(){
@@ -29,10 +29,11 @@ function WeatherReading({place}:{place:Place}){
       finally{clearTimeout(timeout);busy=false;}
     }
     void refresh();const timer=setInterval(refresh,30*60000);
-    const visible=()=>{if(!document.hidden)void refresh();};document.addEventListener('visibilitychange',visible);
-    return()=>{gone=true;controller?.abort();clearInterval(timer);document.removeEventListener('visibilitychange',visible);};
+    const freshness=setInterval(()=>{if(!document.hidden)setNow(Date.now());},60000);
+    const visible=()=>{if(!document.hidden){setNow(Date.now());void refresh();}};document.addEventListener('visibilitychange',visible);
+    return()=>{gone=true;controller?.abort();clearInterval(timer);clearInterval(freshness);document.removeEventListener('visibilitychange',visible);};
   },[place]);
-  const fresh=weather&&Date.now()-weather.time<=3600000;
+  const fresh=weather&&now-weather.time<=3600000;
   return <div className="ambient-weather"><p className="weather-place">{place.name}</p>
     {fresh?<><div className="weather-main"><CloudSun size={24}/><strong>{Math.round(weather.temperature)}°</strong><span>{weatherLabel(weather.code)}</span></div><p className="weather-extra">Percepita {Math.round(weather.apparent)}° <span>·</span> <Wind size={13}/> {Math.round(weather.wind)} km/h</p></>:<p className="weather-unavailable">{weather?'Dati meteo non aggiornati':error||'Carico il meteo…'}</p>}
     <p className="weather-source">{weather&&<span>{new Date(weather.time).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})} · </span>}<a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a> · stima da modelli{error&&fresh?' · aggiornamento non riuscito':''}</p>

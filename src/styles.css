@@ -217,3 +217,13 @@ dialog.ar-screen{margin:0;padding:0;border:0;width:100vw;height:100dvh;max-width
 .saver-study.saver-weather .study-timeline{bottom:340px}
 @media(max-width:760px){.saver-study .statistics-card{top:74px}}
 @media(max-height:500px){.saver-study .statistics-card{top:66px;max-height:calc(100svh - 86px)}.saver-study .ambient-information{left:300px;right:24px}.saver-study .study-timeline{bottom:160px}}
+
+/* Country names and luminous study controls; compositor transitions only. */
+.country-hover{position:absolute;z-index:12;pointer-events:none;width:max-content;max-width:264px;max-height:140px;overflow:hidden;padding:13px 16px;border:1px solid #69f6dc77;border-radius:15px;background:linear-gradient(135deg,#102a31f5,#080f1af5);box-shadow:0 10px 36px #0008,0 0 24px #69f6dc16;backdrop-filter:blur(14px);display:flex;flex-direction:column;gap:5px;color:#effffc}
+.country-hover b{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:500;line-height:1.2}.country-hover-kicker{text-transform:uppercase;letter-spacing:.1em;font-size:9px;color:#8ae8d9}.country-hover small,.country-hover-value{font-size:11px;color:#d6e7eb;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.country-hover-note{font-size:9px;color:#a5bec8;margin-top:3px}
+.statistics-card{background:radial-gradient(ellipse at 0 0,#163b3b66,transparent 60%),linear-gradient(135deg,#0c1721f5,#080f19f5);box-shadow:0 10px 32px #0005,inset 0 1px 0 #9afde524;border-color:#476474}.study-period b{font-family:'Space Grotesk',sans-serif;letter-spacing:-.5px;text-shadow:0 0 18px #69f6dc22}.study-gradient{box-shadow:0 0 16px #69f6dc16}
+.study-flow-control{display:flex;justify-content:space-between;align-items:center;margin-top:10px;border-top:1px solid #324354;padding-top:5px;color:#a5f4df}.study-flow-control>span{display:flex;align-items:center;gap:7px;font-size:10px;letter-spacing:.025em}.study-flow-control button{border:1px solid #41595f;border-radius:11px;min-width:44px;min-height:44px;color:#99ffe5}.study-flow-control button[aria-pressed=true]{background:#69f6dc12;box-shadow:0 0 18px #69f6dc12}
+.study-timeline{box-shadow:0 10px 36px #0006,inset 0 1px 0 #69f6dc20;transition:border-color .2s,box-shadow .2s,opacity .2s}.study-timeline[data-playing=true]{border-color:#65baac;box-shadow:0 10px 36px #0006,0 0 25px #69f6dc12}.study-timeline .icon-button[aria-pressed=true]{color:#9affdf;background:#69f6dc16;border-radius:12px}
+@media(prefers-reduced-motion:reduce){.study-timeline{transition:none}}
+@media(max-height:500px){.statistics-card{max-height:calc(100% - 42px);overflow:auto;overscroll-behavior:contain}}
+@media(max-height:500px){.earth-surface:has(.study-timeline) .saver-button{right:14px;bottom:132px}}

@@ -2,8 +2,8 @@ export type Indicator={id:string;code:string;name:string;theme:string;unit:strin
 export type Region={id:string;name:string;iso2?:string;longitude:number|null;latitude:number|null};
 export type Statistics={version:1;retrievedAt:string;years:number[];countries:Region[];indicators:Indicator[];values:Record<string,Record<string,(number|null)[]>>;flows?:{indicator:string;origins:string[];relations:{origin:string;destination:string;values:(number|null)[];notes?:Record<string,unknown>}[];selectionRows:number};boundary:{source:string;sourceURL:string;license:string;licenseURL:string;caveat:string;revision?:string;unmatched?:unknown[]};provenance?:unknown[]};
 export type Boundaries={type:'FeatureCollection';features:{type:'Feature';properties:{id:string;statCode:string|null;name:string;longitude?:number;latitude?:number};geometry:{type:'Polygon'|'MultiPolygon';coordinates:number[][][]|number[][][][]}}[]};
-export type StudyState={enabled:boolean;dataset:string;indicator:string;secondary:string;country:string;time:number;start:number;end:number;speed:number;playing:boolean;loop:boolean};
-export const initialStudy:StudyState={enabled:false,dataset:'world',indicator:'birth',secondary:'',country:'ITA',time:2024,start:1960,end:2024,speed:1,playing:false,loop:true};
+export type StudyState={enabled:boolean;dataset:string;indicator:string;secondary:string;country:string;time:number;start:number;end:number;speed:number;playing:boolean;loop:boolean;flowMotion:boolean};
+export const initialStudy:StudyState={enabled:false,dataset:'world',indicator:'birth',secondary:'',country:'ITA',time:2024,start:1960,end:2024,speed:1,playing:false,loop:true,flowMotion:true};
 const id=(s:unknown):s is string=>typeof s==='string'&&/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,47}$/.test(s);
 const text=(s:unknown,max=6000):s is string=>typeof s==='string'&&s.trim().length>0&&s.length<=max;
 export function publicURL(raw:unknown):raw is string{try{if(!text(raw,2000))return false;const u=new URL(raw);return u.protocol==='https:'&&!u.username&&!u.password&&![...u.searchParams.keys()].some(k=>/token|secret|password|api.?key|signature|^(?:key|access[_-]?key|authorization|auth)$/i.test(k));}catch{return false;}}
@@ -48,7 +48,7 @@ export function validateBoundaries(raw:unknown):Boundaries{
 export function validateStudy(raw:unknown):StudyState{
  const s=(raw??{}) as Partial<StudyState>;const finite=(n:unknown,f:number)=>typeof n==='number'&&Number.isFinite(n)?n:f;
  const start=Math.max(1800,Math.min(2199,Math.round(finite(s.start,initialStudy.start)))),end=Math.max(start,Math.min(2200,Math.round(finite(s.end,initialStudy.end))));
- return{enabled:s.enabled===true,dataset:id(s.dataset)?s.dataset:'world',indicator:id(s.indicator)?s.indicator:initialStudy.indicator,secondary:s.secondary===''?'':id(s.secondary)?s.secondary:initialStudy.secondary,country:id(s.country)?s.country:initialStudy.country,time:Math.max(start,Math.min(end,finite(s.time,initialStudy.time))),start,end,speed:Math.max(.1,Math.min(10,Math.abs(finite(s.speed,1))))*(finite(s.speed,1)<0?-1:1),playing:s.playing===true,loop:s.loop!==false};
+ return{enabled:s.enabled===true,dataset:id(s.dataset)?s.dataset:'world',indicator:id(s.indicator)?s.indicator:initialStudy.indicator,secondary:s.secondary===''?'':id(s.secondary)?s.secondary:initialStudy.secondary,country:id(s.country)?s.country:initialStudy.country,time:Math.max(start,Math.min(end,finite(s.time,initialStudy.time))),start,end,speed:Math.max(.1,Math.min(10,Math.abs(finite(s.speed,1))))*(finite(s.speed,1)<0?-1:1),playing:s.playing===true,loop:s.loop!==false,flowMotion:s.flowMotion!==false};
 }
 /** Only original endpoints; fractional years affect appearance, never create measurements. */
 export function annualPair(p:Pick<Statistics,'years'|'values'>,indicator:string,region:string,time:number){

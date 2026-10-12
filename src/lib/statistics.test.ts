@@ -43,9 +43,9 @@ it('checks UNHCR relation origins and strips fields outside the published schema
 });
 it('round-trips study playhead in scenes, backups and public links without extra fields',async()=>{
  const {validateScene,saverURL,decodeSaver}=await import('./scene');const {initialPreferences,validateBackup}=await import('./storage');
- const study={enabled:true,dataset:'world',indicator:'employment',secondary:'birth',country:'ITA',time:2010.45,start:1991,end:2025,speed:1,playing:true,loop:true,token:'secret'};
+ const study={enabled:true,dataset:'world',indicator:'employment',secondary:'birth',country:'ITA',time:2010.45,start:1991,end:2025,speed:1,playing:true,loop:true,flowMotion:false,token:'secret'};
  const scene=validateScene({layerKey:'satellite',lighting:true,study});
- expect(scene.study?.time).toBe(2010.45);expect(validateBackup({format:'upari-backup',version:2,preferences:initialPreferences,scene}).scene?.study).toEqual(scene.study);
+ expect(scene.study?.time).toBe(2010.45);expect(scene.study?.flowMotion).toBe(false);expect(validateScene({layerKey:'satellite',study:{...study,flowMotion:undefined}}).study?.flowMotion).toBe(true);expect(validateBackup({format:'upari-backup',version:2,preferences:initialPreferences,scene}).scene?.study).toEqual(scene.study);
  const url=saverURL({version:1,scene,place:initialPreferences.places[0],showClock:true,showWeather:false,rotationSpeed:.08});expect(url).not.toContain('secret');expect(decodeSaver(new URL(url,'https://test.example').hash).scene.study).toEqual(scene.study);
 });
 

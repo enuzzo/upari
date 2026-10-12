@@ -107,3 +107,14 @@ Implementazione 0.4.1 salvata nel commit locale `eb68b44`; documentazione aggior
 - Nessun deploy/push o canale live. Restano telefono reale (prestazioni/consumo/AR), PWA installata e canali propri. Mosaici/foto/luci 2016 conservano le loro date; nessuna osservazione o fisica meteo inventata.
 
 Implementazione 0.4.2 nel commit locale `a1234ae`. Build finale `app-DPKw02Rs.js`; campione isolato 120 intervalli, media 25,95 ms e massimo 50,60 ms, senza promettere 60 fps. Rotazioni ripristinate, origine dell’utente aerosol/ISS off conservata; documentazione di ripresa nel commit successivo.
+
+
+## 12 ottobre 2026 — fluidità Naturale e diagnosi locale 0.4.3
+
+- Codice locale `db3c660`: camera on-demand invece di tre getter nativi costosi per frame; cache finale sicura dopo teardown, reader precedente escluso dall’import. Link subito dopo zoom confermato a 26.349.986 m. Nessuna scrittura IndexedDB per frame.
+- Cap Auto/Alta61 con margine per deadline Cesium, Batteria/salvaschermo30. Budget/risoluzione/atmosfera/MSAA/SSE/shader invariati. Esperimento RAF libero scartato, non rivendicato come miglioramento.
+- HUD ?perf=1 anche nella build statica, 300 intervalli postRender dopo warmup/tile, osservazione RAF limitata. Default produzione inattivo, nessuna telemetria. Reset su profilo/scena; query del salvaschermo preservata. Revisione indipendente senza ulteriori rilievi concreti.
+- 97 test/36 file verdi, TypeScript/build/postbuild/SW verdi. HTTP loopback inizialmente bloccato dal sandbox, ripetuto nel giro completo autorizzato. Ricompilazione CSS ENOTEMPTY sull’output generato: output conservato fuori repo e build pulita riuscita. Manifest376 file/route,12.672.732byte. Browser compilato asset app-93KnzrRu.js, console pulita; normale senza observer e opt-in con HUD verificati.
+- Chrome fisico Retina Vega56: baseline58,84 fps; sviluppo finale31,80/RAF31,81; build finale19,21/RAF18,67 sotto condizioni variabili. pmset registra CPU_Speed_Limit28 e carico elevato; nessuna modifica OS/app. Target60 ancora aperto, nessuna percentuale di aumento inventata. Dati/procedura in PERFORMANCE.md e docs/performance/0.4.3-mac.json.
+- Layout390×844/844×390 verificato, HUD non sovrapposto ai comandi; override ripristinato. Salvaschermo DEV conserva diagnostica e cap30. I test responsive non sostituiscono hardware iPhone.
+- L’utente indica il proprio iPhone17Pro. Wi-Fi comune/USB non confermati; nessuna prova reale ancora effettuata. Guida locale dist/LAN pronta; AR, PWA e canali restano verifiche separate. Nessun deploy/push o invio live. Screenshot temporanei elencati in VERIFICATION.md.

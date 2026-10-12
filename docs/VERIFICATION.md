@@ -1,6 +1,38 @@
+# Upari — verifiche locali 0.4.3
+
+12 ottobre 2026. Codice locale `db3c660`, base `dc43575`. **Nessun push/deploy.** Obiettivo 60 fps con qualità invariata: ancora aperto, non certificato. [Metodo, dati e prove iPhone](PERFORMANCE.md).
+
+## Gate finali
+
+- **97 test / 36 file**, giro completo verde. Primo giro nel sandbox: 96 verdi e prova HTTP bloccata da `listen EPERM 127.0.0.1`; ripetizione autorizzata completa verde. Nessun endpoint reale o invio sui canali dell’utente.
+- TypeScript verde; build finale completa con postbuild/sintassi SW verde. Nessuna nuova dipendenza. Dopo il primo build verde, la ricompilazione CSS ha incontrato `ENOTEMPTY dist/cesium`: conservato l’output interrotto in `/private/tmp/upari-qa/043-dist-interrupted`, ricostruito da directory nuova e verificato. Non attribuita una causa certa; ZIP/bundle/DELIVERY/reference intatti.
+- Revisione indipendente: reset dei campioni su viewport/qualità e cambi vista, snapshot camera/import/teardown, diagnostica default off. Corretto il salvaschermo che eliminava ?perf=1; query acquisita e preservata prima del caricamento lazy. Nessun ulteriore rilievo concreto.
+- Shell finale **376 route/file, 12.672.732 byte**, SHA-256 dell’elenco JSON `8a06826e02f106b1a069095b1364ac8ac21c883a1399e8de0b744e93a83bc8b9` (non checksum dei contenuti). Asset finale osservato nel DOM `/assets/app-93KnzrRu.js`; globo 4.265,79 kB / 1.149,10 kB gzip, warning dimensione noto.
+
+## Browser effettivo
+
+Chrome fisico sul Mac, AMD Radeon Pro Vega 56 / ANGLE Metal, iMacPro1,1, DPR 2. Override solo per layout; non è Safari o un iPhone. Dev 4174; build finale solo loopback 4175.
+
+| Prova | Esito |
+|---|---|
+| Qualità invariata | Auto framebuffer circa 3 MP, MSAA4, per-fragment atmosphere e SSE1,5 conservati. Nessuna modifica allo shader/texture per questa ottimizzazione |
+| Camera su richiesta | Allontana → Salvaschermo: link con quota 26.349.986 m subito, nuova posa durante rotazione; test cache finale/import verde |
+| Diagnostica normale/opt-in | Build senza query: HUD e tre attributi diagnostici assenti; ?perf=1: pannello visibile e profilo cap61. Console senza errori/warning osservati |
+| Pausa/riavvio | Pausa ferma rotazione; Play cancella vecchio campione e mostra attesa. Nuovo campione di 300 intervalli effettivi dopo immagini/warmup |
+| Portrait 390×844 | Nessun overflow, larghezza390; HUD termina y670, Salvaschermo inizia y708: sovrapposizione corretta |
+| Landscape 844×390 | Nessun overflow; HUD x24–314, Salvaschermo x685–822; comandi liberi. Override ripristinato |
+| Salvaschermo DEV | ?perf=1 conservato dopo replaceState e ready; HUD presente, cap30, MSAA4, atmosfera per-frammento. Nessun valore di fps usato durante build concorrente |
+| Misure | Baseline58,84; sviluppo finale31,80 / RAF31,81; build finale19,21 / RAF18,67. Condizioni del Mac variabili, ultimo CPU_Speed_Limit osservato28: non dichiarare miglioramento quantitativo o 60 fps sostenuti |
+
+Dati sintetici persistiti in `docs/performance/0.4.3-mac.json`; dettagli e limiti in PERFORMANCE.md. Il browser RAF rallenta insieme al rendering; il tempo JS non è tempo GPU. Nessuna modifica ai processi o impostazioni energetiche del Mac. Vista dev sospesa durante la build e anteprima compilata lasciata disponibile.
+
+Screenshot reali temporanei: `/private/tmp/upari-qa/043-natural-production.png`, `043-production-perf.png`, `043-mac-final.png`, `043-phone-layout.png`. Nessuna prova sul telefono o misura di consumo/temperatura fisica dichiarata. iPhone 17 Pro dell’utente confermato; rete Wi-Fi comune non ancora confermata. AR/PWA/canali restano aperti; la LAN HTTP prevista serve solo la build statica per la prova WebGL.
+
+---
+
 # Upari — verifiche locali 0.4.2
 
-12 ottobre 2026. Codice locale `a1234ae`, base `f38bbbc`. **Nessun push o deploy.** Questa è la revisione corrente; sezioni precedenti storiche.
+12 ottobre 2026. Codice locale `a1234ae`, base `f38bbbc`. **Nessun push o deploy.** Questa sezione descrive la revisione storica 0.4.2.
 
 ## Gate
 

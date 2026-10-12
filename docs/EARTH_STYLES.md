@@ -1,4 +1,4 @@
-# Terra e stili — 0.4.2
+# Terra e stili — 0.4.3
 
 La richiesta dell'11 ottobre 2026 mette al primo posto una vista Naturale suggestiva anche allontanandosi, e chiede alternative cartoon/cel/pixel/voxel/ASCII. La reference iniziale è [kedube/ha-iss-tracker](https://github.com/kedube/ha-iss-tracker): recuperata dalla conversazione, consultati README e screenshot pubblici (in particolare [globe-night.jpg](https://github.com/kedube/ha-iss-tracker/blob/main/docs/images/globe-night.jpg)), allora senza leggere/copiare il sorgente applicativo. Il successivo studio del codice grafico, autorizzato dall’utente per la 0.4.1, è documentato in [REFERENCE_STUDY.md](REFERENCE_STUDY.md). Elementi ripresi come obiettivo visivo: volume della Terra, notte leggibile, luci e bordo atmosferico. Il renderer resta Cesium, il design resta nero/turchese con pannelli su richiesta.
 
@@ -46,7 +46,7 @@ Attiva di default a **0,08°/s**, circa 75 minuti per un giro dalla vista orbita
 
 La velocità si riduce con la quota (fattore quota / 3.000 km, limitato a 0,0001–1). Trascinamento/pinch sospendono il moto per tutti i puntatori attivi e per 1,8 secondi dopo il rilascio; ruota, zoom e voli della camera hanno la stessa pausa. Il ritorno dal background azzera il passo temporale e libera i puntatori interrotti. Passo massimo 100 ms, per evitare recuperi bruschi dopo uno stallo.
 
-Un unico callback nel ciclo `preUpdate` di Cesium rispetta il profilo adattivo 30/60 fps; nessun timer aggiuntivo. Le preferenze di movimento ridotto avviano la Terra ferma; Play permette una scelta esplicita. I listener vengono rimossi all’uscita. La camera corrente viene aggiornata in memoria a ogni render visibile, anche nei gesti/voli senza rotazione; i pulsanti zoom pubblicano subito la nuova posizione: il backup la legge al click e il background tenta un solo snapshot. Non si scrive su IndexedDB ogni fotogramma; il flush durante la chiusura è best-effort, non una garanzia di completamento del browser.
+Un unico callback nel ciclo `preUpdate` di Cesium rispetta il profilo limitato 30/61 fps; nessun timer aggiuntivo. Le preferenze di movimento ridotto avviano la Terra ferma; Play permette una scelta esplicita. I listener vengono rimossi all’uscita. La camera corrente viene letta su richiesta: i pulsanti zoom pubblicano subito la nuova posizione, link e backup la leggono al click; uscita/background tentano un solo snapshot. La cache finale viene conservata prima di distruggere il viewer. Non si scrive su IndexedDB ogni fotogramma; il flush durante la chiusura è best-effort, non una garanzia di completamento del browser.
 
 ## Rendering e limiti
 
@@ -55,3 +55,5 @@ Un solo PostProcessStage originale, una sola passata, nessun secondo motore, let
 Documentazione primaria consultata: [PostProcessStage](https://cesium.com/learn/cesiumjs/ref-doc/PostProcessStage.html), [Globe](https://cesium.com/learn/cesiumjs/ref-doc/Globe.html), [SkyAtmosphere](https://cesium.com/learn/cesiumjs/ref-doc/SkyAtmosphere.html). Il controllo della semantica delle distanze ha usato la dipendenza Cesium installata. Il ray shader presume il terreno ellissoidale attuale: terreno 3D/edifici futuri richiedono una maschera appropriata, non solo questo ellissoide.
 
 La QA locale non certifica 60 fps, consumo o memoria su telefono. ASCII/pixel/voxel sono effetti di campionamento dello schermo, perciò non hanno una griglia geografica fissa mentre ruoti. Voxel geometrico, nuvole volumetriche o nuove fonti live richiedono un progetto e una verifica separati. Vedere VERIFICATION.md per le prove effettuate e HANDOFF.md per quelle di dispositivo/canali rimaste.
+
+Diagnostica e ottimizzazione senza riduzione della qualità nella 0.4.3: vedere [PERFORMANCE.md](PERFORMANCE.md).

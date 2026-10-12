@@ -30,7 +30,11 @@ Read this file before changing anything. Then read `docs/HANDOFF.md`, `docs/VERI
     Native DPR is explicitly enabled in Cesium. The resolution scale is effectiveRatio/nativeDPR, not a second reduction with browser-recommended resolution enabled. See the regression tests. ISS off means no new ephemeris fetches, forecast workers, tracking or periodic refreshes.
 12. If Sites is available, `.openai/hosting.json` is the authoritative project identity. Reuse its exact `project_id`; preserve private access. Never create a second Site. Otherwise work locally or use the user's hosting.
 
-## Current local milestone — 0.4.2, 12 October 2026
+## Current local milestone — 0.4.3, 12 October 2026
+
+Natural performance work: on-demand CameraSnapshot eliminates native angle getters per frame; final cache survives teardown and imported scenes exclude old readers. Bounded cap 61 fps Auto/High (small strict widget deadline margin), 30 battery/screensaver; no quality reduction. Local ?perf=1 opt-in HUD reports 300 postRender intervals after imagery/warmup, also in screensaver; production default has no diagnostic observers. 97 tests / 36 files. Physical Chrome Mac DPR2/Vega56: initial 58.84 fps, final 31.80 with RAF31.81 under observed CPU_Speed_Limit28; compiled sample 19.21 fps / RAF18.67 later; samples are not a causal comparison or sustained 60 certification. Read PERFORMANCE.md and its recorded evidence. User phone is iPhone17Pro; common Wi-Fi/USB not confirmed, no actual phone QA yet. No push/deploy.
+
+## Previous local milestone — 0.4.2, 12 October 2026
 
 Implemented locally in `a1234ae`: Natural atmosphere/twilight refinements in the existing shader: metre-based WGS84 limb falloff, sun-aware warm twilight strongest near the limb, reduced native Mie haze, close-up grading fades out. One ray per pixel and stars only outside Earth. Log-altitude C2 imagery transition + bounded readiness-aware ZoomBlend in preRender; suspend on visibility, no new timer. Ground atmospheric tint is also guarded for requested/retained scientific rasters. Camera memory follows visible preRender/zoom immediately, no IndexedDB writes per frame. 91 tests / 34 files; current browser evidence and hardware limits in VERIFICATION.md. No push/deploy.
 

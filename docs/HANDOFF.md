@@ -1,11 +1,12 @@
-# Upari — passaggio locale 0.4.2
+# Upari — passaggio locale 0.4.3
 
-Continuazione dello ZIP originale, base Git `ab609bb`, implementazioni locali `96c26f4` (0.3) e `bf85a66` (0.4), seguite da `eb68b44` (rotazione ambientale 0.4.1) e `a1234ae` (atmosfera/crepuscolo/zoom 0.4.2). Palette nera/turchese e gerarchia approvate conservate: Terra dominante, pannelli su richiesta, ISS inizialmente spenta. **Nessun push o deploy**, per istruzione dell'utente. ZIP, bundle e DELIVERY originali rimangono invariati; documentano 0.2.0, non questa revisione.
+Continuazione dello ZIP originale, base Git `ab609bb`, implementazioni locali `96c26f4` (0.3) e `bf85a66` (0.4), seguite da `eb68b44` (rotazione ambientale 0.4.1) e `a1234ae` (atmosfera/crepuscolo/zoom 0.4.2) e `db3c660` (fluidità/diagnostica 0.4.3). Palette nera/turchese e gerarchia approvate conservate: Terra dominante, pannelli su richiesta, ISS inizialmente spenta. **Nessun push o deploy**, per istruzione dell'utente. ZIP, bundle e DELIVERY originali rimangono invariati; documentano 0.2.0, non questa revisione.
 
 | Ambito | Stato corrente |
 |---|---|
 | Qualità Terra | NASA orbitale ↔ Esri territoriale, atmosfera per frammento Auto/Alta, notte con luci NASA 2016; illuminazione attenuata nel dettaglio. Nessuna nuvola inventata |
 | Atmosfera/zoom 0.4.2 | Bordo ellissoidale blu/crepuscolo solare; fotografia log-altitude C2 con attesa tile e blend breve, close-up nativo leggibile. Tinta del terreno scientifico protetta. Un solo ciclo/stage |
+| Fluidità 0.4.3 | Camera pull su richiesta, cap 61/30, HUD locale con ?perf=1. Qualità invariata. Target 60 non certificato: Mac CPU_Speed_Limit 28, sviluppo 31,8 fps / RAF 31,8; build finale 19,2 / RAF 18,7. iPhone 17 Pro scelto, Wi-Fi da confermare; PERFORMANCE.md |
 | Rotazione | Default 0,08°/s orbitale, circa 75 min/giro; pausa/play e velocità 0,02–1°/s nella barra destra. Rallenta a terra, pausa gesti, movimento ridotto, scena/backup/salvaschermo persistenti |
 | Stili | Naturale + Cartoon/Cel/Pixel/Voxel/ASCII/Incisione, intensità regolabile, backup e salvaschermo. Voxel grafico 2D. Palette scientifiche protette in Naturale, anche durante caricamento/fallimento/dissolvenza; avviso negli altri stili |
 | Date dei layer | Fonte/data UTC del fotogramma effettivo sempre visibili; due date nel confronto e salvaschermo; Black Marble 2016, Esri e SWISSIMAGE mosaici con anni variabili |
@@ -19,7 +20,7 @@ Continuazione dello ZIP originale, base Git `ab609bb`, implementazioni locali `9
 | Backup | Camera corrente al click anche durante rotazione; snapshot background best-effort senza scritture per frame. v2: preferenze/orizzonti, scena/camera, preferiti, diario, orbite. v1 ancora accettato; whitelist, transazione atomica, 8 MiB; epoche non ringiovanite. Import applica scena e preferenze insieme e ricarica l'orbita attiva |
 | Canali | ntfy; bridge personale HA/Gotify/webhook. Segreti server, coda persistente e deduplica. Invio ntfy incerto conservato prima del POST, retry bloccato |
 | Offline | Shell di entrambe le pagine, moduli/font/Cesium/vettori; stato cache visibile, aggiornamento in attesa segnalato; tile pubbliche 48 MiB / 120 elementi, Swiss allowlisted |
-| Verifica | 91 test JS/TS in 34 file, 6 prove convertitore Python (NetCDF3+4), riferimenti Skyfield/JPL estesi, HTTP loopback e browser mobile/desktop; dettagli in VERIFICATION.md |
+| Verifica | 97 test JS/TS in 36 file, 6 prove convertitore Python (NetCDF3+4), riferimenti Skyfield/JPL estesi, HTTP loopback e browser mobile/desktop; dettagli in VERIFICATION.md |
 
 ## Limiti che rimangono
 
@@ -31,11 +32,11 @@ Continuazione dello ZIP originale, base Git `ab609bb`, implementazioni locali `9
 - Rendering: Cesium è circa 4,25 MB minificati / 1,14 MB gzip, warning build noto. Le scie possono essere corte a scala planetaria. Transizioni misurate nel browser locale non certificano prestazioni del telefono.
 - Provider regionali nuovi: configurabili, ma condizioni/CORS/precisione devono essere verificati; non entrano automaticamente nella cache allowlisted. WMS/terreno/edifici richiedono adattatori successivi.
 
-## Ripresa visiva 0.4.2
+## Ripresa visiva 0.4.3
 
 Apri la vista corrente → “Un altro modo di guardare”. La reference iniziale era `kedube/ha-iss-tracker`; per la 0.4.0 sono stati consultati solo README e screenshot pubblici. Per la 0.4.1 l’utente ha autorizzato download e studio del sorgente grafico, con checkout ignorato; metodo/revisione in `REFERENCE_STUDY.md`, nessun codice o asset copiato. Confronto e scelte in `EARTH_STYLES.md`. Browser compilato provato su desktop e 390×844, tutti gli stili esaminati nello sviluppo, Voxel/ASCII anche in salvaschermo. Corretto e riprovato il dettaglio notturno a 12 km. Le prove reali di telefono/canali/PWA sopra restano aperte.
 
-Prompt di ripresa: “Leggi AGENTS.md, HANDOFF.md, VERIFICATION.md, EARTH_STYLES.md e REFERENCE_STUDY.md. Continua da 0.4.2 mantenendo atmosfera/crepuscolo e blend di zoom, rotazione ambientale, pausa/velocità persistenti e la qualità orbitale e il dettaglio leggibile. Verifica iPhone/Android se disponibili e annota le prestazioni effettive. Nessun deploy e nessun invio sui miei canali senza richiesta.”
+Prompt di ripresa: “Leggi AGENTS.md, HANDOFF.md, VERIFICATION.md, EARTH_STYLES.md e REFERENCE_STUDY.md. Continua da 0.4.3 mantenendo atmosfera/crepuscolo e blend di zoom, rotazione ambientale, pausa/velocità persistenti e la qualità orbitale e il dettaglio leggibile. Leggi PERFORMANCE.md: ripeti i campioni 60 fps sul Mac quando CPU_Speed_Limit torna normale. Il telefono scelto è l’iPhone 17 Pro dell’utente; conferma Wi-Fi comune e verifica la build dist nella LAN, senza pubblicazione. Annota le prestazioni effettive e conserva la qualità. Nessun deploy e nessun invio sui miei canali senza richiesta.”
 
 La 0.4.1 è stata provata nella build desktop, portrait 390×844 e landscape 844×390, controlli 44 px e nessun overflow. Pausa/speed al reload, backup con camera corrente e avvio manuale del salvaschermo confermati. Console senza errori/warning nella QA. La rotazione non è una misura hardware di fps/consumo; queste prove restano aperte.
 
@@ -46,3 +47,5 @@ La 0.4.2 aggiunge prove sulla vista Naturale a 26.350 km, 17.000 km, 3.035 km e 
 Leggere AGENTS.md, VERIFICATION.md, VECTORS.md, REGIONAL_IMAGERY.md e CHANNELS.md. `npm run check`, `npm run test`, `npm run build`; `npm run preview` per la build, `npm run dev` per sviluppo. Test con due worker per evitare contesa CPU; il ricevitore HTTP usa solo loopback. Conservare i riferimenti originali e le regressioni di camera/Cesium/coda.
 
 Prossimo passo consigliato: QA su iPhone/Android e PWA/offline, poi il canale scelto dall'utente. Nessun deploy finché non richiesto. Percorsi guidati, dati scalari interrogabili, WebXR, terreno/edifici e allerte ambientali restano estensioni successive della specifica, non funzioni dichiarate operative.
+
+La 0.4.3 elimina la copia per-frame della camera; lettore finale sicuro dopo teardown e import isolato. Browser Chrome fisico Retina, layout 390×844/844×390 e salvaschermo diagnostico verificati. Campioni sintetici persistiti in docs/performance; non confrontare causalmente la baseline 58,8 con il finale 31,8 sotto limite CPU. Nessuna prova reale iPhone o canale live.

@@ -1,0 +1,130 @@
+{
+  "baseline": {
+    "profile": {
+      "renderer": "ANGLE (AMD, ANGLE Metal Renderer: AMD Radeon Pro Vega 56, Unspecified Version)",
+      "viewport": [
+        1701,
+        1191
+      ],
+      "buffer": [
+        2069,
+        1449
+      ],
+      "dpr": 2,
+      "msaa": 4,
+      "perFragment": true,
+      "targetFPS": 60
+    },
+    "sample": {
+      "frames": 300,
+      "fps": 58.83968148091577,
+      "intervalMs": {
+        "mean": 16.995333333412805,
+        "p95": 36.099999994039536,
+        "max": 42.099999994039536
+      },
+      "cpuMs": {
+        "mean": 5.341333335439364,
+        "p95": 19.900000005960464,
+        "max": 26.399999976158142
+      }
+    }
+  },
+  "final": {
+    "profile": {
+      "renderer": "ANGLE (AMD, ANGLE Metal Renderer: AMD Radeon Pro Vega 56, Unspecified Version)",
+      "viewport": [
+        1701,
+        1135
+      ],
+      "buffer": [
+        2120,
+        1414
+      ],
+      "dpr": 2,
+      "msaa": 4,
+      "perFragment": true,
+      "targetFPS": 61,
+      "focused": true,
+      "visibility": "visible"
+    },
+    "render": {
+      "frames": 300,
+      "fps": 31.803581083209874,
+      "intervalMs": {
+        "mean": 31.443000000019868,
+        "p95": 41.70000001788139,
+        "max": 57.900000005960464
+      },
+      "cpuMs": {
+        "mean": 3.746000000039736,
+        "p95": 12.800000011920929,
+        "max": 13.700000017881393
+      },
+      "at": "2026-10-12T18:00:53.504Z",
+      "focused": true,
+      "visibility": "visible"
+    },
+    "raf": {
+      "fps": 31.80931376707096,
+      "intervalMs": {
+        "mean": 31.43733333333337,
+        "p95": 49.89999999999418,
+        "max": 63
+      },
+      "frames": 300
+    }
+  },
+  "host": {
+    "model": "iMacPro1,1",
+    "CPU_Speed_Limit": 28,
+    "CPU_Scheduler_Limit": 80,
+    "observedAt": "2026-10-12T20:01:22+02:00"
+  },
+  "comparableBeforeAfter": false,
+  "production": {
+    "profile": {
+      "renderer": "ANGLE (AMD, ANGLE Metal Renderer: AMD Radeon Pro Vega 56, Unspecified Version)",
+      "viewport": [
+        1701,
+        1135
+      ],
+      "buffer": [
+        2120,
+        1414
+      ],
+      "dpr": 2,
+      "msaa": 4,
+      "perFragment": true,
+      "targetFPS": 61,
+      "focused": true,
+      "visibility": "visible"
+    },
+    "render": {
+      "frames": 300,
+      "fps": 19.214880003067044,
+      "intervalMs": {
+        "mean": 52.043000000019866,
+        "p95": 71.30000001192093,
+        "max": 80.89999997615814
+      },
+      "cpuMs": {
+        "mean": 5.042999999324481,
+        "p95": 14,
+        "max": 19.899999976158142
+      },
+      "at": "2026-10-12T18:10:11.171Z",
+      "focused": true,
+      "visibility": "visible"
+    },
+    "raf": {
+      "fps": 18.66809373872136,
+      "intervalMs": {
+        "mean": 53.56733333333334,
+        "p95": 75,
+        "max": 246
+      },
+      "frames": 300
+    }
+  }
+}

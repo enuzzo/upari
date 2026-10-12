@@ -1,13 +1,5 @@
 import {altitudeBlend} from './earth-look';
-export const earthStyles=[
-  {key:'natural',name:'Naturale',description:'La Terra, con atmosfera e profondità.'},
-  {key:'cartoon',name:'Cartoon',description:'Colori pieni, luce morbida e un tratto leggero.'},
-  {key:'cel',name:'Cel shading',description:'Campiture nette e contorni da illustrazione.'},
-  {key:'pixel',name:'Pixel art',description:'Piccoli quadrati e una palette da console.'},
-  {key:'voxel',name:'Voxel',description:'Mosaico di cubi isometrici · effetto grafico 2D.'},
-  {key:'ascii',name:'ASCII',description:'Il pianeta scritto con caratteri luminosi.'},
-  {key:'engraving',name:'Incisione',description:'Carta chiara, inchiostro e tratteggio.'},
-] as const;
+export const earthStyles=[{key:'natural',name:'Naturale',description:'La Terra, con atmosfera e profondità.'}] as const;
 export type EarthStyle=typeof earthStyles[number]['key'];
 export function validEarthStyle(raw:unknown):EarthStyle{return earthStyles.some(s=>s.key===raw)?raw as EarthStyle:'natural';}
 /** Blend by altitude, not zoom-button count. Keep all aerial detail at close range. */

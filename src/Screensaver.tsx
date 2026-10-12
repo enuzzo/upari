@@ -1,5 +1,4 @@
-import {earthStyleName} from './lib/earth-style';
-import StyleControls from './components/StyleControls';
+import type {StudySession} from './lib/statistics-renderer';
 import { lazy,Suspense,useEffect,useRef,useState } from 'react';
 import { ArrowLeft,Maximize,Minimize,Pause,Play,Settings,Wind,CloudSun,X } from 'lucide-react';
 import type { VectorField } from './lib/vectors';
@@ -11,6 +10,7 @@ import { fetchWeather,weatherLabel,type Weather } from './lib/weather';
 import Modal from './components/Modal';
 import RenderBoundary from './components/RenderBoundary';
 const Globe=lazy(()=>import('./components/Globe'));
+const StatisticsStudy=lazy(()=>import('./components/StatisticsStudy'));
 
 function Clock(){
   const [now,setNow]=useState(new Date());
@@ -46,6 +46,7 @@ function WeatherReading({place}:{place:Place}){
 function readConfig(){try{return {config:decodeSaver(location.hash),error:''};}catch(e){return {config:null,error:e instanceof Error?e.message:'Configurazione non valida.'};}}
 export default function Screensaver(){
   const [diagnostics]=useState(()=>new URLSearchParams(location.search).get('perf')==='1');
+  const [studySession,setStudySession]=useState<StudySession|null>(null);
   const [field,setField]=useState<VectorField|null>(null);
   const [initial]=useState(readConfig),[config,setConfig]=useState<SaverConfig|null>(initial.config),[visible,setVisible]=useState(true),[settings,setSettings]=useState(false),[rotating,setRotating]=useState(()=>initial.config?.scene.rotationEnabled!==false&&!matchMedia('(prefers-reduced-motion: reduce)').matches),[fullscreen,setFullscreen]=useState(!!document.fullscreenElement),[message,setMessage]=useState('');
   const timeout=useRef<ReturnType<typeof setTimeout>|undefined>(undefined),focused=useRef(false);
@@ -62,8 +63,8 @@ export default function Screensaver(){
   const layer=initialLayers.find(l=>l.key===config.scene.layerKey)??null,s=config.scene;
   const update=(changes:Partial<SaverConfig>)=>setConfig(c=>c?{...c,...changes}:c);
   const canFullscreen=!!document.documentElement.requestFullscreen&&document.fullscreenEnabled;
-  return <main className={'screensaver-shell '+(visible?'controls-visible':'controls-hidden')} onPointerMove={wake} onPointerDown={wake}>
-    <RenderBoundary><Suspense fallback={<div className="globe-loading">Preparo il pianeta…</div>}><Globe onVectorChange={setField} vectorKey={s.vectorKey} vectorMotion={s.vectorMotion} visualStyle={s.visualStyle} visualStrength={s.visualStrength} layer={layer} date={s.date} opacity={s.opacity} compare={s.compare} compareDate={s.compareDate} split={s.split} place={config.place} sunOffset={s.sunOffset} lighting={s.lighting} quality="high" initialCamera={s.camera} autoRotate={rotating} rotationSpeed={config.rotationSpeed} hideTools/></Suspense></RenderBoundary>
+  return <main className={'screensaver-shell '+(s.study?.enabled?'saver-study ':'')+(config.showWeather?'saver-weather ':'')+(visible?'controls-visible':'controls-hidden')} onPointerMove={wake} onPointerDown={wake}>
+    <RenderBoundary><Suspense fallback={<div className="globe-loading">Preparo il pianeta…</div>}><Globe study={studySession} onVectorChange={setField} vectorKey={s.study?.enabled?'none':s.vectorKey} vectorMotion={s.vectorMotion} visualStyle={s.visualStyle} visualStrength={s.visualStrength} layer={s.study?.enabled?null:layer} date={s.date} opacity={s.opacity} compare={s.study?.enabled?false:s.compare} compareDate={s.compareDate} split={s.split} place={config.place} sunOffset={s.sunOffset} lighting={s.lighting} quality="high" initialCamera={s.camera} autoRotate={rotating} rotationSpeed={config.rotationSpeed} hideTools/></Suspense></RenderBoundary>
     <div className="saver-toolbar" onFocusCapture={()=>{focused.current=true;wake();}} onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget as Node)){focused.current=false;wake();}}}>
       <a href="/" className="saver-return" aria-label="Torna a Upari"><ArrowLeft size={17}/> upari</a>
       <div className="saver-actions">
@@ -72,13 +73,13 @@ export default function Screensaver(){
         <button className="icon-button" aria-label="Opzioni del salvaschermo" title="Opzioni" onClick={()=>{setSettings(true);wake();}}><Settings size={19}/></button>
       </div>
     </div>
+    {s.study?.enabled&&<Suspense fallback={null}><StatisticsStudy ambient initial={s.study} onSession={setStudySession} onState={study=>update({scene:{...s,study}})} onExit={()=>{setStudySession(null);update({scene:{...s,study:{...s.study!,enabled:false,playing:false}}});}}/></Suspense>}
     {(config.showClock||config.showWeather)&&<div className="ambient-information">{config.showClock&&<Clock/>}{config.showWeather&&<WeatherReading place={config.place}/>}</div>}
-    <div className="saver-view-caption">{layer?layer.name+' · '+(layer.source??'NASA')+' · '+dataDateLabel(layer,s.date,s.compare?s.compareDate:undefined):'Fotografia satellitare · NASA / Esri · mosaici, date variabili'+(s.lighting?' · luci NASA 2016':'')}{field?' · '+field.source+' · dati '+field.time.slice(0,10):''}{s.visualStyle&&s.visualStyle!=='natural'?' · stile '+earthStyleName(s.visualStyle)+(layer&&!layer.regional?' · colori rielaborati':''):''}{s.sunOffset?' · Sole '+(s.sunOffset>0?'+':'')+s.sunOffset+' h':''}</div>
+    <div className="saver-view-caption">{s.study?.enabled?'Società nel tempo · serie annuali · '+(studySession?.controller.data.indicators.find(m=>m.id===studySession.controller.snapshot().indicator)?.name??'caricamento dati'):layer?layer.name+' · '+(layer.source??'NASA')+' · '+dataDateLabel(layer,s.date,s.compare?s.compareDate:undefined):'Fotografia satellitare · NASA / EOX · mosaico Sentinel-2 2016 · circa 10 m'+(s.lighting?' · luci NASA 2016':'')}{field?' · '+field.source+' · dati '+field.time.slice(0,10):''}{s.sunOffset?' · Sole '+(s.sunOffset>0?'+':'')+s.sunOffset+' h':''}</div>
     {settings&&<Modal title="Il tuo salvaschermo" onClose={()=>{setSettings(false);wake();}}>
       <label className="toggle-row"><span>Ora corrente</span><input type="checkbox" checked={config.showClock} onChange={e=>update({showClock:e.target.checked})}/></label>
       <label className="toggle-row"><span>Meteo di {config.place.name}<small>Stima Open-Meteo; usa le coordinate del luogo</small></span><input type="checkbox" checked={config.showWeather} onChange={e=>update({showWeather:e.target.checked})}/></label>
       <label className="range-label">Rotazione <strong>{config.rotationSpeed.toFixed(2)}°/s</strong><input type="range" aria-label="Velocità di rotazione" min=".02" max="1" step=".02" value={config.rotationSpeed} onChange={e=>update({rotationSpeed:+e.target.value})}/></label>
-      <StyleControls scene={s} onScene={changes=>update({scene:{...s,...changes}})} scientific={!!layer&&!layer.regional}/>
       <p className="footnote">I controlli scompaiono dopo pochi secondi. Tocca la pagina o premi un tasto per ritrovarli. Il mondo rispetta la preferenza di movimento ridotto del dispositivo.</p>
       <button className="secondary" onClick={async()=>{try{await navigator.clipboard.writeText(location.href);setMessage('Link della vista copiato.');}catch{setMessage('Copia l’indirizzo dalla barra del browser.');}}}>Copia link della vista</button>
     </Modal>}

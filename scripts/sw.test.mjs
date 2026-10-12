@@ -11,11 +11,11 @@ function worker(){
 describe('bounded public imagery caching',()=>{
   it('caches public Swiss tiles and local vector packages while excluding keyed variants',async()=>{
     const w=worker();vm.runInNewContext(await readFile('public/sw.js','utf8'),w.context);
-    for(const url of ['https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/10/536/365.jpeg','https://upari.example/vectors/wind.json']){expect(await w.fetch(url)).not.toBeNull();expect(w.entries.has(url)).toBe(true);expect(await w.fetch(url+'?token=secret')).toBeNull();}
+    for(const url of ['https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/10/536/365.jpeg','https://upari.example/vectors/wind.json','https://upari.example/statistics/world.json']){expect(await w.fetch(url)).not.toBeNull();expect(w.entries.has(url)).toBe(true);expect(await w.fetch(url+'?token=secret')).toBeNull();}
   });
-  it('caches Esri World Imagery tiles for offline photography',async()=>{
+  it('caches only freely licensed EOX 2016 tiles for offline photography',async()=>{
     const w=worker();vm.runInNewContext(await readFile('public/sw.js','utf8'),w.context);
-    const url='https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/3/2/4';
+    const url='https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless/default/WGS84/3/2/4.jpg';
     const response=await w.fetch(url);expect(await response?.text()).toBe('real-tile');expect(w.entries.has(url)).toBe(true);
   });
   it('opens approved notification deep links from the offline shell',async()=>{
@@ -33,7 +33,7 @@ describe('bounded public imagery caching',()=>{
   });
   it('does not intercept authenticated requests, private local paths or other Esri services',async()=>{
     const w=worker();vm.runInNewContext(await readFile('public/sw.js','utf8'),w.context);
-    for(const url of ['https://upari.example/private-plan','https://upari.example/bridge/plan','https://services.arcgisonline.com/ArcGIS/rest/services/Private/MapServer/tile/1/2/3','https://ntfy.example/topic'])expect(await w.fetch(url)).toBeNull();
+    for(const url of ['https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2024_3857/default/g/3/2/4.jpg','https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/3/2/4','https://upari.example/private-plan','https://upari.example/bridge/plan','https://services.arcgisonline.com/ArcGIS/rest/services/Private/MapServer/tile/1/2/3','https://ntfy.example/topic'])expect(await w.fetch(url)).toBeNull();
     expect(await w.fetch('https://upari.example/assets/app.js',{Authorization:'Bearer test-token'})).toBeNull();
     expect(await w.fetch('https://upari.example/assets/app.js?token=test-token')).toBeNull();
   });

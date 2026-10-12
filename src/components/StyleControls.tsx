@@ -1,6 +1,0 @@
-import {earthStyles} from '../lib/earth-style';
-import type {SceneState} from '../types';
-export default function StyleControls({scene,onScene,scientific=false}:{scene:SceneState;onScene:(changes:Partial<SceneState>)=>void;scientific?:boolean}){
-  const current=earthStyles.find(s=>s.key===(scene.visualStyle??'natural'))??earthStyles[0];
-  return <section className="earth-style-controls" aria-label="Stile della Terra"><h3>Un altro modo di guardare</h3><div className="earth-style-grid">{earthStyles.map(style=><button key={style.key} className={'earth-style-option '+(current.key===style.key?'selected':'')} aria-pressed={current.key===style.key} onClick={()=>onScene({visualStyle:style.key})}><span className={'style-swatch style-'+style.key} aria-hidden="true"/><span>{style.name}</span></button>)}</div><p className="footnote">{current.description}</p>{current.key!=='natural'&&<><label className="range-label">Intensità <strong>{Math.round((scene.visualStrength??1)*100)}%</strong><input type="range" aria-label="Intensità dello stile" min="0" max="100" value={(scene.visualStrength??1)*100} onChange={e=>onScene({visualStrength:+e.target.value/100})}/></label>{scientific&&<p className="style-science-note">Rielaborazione grafica: colori modificati. Per leggere la legenda scegli Naturale.</p>}</>}</section>;
-}

@@ -1,9 +1,10 @@
+import {statisticsRenderer,type StudySession} from '../lib/statistics-renderer';
 import {CameraSnapshot} from '../lib/camera-snapshot';
 import {RotationClock,defaultRotationSpeed} from '../lib/earth-rotation';
 import {FrameSample} from '../lib/frame-sample';
 import {atmosphereBlend,ZoomBlend} from '../lib/earth-look';
 import {earthShader} from '../lib/earth-shader';
-import {earthStyles,spaceBlend,naturalGradeAllowed,type EarthStyle} from '../lib/earth-style';
+import {spaceBlend,naturalGradeAllowed,type EarthStyle} from '../lib/earth-style';
 import { memo,useEffect,useRef,useState,useId } from 'react';
 import * as C from 'cesium';
 import 'cesium/Build/Cesium/Widgets/widgets.css';
@@ -17,7 +18,7 @@ import { initialCamera } from '../lib/scene';
 import { ImageryBuffer,type FrameSpec } from '../lib/imagery-buffer';
 import { removeGlobeEntities } from '../lib/globe-lifecycle';
 
-type Props={layer:Layer|null;date:string;opacity:number;compare:boolean;compareDate:string;split:number;place:Place;orbit?:OrbitData|null;showISS?:boolean;sunOffset:number;lighting:boolean;quality:RenderQuality;initialCamera?:CameraView;onCameraChange?:(view:CameraView,persist?:boolean)=>void;onCameraReader?:(read:()=>CameraView)=>void;onRotationChange?:(enabled:boolean)=>void;onRotationSpeedChange?:(speed:number)=>void;autoRotate?:boolean;rotationSpeed?:number;hideTools?:boolean;preloadDate?:string;onLoadingChange?:(loading:boolean)=>void;onImageryError?:(message:string)=>void;onFrameChange?:(frame:FrameSpec|undefined,transition?:FrameSpec)=>void;vectorKey?:"none"|"wind"|"currents";vectorMotion?:boolean;onVectorChange?:(field:VectorField|null)=>void;visualStyle?:EarthStyle;visualStrength?:number};
+type Props={study?:StudySession|null;layer:Layer|null;date:string;opacity:number;compare:boolean;compareDate:string;split:number;place:Place;orbit?:OrbitData|null;showISS?:boolean;sunOffset:number;lighting:boolean;quality:RenderQuality;initialCamera?:CameraView;onCameraChange?:(view:CameraView,persist?:boolean)=>void;onCameraReader?:(read:()=>CameraView)=>void;onRotationChange?:(enabled:boolean)=>void;onRotationSpeedChange?:(speed:number)=>void;autoRotate?:boolean;rotationSpeed?:number;hideTools?:boolean;preloadDate?:string;onLoadingChange?:(loading:boolean)=>void;onImageryError?:(message:string)=>void;onFrameChange?:(frame:FrameSpec|undefined,transition?:FrameSpec)=>void;vectorKey?:"none"|"wind"|"currents";vectorMotion?:boolean;onVectorChange?:(field:VectorField|null)=>void;visualStyle?:EarthStyle;visualStrength?:number};
 function provider(layer:Layer,date:string){return new C.UrlTemplateImageryProvider({url:tileURL(layer,date),tilingScheme:new C.WebMercatorTilingScheme(),tileWidth:256,tileHeight:256,maximumLevel:layer.maxLevel,rectangle:layer.coverage?C.Rectangle.fromDegrees(...layer.coverage):undefined,credit:new C.Credit(layer.source??('NASA EOSDIS GIBS · '+layer.id))});}
 function addImagery(viewer:C.Viewer,source:C.ImageryProvider,index?:number){
   const layer=new C.ImageryLayer(source,{maximumAnisotropy:8,minificationFilter:C.TextureMinificationFilter.LINEAR,magnificationFilter:C.TextureMagnificationFilter.LINEAR});
@@ -34,7 +35,7 @@ function Globe(p:Props){
   const diagnosticRevision=useRef(0),cameraSnapshot=useRef<CameraSnapshot|null>(null);
   const rotationRunning=rotating&&(!reducedMotion||motionOptIn);
   const speedLabel=rotationSpeed.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});
-  const photographic=()=>{const key=buffer.current?.displaying?.key.split('|')[0];const shown=key?(initialLayers.find(l=>l.key===key)??{regional:false}):null;return naturalGradeAllowed(latest.current.layer,shown);};
+  const photographic=()=>{if(latest.current.study)return false;const key=buffer.current?.displaying?.key.split('|')[0];const shown=key?(initialLayers.find(l=>l.key===key)??{regional:false}):null;return naturalGradeAllowed(latest.current.layer,shown);};
   useEffect(()=>{
     (window as unknown as {CESIUM_BASE_URL:string}).CESIUM_BASE_URL='/cesium/';
     let v:C.Viewer|null=null,gone=false;const off:(()=>void)[]=[],baseBlend=new ZoomBlend(0),motionMedia=matchMedia('(prefers-reduced-motion: reduce)');
@@ -65,7 +66,7 @@ function Globe(p:Props){
         const moving=aerial?baseBlend.tick(1-far,performance.now(),v.scene.globe.tilesLoaded,motionMedia.matches):false;
         if(aerial)aerial.alpha=baseBlend.value;
         v.scene.globe.showGroundAtmosphere=photographic();
-        lights.alpha=!latest.current.layer&&latest.current.lighting?far:0;lights.show=lights.alpha>0;
+        lights.alpha=!latest.current.study&&!latest.current.layer&&latest.current.lighting?far:0;lights.show=lights.alpha>0;
         if(moving)v.scene.requestRender();
         if(!moving&&(blending||before!==baseBlend.value))node.current?.setAttribute('data-zoom-blend',JSON.stringify({aerial:baseBlend.value,target:1-far,height:Math.round(height)}));
         blending=moving;
@@ -83,12 +84,11 @@ function Globe(p:Props){
         const c=v.camera.positionCartographic;
         latest.current.onCameraChange?.({longitude:C.Math.toDegrees(c.longitude),latitude:C.Math.toDegrees(c.latitude),height:c.height,heading:v.camera.heading,pitch:v.camera.pitch,roll:v.camera.roll});
       }));
-      C.ArcGisMapServerImageryProvider.fromUrl('https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',{enablePickFeatures:false}).then(source=>{
-        if(gone||!v||v.isDestroyed())return;
-        aerial=addImagery(v,source,1);updateBase();
-        off.push(source.errorEvent.addEventListener(()=>setBaseError('Alcune immagini fotografiche non sono disponibili.')));
-        v.scene.requestRender();
-      }).catch(()=>{if(!gone)setBaseError('Fotografia non disponibile · base NASA di riserva.');});
+      // Only the 2016 EOX product is CC BY4.0; newer mosaics have NC restrictions.
+      const detail=new C.UrlTemplateImageryProvider({url:'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless/default/WGS84/{z}/{y}/{x}.jpg',tilingScheme:new C.GeographicTilingScheme(),tileWidth:256,tileHeight:256,maximumLevel:13,credit:new C.Credit('Sentinel-2 cloudless 2016 · <a href="https://cloudless.eox.at/">EOX IT Services GmbH</a> · Contains modified Copernicus Sentinel data 2016 &amp; 2017 · <a href="https://creativecommons.org/licenses/by/4.0/">CC BY4.0</a>',true)});
+      aerial=addImagery(v,detail,1);updateBase();
+      off.push(detail.errorEvent.addEventListener(()=>setBaseError('Alcune fotografie Sentinel-2 2016 non sono disponibili.')));
+      v.scene.requestRender();
       setReady(true);
     }catch{
       cameraSnapshot.current?.release();cameraSnapshot.current=null;
@@ -128,8 +128,7 @@ function Globe(p:Props){
     setStyleError('');let stage:C.PostProcessStage|undefined,stopped=false;
     try{
       stage=new C.PostProcessStage({name:'upari-earth-style',fragmentShader:earthShader,uniforms:{
-        style:()=>Math.max(0,earthStyles.findIndex(s=>s.key===(latest.current.visualStyle??'natural'))),
-        strength:()=>latest.current.visualStrength??1,spaceAmount:()=>spaceBlend(v.camera.positionCartographic.height),atmosphereAmount:()=>atmosphereBlend(v.camera.positionCartographic.height),
+        spaceAmount:()=>spaceBlend(v.camera.positionCartographic.height),atmosphereAmount:()=>atmosphereBlend(v.camera.positionCartographic.height),
         photographic:()=>photographic()?1:0,
         solarLighting:()=>latest.current.lighting||latest.current.layer?.key==='night'?1:0,
         pixelRatio:()=>v.scene.drawingBufferWidth/Math.max(1,node.current?.clientWidth??v.scene.drawingBufferWidth)
@@ -144,7 +143,7 @@ function Globe(p:Props){
     });
     return()=>{stopped=true;off();if(stage&&!v.isDestroyed())v.scene.postProcessStages.remove(stage);};
   },[ready,p.visualStyle]);
-  useEffect(()=>{const v=viewer.current;if(ready&&v&&!v.isDestroyed())v.scene.requestRender();},[ready,p.visualStrength]);
+  useEffect(()=>{const v=viewer.current;if(!ready||!v||!p.study)return;return statisticsRenderer(v,p.study);},[ready,p.study]);
   useEffect(()=>{
     const v=viewer.current;if(!ready||!v)return;
     let timer:ReturnType<typeof setTimeout>|undefined,previous=performance.now(),settles=0,transitionStart=0,transitionFrames=0,transitionGap=0;

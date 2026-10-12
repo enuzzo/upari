@@ -4,9 +4,9 @@ import { initialPreferences,validatePreferences } from './storage';
 import type { SaverConfig } from '../types';
 afterEach(()=>vi.restoreAllMocks());
 describe('optional features and autonomous scene links',()=>{
-  it('migrates older preferences with ISS off and automatic quality',()=>{
+  it('migrates older preferences with ISS off and high quality',()=>{
     const legacy={...initialPreferences,issEnabled:undefined,renderQuality:undefined};
-    const p=validatePreferences(legacy);expect(p.issEnabled).toBe(false);expect(p.renderQuality).toBe('auto');
+    const p=validatePreferences(legacy);expect(p.issEnabled).toBe(false);expect(p.renderQuality).toBe('high');
     expect(validatePreferences({...legacy,issEnabled:true,renderQuality:'high'}).issEnabled).toBe(true);
   });
   it('round-trips the exact scene, dates, comparison and camera with a Unicode place',()=>{

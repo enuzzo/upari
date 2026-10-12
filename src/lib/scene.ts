@@ -1,3 +1,4 @@
+import {validateStudy} from './statistics';
 import {defaultRotationSpeed} from './earth-rotation';
 import {validEarthStyle} from './earth-style';
 import type { CameraView,Place,SaverConfig,SceneState } from '../types';
@@ -20,7 +21,7 @@ export function validateScene(raw:unknown):SceneState {
   const date=allowed(s.date)?s.date!:layer?.date??'';
   const compareDate=allowed(s.compareDate)?s.compareDate!:date;
   return {layerKey:layer?.key??'satellite',date,compareDate,opacity:bounded(s.opacity,0,1,1),compare:!!layer&&!layer.static&&s.compare===true,
-    split:bounded(s.split,.05,.95,.5),sunOffset:bounded(s.sunOffset,-12,12,0),lighting:s.lighting===true,camera:validateCamera(s.camera),vectorKey:["wind","currents"].includes(s.vectorKey??"")?s.vectorKey:"none",vectorMotion:s.vectorMotion!==false,visualStyle:validEarthStyle(s.visualStyle),visualStrength:bounded(s.visualStrength,0,1,1),rotationEnabled:s.rotationEnabled!==false,rotationSpeed:bounded(s.rotationSpeed,.02,1,defaultRotationSpeed)};
+    split:bounded(s.split,.05,.95,.5),sunOffset:bounded(s.sunOffset,-12,12,0),lighting:s.lighting===true,camera:validateCamera(s.camera),vectorKey:["wind","currents"].includes(s.vectorKey??"")?s.vectorKey:"none",vectorMotion:s.vectorMotion!==false,visualStyle:validEarthStyle(s.visualStyle),visualStrength:1,rotationEnabled:s.rotationEnabled!==false,rotationSpeed:bounded(s.rotationSpeed,.02,1,defaultRotationSpeed),...(s.study?{study:validateStudy(s.study)}:{})};
 }
 export function validateSaver(raw:unknown):SaverConfig {
   const c=(raw??{}) as Partial<SaverConfig>;

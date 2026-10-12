@@ -1,6 +1,53 @@
+# Upari — verifiche locali 0.4.2
+
+12 ottobre 2026. Codice locale `a1234ae`, base `f38bbbc`. **Nessun push o deploy.** Questa è la revisione corrente; sezioni precedenti storiche.
+
+## Gate
+
+- **91 test in 34 file** superati sulla revisione finale, compresi HTTP loopback e riferimenti Skyfield/JPL invariati. Tre nuove prove: distribuzione log-altitude/C2 e dettaglio, fade atmosferico indipendente, readiness/background/movimento ridotto e passo 30/60 fps del blend.
+- TypeScript, build di produzione e sintassi SW verdi. Nessuna dipendenza aggiunta. Micro-ottimizzazione finale GLSL provata nel browser (Naturale e ASCII), senza errori shader.
+- Revisione indipendente: P2 ripresa blend dal background corretto con `suspend()` e guard hidden; guard scientifico anche sulla tinta nativa. 12 test mirati verdi; successiva revisione della camera immediata dopo zoom senza ulteriori rilievi concreti.
+- Manifest shell finale: **376 route/file, 12.668.051 byte**; SHA-256 dell’elenco `JSON.stringify(await offlineFiles())`: `1e67c11e17eba0a6fbb7f4460d0563680bcfbabf5e323cd6c5936a9a05cef9b9`. È l’elenco, non un hash dei contenuti. Globo/Cesium 4.261,67 kB / 1.147,42 kB gzip, warning dimensione noto.
+- Asset finale osservato nel DOM `/assets/app-DPKw02Rs.js`. Diagnostica `data-render-sample`/`meanMs` assente nei bundle compilati: il campione è limitato allo sviluppo, senza timer o telemetria di produzione.
+
+## Browser e confronto
+
+Browser interno Codex su questo Mac, 1280×720 e portrait 390×844, DPR 1 della QA; sviluppo 4174, build 4175, copia build 0.4.1 in `/private/tmp/upari-qa/baseline-041` su loopback 4176. Scena dell’utente 4173 preservata. Nessuna camera/GPS o canale live.
+
+| Prova | Esito osservato |
+|---|---|
+| Atmosfera/crepuscolo | Naturale, Sole all’ora reale e anteprima −6 h dichiarata: bordo blu/ambra, volume e luci NASA 2016. Confronto con vecchia build sulla stessa camera a 26.350 km e offset 0; orologio reale, catture ravvicinate, nessun pixel-diff o Sole congelato |
+| Zoom | Vista orbitale 17.000 km, zoom out 26.350 km, blend intermedio a 3.034.649 m: aerial/target 0,520537. Fotografia a 12.000 m: aerial/target 1, dettaglio leggibile e mosaici reali, grading nuovo nullo |
+| Camera dopo zoom | Rilevato link con quota precedente se aperto subito dopo il pulsante; corretto pubblicando in preRender e immediatamente nei pulsanti. Build riprovata: Allontana da vista pianeta → Salvaschermo subito, quota 26.349.986 m nel link invece di 17.000.000 m |
+| Raggio rivolto al cielo | Fixture locale derivata dal link pubblico di QA: quota 3.200 km, pitch +π/2, clock spento. Terra dietro la camera: cielo scuro/stelle, nessun alone falso, console pulita |
+| Palette/date/play | Oceani termici 10/10/2026, legenda ufficiale; play prepara il 04/10 conservando il frame datato 10/10, poi avanzamento osservato fino al 07/10 e 10/10. Nessuna tinta fotografica/atmosferica sul raster. Campione fade: 9 aggiornamenti / 333 ms / gap max 74 ms |
+| Stili | ASCII sul nuovo shader, ritorno Naturale; nessun errore/warning di compilazione osservato |
+| Mobile | 390×844: fotografia Naturale/terminatore/rotazione, controlli e caption leggibili, `scrollWidth=clientWidth=390`; nessun overlay framework o errore console. Override ripristinato |
+| Scena dell’utente | Aerosol 10/10/2026, ISS off e rotazione 0,08 conservati dopo reload sulla build finale. Pausa temporanea per isolare il campione, poi ripristinata. Anteprima fotografica separata, Sole reale e rotazione attiva |
+
+La prima baseline dopo sola sostituzione del frammento nella stessa scheda mostrava ancora la scena vecchia: il salvaschermo legge la scena al caricamento. Cattura scartata e confronto rifatto dopo reload; consultare i link salvati in una nuova scheda o ricaricare dopo cambio manuale del frammento. Un click di QA ha avuto un timeout del controllo durante il caricamento: stato riletto e azione riuscita, senza errore dell’app in console.
+
+## Cadenza osservata e limiti
+
+Diagnostica DEV nel callback Cesium esistente: otto intervalli di warmup, poi 120 intervalli consecutivi di rotazione attiva, memoria costante, nessun timer o readback GPU. Non misura il tempo GPU né certifica ogni fotogramma presentato a schermo.
+
+| Campione locale | Media / massimo intervallo | Contesto |
+|---|---|---|
+| Prima calibrazione | 19,33 / 49,30 ms | QA locale con più schede, target 60, prima della micro-ottimizzazione finale |
+| Viste concorrenti | 59,58 / 203,10 ms | Tre viste 3D in movimento durante la QA; campione sotto contesa, non confronto dello shader |
+| Una sola vista in movimento | **25,95 / 50,60 ms** | Altre due viste messe temporaneamente in pausa, schede di confronto chiuse; target 60, circa 38,5 aggiornamenti/s nel campione |
+
+La pausa delle altre viste riduce la contesa osservata, ma non dimostra che questa fosse l’unica causa. Campioni brevi e condizioni differenti: **non dichiarare 60 fps sostenuti o un aumento misurato rispetto alla 0.4.1**. Il codice evita calcoli ripetuti (un raggio/pixel, stelle solo sul cielo), mantiene una passata e i profili adattivi precedenti; la prova quantitativa su telefono/GPU reale resta aperta. Si sono ripristinate le rotazioni precedenti dopo il campione.
+
+Screenshot reali temporanei in `/private/tmp/upari-qa/`: `042-natural-final.png`, `042-natural-mobile.png`, `042-zoom-out.png`, `042-before-far.png`, `042-after-far.png`, `042-away-from-earth.png`, `042-middle-dev.png`, `042-science-dev.png`, `042-after-night-dev.png`, `042-before-orbit.png`. Le immagini DEV sono prove intermedie, quelle finali provano la build. Sono file temporanei, non inclusi nella distribuzione.
+
+Telefono reale: misurare fluidità/consumo/memoria e DPR 2/3, gesti/background e AR. PWA installata: offline/update/fullscreen. Canali propri: recapito/cancellazione/restart; nessun invio live. File operativo OSCAR v2 autorizzato ancora mancante. Nessuna accettazione hardware o visiva dell’utente dichiarata effettuata.
+
+---
+
 # Upari — verifiche locali 0.4.1
 
-11–12 ottobre 2026. Codice locale `eb68b44`, continuazione di `bf85a66`. **Nessun push o deploy.** Questa sezione descrive lo stato corrente; le sezioni precedenti conservate sotto sono storiche.
+11–12 ottobre 2026. Codice locale `eb68b44`, continuazione di `bf85a66`. **Nessun push o deploy.** Questa sezione descrive la revisione storica 0.4.1.
 
 ## Gate
 

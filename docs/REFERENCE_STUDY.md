@@ -14,3 +14,15 @@ Le scelte grafiche della 0.4.0 precedono questo studio. Spunti futuri: confronta
 ## Isolamento dei test
 
 Il primo comando Vitest dopo il download ha scoperto per errore anche le suite `node:test` della reference: il solo `.gitignore` non basta a impedirlo. Sono state eseguite durante quella scoperta, con quattro errori di suite non riconosciute da Vitest; nessun loro server o processo applicativo è stato avviato. L’incidente è stato comunicato e corretto: `vite.config.ts` ammette ora soltanto i test di `src/`, `bridge/` e `scripts/` di Upari. Il giro finale **88/88 in 33 file** esclude il checkout. Non eseguire volontariamente script della reference nelle prossime sessioni.
+
+
+## Applicazione degli spunti — 0.4.2
+
+| Spunto / differenza | Intervento originale e prova |
+|---|---|
+| Reference: transizione continua nello zoom, atmosfera che si attenua vicino al terreno | Quota logaritmica C2 tra 1.200 e 8.000 km, attesa delle tile e blend breve nel ciclo Cesium; prova intermedia a 3.035 km e dettaglio a 12 km |
+| Reference: notte/crepuscolo dal Sole, glow contenuto | Bordo esterno con distanza del raggio dall’ellissoide in metri, contributi blu e ambra angolari; quadro orbitale e zoom out 26.350 km, offset Sole 0 e −6 h |
+| Reference MapLibre vs Upari Cesium | Native scattering mantenuto e calibrato; nessun morph 2D, nessun shader/texture copiato. Il postprocess originale rimane una sola passata |
+| Differenza rispetto alla 0.4.1 | Meno tinta nel dettaglio, transizione distribuita lungo lo zoom, ripresa dal background senza recupero brusco; guard scientifico anche sulla tinta nativa del terreno |
+
+Confronto locale con copia della build precedente in `/private/tmp/upari-qa/baseline-041`, servita solo su loopback 4176. Camera identica e offset Sole 0, orologio reale (nessun confronto pixel esatto). Le scene del salvaschermo sono lette al caricamento: quando si sostituisce un frammento nella stessa scheda, ricaricare prima del confronto. La prima cattura con la vecchia scena è stata scartata e sostituita. Screenshot/misure e limiti in VERIFICATION.md. Fonti tecniche primarie in EARTH_STYLES.md.

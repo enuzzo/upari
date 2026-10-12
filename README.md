@@ -4,9 +4,13 @@ Esplorare la Terra. Ritrovare il cielo.
 
 PWA italiana gratuita e ospitabile come directory statica. Globo con fotografia dettagliata, dieci prodotti NASA, SWISSIMAGE e una pagina salvaschermo autonoma. ISS, guida AR e avvisi sono strumenti opzionali, inizialmente spenti. Luoghi, orizzonti, diario e preferenze rimangono sul dispositivo.
 
-Revisione **0.4.1**, preparata senza deploy come richiesto. Lo stato del sito pubblicato non è stato verificato in questa sessione. Leggere il [passaggio UI/UX](docs/UIUX_PASS_02.md).
+Revisione **0.4.2**, preparata senza deploy come richiesto. Lo stato del sito pubblicato non è stato verificato in questa sessione. Leggere il [passaggio UI/UX](docs/UIUX_PASS_02.md).
 
 **Prima di continuare:** leggere [AGENTS.md](AGENTS.md), [stato del lavoro](docs/HANDOFF.md) e [verifiche](docs/VERIFICATION.md). La verifica nel browser è stata eseguita su mobile e desktop; le prove AR e notifiche su dispositivi e servizi reali restano aperte.
+
+## Vista Naturale 0.4.2
+
+Atmosfera più pulita, bordo blu sul lato illuminato e crepuscolo caldo riferito al Sole. Transizione NASA→Esri continua lungo lo zoom, con attesa delle immagini e dissolvenza nel ciclo esistente. Effetti attenuati nel dettaglio e palette scientifiche protette. [Metodo e limiti](docs/EARTH_STYLES.md); performance su telefono reale ancora da verificare.
 
 ## Rotazione ambientale 0.4.1
 

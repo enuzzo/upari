@@ -95,3 +95,15 @@ Implementazione 0.3.0 salvata nel commit locale `96c26f4`; documentazione e reso
 - Nessun deploy/push. Prove telefono reale, PWA installata e canali propri ancora aperte; riferimento preciso e prompt aggiornato in HANDOFF.md.
 
 Implementazione 0.4.1 salvata nel commit locale `eb68b44`; documentazione aggiornata nel commit successivo. Build finale `app-T578fIU0.js`, rotazione default confermata nella scena originale, console senza errori/warning.
+
+
+## 12 ottobre 2026 — atmosfera, crepuscolo e zoom Naturale 0.4.2
+
+- Spunti della reference applicati con codice originale: bordo in metri dall’ellissoide, blu/ambra legati al Sole e crepuscolo accentuato verso l’orizzonte; native scattering alleggerito, dettaglio senza nuovo grading. Raggio una sola volta/pixel, stelle solo fuori dalla Terra; stesso stage/ciclo, nessun nuovo timer/dipendenza.
+- Transizione fotografica C2 su quota logaritmica; attesa delle tile prima di aumentare l’immagine aerea, blend esponenziale e reset su background. Guard richiesto/effettivo protegge anche la tinta nativa del terreno scientifico.
+- Revisione P2 background chiuso; nessun ulteriore rilievo su alone/guard/camera. Browser ha trovato link subito dopo zoom con camera precedente: preRender e pulsanti aggiornano il riferimento corrente senza scrittura per frame; link riprovato a 26.349.986 m.
+- Gate finali: 91 test / 34 file; TypeScript/build/SW, HTTP loopback e riferimenti scientifici conservati. Diagnostica DEV di 120 intervalli, memoria costante e nessun timer, rimossa nella build di produzione. Campioni e contesa tra schede documentati in VERIFICATION.md.
+- Browser sviluppo/build, confronto con build 0.4.1 su stessa camera e Sole all’ora reale, mobile 390×844, dettaglio 12 km, zoom intermedio e zoom out, Terra dietro la camera, ASCII e play oceani termici. Console pulita. Prima baseline con frammento cambiato senza reload scartata, poi rifatta correttamente.
+- Nessun deploy/push o canale live. Restano telefono reale (prestazioni/consumo/AR), PWA installata e canali propri. Mosaici/foto/luci 2016 conservano le loro date; nessuna osservazione o fisica meteo inventata.
+
+Implementazione 0.4.2 nel commit locale `a1234ae`. Build finale `app-DPKw02Rs.js`; campione isolato 120 intervalli, media 25,95 ms e massimo 50,60 ms, senza promettere 60 fps. Rotazioni ripristinate, origine dell’utente aerosol/ISS off conservata; documentazione di ripresa nel commit successivo.

@@ -30,7 +30,11 @@ Read this file before changing anything. Then read `docs/HANDOFF.md`, `docs/VERI
     Native DPR is explicitly enabled in Cesium. The resolution scale is effectiveRatio/nativeDPR, not a second reduction with browser-recommended resolution enabled. See the regression tests. ISS off means no new ephemeris fetches, forecast workers, tracking or periodic refreshes.
 12. If Sites is available, `.openai/hosting.json` is the authoritative project identity. Reuse its exact `project_id`; preserve private access. Never create a second Site. Otherwise work locally or use the user's hosting.
 
-## Current local milestone — 0.4.1, 12 October 2026
+## Current local milestone — 0.4.2, 12 October 2026
+
+Implemented locally in `a1234ae`: Natural atmosphere/twilight refinements in the existing shader: metre-based WGS84 limb falloff, sun-aware warm twilight strongest near the limb, reduced native Mie haze, close-up grading fades out. One ray per pixel and stars only outside Earth. Log-altitude C2 imagery transition + bounded readiness-aware ZoomBlend in preRender; suspend on visibility, no new timer. Ground atmospheric tint is also guarded for requested/retained scientific rasters. Camera memory follows visible preRender/zoom immediately, no IndexedDB writes per frame. 91 tests / 34 files; current browser evidence and hardware limits in VERIFICATION.md. No push/deploy.
+
+## Previous local milestone — 0.4.1, 12 October 2026
 
 Implemented locally in `eb68b44`: default slow Earth rotation (0.08 degrees/s at orbital altitude), pause/play and speed in the right toolbar. Persistent scene/backup/screensaver settings; reduce motion starts paused but allows explicit play. A single Cesium preUpdate callback, no additional frame timer; slow down near terrain and hold during interaction. Export reads live camera, background snapshot is best-effort, never write IndexedDB each frame. 88 tests / 33 files; browser portrait/landscape checks and remaining device limits in VERIFICATION.md. Reference source study is now explicitly authorized; ignored checkout revision/findings in REFERENCE_STUDY.md. No push/deploy.
 
@@ -49,6 +53,6 @@ The continuation below is historical planning. Playback/source dates, real dated
 3. Real ntfy/HA end-to-end test with the user's chosen endpoints, cancellation, partial failure, restart and page closed. There are no live credentials in this package.
 4. Independent event/visibility validation across dates, latitudes, DST, horizon masks and shadow boundaries. Preserve the existing reference fixtures.
 5. Playback refinement/preloading, source date-range refresh and missing-data handling. Test scientific legends and zoom/source changes.
-6. Remaining product scope: true vector currents/winds, horizon masks, diary, other satellites, configurable regional imagery, further channels and stronger offline guarantees. Implement according to the source/method ledger.
+6. Further extensions: operational authorized vector ingestion, guided journeys, queryable scalar data, WebXR and terrain/buildings. Horizon masks, diary, imported satellites, regional imagery, bridge channels and bounded offline shell are already implemented; do not repeat them. Use the source/method ledger for any extension.
 
 Make routine implementation choices autonomously. Ask the user only for information or access that genuinely blocks the next useful step. Report in clear Italian; use short exact technical procedures when needed.

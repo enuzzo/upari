@@ -146,3 +146,14 @@ Gate:115/41JS,3Python,TypeScript; QA reale IAB DEV e successiva build in VERIFIC
 QA finale:115/41 verdi; build completa con shell382file/14.325.791byte. CompilataIAB4181 conferma nome Italia5434↔3543, scie/pause/source, layout e salvaschermo portrait/landscape, console pulita. Corretto anche incrocio timeline/pulsante Salvaschermo in landscape; clic del launcher verificato. P2touch chiuso in revisione indipendente con2testlifecycle. MisuraDEV finale58.803fps/p9521.4ms bounded; no60sostenuti certificati. Prossimo passo: telefono reale già concordato, senza pubblicare.
 
 Codice salvato nel commit locale `5f5ca08`; documentazione/evidenze in commit separato. Nessun push/deploy.
+
+
+## 13 ottobre 2026 — percorsi documentari e fonte Eurostat 0.6.0
+
+- Ricerca primaria di Earth Studio, StoryMaps e Cesium; implementazione originale sullo stesso globo. Tre percorsi con capitoli, fotografia, contorni, richiamo geografico rappresentativo, curva e valori annuali reali. Gesti/zoom/background interrompono; riduzione movimento manuale; scene e salvaschermo conservano il fotogramma fermo.
+- Acquisito Eurostat A/REN/PC: 27 paesi UE, 2004–2024, 567 valori originali. Nove indicatori complessivi. Pipeline riproducibile, codici esatti, flag/misure/anni validati; politica Eurostat-Reuse e discontinuità RED2021 dichiarate. UNICEF/UNdata/WPP approfonditi ma non acquisiti. Ledger e hash in STATISTICAL_ATLAS.md.
+- Revisione indipendente: corretti ingresso con playback NASA/confronto, snapshot e teardown, compatibilità del subset UNHCR e limiti temporali Eurostat. Nessun rilievo materiale residuo. Codice nel commit locale `1dce320`.
+- Due vecchi JS residui in dist conservati in archivio temporaneo, quindi build pulita; causa non determinata. Cache offline ora versionata dai byte degli asset oltre ai percorsi: test specifico e revisione verdi. Commit locale `913aa53`; shell383file/14.362.916byte, generazionea282b79f31c7.
+- Gate finali: 121 test/44 file, tre test Python CSV e tre Eurostat, TypeScript/build/postbuild/SW/diffcheck verdi. HTTP solo loopback; nessun canale personale. Nessuna dipendenza npm nuova.
+- Browser IAB compilato: desktop1280×720/DPR2, portrait390×844/DPR1, landscape844×390/DPR1, pause/capitoli/drag/zoom/timeline/fonti/reload e salvaschermo. Nessun overflow orizzontale o errore/warning applicativo osservato nei flussi finali. Screenshot temporanei reali; preview4182 lasciata a dimensioni normali, DEV4180 fermato, origin precedenti conservati.
+- Campioni120frame:26,59fpsdesktopDPR2 e49,34fpsportraitDPR1, non prova sostenuta/GPU né certificazione60fps/4K. Telefono reale, PWA/AR/permessi e canali restano aperti; qualità non ridotta. Dati e condizioni in PERFORMANCE.md. Nessun push/deploy. HANDOFF.md include il prompt per la prova iPhone17Pro già sulla stessa Wi-Fi.

@@ -1,3 +1,42 @@
+# Upari — passaggio locale 0.6.0
+
+13 ottobre 2026. Base `8c2ffde`; implementazione `1dce320`, correzione cache offline `913aa53`. **Nessun push, deploy o invio sui canali.** ZIP, bundle, DELIVERY, reference e dati degli origin precedenti preservati. Questo blocco è corrente; le sezioni successive sono lo storico.
+
+| Ambito | Consegna corrente |
+|---|---|
+| Percorsi del mondo | Tre percorsi originali: energia europea, speranza di vita, protezione. Capitoli, voli nativi cancellabili, pausa, curva reale e letture annuali. Terra fotografica, contorno e richiamo geografico; uscita ripristina l’atlante quantitativo |
+| Nuova fonte | Eurostat diretto: quota rinnovabili nel consumo finale lordo, 27 paesi UE, 2004–2024, 567 valori originali. Nove indicatori complessivi; politica di riuso statistico e cambio metodo RED nel 2021 dichiarati |
+| Lifecycle | Un solo Cesium, nessun timer di regia. Gesti/zoom/background mettono in pausa; movimento ridotto usa capitoli manuali. Scene, backup e salvaschermo conservano un fotogramma fermo |
+| Qualità | Solo Naturale, Alta predefinita, ISS inizialmente spenta; fotografia storica EOX/NASA con date e crediti. Nessuna dipendenza npm nuova o dato annuale inventato |
+| Offline | Quattro pacchetti statistici inclusi; 383 file/route, 14.362.916 byte. Cache basata anche sui byte: un aggiornamento dei soli dati cambia generazione (`a282b79f31c7`) |
+| Verifica | 121 test in 44 file, tre test Python CSV e tre Eurostat; TypeScript/build/postbuild verdi. Revisione indipendente e browser compilato desktop, portrait, landscape e salvaschermo |
+| Prestazioni | Campioni brevi: 26,59 fps desktop DPR2 e 49,34 fps portrait DPR1. Condizioni diverse, nessun confronto causale o certificazione di 60 fps/4K. Qualità non ridotta |
+
+## Anteprima e documentazione
+
+Anteprima dell’agente solo loopback: [127.0.0.1:4182](http://127.0.0.1:4182/). DEV4180 fermato; server preesistenti4179/4181 conservati. Il browser finale è tornato a dimensioni desktop normali, senza HUD diagnostico. Screenshot reali temporanei in `/private/tmp/upari-qa/060-*.png`; non sono asset distribuiti né approvazione visiva dell’utente.
+
+- `DOCUMENTARY.md`: ricerca primaria, alternative, tre percorsi, metodo e lifecycle.
+- `STATISTICAL_ATLAS.md`: coperture, limiti, licenze e hash dei quattro pacchetti.
+- `VERIFICATION.md`: gate, prove browser e limiti fisici.
+- `PERFORMANCE.md` e `performance/0.6.0-journeys.json`: misure e condizioni.
+
+Due vecchi moduli residui osservati in dist sono conservati in `/private/tmp/upari-dist-060-preclean`; la build corrente è stata ricostruita pulita. Causa del residuo non determinata. L’output0.5.1 precedente rimane in `/private/tmp/upari-dist-051-before-documentary`.
+
+## Prossima prova e idee ancora in coda
+
+**iPhone17Pro personale, stessa Wi-Fi già confermata; prove reali rinviate dall’utente.** Preparare la preview LAN solo quando si comincia, senza deploy. Verificare qualità Alta/Auto, gesti, capitoli/timeline/fonti, entrambi i landscape e almeno dieci minuti di stabilità/fps/consumo/background. Il browser390×844 non certifica il telefono. PWA installata/offline/aggiornamento, AR/sensori e permessi richiedono prove separate e HTTPS adatto.
+
+UNICEF, UNdata e WPP diretto sono stati ricercati ma non acquisiti; WPP richiede token e separazione storia/proiezioni. Flussi bilaterali ulteriori, clima/commercio, confini storici e OSCARv2 rimangono in coda. Nessun dato di impianti o emissioni dedotto dalla quota rinnovabile. Canali personali restano subordinati al test esplicito richiesto dall’utente.
+
+## Prompt di ripresa
+
+“Leggi AGENTS.md, HANDOFF.md, VERIFICATION.md, DOCUMENTARY.md, STATISTICAL_ATLAS.md e PERFORMANCE.md. Continua da Upari0.6.0 locale, con tre percorsi documentari e nove indicatori reali; conserva solo Naturale, qualità Alta, palette e preferenze. L’iPhone17Pro è nella stessa Wi-Fi: facciamo le prove della build in LAN, senza deploy. Misura qualità/gesti/capitoli/timeline e dieci minuti di fps, consumo e background; annota viewport/DPR e non abbassare silenziosamente la qualità. Poi PWA/AR/canali soltanto con accesso e test richiesti. Conserva import locali e fonti; UNICEF/UNdata/WPP e le altre estensioni restano in coda.”
+
+Comandi: `npm run check`, `npm run test`, `python3 scripts/test-package-statistics.py`, `python3 scripts/test-fetch-renewables.py`, `npm run build`, `npm run preview -- --port 4182`. Prima di avviare server, verificare quelli già attivi. Nessun aggiornamento della consegna ZIP/bundle originale in questa sessione.
+
+---
+
 # Upari — passaggio locale 0.5.1
 
 12 ottobre 2026. Implementazione locale0.5.1 `5f5ca08`, base `7349948`. Nessun push/deploy, nessun invio sui canali. ZIP/bundle/DELIVERY e reference ignorata preservati. Le sezioni0.4 sottostanti sono storiche; questo blocco e AGENTS.md descrivono lo stato attuale.

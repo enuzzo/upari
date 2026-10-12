@@ -1,4 +1,4 @@
-# Società nel tempo — atlante 0.5.1
+# Società nel tempo — atlante 0.6.0
 
 Upari è gratuito, open source e senza finalità di lucro. Il codice resta MIT: un divieto di riuso commerciale toglierebbe libertà ai suoi utilizzatori. Dati, geografie e fotografie conservano invece le proprie attribuzioni/licenze. Nessun logo o endorsement ONU/World Bank/ILO/UNHCR. Nessun account, telemetria, upload centrale o API istituzionale chiamata durante il play.
 
@@ -8,7 +8,7 @@ Layer → **Società nel tempo → Atlante statistico**. Indicatore, legenda fis
 
 Si interpolano **colori/dimensioni**, mai misure: fra 2020 e 2021 vengono mostrati entrambi i valori annuali originali. Assenza non significa zero; nessun dato di un anno assente viene ricostruito. Timeline statistica, date dei raster, tempo solare/ISS e rotazione della Terra sono indipendenti. Durante lo studio vengono sospesi i vettori vento/correnti e il confronto raster: non si mescolano archi statistici e campi fisici senza le rispettive legende. La configurazione fotografica resta conservata per il ritorno. In movimento ridotto il globo usa anni discreti e il play non parte automaticamente.
 
-## Pacchetto incluso, acquisito 12 ottobre 2026
+## Pacchetto incluso, acquisito 12–13 ottobre 2026
 
 217 paesi/territori WDI, aggregati esclusi, anni 1960–2025. Disponibilità variabile per territorio; il periodo sotto è quello dell'indicatore, non una garanzia di copertura completa.
 
@@ -21,9 +21,16 @@ Si interpolano **colori/dimensioni**, mai misure: fra 2020 e 2021 vengono mostra
 | Demografia | Saldo naturale | natalità−mortalità per1000, 1960–2024 | derivazione Upari, stesso territorio/anno; migrazione esclusa |
 | Lavoro | Occupazione15+ `SL.EMP.TOTL.SP.ZS` | % popolazione15+, 1991–2025 | ILO modelled estimates tramite WDI |
 | Lavoro | Disoccupazione `SL.UEM.TOTL.ZS` | % forza lavoro, 1991–2025 | ILO modelled estimates tramite WDI |
+| Energia | Quota rinnovabili `NRG_IND_REN.REN.PC` | % consumo finale lordo, 2004–2024; solo UE27 | Eurostat diretto, politica Eurostat-Reuse |
 | Mobilità/protezione | Domande di asilo · tre origini | domande individuali pubblicate, 2000–2025 | UNHCR AsylumApplications, selezione documentata sotto |
 
 Le sei serie WDI sono CC BY4.0 **verificate singolarmente** nei metadati. Schede originali: `https://databank.worldbank.org/metadataglossary/world-development-indicators/series/CODICE`; API riproducibile `https://api.worldbank.org/v2/country/all/indicator/CODICE?source=2&date=1960:2025&format=json&per_page=20000`. [Licenza World Bank](https://datacatalog.worldbank.org/public-licenses#cc-by), [condizioni](https://data.worldbank.org/summary-terms-of-use). Il catalogo WDI riporta aggiornamento 8 ottobre 2026; non è la data di ogni osservazione. Provenienza originale conservata, non dichiarare un download diretto UN WPP. I tassi grezzi dipendono dalla struttura per età; le stime ILO comprendono imputazioni e **non sono un ranking fra paesi**, occupazione non significa lavoro dignitoso.
+
+## Eurostat: quota rinnovabili
+
+Acquisizione reale il13ottobre, timestampUTC `2026-10-12T23:03:15.942816+00:00`. 27paesi UE, 567valori A/REN/PC,2004–2024; aggregati e non-UE esclusi. Codici ISO2 esatti dal pacchetto WDI, EL→GR→GRC esplicito; nessun confronto dei nomi. Scala fissa0–100, fuori copertura resta null. Non è produzione elettrica, capacità installata, emissioni o distribuzione degli impianti. Metodo REDI fino2020, REDII dal2021, normalizzazione e trasferimenti statistici dichiarati nella scheda. Nessun flag nelle celle selezionate; il tool rifiuta nuovi flag non gestiti e maschera anni fuori intervallo anche con `--input`. Il2025 pubblicato dalla fonte è deliberatamente escluso.
+
+[Dataset](https://ec.europa.eu/eurostat/databrowser/view/nrg_ind_ren/default/table?lang=en), [metodo](https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Renewable_energy_statistics), [condizioni](https://ec.europa.eu/eurostat/help/copyright-notice). `Eurostat-Reuse` indica la politica per dati statistici, distinta dalla CC BY editoriale. Fonte, selezione/traduzione e non-responsabilità Eurostat dichiarate. UE27 scelto anche per evitare le eccezioni territoriali al riuso commerciale. `scripts/fetch-renewables.py` ha limite2MB e codici espliciti; SHA/byte della risposta nel ledger.
 
 ## Relazioni reali e limiti
 
@@ -61,9 +68,9 @@ node scripts/validate-statistics.mjs bundle.json
 python3 scripts/test-package-statistics.py
 ```
 
-Il tool invoca lo stesso validatore TS dell'app; richiede Node22.18+ o24+ con supporto TypeScript nativo, oltre a Python standard. Il runtime app usa `{data,boundaries}` con `data.version=1`, `years`, `countries`, `indicators`, `values[indicator][region]`, `boundary`, optional `provenance`/`flows`. Esempio reale completo scaricabile dalle fonti dell'atlante; i contratti sono in `src/lib/statistics.ts`. Budget:8MiB,400territori,24indicatori,201anni contigui,300000valori,500feature/60000vertici,1500relazioni. Solo HTTPS pubblico senza credenziali/query segrete; licenze ammesse CC-BY-4.0,CC-BY-3.0-IGO,CC0-1.0,Public-Domain. Le dichiarazioni del pacchetto non sono una certificazione automatica della fonte. Whitelist di proprietà e coordinate2D; campi estranei non vengono conservati/esportati.
+Il tool invoca lo stesso validatore TS dell'app; richiede Node22.18+ o24+ con supporto TypeScript nativo, oltre a Python standard. Il runtime app usa `{data,boundaries}` con `data.version=1`, `years`, `countries`, `indicators`, `values[indicator][region]`, `boundary`, optional `provenance`/`flows`. Esempio reale completo scaricabile dalle fonti dell'atlante; i contratti sono in `src/lib/statistics.ts`. Budget:8MiB,400territori,24indicatori,201anni contigui,300000valori,500feature/60000vertici,1500relazioni. Solo HTTPS pubblico senza credenziali/query segrete; licenze ammesse CC-BY-4.0,CC-BY-3.0-IGO,CC0-1.0,Public-Domain,Eurostat-Reuse (con verifica delle specifiche eccezioni). Le dichiarazioni del pacchetto non sono una certificazione automatica della fonte. Whitelist di proprietà e coordinate2D; campi estranei non vengono conservati/esportati.
 
-Import dal pannello resta in IndexedDB, identificato dall'hash del contenuto validato (stabile dopo export/reimport). Richiede HTTPS/localhost per crypto.subtle; il pacchetto incluso funziona in LAN HTTP. Download CSV dell'anno mantiene numeri originali (anche negativi), assenze vuote, unità/fonti/licenze. Download JSON comprende serie/geografie/note/provenienza. **Scene, URL e backup salvano configurazione/anno/ID, non i dataset importati**: conservare anche il JSON completo; su un altro dispositivo importare lo stesso file. Il salvaschermo supporta l'atlante e mantiene l'anno della serie distinto dall'orologio corrente. Shell offline include i tre pacchetti, non tutto il pianeta.
+Import dal pannello resta in IndexedDB, identificato dall'hash del contenuto validato (stabile dopo export/reimport). Richiede HTTPS/localhost per crypto.subtle; il pacchetto incluso funziona in LAN HTTP. Download CSV dell'anno mantiene numeri originali (anche negativi), assenze vuote, unità/fonti/licenze. Download JSON comprende serie/geografie/note/provenienza. **Scene, URL e backup salvano configurazione/anno/ID, non i dataset importati**: conservare anche il JSON completo; su un altro dispositivo importare lo stesso file. Il salvaschermo supporta l'atlante e mantiene l'anno della serie distinto dall'orologio corrente. Shell offline include i quattro pacchetti, non tutto il pianeta.
 
 ## Integrità degli snapshot distribuiti
 
@@ -71,6 +78,7 @@ Import dal pannello resta in IndexedDB, identificato dall'hash del contenuto val
 |---|---:|---|
 | world.json | 806676 | `4d6b2c313d295388f412cb947e76fbadc7d040867d1fe53d533c5bee468b93fb` |
 | countries.geojson | 264258 | `d271d3d6600c01beb7ad11a60f49bb6fc16b81305027139228ad977986ea909a` |
+| renewables.json | 12190 | `f9e8c407ef2fab2aeb1b5e46e3701cad8cdb56812c04c0061905df309674d859` |
 | asylum.json | 530949 | `56466279ceae34b55dff1c0086645e1af00e9009d5db4b447aae3e8c4b530a83` |
 
 URL/hash/byte delle risposte originali sono nel ledger provenance; numeri originali conservati prima dell'arrotondamento a due decimali della UI. Le fonti possono revisionare serie storiche: una futura estrazione va consegnata come nuovo snapshot verificato.
@@ -86,4 +94,7 @@ URL/hash/byte delle risposte originali sono nel ledger provenance; numeri origin
 | Confini storici / visioni politiche | fonte libera ancora da selezionare | versioni per data, metodo e provenienza; non trattare il globo contemporaneo come archivio geopolitico |
 | Percorsi di studio, confronti multipli, flussi più estesi | snapshot verificati sopra | narrazioni condivisibili, filtraggio relazioni/budget; niente trasferimenti inventati dai soli tassi |
 
-Questa prima consegna implementa gli otto indicatori e la pipeline generica; il registro non implica che tutte le fonti proposte siano già caricate.
+La0.6.0 implementa nove indicatori e tre percorsi documentari ([regia/ricerca](DOCUMENTARY.md)), oltre alla pipeline generica; il registro non implica che tutte le fonti proposte siano già caricate.
+
+
+I percorsi usano la fotografia con contorni/richiami e curve, senza alterare la palette dello studio libero. Codici misura e valori estremi devono essere compatibili; UNHCR richiede l’esatto sottoinsieme di origini nell’ordine dichiarato. Scena/backup/salvaschermo conservano un fotogramma fermo; la regia non è serializzata. Fonti UNICEF/UNdata/WPP ulteriormente studiate ma non acquisite: vedere DOCUMENTARY.md.

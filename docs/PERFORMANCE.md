@@ -1,3 +1,20 @@
+# Prestazioni0.6.0 — percorsi documentari
+
+13ottobre2026. Alta invariata, nessuna riduzione silenziosa. Native camera e clock Cesium; nessun timer/motore aggiuntivo. Nei percorsi fotografici non si aggiornano i colori dei poligoni o i simboli nascosti; stesso atlante statico mantenuto per il ritorno allo studio. Una label e un segmento geografico, aggiornamento dei testi annuali; nessuna scrittura IndexedDB per frame.
+
+| Campione breve IAB | Viewport canvas / framebuffer | DPR | FPS / p95 intervalli | CPU submission p95 |
+|---|---|---|---|---|
+| Build0.6.0, rinnovabili Svezia,120intervalli |1280×656 /2560×1312|2|26,59 /45,8ms|8,1ms|
+| Build0.6.0, rinnovabili Italia,120intervalli |390×722 /390×722|1|49,34 /27,3ms|3,0ms|
+
+JSON completo con istante, paese/indicatore/anno e risoluzione in `performance/0.6.0-journeys.json`. Campioni prima degli ultimi ritocchi di posizione delle label e dei crediti/data di acquisizione; profili/rendering della Terra invariati. Profilo desktop osservato: ANGLE Metal / AMD RadeonProVega56, MSAA4, atmosfera per-fragment, cap61, tab visibile/focused. La conferma UI Alta è stata ripetuta sulla build finale.
+
+Altri campioni intermedi desktop:35,21 e30,80fps DEV,29,65fps compilato. Non una comparazione causale fra revisioni: camera, viewport/DPR, immagini, condizioni della macchina e attività concorrenti non sono un esperimento controllato. Un campione del percorso UNHCR nel viewport844×390, DPR1, ha riportato54,96fps/p9524,6ms; non archiviato come benchmark. Le misure sono postRender e costo CPU di submission, **non tempoGPU**,10minuti di consumo o garanzia sostenuta.
+
+Il target60fps a risoluzione nativa sul Mac resta aperto. La prova responsive non è l’iPhone17Pro; non implica4K/60 o lo stesso comportamento conDPR3. Non cambiati OS/energia o qualità per ottenere questi numeri. Diagnostica studio disponibile solo DEV o `?perf=1`, produzione normale senza osservatore. Il vecchio HUD di rotazione è nascosto durante la regia per evitare di presentare il campione precedente come misura della nuova scena.
+
+---
+
 # Aggiornamento 0.5.0
 
 Solo Naturale; Alta di default, Auto/Batteria espliciti conservati. Il cambio di fotografia Esri→EOX2016 nasce dal requisito di licenza libera e comporta circa10m nativi, non è una riduzione del framebuffer per inseguire gli fps. Atmosfera/crepuscolo/zoom e camera on-demand restano.

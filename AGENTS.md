@@ -30,7 +30,13 @@ Read this file before changing anything. Then read `docs/HANDOFF.md`, `docs/VERI
     Native DPR is explicitly enabled in Cesium. The resolution scale is effectiveRatio/nativeDPR, not a second reduction with browser-recommended resolution enabled. See the regression tests. ISS off means no new ephemeris fetches, forecast workers, tracking or periodic refreshes.
 12. If Sites is available, `.openai/hosting.json` is the authoritative project identity. Reuse its exact `project_id`; preserve private access. Never create a second Site. Otherwise work locally or use the user's hosting.
 
-## Current local milestone — 0.5.1, 12 October 2026
+## Current local milestone — 0.6.0, 13 October 2026
+
+Original documentary journeys on the same Cesium: energy Europe, life expectancy, protection. Native cancelable camera flights + four-second settle before annual playback; photographic globe, country outline/representative geographic callout and original trend/readouts, full quantitative atlas on exit. Gesture/zoom/background pause; manual chapters in reduced motion. No second engine/timer, hidden atlas attributes not updated, no per-frame persistence. Scene/backup/screensaver store a paused frame, not an unattended director. Read `docs/DOCUMENTARY.md` for research, source choices and lifecycle.
+
+Nine indicators: new direct Eurostat A/REN/PC UE27 snapshot,2004–2024,567 original values; `Eurostat-Reuse` is its statistical reuse policy, not CC BY editorial. Exact ISO2/EL→GR mapping; no non-EU,2025, fabricated plant locations, routes or emissions. REDI→REDII method break documented. UNICEF/UNdata/WPP researched but not newly acquired. Fixed UNHCR route requires exact origins/order; imported identically named unrelated measures cannot activate stories. Full current QA/device/performance limits in VERIFICATION/HANDOFF/PERFORMANCE. No push/deploy. Original delivery/reference and owner origins preserved.
+
+## Previous local milestone — 0.5.1, 12 October 2026
 
 Country-name tooltip on Natural and study views; geographic WGS84 hit-test20Hz, generalized contemporary boundary disclaimer, imported regional boundaries supported. Atlas hover highlights outlines and dims unrelated relations. Original Cesium Fabric animated forward chevrons/soft trails; schematic, never observed journeys/speeds/people. Separate persistent flowMotion pause, reduced-motion/background suspend; static geometry/native loop and batching by origin. Refined glass/timeline UI, low-height source card scroll. No deploy/push. Current QA and performance limits in HANDOFF/VERIFICATION.
 

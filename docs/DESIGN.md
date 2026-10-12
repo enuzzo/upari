@@ -1,5 +1,10 @@
 # Design lock
 
+## Revision0.6 — Documentary journeys
+
+Solo Terra Naturale, nero/turchese, qualità Alta invariata. Percorsi a capitoli su fotografia NASA/EOX, contorno del paese e richiamo geografico, letture/curve annuali originali. Voli Cesium cancellabili e anni armonizzati; nessun secondo motore o timer. Atlante completo/palette intatti uscendo dalla regia. Desktop editoriale, portrait compatto, comandi fuori dalla porzione scorrevole; reduced-motion manuale. I dettagli di ricerca, scelte e limiti sono in `DOCUMENTARY.md`. Le revisioni0.4 che parlano di stili sono storiche e superate dalle decisioni0.5.
+
+
 ## Revision 0.4 — Earth quality and optional styles
 
 The user requested richer orbital Earth and optional visual shaders, while keeping Natural as the default. Original single-pass effects retain the existing Cesium renderer, black/turquoise navigation and planet-first hierarchy. NASA orbital base blends into Esri detail, solar shading remains tied to the current clock (explicitly labelled when previewing a time offset), and city lights come from the real 2016 mosaic. A subtle procedural starfield is decorative. Scientific Natural palettes are protected even while an older frame remains visible. Styles only affect the globe canvas; interface stays sharp. Voxel is explicitly a 2D isometric rendering effect. See `EARTH_STYLES.md` and the current `VERIFICATION.md`; old pending screenshot statements below are historical.

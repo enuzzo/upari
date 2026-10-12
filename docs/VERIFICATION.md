@@ -1,3 +1,51 @@
+# Verifiche locali0.6.0 —13ottobre2026
+
+Solo locale, nessun push/deploy o invio ai canali. Build finale `app-oeS3s4Bb.js` / `Globe-DCKy9DLI.js`. Fonti e regia in DOCUMENTARY.md; ledger in STATISTICAL_ATLAS.md.
+
+| Gate | Esito e portata |
+|---|---|
+| TypeScript / build / postbuildSW | Verdi; due ingressi, runtime Cesium locale. Warning noto chunkCesium4,28MB/1,15MBgzip, non errore |
+| Vitest |121test/44file verdi nella suite completa;10mirati e loader ri-eseguiti durante gli ultimi ritocchi. Include HTTP reale solo loopback |
+| Tool Python |3test CSV +3test Eurostat verdi: dimensioni, zero/null, flag, misura errata e limite2004–2024 sui file locali |
+| Integrità dati |Hash di world/geometry/asylum originali invariati. UE27 nuovo,567valori originali; export/reimport verificato con il validatore reale |
+| Shell offline |383route/file,14.362.916byte, incluso renewables.json; non tutta la Terra |
+| Revisione indipendente |QuattroP2 corretti e riesaminati: ingressoNASA/confronto, snapshot/teardown della regia, subsetUNHCR, anni localiEurostat. Nessun materiale rilievo residuo segnalato |
+
+Primo tentativo della suite nel sandbox:117pass/1EPERM sulla porta del ricevitore HTTP. Ripetizione autorizzata su loopback: suite completa verde. Nessuna notifica reale o endpoint personale usato.
+
+Output pulito: due moduli precedenti erano rimasti in dist dopo una ricostruzione; output conservato in `/private/tmp/upari-dist-060-preclean`, quindi build in directory nuova. Causa del residuo non determinata. La versione della shell ora deriva dai percorsi e dai byte di tutti gli asset: anche una modifica dei soli dati genera una cache distinta. Test specifico rosso→verde e revisione indipendente della correzione. Generazione finale `a282b79f31c7`.
+
+## Browser effettivo
+
+Browser interno Codex/CUA, locatori Playwright e gesti nativi; nessun Browser skill dedicato disponibile, nessun browser/installazione alternativa. Build servita soltanto su `127.0.0.1:4182`. Origin4179/4181 e preferenze dell’utente conservati. DEV4180 dell’agente fermato; preview4182 lasciata per la consegna.
+
+Flusso: atlante/ingressoPercorsi → catalogo → energia → capitoli/play/pausa → zoom/trascinamento → timeline da tastiera e studio libero → fonti → salvaschermo → protezioneUNHCR. Verificati cambi camera/anno/paese, valori estremi Italia6,316→19,385 (UI6,32→19,39), ritorno dei riempimenti/legenda, fonteEurostat-Reuse e discontinuitàRED2021. Il tooltip conserva i valori mancanti per paesi fuori dalla selezione. La spiegazione mobile completa è nelle fonti del capitolo. Nessun dato annuale interpolato.
+
+| Prova browser | Esito |
+|---|---|
+| Identità/nonblank/overlay/console |Upari, contenuti e globo presenti; nessun overlay di errore o errore/warning applicativo osservato nei flussi finali |
+| Desktop |1280×720, viewportcanvas1280×656, DPR2/framebuffer2560×1312; Alta confermata dalla UI. Pannello/curve/comandi leggibili |
+| Portrait |390×844, overrideDPR1; richiamo geografico su tre righe sotto il pannello, pausa/fonti/capitoli accessibili. `scrollWidth=clientWidth=390` |
+| Landscape |844×390, overrideDPR1; pannello scorrevole/comandi fissi, timeline separata. `scrollWidth=clientWidth=844` |
+| Interruzione |Zoom mette in pausa; trascinamento reale del canvas lascia “Riprendi percorso” e anni fermi; freccia sulla timeline termina la regia e restituisce l’atlante |
+| Persistenza |Reload dopo regia: fotogramma fermo e velocitàmanuale1. Linksalvaschermo contiene playing:false, paesePRT, tempo2015,167 e camera esatta |
+| Salvaschermo |Stessoindicatore/paese/anno, valori2015↔2016; orologio01:30:56→01:31:18 del13ottobre separato, meteo disattivato; consolepulita |
+| UNHCR |Percorso presente con origini/legenda corrette e archi/scie su fotografia; domande originali per paesi di presentazione, limiti/schema visibili |
+| Produzione normale |Nessun HUD/observer di performance senza ?perf=1; viewport di test terminati e anteprima riaperta a dimensioni normali |
+
+Reduced-motion e background: regressioni del director verdi, cancellazione nativa/release dei listener riesaminati nel codice. Non alterate le preferenzeOS; non dichiarare una prova del toggleOS o una sospensione prolungata sul telefono.
+
+Screenshot reali temporanei in `/private/tmp/upari-qa/`: `060-energy-desktop.png`, `060-energy-portrait.png`, `060-energy-landscape.png`, `060-saver.png`. Non concept o asset distribuiti; il sistema può rimuoverli. Nessuna accettazione visiva dell’utente implicita. Performance breve26,59fpsdesktopDPR2 e49,34portraitDPR1: vedere PERFORMANCE.md, nessuna promessa4K/60.
+
+## Ancora da provare
+
+- iPhone17Pro reale: qualità/nitidezza/gesti, timeline e pannelli,10minuti fps/consumo/stabilità, background e due landscape. StessaWi-Fi già confermata, test rinviato dall’utente; questo lavoro non lo certifica.
+- PWA installata/offline/update e AR/sensori/permessi su dispositivo, conHTTPS adatto. Nessuna prova fisica/camera/geolocalizzazione effettuata.
+- Canali propri eOSCARv2 operativo richiedono accesso/test esplicito. Nessun invio, restart condiviso o cambioOS/energia effettuato.
+-60fpsnativi sulMac resta aperto; campioni IAB non misurano tempoGPU né garantiscono prestazione sostenuta.
+
+---
+
 # Upari — verifiche locali 0.5.1
 
 12 ottobre 2026. Codice5f5ca08, base7349948; nessun deploy/push o invio su canali. Solo Naturale mantenuto. iPhone17Pro stessa Wi-Fi, prove reali rinviate dall’utente.

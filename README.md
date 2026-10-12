@@ -4,9 +4,15 @@ Esplorare la Terra. Ritrovare il cielo.
 
 PWA italiana gratuita e ospitabile come directory statica. Globo con fotografia dettagliata, dieci prodotti NASA, SWISSIMAGE e una pagina salvaschermo autonoma. ISS, guida AR e avvisi sono strumenti opzionali, inizialmente spenti. Luoghi, orizzonti, diario e preferenze rimangono sul dispositivo.
 
-Revisione **0.4.3**, preparata senza deploy come richiesto. Lo stato del sito pubblicato non è stato verificato in questa sessione. Leggere il [passaggio UI/UX](docs/UIUX_PASS_02.md).
+Revisione **0.5.0**, preparata senza deploy come richiesto. Lo stato del sito pubblicato non è stato verificato in questa sessione. Leggere il [passaggio UI/UX](docs/UIUX_PASS_02.md).
 
 **Prima di continuare:** leggere [AGENTS.md](AGENTS.md), [stato del lavoro](docs/HANDOFF.md) e [verifiche](docs/VERIFICATION.md). La verifica nel browser è stata eseguita su mobile e desktop; le prove AR e notifiche su dispositivi e servizi reali restano aperte.
+
+## Società nel tempo 0.5.0
+
+Otto indicatori,217 paesi/territori,1960–2025: demografia e stime ILO tramite World Bank, domande di asilo UNHCR da tre origini. Timeline play/pausa/velocità e trascinamento, valori annuali reali, confronto di variabili, curve con buchi, fonti/licenze e CSV/JSON. Relazioni geografiche schematiche, non viaggi. Tool per pacchetti documentati anche su confini regionali, senza imputazioni o upload.
+
+[Guida, fonti, metodi, licenze, tool e idee in coda](docs/STATISTICAL_ATLAS.md). Progetto gratuito/open source/nonprofit, codice MIT. Nessun deploy. iPhone17Pro nella stessa Wi-Fi: prove reali rimandate dall'utente a domani.
 
 ## Fluidità locale 0.4.3
 
@@ -14,7 +20,7 @@ Camera letta su richiesta, cap con margine 61 fps (30 per Batteria/salvaschermo)
 
 ## Vista Naturale 0.4.2
 
-Atmosfera più pulita, bordo blu sul lato illuminato e crepuscolo caldo riferito al Sole. Transizione NASA→Esri continua lungo lo zoom, con attesa delle immagini e dissolvenza nel ciclo esistente. Effetti attenuati nel dettaglio e palette scientifiche protette. [Metodo e limiti](docs/EARTH_STYLES.md); performance su telefono reale ancora da verificare.
+Atmosfera più pulita, bordo blu sul lato illuminato e crepuscolo caldo riferito al Sole. Transizione NASA→EOX2016 continua lungo lo zoom, con attesa delle immagini e dissolvenza nel ciclo esistente. Effetti attenuati nel dettaglio e palette scientifiche protette. [Metodo e limiti](docs/EARTH_STYLES.md); performance su telefono reale ancora da verificare.
 
 ## Rotazione ambientale 0.4.1
 
@@ -24,9 +30,9 @@ La Terra ruota lentamente di default (0,08°/s dalla vista orbitale, circa 75 mi
 
 ## Qualità visiva 0.4
 
-- Vista Naturale: base NASA dallo spazio, dettaglio Esri avvicinandosi, atmosfera e transizione giorno/notte, luci reali del composito NASA 2016. Nel dettaglio l'illuminazione si attenua per leggere le fotografie.
-- Apri la vista corrente → **Un altro modo di guardare**: Naturale, Cartoon, Cel shading, Pixel art, Voxel, ASCII e Incisione. Intensità regolabile; stile conservato nelle viste, nei backup e nel salvaschermo.
-- Voxel è un effetto grafico 2D a cubi isometrici. Naturale conserva le palette scientifiche; gli altri stili segnalano i colori modificati. Stelle decorative, senza funzione astronomica.
+- Vista Naturale: base NASA dallo spazio, dettaglio EOX2016 avvicinandosi, atmosfera e transizione giorno/notte, luci reali del composito NASA 2016. Nel dettaglio l'illuminazione si attenua per leggere le fotografie.
+- Solo **Naturale**, senza cartoon/pixel/voxel/ASCII. Scene precedenti convertite; qualità Alta di default, Auto/Batteria ancora disponibili. Atmosfera e crepuscolo originali, stelle decorative.
+- EOX2016 è CC BY4.0, acquisizione2016–2017, circa10m nativi: storico e meno dettagliato a terra rispetto alla precedente base Esri. La fotografia NASA orbitale e SWISSIMAGE regionale rimangono.
 - [Metodo e limiti del rendering](docs/EARTH_STYLES.md). Nessun deploy. Prestazioni su telefono reale ancora da misurare.
 
 ## Nuove funzioni 0.3
@@ -121,4 +127,4 @@ Lo scheduler registra la presa in carico prima dell’invio: evita duplicati dop
 
 ## Licenze
 
-Codice originale: MIT. Cesium: Apache-2.0; React, satellite.js, lucide e altre dipendenze conservano le rispettive licenze. I font sono SIL OFL. Dati NASA, orbitali e Esri hanno fonti/attribuzioni proprie. Vedere `docs/SOURCES.md` e `THIRD_PARTY_NOTICES.md`.
+Codice originale: MIT. Cesium: Apache-2.0; React, satellite.js, lucide e altre dipendenze conservano le rispettive licenze. I font sono SIL OFL. Dati NASA, orbitali, EOX e statistici hanno fonti/attribuzioni proprie. Vedere `docs/SOURCES.md` e `THIRD_PARTY_NOTICES.md`.

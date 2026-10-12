@@ -1,3 +1,13 @@
+# Terra naturale — stato 0.5.0
+
+Per richiesta dell'utente del12ottobre, gli stili artistici sono **rimossi**: UI, shader e opzioni salvaschermo. Link e backup precedenti diventano Naturale. Alta è il nuovo default (fino8MP, MSAA4, atmosfera per frammento); preferenze Auto/Batteria esplicite si conservano. Non aumenta la risoluzione dei dati originali.
+
+Fotografia: NASA orbitale ↔ **EOX Sentinel-2 cloudless2016**, WGS84/maxLevel13 (~10m); Contains modified Copernicus Sentinel data2016&2017, EOX IT Services GmbH, [CC BY4.0](https://cloudless.eox.at/pricing). Esri eliminato per rispettare il catalogo libero. Non usare versioni EOX2018–2025 NC, né dichiarare il dettaglio uguale a Esri o foto live. Atmosfera, crepuscolo solare, stelle decorative, transizione C2/readiness e luci NASA2016 restano. I raster e i nuovi colori statistici sono protetti dal grading/tinta terreno.
+
+Le sezioni seguenti sono la documentazione **storica 0.4**, utile per le scelte atmosferiche e le prove precedenti; descrizioni Esri e selezione stili non indicano funzionalità correnti.
+
+---
+
 # Terra e stili — 0.4.3
 
 La richiesta dell'11 ottobre 2026 mette al primo posto una vista Naturale suggestiva anche allontanandosi, e chiede alternative cartoon/cel/pixel/voxel/ASCII. La reference iniziale è [kedube/ha-iss-tracker](https://github.com/kedube/ha-iss-tracker): recuperata dalla conversazione, consultati README e screenshot pubblici (in particolare [globe-night.jpg](https://github.com/kedube/ha-iss-tracker/blob/main/docs/images/globe-night.jpg)), allora senza leggere/copiare il sorgente applicativo. Il successivo studio del codice grafico, autorizzato dall’utente per la 0.4.1, è documentato in [REFERENCE_STUDY.md](REFERENCE_STUDY.md). Elementi ripresi come obiettivo visivo: volume della Terra, notte leggibile, luci e bordo atmosferico. Il renderer resta Cesium, il design resta nero/turchese con pannelli su richiesta.

@@ -1,0 +1,16 @@
+{
+  "version": "0.5.0",
+  "date": "2026-10-12",
+  "scope": "Development IAB, short native Cesium postRender sample during UNHCR timeline playback; not physical Chrome or iPhone, not sustained Natural certification",
+  "viewport": [1280, 720],
+  "dpr": 1,
+  "warmup": 30,
+  "features": 177,
+  "instances": 288,
+  "frames": 120,
+  "fps": 59.51200158681079,
+  "intervalMs": {"mean": 16.803333333383005, "p95": 17.900000005960464, "max": 33.599999994039536},
+  "cpuMs": {"mean": 2.2375000014901163, "p95": 2.5999999940395355, "max": 2.800000011920929},
+  "cpuMeaning": "JS preUpdate to postRender, not GPU time",
+  "productionDefault": "study diagnostic observer excluded"
+}

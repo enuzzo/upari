@@ -1,3 +1,46 @@
+# Upari — verifiche locali0.5.0
+
+12 ottobre 2026. Codice locale `84281fa`. Nessun push/deploy, endpoint utente o invio live. Solo server QA dell'agente gestiti. Ultime istruzioni: solo Naturale e dati/fonti libere; iPhone17Pro stessa Wi-Fi, prove rinviate a domani dall'utente.
+
+## Gate e integrità
+
+- **108 test / 38 file**, giro completo verde con HTTP127.0.0.1; TypeScript/build/postbuild/sintassiSW/diffcheck verdi. Primo giro sandbox105/106 (HTTPlistenEPERM), ripetizione completa106/106 e finale108/108. Successive prove mirate dopo caption/disposizione/guard, poi giro completo finale108/108 sulla revisione congelata; verdi. Nessuna nuova dipendenza.
+- **3 prove Python toolCSV** verdi sulla validazione finale: zero/null/anni assenti/exactjoin, duplicati e regioni ignote, sorgenti/licenze dichiarate e rifiuto licenza non libera. Fixture NetCDF storiche non rieseguite perché non modificate (6prove precedenti conservate).
+- Revisione indipendente chiusa: riferimentoSWEsri pendente, appartenenzafloworigins, whitelist coordinate/metadati, callback async tardivi/RequestGate, playhead uscita/tab/import e reader precedente, attribuzioni generiche dei flussi importati. Test aggiunti: zero neutro asimmetrico e identità del pacchetto validato stabile dopo export/reimport.
+- Tre snapshot, fonti, hash, byte e periodi in STATISTICAL_ATLAS.md.217 territori,177 feature/288 poligoni;263 relazioni/2860 righe UNHCR, massimo64 archi nel renderer, nessuna imputazione. WDIaggregati esclusi,7 confini senza match espliciti. API acquisite serialmente, nessuna dipendenza istituzionale live durante play.
+- Build finale: `app-DRYM-Czh.js`, `screensaver-BJN7g-aG.js`, `StatisticsStudy-CMUqA0Dg.js`; Globe4268,44kB/1150,37kB gzip, warning dimensione noto. Shell **381 route/file,14.315.113 byte**, SHA256 dell'elenco JSON `b10ded2c42417ce16a734e72061b3db74ae04279a3a7852892601c9facaee6d9` (non hash dei contenuti). Tre/statistics/ inclusi. Output delle build precedenti preservati sotto/private/tmp/upari-qa, non cancellati; ZIP/bundle/DELIVERY/reference intatti.
+
+## Browser effettivo
+
+Browser interno Codex/IAB, DPR 1; DEV1280×720 per campione studio, build1143×953 per il desktop, override390×844 e844×390. **Non Chrome fisico, Safari o iPhone**. Chrome precedentemente connesso non più disponibile nel browser inventory; nessuna modifica/reinstallazione. Preview finale solo127.0.0.1:4179 su origine nuova per escludere SW della build precedente. Origin dell'utente4173 conservato.
+
+| Prova | Esito effettivo |
+|---|---|
+| Solo Naturale | Inspector e salvaschermo senza selettori artistici; migrazione vecchiASCII/voxel/link/backup in test. Default nuovo origin: Alta selezionata, ISS off; Auto/Batteria espliciti conservati |
+| Fotografia | EOX2016/WGS84: zoom su Luino, mosaico reale dettagliato/georeferenziato e crediti CC BY4.0, nessun errore/warning osservato. Vista pianeta/rotazione presenti; nessuna fotografia attuale o dettaglio identico a Esri dichiarati |
+| Catalogo | La Terra, Società nel tempo, Oceani, Atmosfera, Superficie/territorio; Atlante apre8serie reali con anni/unità/fonte |
+| Timeline DEV | Play muove globo/testi, pausa e seeking input/tastiera coerenti:2020.5 mappa eUI,2022.51 dopoArrowRight. Dati originali2020Italiaasylum1078→2021:4962, senza numero interpolato |
+| Studio mancante | Build: Occupazione15+, range manuale1970, seek1970.01: Italia1970→1971 “Non disponibile” su entrambi; nessuno zero o valore recuperato dal1991 |
+| Confronto/fonti | Selezione territorio e secondo indicatore con cerchi rosa/scala/curve, periodi/caveat/fonti originali. UNHCRItalia2022 relazioniAFG2031,SYR410,UKR2993; note originali accessibili. Nessuna pretesa di causalità/ranking |
+| Import/reload | Pacchetto reale ristretto alla natalità importato via filechooser, locale, un solo indicatore dopo import e reload. Ripristino del pacchetto incluso esplicito; nuovi dataset locali non descritti automaticamente come WDI/ILO/UNHCR |
+| CSV reale | File432338byte/1736righe (217×8),anno2024. Italia saldo−4.7 numerico, occupazione46.365 e speranza83.9512195121951 conservate; assenze vuote, metadata/link/unità. Helper browser download ha richiesto circa7min: non una misura della latenza dell'app e non ripetuto |
+| Portrait compilato |390×844,nessun overflow. Atlantecompatto x14–304,y74–350;timeline y597–710,comandi liberi. Espansione/dettagli su richiesta |
+| Landscape compilato |844×390,nessun overflow. Atlante x14–274, timelinex366–756;nessuna sovrapposizione fra i pannelli. Overrides ripristinati |
+| Salvaschermo | Configstudy/anno/indicatore/camera nel link; caption statistiche e anno2024 distinti da clock12 ottobre 2026. Play/ritorno1960–2024 osservato. Sourcecard rimane visibile quando toolbar/timeline scompaiono |
+| Salvaschermo corretto | Portrait: toolbar y15–67, cardy74–318, timeliney541–654, clocky675–766; landscape: cardx14–274, timelinex366–756/y128–230, clockx300+/y244–330. Fonte/anno e ora leggibili; corretti overlay clock/timeline e titolo launcher ancora fotografico |
+| Ultima build | app-DRYM-Czh.js osservato nel DOM; click nativo sulla timeline natalità →1992 coerente. Uscita/reload lascia fotografia; lenta rotazione ripristinata. Screenshot finaleNaturale1280×720/DPR 1; console pulita |
+| Produzione normale | Nessun attributo data-study-frame né osservatore del campione studio; console senza errori/warning nelle viste esaminate |
+
+Screenshot reali temporanei: `/private/tmp/upari-qa/050-atlas-final.png`, `050-atlas-portrait-final.png`, `050-atlas-landscape-final.png`, `050-natural-detail-production.png`, `050-saver-portrait-final.png`, `050-saver-landscape-final.png`, `050-natural-final.png`. Screenshots DEV precedenti sono prove intermedie; non sostituiscono le finali.
+
+## Prestazioni e prove ancora esterne
+
+Studio DEV:120 intervalli dopo30 di warmup,59,512 fps medi,p9517,9 ms,max33,6 ms,JSsubmission2,2375 ms medi. In docs/performance/0.5.0-study.json. Non è tempoGPU, misura sostenuta, confronto causale o certificazione Naturale60 fps su Mac. Dati0.4.3 di Chrome/Vega56/CPUlimit28 rimangono storici: nuovo `pmset -g therm` in questa fase non ha restituito statoCPU/power, quindi non dichiarare il limite ancora28 né normalizzato. Nessun intervento OS/energia/processi.
+
+Domani: iPhone17Pro stessa Wi-Fi, buildstaticaLAN WebGL/statistiche prima, almeno10 min di fluidità/consumo/gesti/background e due landscape. PWA installata/aggiornamento/rete veramente spenta, AR/fotocamera/bussola/permessi e servizi personali richiedono prove separate e contestoHTTPS per i sensori. Import su LANHTTP richiede invece HTTPS/localhost per crypto.subtle; pacchetto incluso disponibile. Meteo opzionale non riattivato nella QAstatistica finale: verificare anche layout con meteo sul telefono. Canali utente mai contattati. Nessun deploy.
+
+---
+
 # Upari — verifiche locali 0.4.3
 
 12 ottobre 2026. Codice locale `db3c660`, base `dc43575`. **Nessun push/deploy.** Obiettivo 60 fps con qualità invariata: ancora aperto, non certificato. [Metodo, dati e prove iPhone](PERFORMANCE.md).

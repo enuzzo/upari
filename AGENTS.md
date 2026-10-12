@@ -30,7 +30,15 @@ Read this file before changing anything. Then read `docs/HANDOFF.md`, `docs/VERI
     Native DPR is explicitly enabled in Cesium. The resolution scale is effectiveRatio/nativeDPR, not a second reduction with browser-recommended resolution enabled. See the regression tests. ISS off means no new ephemeris fetches, forecast workers, tracking or periodic refreshes.
 12. If Sites is available, `.openai/hosting.json` is the authoritative project identity. Reuse its exact `project_id`; preserve private access. Never create a second Site. Otherwise work locally or use the user's hosting.
 
-## Current local milestone — 0.4.3, 12 October 2026
+## Current local milestone — 0.5.0, 12 October 2026
+
+User requests: only **Natural Earth**, best quality; remove all artistic modes/shaders, including saved links/backups. New default High, retain explicitly chosen Auto/Battery. EOX Sentinel-2 cloudless2016 CC BY4.0 replaces proprietary Esri: WGS84 matrix, maxLevel13 (~10m native), historical acquisition2016–2017; NASA orbital imagery/lights2016 and original atmosphere/twilight/zoom remain. Do not imply equal ground detail to former Esri or current imagery. No NC EOX2018–2025 sources.
+
+**Society through time:** eight documented indicators,217 territories,1960–2025 with individual coverage; original UN/ILO/national/Eurostat providers via World Bank WDI; UNHCR2860 rows/263 relations, only3origins N/G2000–2025, up to64 schematic arcs. Single Cesium engine; native clock, static geometry, visual interpolation only, original annual endpoint readouts, null !=0. Theme catalogue, picking, secondary variable/trends, sources/licenses, exports and local documented JSON/CSV boundary tooling. Study scene/backup/link/screensaver persist config, not custom dataset bytes. Read STATISTICAL_ATLAS.md before changing source semantics or adding datasets. Whitelist/async generation/reader guards protect imports and exits. No runtime institutional API polling.
+
+User's iPhone17Pro is on the same Wi-Fi; **real tests postponed to tomorrow by user**, work autonomously now. No phone/channel/PWA certification. Mac Natural60fps target remains open; short IAB study samples are not physical Chrome evidence. No push/deploy. Read current HANDOFF/VERIFICATION.
+
+## Previous local milestone — 0.4.3, 12 October 2026
 
 Natural performance work: on-demand CameraSnapshot eliminates native angle getters per frame; final cache survives teardown and imported scenes exclude old readers. Bounded cap 61 fps Auto/High (small strict widget deadline margin), 30 battery/screensaver; no quality reduction. Local ?perf=1 opt-in HUD reports 300 postRender intervals after imagery/warmup, also in screensaver; production default has no diagnostic observers. 97 tests / 36 files. Physical Chrome Mac DPR2/Vega56: initial 58.84 fps, final 31.80 with RAF31.81 under observed CPU_Speed_Limit28; compiled sample 19.21 fps / RAF18.67 later; samples are not a causal comparison or sustained 60 certification. Read PERFORMANCE.md and its recorded evidence. User phone is iPhone17Pro; common Wi-Fi/USB not confirmed, no actual phone QA yet. No push/deploy.
 

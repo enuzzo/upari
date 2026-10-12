@@ -1,3 +1,13 @@
+# Aggiornamento 0.5.0
+
+Solo Naturale; Alta di default, Auto/Batteria espliciti conservati. Il cambio di fotografia Esri→EOX2016 nasce dal requisito di licenza libera e comporta circa10m nativi, non è una riduzione del framebuffer per inseguire gli fps. Atmosfera/crepuscolo/zoom e camera on-demand restano.
+
+Atlante: geometria statica, aggiornamento attributi, clock nativo e UI limitata12,5Hz. Campione DEV IAB1280×720/DPR1,120 intervalli durante play UNHCR:59,512fps,16,803ms medi, p9517,9ms,max33,6ms; submission JS2,2375ms medi,p952,6ms. Breve, interno e prima del build finale; non è Chrome fisico né una certificazione Naturale60fps. Diagnostica studio DEV esclusa dalla build normale.
+
+**iPhone17Pro nella stessa Wi-Fi confermato; prove reali domani per richiesta dell'utente.** Verificare build compilata/LAN, Auto e Alta, Natural zoom/rotazione e timeline durante gesti/background. Nessun deploy o modifica impostazioni del Mac. Il target60fps Naturale rimane aperto; la diagnostica opt-in del metodo sotto resta disponibile, gli stili artistici sotto sono riferimenti storici.
+
+---
+
 # Fluidità Naturale — 0.4.3
 
 12 ottobre 2026. Obiettivo: 60 fps sul Mac conservando la qualità. **Non ancora certificato**. Nessun push/deploy, invio diagnostico o modifica alle impostazioni del Mac.

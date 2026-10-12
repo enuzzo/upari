@@ -9,7 +9,7 @@
 | Riferimento indipendente | https://rhodesmill.org/skyfield/ | Skyfield, sgp4 Python, JPL DE421 | Script opzionale separato dal runtime |
 | NASA raster | https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/1.0.0/WMTSCapabilities.xml | WMTS EPSG:3857, tile 256 px, matrix set specifico | Risoluzione/periodo individuale; buchi di copertura |
 | API/attribuzioni NASA | https://nasa-gibs.github.io/gibs-api-docs/ | Immagini e legende originali | Nessuna palette scalare inventata o misura ricavata dai colori |
-| Fotografia dettagliata | https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer | Esri World Imagery, base iniziale | Mosaico con date/risoluzioni diverse; crediti del servizio; NASA di riserva |
+| Fotografia dettagliata | https://tiles.maps.eox.at/wmts/1.0.0/WMTSCapabilities.xml | EOX Sentinel-2 cloudless2016, CC BY4.0 | WGS84, maxLevel13, circa10m, acquisizione2016–2017; NASA orbitale; Esri rimosso in0.5 |
 | Cesium | https://cesium.com/learn/cesiumjs/ref-doc/ | Globo ellissoidale, rendering georeferenziato | Asset runtime locali; terreno 3D/edifici non attivati |
 | Densità e filtri | https://cesium.com/learn/cesiumjs/ref-doc/Viewer.html e https://cesium.com/learn/cesiumjs/ref-doc/ImageryLayer.html | DPR nativo, resolutionScale, livello di dettaglio, filtro lineare e anisotropia | Budget in pixel; non aggiunge risoluzione ai dati originali |
 | Meteo salvaschermo | https://open-meteo.com/en/docs | Current weather da modelli; temperatura, percepita, vento, codice WMO; timestamp UNIX | Solo dopo attivazione; refresh 30 min; timeout 15 s; niente valori dimostrativi |
@@ -20,7 +20,7 @@
 
 ## Coordinate
 
-Longitudine zero Greenwich; longitudini est positive, ovest negative, intervallo −180…180. WGS84 per osservatore e globo. Satellite.js: angoli in radianti, distanze in chilometri. Cesium: coordinate angolari in gradi agli adattatori, quote in metri. Tiling: WebMercatorTilingScheme, GoogleMapsCompatible_LevelN, non la matrice GIBS EPSG:4326. Quest’ultima ha una struttura diversa e non può essere intercambiata senza adattatore.
+Longitudine zero Greenwich; longitudini est positive, ovest negative, intervallo −180…180. WGS84 per osservatore e globo. Satellite.js: angoli in radianti, distanze in chilometri. Cesium: coordinate angolari in gradi agli adattatori, quote in metri. Tiling NASA: WebMercatorTilingScheme, GoogleMapsCompatible_LevelN, non la matrice GIBS EPSG:4326. EOX2016 usa invece GeographicTilingScheme/WGS84 e la propria matrice2×1. Quest’ultima ha una struttura diversa e non può essere intercambiata senza adattatore.
 
 Il marker locale, la posizione orbitale e le immagini condividono la stessa geografia. Controlli visuali di Greenwich, Mediterraneo, Giappone e longitudine ±180 rimangono da effettuare nel browser.
 
@@ -47,4 +47,10 @@ Nessun meteo è dedotto dalle immagini. Clorofilla non traccia organismi; aeroso
 - Orizzonte: profilo dichiarato dall'utente in otto direzioni, interpolazione circolare, soglia=max(elevazione minima,ostacolo). Verifica indipendente con Skyfield/JPL su due date iniziali; non è un rilievo del terreno.
 - Playback: https://cesium.com/learn/cesiumjs/ref-doc/ImageryLayer.html e https://cesium.com/learn/cesiumjs/ref-doc/Globe.html. Alpha 0 carica tile del viewport nel viewer; usa stato Globe.tilesLoaded e budget limitato. Dissolvenza corregge composizione alpha source-over; non interpola valori scientifici.
 
-Vettori, pacchetti/checksum e pipeline sono descritti in VECTORS.md. Crediti e condizioni dei provider rimangono separati dalla licenza MIT dell'app. Non è stato letto né copiato codice applicativo della repo di riferimento.
+Vettori, pacchetti/checksum e pipeline sono descritti in VECTORS.md. Crediti e condizioni dei provider rimangono separati dalla licenza MIT dell'app. Nella0.3 non era stato letto codice applicativo della reference; lo studio del sorgente è stato autorizzato in0.4.1 e documentato in REFERENCE_STUDY.md. Nessun codice o asset applicativo copiato.
+
+## Fonti libere e statistiche 0.5.0
+
+[Atlante, tabella indicatori, acquisizioni/hash, metodi, licenze e registro futuro](STATISTICAL_ATLAS.md). WDI: sei serie CC BY4.0 più saldo derivato; UNHCR AsylumApplications CC BY4.0; Natural Earth public domain. Fonte originale distinta dal distributore e data dell'anno distinta dal recupero/API update. Nessuna mappa geopolitica storica dichiarata.
+
+EOX2016: [condizioni/versioni](https://cloudless.eox.at/pricing), Contains modified Copernicus Sentinel data2016&2017; EOX IT Services GmbH, CC BY4.0. Solo questo layer2016 entra nella cache pubblica: versioni successive NC non usate. SWISSIMAGE regionale e NASA mantengono attribuzioni proprie. Provider regionali importati restano dichiarazioni dell'utente da verificare per singola fonte, non un'estensione automaticamente certificata del catalogo libero.

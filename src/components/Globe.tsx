@@ -1,4 +1,5 @@
 import {RotationClock,defaultRotationSpeed} from '../lib/earth-rotation';
+import {atmosphereBlend,ZoomBlend} from '../lib/earth-look';
 import {earthShader} from '../lib/earth-shader';
 import {earthStyles,spaceBlend,naturalGradeAllowed,type EarthStyle} from '../lib/earth-style';
 import { memo,useEffect,useRef,useState,useId } from 'react';
@@ -27,16 +28,19 @@ function Globe(p:Props){
   const rotationClock=useRef(new RotationClock()),rotationControls=useRef<HTMLDivElement>(null),previousAuto=useRef(p.autoRotate),rotationID=useId();
   const rotationRunning=rotating&&(!reducedMotion||motionOptIn);
   const speedLabel=rotationSpeed.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const photographic=()=>{const key=buffer.current?.displaying?.key.split('|')[0];const shown=key?(initialLayers.find(l=>l.key===key)??{regional:false}):null;return naturalGradeAllowed(latest.current.layer,shown);};
   useEffect(()=>{
     (window as unknown as {CESIUM_BASE_URL:string}).CESIUM_BASE_URL='/cesium/';
-    let v:C.Viewer|null=null,gone=false;const off:(()=>void)[]=[];
+    let v:C.Viewer|null=null,gone=false;const off:(()=>void)[]=[],baseBlend=new ZoomBlend(0),motionMedia=matchMedia('(prefers-reduced-motion: reduce)');
     try{
       v=new C.Viewer(node.current!,{animation:false,timeline:false,baseLayerPicker:false,geocoder:false,homeButton:false,sceneModePicker:false,navigationHelpButton:false,fullscreenButton:false,selectionIndicator:false,infoBox:false,baseLayer:false,requestRenderMode:true,maximumRenderTimeChange:Infinity,useBrowserRecommendedResolution:false,skyBox:false,skyAtmosphere:new C.SkyAtmosphere(),terrainProvider:new C.EllipsoidTerrainProvider(),contextOptions:{webgl:{alpha:true,powerPreference:p.quality==='battery'?'low-power':'default'}}});
       viewer.current=v;
       v.scene.backgroundColor=C.Color.TRANSPARENT;
       v.scene.globe.baseColor=C.Color.fromCssColorString('#173249');
       v.scene.globe.dynamicAtmosphereLighting=true;v.scene.globe.dynamicAtmosphereLightingFromSun=true;v.scene.globe.showGroundAtmosphere=true;
-      if(v.scene.skyAtmosphere){v.scene.skyAtmosphere.perFragmentAtmosphere=p.quality!=='battery';v.scene.skyAtmosphere.atmosphereLightIntensity=42;v.scene.skyAtmosphere.saturationShift=.08;}
+      // Retain Cesium scattering; a lighter Mie contribution keeps the illuminated limb clear.
+      if(v.scene.skyAtmosphere){v.scene.skyAtmosphere.perFragmentAtmosphere=p.quality!=='battery';v.scene.skyAtmosphere.atmosphereLightIntensity=36;v.scene.skyAtmosphere.saturationShift=.03;v.scene.skyAtmosphere.atmosphereMieCoefficient=new C.Cartesian3(8e-6,8e-6,8e-6);}
+      v.scene.globe.atmosphereLightIntensity=6;v.scene.globe.atmosphereMieCoefficient=new C.Cartesian3(8e-6,8e-6,8e-6);
       // Cesium measures these from Earth's centre, unlike positionCartographic.height.
       const radius=C.Ellipsoid.WGS84.maximumRadius;
       v.scene.globe.lightingFadeOutDistance=radius+150000;v.scene.globe.lightingFadeInDistance=radius+1500000;
@@ -48,7 +52,19 @@ function Globe(p:Props){
       addImagery(v,fallback);let aerial:C.ImageryLayer|undefined;
       const nightLayer=initialLayers.find(layer=>layer.key==='night')!;const night=provider(nightLayer,nightLayer.date);
       const lights=addImagery(v,night);lights.dayAlpha=0;lights.nightAlpha=1;lights.brightness=3.0;lights.gamma=2.0;lights.alpha=0;lights.show=false;
-      const updateBase=()=>{if(!v||v.isDestroyed())return;const far=spaceBlend(v.camera.positionCartographic.height);if(aerial)aerial.alpha=1-far;lights.alpha=!latest.current.layer&&latest.current.lighting?far:0;lights.show=lights.alpha>0;};
+      let blending=false;
+      const updateBase=()=>{
+        if(!v||v.isDestroyed()||document.hidden)return;
+        publishCamera(); // Keep exports/links aligned with the visible camera during flights and gestures too.
+        const height=v.camera.positionCartographic.height,far=spaceBlend(height),before=baseBlend.value;
+        const moving=aerial?baseBlend.tick(1-far,performance.now(),v.scene.globe.tilesLoaded,motionMedia.matches):false;
+        if(aerial)aerial.alpha=baseBlend.value;
+        v.scene.globe.showGroundAtmosphere=photographic();
+        lights.alpha=!latest.current.layer&&latest.current.lighting?far:0;lights.show=lights.alpha>0;
+        if(moving)v.scene.requestRender();
+        if(!moving&&(blending||before!==baseBlend.value))node.current?.setAttribute('data-zoom-blend',JSON.stringify({aerial:baseBlend.value,target:1-far,height:Math.round(height)}));
+        blending=moving;
+      };
       off.push(v.scene.preRender.addEventListener(updateBase));
       const camera=p.initialCamera??initialCamera;
       v.camera.setView({destination:C.Cartesian3.fromDegrees(camera.longitude,camera.latitude,camera.height),orientation:{heading:camera.heading,pitch:camera.pitch,roll:camera.roll}});
@@ -77,7 +93,7 @@ function Globe(p:Props){
     };
     clock();
     const timer=setInterval(clock,30000);
-    const visible=()=>{if(instance.isDestroyed())return;instance.useDefaultRenderLoop=!document.hidden;if(!document.hidden){instance.resize();clock();instance.scene.requestRender();}};
+    const visible=()=>{if(instance.isDestroyed())return;baseBlend.suspend();instance.useDefaultRenderLoop=!document.hidden;if(!document.hidden){instance.resize();clock();instance.scene.requestRender();}};
     document.addEventListener('visibilitychange',visible);visible();
     return()=>{gone=true;clearInterval(timer);document.removeEventListener('visibilitychange',visible);off.forEach(f=>f());viewer.current=null;latest.current.onLoadingChange?.(false);if(!instance.isDestroyed())instance.destroy();};
   },[]);
@@ -101,8 +117,8 @@ function Globe(p:Props){
     try{
       stage=new C.PostProcessStage({name:'upari-earth-style',fragmentShader:earthShader,uniforms:{
         style:()=>Math.max(0,earthStyles.findIndex(s=>s.key===(latest.current.visualStyle??'natural'))),
-        strength:()=>latest.current.visualStrength??1,spaceAmount:()=>spaceBlend(v.camera.positionCartographic.height),
-        photographic:()=>{const key=buffer.current?.displaying?.key.split('|')[0];const shown=key?(initialLayers.find(l=>l.key===key)??{regional:false}):null;return naturalGradeAllowed(latest.current.layer,shown)?1:0;},
+        strength:()=>latest.current.visualStrength??1,spaceAmount:()=>spaceBlend(v.camera.positionCartographic.height),atmosphereAmount:()=>atmosphereBlend(v.camera.positionCartographic.height),
+        photographic:()=>photographic()?1:0,
         solarLighting:()=>latest.current.lighting||latest.current.layer?.key==='night'?1:0,
         pixelRatio:()=>v.scene.drawingBufferWidth/Math.max(1,node.current?.clientWidth??v.scene.drawingBufferWidth)
       }});v.scene.postProcessStages.add(stage);
@@ -227,12 +243,20 @@ function Globe(p:Props){
   useEffect(()=>{
     const v=viewer.current;if(!ready||!v||!rotationRunning)return;
     const clock=rotationClock.current;clock.reset();
+    // Bounded development-only observation; no timer, GPU readback or production telemetry.
+    let warmup=0,sampled=0,previous=0,total=0,maxGap=0;
+    if(import.meta.env.DEV)node.current?.removeAttribute('data-render-sample');
     // Use Cesium's existing frame loop, honoring its adaptive 30/60 fps profile.
     return v.scene.preUpdate.addEventListener(()=>{
       if(v.isDestroyed())return;
-      const degrees=clock.tick(performance.now(),rotationSpeed,v.camera.positionCartographic.height,document.hidden);
-      if(!degrees)return;
-      v.camera.rotate(C.Cartesian3.UNIT_Z,C.Math.toRadians(degrees));publishCamera();v.scene.requestRender();
+      const now=performance.now(),degrees=clock.tick(now,rotationSpeed,v.camera.positionCartographic.height,document.hidden);
+      if(!degrees){if(import.meta.env.DEV)warmup=sampled=previous=total=maxGap=0;return;}
+      if(import.meta.env.DEV&&sampled<120){
+        if(warmup++>=8&&previous){const gap=now-previous;total+=gap;maxGap=Math.max(maxGap,gap);sampled++;
+          if(sampled===120)node.current?.setAttribute('data-render-sample',JSON.stringify({frames:sampled,meanMs:Math.round(total/sampled*100)/100,maxMs:Math.round(maxGap*100)/100,targetFPS:v.targetFrameRate}));
+        }previous=now;
+      }
+      v.camera.rotate(C.Cartesian3.UNIT_Z,C.Math.toRadians(degrees));v.scene.requestRender();
     });
   },[ready,rotationRunning,rotationSpeed]);
   function toggleRotation(){const next=!rotationRunning;publishCamera();setMotionOptIn(next);setRotating(next);latest.current.onRotationChange?.(next);}
@@ -243,7 +267,7 @@ function Globe(p:Props){
     {error&&<div className="globe-error" role="alert">{error}<button onClick={()=>location.reload()}>Riprova</button></div>}
     {!p.hideTools&&<div className="globe-tools" aria-label="Controlli del globo">
       <button aria-label="Vai al mio luogo" title="Vai al mio luogo" onClick={()=>flight({...initialCamera,longitude:p.place.longitude,latitude:p.place.latitude,height:12000})}><Crosshair size={20}/></button>
-      <div className="zoom-tools"><button aria-label="Avvicina" onClick={()=>{rotationClock.current.hold(performance.now());const v=viewer.current;if(v){v.camera.zoomIn(v.camera.positionCartographic.height*.35);v.scene.requestRender();}}}><Plus size={21}/></button><button aria-label="Allontana" onClick={()=>{rotationClock.current.hold(performance.now());const v=viewer.current;if(v){v.camera.zoomOut(v.camera.positionCartographic.height*.55);v.scene.requestRender();}}}><Minus size={21}/></button></div>
+      <div className="zoom-tools"><button aria-label="Avvicina" onClick={()=>{rotationClock.current.hold(performance.now());const v=viewer.current;if(v){v.camera.zoomIn(v.camera.positionCartographic.height*.35);publishCamera();v.scene.requestRender();}}}><Plus size={21}/></button><button aria-label="Allontana" onClick={()=>{rotationClock.current.hold(performance.now());const v=viewer.current;if(v){v.camera.zoomOut(v.camera.positionCartographic.height*.55);publishCamera();v.scene.requestRender();}}}><Minus size={21}/></button></div>
       <button aria-label="Vista pianeta" title="Vista pianeta" onClick={()=>flight(initialCamera)}><Globe2 size={20}/></button>
       <div className="rotation-tools" ref={rotationControls}>
         <button aria-label={rotationRunning?'Ferma rotazione':'Avvia rotazione'} title={rotationRunning?'Pausa rotazione':'Avvia rotazione'} aria-pressed={rotationRunning} className={rotationRunning?'selected':''} onClick={toggleRotation}>{rotationRunning?<Pause size={19}/>:<Play size={19}/>}</button>

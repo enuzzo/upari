@@ -1,3 +1,4 @@
+import {altitudeBlend} from './earth-look';
 export const earthStyles=[
   {key:'natural',name:'Naturale',description:'La Terra, con atmosfera e profondità.'},
   {key:'cartoon',name:'Cartoon',description:'Colori pieni, luce morbida e un tratto leggero.'},
@@ -10,7 +11,7 @@ export const earthStyles=[
 export type EarthStyle=typeof earthStyles[number]['key'];
 export function validEarthStyle(raw:unknown):EarthStyle{return earthStyles.some(s=>s.key===raw)?raw as EarthStyle:'natural';}
 /** Blend by altitude, not zoom-button count. Keep all aerial detail at close range. */
-export function spaceBlend(height:number){const x=Math.max(0,Math.min(1,(height-1200000)/6800000));return x*x*(3-2*x);}
+export function spaceBlend(height:number){return altitudeBlend(height,1200000,8000000);}
 
 export function earthStyleName(raw:unknown){return earthStyles.find(s=>s.key===raw)?.name??earthStyles[0].name;}
 

@@ -30,7 +30,11 @@ Read this file before changing anything. Then read `docs/HANDOFF.md`, `docs/VERI
     Native DPR is explicitly enabled in Cesium. The resolution scale is effectiveRatio/nativeDPR, not a second reduction with browser-recommended resolution enabled. See the regression tests. ISS off means no new ephemeris fetches, forecast workers, tracking or periodic refreshes.
 12. If Sites is available, `.openai/hosting.json` is the authoritative project identity. Reuse its exact `project_id`; preserve private access. Never create a second Site. Otherwise work locally or use the user's hosting.
 
-## Current local milestone — 0.5.0, 12 October 2026
+## Current local milestone — 0.5.1, 12 October 2026
+
+Country-name tooltip on Natural and study views; geographic WGS84 hit-test20Hz, generalized contemporary boundary disclaimer, imported regional boundaries supported. Atlas hover highlights outlines and dims unrelated relations. Original Cesium Fabric animated forward chevrons/soft trails; schematic, never observed journeys/speeds/people. Separate persistent flowMotion pause, reduced-motion/background suspend; static geometry/native loop and batching by origin. Refined glass/timeline UI, low-height source card scroll. No deploy/push. Current QA and performance limits in HANDOFF/VERIFICATION.
+
+## Previous local milestone — 0.5.0, 12 October 2026
 
 User requests: only **Natural Earth**, best quality; remove all artistic modes/shaders, including saved links/backups. New default High, retain explicitly chosen Auto/Battery. EOX Sentinel-2 cloudless2016 CC BY4.0 replaces proprietary Esri: WGS84 matrix, maxLevel13 (~10m native), historical acquisition2016–2017; NASA orbital imagery/lights2016 and original atmosphere/twilight/zoom remain. Do not imply equal ground detail to former Esri or current imagery. No NC EOX2018–2025 sources.
 

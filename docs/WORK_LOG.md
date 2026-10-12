@@ -135,3 +135,14 @@ Implementazione 0.4.2 nel commit locale `a1234ae`. Build finale `app-DPKw02Rs.js
 - Ultima QA: corretti titolo launcher e sovrapposizioni source/toolbar/timeline/clock nei due formati del salvaschermo. I vettori fisici e il confronto raster sono sospesi nello studio anche per scene importate, evitando dati sovrapposti senza legenda. Al ritorno resta la configurazione fotografica. Verifiche mirate e ricompilazione finale verdi.
 
 Implementazione locale0.5.0 nel commit `84281fa`. Giro completo conclusivo108/108 e3proveCSV dopo tutte le correzioni; buildfinaleapp-DRYM-Czh.js osservata nel browser. Clickmousetimeline→1992 coerente, uscita/reloadNaturale e rotazione ripristinata. Querykey/access_key private rifiutate, authorityUNHCR ammesso. Documentazione segue in commit separato; nessun push/deploy.
+
+
+## 12 ottobre 2026 — 0.5.1, nomi e flussi luminosi
+
+Richiesta: nomi degli Stati su hover, overlay come asilo più animati e vista/UI magiche. Aggiunti indice geografico leggero, tooltip con nomi/anni/valori, contorni e focus delle relazioni, materiale originale Cesium con chevron/scie, pause separate persistenti e sospensione reduced-motion/background. Colori delle fonti scientifiche, dati e limitazioni conservati; width4+10sqrt sul massimo globale. Batching favorito da fase/origin order. Finiture glass/timeline e legenda scorribile in landscape. Nessuna dipendenza/deploy/push.
+
+Gate:115/41JS,3Python,TypeScript; QA reale IAB DEV e successiva build in VERIFICATION. Corrette due regressioni rilevate nella QA: salvataggio CSS sovrascritto (ripristinato dal HEAD), nome GLSL input riservato. Nessun danno ai pacchetti/preferenze/bundle. Campione finale58.80fps non certifica60; prove telefono rimandate come richiesto.
+
+QA finale:115/41 verdi; build completa con shell382file/14.325.791byte. CompilataIAB4181 conferma nome Italia5434↔3543, scie/pause/source, layout e salvaschermo portrait/landscape, console pulita. Corretto anche incrocio timeline/pulsante Salvaschermo in landscape; clic del launcher verificato. P2touch chiuso in revisione indipendente con2testlifecycle. MisuraDEV finale58.803fps/p9521.4ms bounded; no60sostenuti certificati. Prossimo passo: telefono reale già concordato, senza pubblicare.
+
+Codice salvato nel commit locale `5f5ca08`; documentazione/evidenze in commit separato. Nessun push/deploy.

@@ -1,3 +1,24 @@
+# Upari — verifiche locali 0.5.1
+
+12 ottobre 2026. Codice5f5ca08, base7349948; nessun deploy/push o invio su canali. Solo Naturale mantenuto. iPhone17Pro stessa Wi-Fi, prove reali rinviate dall’utente.
+
+- 115 test /41 file verdi, 3 prove Python del tool CSV verdi; TypeScript verde. Nuove prove: paesi reali/oceano/polo, multipoligoni/fori/antimeridiano, tooltip entro viewport; fase30/60Hz e pausa/background; touch tap→leave/drag/cancel/blur/background e teardown; flowMotion false conserva scene/backup/link, vecchie scene defaulttrue.
+- Browser interno IAB/DPR1 DEV1280×720: nome Libia sulla Naturale e sull’atlante, dato assente dichiarato; selezione col click coerente. API di automazione non espone hover puro: provato pointer-up reale, listener pointermove verificato nel codice, geometria coperta dai test. Non è prova Safari/touch fisico.
+- Asilo2022.5: fase0.019466→0.230712 con anno fermo e61 relazioni; screenshot051-flows-a/b. Pausa: fase0.33801 identica in due letture separate, anno2022.5 invariato. Play annuale separato osservato, seek ripristina2022.5. Shader WebGL compilato dopo correzione del nome riservato GLSL input. Log iniziali storici conservati, non confusi con errori dopo correzione.
+- Portrait390×844 compatto e landscape844×390: nessun overflow orizzontale. Rilevato pannello landscape fuori viewport, corretto con max-height/scroll; finale x14,y62,260×296 e timeline x366,y270.5,390×101.5 senza incrocio. Screensaver verificato separatamente nella build finale (vedi sotto).
+- Primo giro visuale ha rilevato CSS sovrascritto accidentalmente con TSX: ripristinato esattamente dal HEAD approvato e aggiunte solo finiture. Diff del CSS controllato; copia diagnostica temporanea, nessuna attribuzione a Dropbox.
+- Breve campione finale scie DEV dopo ordinamento nella collezione:120 intervalli,58.8034fps,media17.0058ms,p9521.4/max38.6ms,CPU submission3.9458ms; docs/performance/0.5.1-flows.json. Non GPU, misura sostenuta o confronto causale. Campioni intermedi37.82fps con offset distinto e39.32fps con sola fase condivisa; ordinamento ora prima di links.add, nel batching nativo. pmset non legge stato termico/CPU: nessuna conclusione sul limite. Target60Mac/telefono ancora aperto, qualità non ridotta.
+
+**Build finale verificata**: app-i44DPjTh.js, Globe-DupHom4d.js, screensaver-CIYFV606.js e StatisticsStudy-BP8vYfRA.js; TypeScript/build/postbuild/sintassiSW/diffcheck verdi. Warning Cesium noto: Globe4275.05kB,1152.64kB gzip. Shell382route,14.325.791byte, hash manifest052cd827844f74af5f2730085db5bd7a9e0e493313e96871118aa1efb2e56e26 (elenco, non contenuti). Nessuna dipendenza nuova. Dist intermedi preservati in/private/tmp/upari-qa.
+
+Browser compilato127.0.0.1:4181, IAB/DPR1: Libia Naturale; Italia nell’atlante2022.5 con5434↔3543 originali, contorno e dimming delle relazioni estranee. Source/anni/pause conservati dopo reload. Nessun attributo diagnostico DEV nella produzione normale; console senza errori/warning. Portrait390×844 card290×336.5,y74 e timeline362×112.5,y597.5. Landscape844×390 card260×296,y62 e timeline390×101.5,y270.5; pulsante Salvaschermo x693.4,y214,136.6×44, nessun incrocio e clic apre effettivamente il dialogo. Override ripristinato, anteprima finale conservata.
+
+Salvaschermo separato con scena asilo2022.5/flowMotiontrue, fonte UNHCR e clock12ottobre2026 distinti. Portrait: cardx14,y74,290×303.84(scorribile),timeliney541.5,clocky675.4. Landscape: cardx14,y66,260×304,timelinex366,y128.5,390×101.5,clockx300,y244.3. Nessun incrocio dei pannelli, toolbar/timeline si nascondono come previsto. Console pulita. Meteo opzionale non attivato.
+
+Revisione indipendente conclusa senza rilievi importanti rimasti: P2 tap touch→pointerleave corretto e coperto; ordinamento archi spostato prima della creazione nella collezione. Screenshot finali051-natural-hover-final,051-flows-final (Italia),051-flows-portrait/landscape-final,051-saver-portrait/landscape-final. Screenshot temporanei in /private/tmp/upari-qa/051-*.png. Snapshot/fonti invariati: STATISTICAL_ATLAS.md. Telefono, movimento ridotto del sistema reale, background fisico, PWA/AR/canali richiedono prove separate; nessuna certificazione implicita dai test.
+
+---
+
 # Upari — verifiche locali0.5.0
 
 12 ottobre 2026. Codice locale `84281fa`. Nessun push/deploy, endpoint utente o invio live. Solo server QA dell'agente gestiti. Ultime istruzioni: solo Naturale e dati/fonti libere; iPhone17Pro stessa Wi-Fi, prove rinviate a domani dall'utente.

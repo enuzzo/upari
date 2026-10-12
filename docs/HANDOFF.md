@@ -1,6 +1,6 @@
-# Upari — passaggio locale 0.5.0
+# Upari — passaggio locale 0.5.1
 
-12 ottobre 2026. Implementazione locale `84281fa`. Nessun push/deploy, nessun invio sui canali. ZIP/bundle/DELIVERY e reference ignorata preservati. Le sezioni0.4 sottostanti sono storiche; questo blocco e AGENTS.md descrivono lo stato attuale.
+12 ottobre 2026. Implementazione locale0.5.1 `5f5ca08`, base `7349948`. Nessun push/deploy, nessun invio sui canali. ZIP/bundle/DELIVERY e reference ignorata preservati. Le sezioni0.4 sottostanti sono storiche; questo blocco e AGENTS.md descrivono lo stato attuale.
 
 | Ambito | Consegna attuale |
 |---|---|
@@ -8,11 +8,12 @@
 | Immagini libere | NASA orbitale ↔ EOX2016 CC BY4.0, WGS84/zoom13/~10m, acquisizione2016–2017. Esri rimosso; non promettere lo stesso dettaglio a terra. SWISSIMAGE regionale e luci NASA2016 conservate |
 | Atlante | 8 indicatori,217 territori,1960–2025 con coperture individuali. Sei WDI originali (ONU/ILO/nazionali/Eurostat), saldo derivato, selezione reale UNHCR |
 | Relazioni | 2860 righe/263 relazioni UNHCR SYR/UKR/AFG,N/G,2000–2025; massimo64 archi stabili sul periodo, colori per origine e spessore per quantità. Schematici, non viaggi né persone uniche |
+| Nomi e scie | Nomi al passaggio del mouse, tap nell’atlante; contorno evidenziato e relazioni estranee attenuate. Frecce/scie direzionali animate, pausa separata, movimento ridotto/background; UI luminosa e legenda scorribile nei viewport bassi |
 | Studio | Timeline mouse/touch/tastiera/play/pausa/velocità avanti-indietro, intervallo/loop; poligoni statici Cesium, picking e menu paese, variabile secondaria/curve con buchi, scala fissa/zero neutro/null distinti |
 | Fonti/tool | Fonti originali/distributori/date/unità/natura/licenze/metodi linkati, CSV/JSON, tool offline per serie e confini regionali. Import documentato locale, whitelist/gate; export/reimport conserva l'identità validata |
 | Persistenza | Scene/backup/link/salvaschermo conservano config/anno/ID. Pacchetto importato a parte: esportare anche JSON completo. Fonte statistica/anno della serie distinti da clock e fotografia; tre snapshot inclusi offline |
-| Verifica | 108 test / 38 file,3 prove tool CSV,check/build/postbuild/SW; revisione indipendente senza rilievi rimasti. Browser IAB compilato desktop/portrait/landscape e salvaschermo; vedere VERIFICATION.md |
-| Prestazioni | Studio DEV59,512 fps su120 intervalli IAB/DPR 1; non certificazione Mac Naturale o telefono. Camera on-demand/cap61/30 mantenuti. Target60Naturale aperto: PERFORMANCE.md |
+| Verifica | 115 test / 41 file,3 prove tool CSV,check/build/postbuild/SW; revisione indipendente senza rilievi rimasti. Browser IAB compilato desktop/portrait/landscape e salvaschermo; vedere VERIFICATION.md |
+| Prestazioni | 0.5.1 scie DEV58,80 fps su120 intervalli IAB/DPR1; storico0.5.0 studio59,512 fps; non certificazione Mac Naturale o telefono. Camera on-demand/cap61/30 mantenuti. Target60Naturale aperto: PERFORMANCE.md |
 
 ## Cosa richiede l'utente/domani
 
@@ -22,9 +23,9 @@ Canali personali ntfy/HA/Gotify/webhook: serve endpoint/configurazione dell'uten
 
 ## Ripresa consigliata
 
-“Leggi AGENTS.md, HANDOFF.md, VERIFICATION.md, STATISTICAL_ATLAS.md e PERFORMANCE.md. Continua dalla0.5.0 locale: solo Naturale, qualità alta, dati e fonti libere. L'iPhone17Pro è nella stessa Wi-Fi; facciamo ora le prove della build in LAN senza deploy. Misura Naturale/rotazione/zoom e timeline statistica su Mac e telefono, annota fps/p95 e condizioni; non ridurre silenziosamente la qualità. Conserva luoghi/preferenze e gli import locali. Poi PWA/AR/canali solo con accesso/test richiesto. Eurostat/UNICEF/UNdata e confini storici sono idee in coda documentate, non dataset già caricati.”
+“Leggi AGENTS.md, HANDOFF.md, VERIFICATION.md, STATISTICAL_ATLAS.md e PERFORMANCE.md. Continua dalla0.5.1 locale: solo Naturale, qualità alta, dati e fonti libere. L'iPhone17Pro è nella stessa Wi-Fi; facciamo ora le prove della build in LAN senza deploy. Misura Naturale/rotazione/zoom e timeline statistica su Mac e telefono, annota fps/p95 e condizioni; non ridurre silenziosamente la qualità. Conserva luoghi/preferenze e gli import locali. Poi PWA/AR/canali solo con accesso/test richiesto. Eurostat/UNICEF/UNdata e confini storici sono idee in coda documentate, non dataset già caricati.”
 
-Comandi: `npm run check`, `npm run test`, `npm run build`, `npm run preview -- --port 4179`. Anteprima corrente solo127.0.0.1:4179; gli origin4173/4174/4175 dell'utente conservano i propri dati. Build di sviluppo e vecchia preview dell'agente fermate. Nessuna memoria privata o token negli export.
+Comandi: `npm run check`, `npm run test`, `npm run build`, `npm run preview -- --port 4181`. Anteprima corrente solo127.0.0.1:4179; gli origin4173/4174/4175 dell'utente conservano i propri dati. Build di sviluppo e vecchia preview dell'agente fermate. Nessuna memoria privata o token negli export.
 
 ---
 

@@ -1,4 +1,4 @@
-# Società nel tempo — atlante 0.5.0
+# Società nel tempo — atlante 0.5.1
 
 Upari è gratuito, open source e senza finalità di lucro. Il codice resta MIT: un divieto di riuso commerciale toglierebbe libertà ai suoi utilizzatori. Dati, geografie e fotografie conservano invece le proprie attribuzioni/licenze. Nessun logo o endorsement ONU/World Bank/ILO/UNHCR. Nessun account, telemetria, upload centrale o API istituzionale chiamata durante il play.
 
@@ -31,7 +31,7 @@ Le sei serie WDI sono CC BY4.0 **verificate singolarmente** nei metadati. Schede
 
 Acquisizione completa del **sottoinsieme**, non del mondo: origine SYR/UKR/AFG, domande nuove N, autorità governativa G, unità IND.1.TOT, 2000–2025. 29 pagine seriali distanziate, 2860 righe, 263 relazioni, nessun identificatore geografico senza match. `YYYY-12` è il codice del dato annuale, non un conteggio del solo dicembre. Note pubbliche/periodo/copertura/natura/reporting/deviations sono conservati per relazione e anno. La mappa somma solo le righe pubblicate per paese di presentazione: non il totale di tutte le origini, non persone uniche, non migrazione generale. Una relazione assente resta assente.
 
-Sul globo si disegnano **fino a 64 relazioni** scelte per massimo annuale sull'intero periodo, quindi la selezione resta stabile durante play. Tutte le263 sono nel pacchetto e nei dettagli. Colori delle origini: Siria turchese, Ucraina rosa, Afghanistan ambra; spessore `1+7√(valore/massimo)` sul periodo. Le frecce collegano punti geografici rappresentativi, sono schematiche: **non itinerari osservati**, né particelle equivalenti a individui. Prima prova PopStatsOfficial con quei filtri restituiva zero righe: non usata come dato zero. Un tentativo bulkCSV ha superato il budget150MB ed è stato interrotto; il file parziale resta temporaneo, escluso dalla distribuzione.
+Sul globo si disegnano **fino a 64 relazioni** scelte per massimo annuale sull'intero periodo, quindi la selezione resta stabile durante play. Tutte le263 sono nel pacchetto e nei dettagli. Colori delle origini: Siria turchese, Ucraina rosa, Afghanistan ambra; spessore `4+10√(valore/massimo)` px (minimo di leggibilità, scala fissa) sul periodo. Le frecce collegano punti geografici rappresentativi, sono schematiche: **non itinerari osservati**, né particelle equivalenti a individui. Prima prova PopStatsOfficial con quei filtri restituiva zero righe: non usata come dato zero. Un tentativo bulkCSV ha superato il budget150MB ed è stato interrotto; il file parziale resta temporaneo, escluso dalla distribuzione.
 
 ## Geografia, colore e confronto
 
@@ -40,6 +40,14 @@ Natural Earth1:110m, [public domain](https://www.naturalearthdata.com/about/term
 Scala Viridis fissa sull'intero pacchetto, grigio per dati assenti. Saldo con negativo blu, zero neutro, positivo ambra anche se la scala è asimmetrica. Nessuna auto-normalizzazione annuale: lo stesso valore mantiene lo stesso colore. Seconda variabile: cerchi rosa con area proporzionale alla posizione nella scala fissa dichiarata; minimo3px per leggibilità, non causalità. Simboli nascosti dietro l'orizzonte. I colori scientifici escludono grading fotografico e tinta atmosferica del terreno.
 
 Geometria Cesium costruita una volta, attributi aggiornati senza ricreare confini. Stesso ciclo nativo per clock/interpolazione; React circa12,5 Hz per testi, nessun fetch o scrittura IndexedDB per fotogramma. Primo frame/background sospendono il clock, passo limitato120ms evita recuperi improvvisi. Diagnostica DEV bounded120 postRender; produzione normale senza questo osservatore. La misura breve nel browser interno non certifica GPU, consumo o 60 fps sostenuti su Mac/iPhone.
+
+## Nomi dei territori e scie 0.5.1
+
+Nome al passaggio del mouse anche sulla Terra Naturale; nell’atlante, anno e valori annuali originali nel tooltip. Hit-test geografico WGS84 limitato a20Hz, indice costruito una volta; multipoligoni, fori e antimeridiano verificati. Confini generalizzati contemporanei Natural Earth110m: il tooltip non certifica frontiere o coste dettagliate. Su pacchetti regionali usa i confini/nome del pacchetto importato. Tap conserva la selezione nell’atlante; trascinamento sospende il tooltip.
+
+Materiale Cesium Fabric originale: scie morbide e chevron che scorrono origine→destinazione. Animazione illustrativa, **non velocità di migrazione né persone simulate**. Pause separate per anno e scie; `flowMotion` persistente e true nelle vecchie scene. Movimento ridotto e pagina nascosta sospendono le scie, senza recupero del tempo perso. Nessun timer o motore aggiuntivo: solo uniformi nel ciclo Cesium, geometria statica. Archi ordinati e fase condivisa per origine favoriscono il batching nativo; hover evidenzia il confine e attenua le relazioni estranee senza cambiare valori/palette. UI con luce contenuta e legenda scorribile nei viewport bassi.
+
+API studiate: [Material](https://cesium.com/learn/cesiumjs/ref-doc/Material.html), [Fabric](https://github.com/CesiumGS/cesium/wiki/Fabric). Nessun codice grafico di applicazioni terze copiato.
 
 ## Pacchetti e tool riutilizzabili
 

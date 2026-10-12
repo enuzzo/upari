@@ -3,7 +3,7 @@ import {flowMaterial} from './flow-material';
 import type {CountryHover} from './country-hover';
 import {FrameSample} from './frame-sample';
 import * as C from 'cesium';
-import {annualPair,statColor,type Boundaries} from './statistics';
+import {annualPair,statColor,formatStat,type Boundaries} from './statistics';
 import type {StudyController} from './study-controller';
 export type StudySession={controller:StudyController;boundaries:Boundaries};
 /** Single engine, static batched geometry. Only color attributes/point sizes change with time. */
@@ -24,6 +24,10 @@ export function statisticsRenderer(viewer:C.Viewer,{controller,boundaries}:Study
  for(const f of boundaries.features){const code=f.properties.statCode;if(!code||symbols.has(code))continue;const r=regionByID.get(code);let lon=f.properties.longitude??r?.longitude,lat=f.properties.latitude??r?.latitude;if(lon==null||lat==null)continue;
   symbols.set(code,points.add({id:{upariRegion:code},position:C.Cartesian3.fromDegrees(lon,lat,6000),pixelSize:4,color:C.Color.fromCssColorString('#fd9bd4'),outlineColor:C.Color.fromCssColorString('#fff5fc'),outlineWidth:1,disableDepthTestDistance:Number.POSITIVE_INFINITY,show:false}));
  }
+ const labels=viewer.scene.primitives.add(new C.LabelCollection()) as C.LabelCollection;
+ const caption=labels.add({position:C.Cartesian3.fromDegrees(0,0,180000),show:false,font:'15px sans-serif',fillColor:C.Color.WHITE,outlineColor:C.Color.BLACK,outlineWidth:3,style:C.LabelStyle.FILL_AND_OUTLINE,showBackground:true,backgroundColor:new C.Color(.02,.06,.09,.9),backgroundPadding:new C.Cartesian2(12,9),horizontalOrigin:C.HorizontalOrigin.LEFT,pixelOffset:new C.Cartesian2(16,-14)});
+ const leader=viewer.scene.primitives.add(new C.PolylineCollection()) as C.PolylineCollection;
+ const stem=leader.add({show:false,width:1.5,positions:[C.Cartesian3.fromDegrees(0,0,100),C.Cartesian3.fromDegrees(0,0,180000)],material:C.Material.fromType('Color',{color:C.Color.fromCssColorString('#a5ffe8')})});
  const links=viewer.scene.primitives.add(new C.PolylineCollection()) as C.PolylineCollection;
  const originColors=['#69f6dc','#fd9bd4','#ffc779'];
  const routes=(data.flows?.relations??[]).filter(r=>r.origin!==r.destination).map(r=>({r,max:Math.max(0,...r.values.filter((v):v is number=>v!==null))})).sort((a,b)=>b.max-a.max).slice(0,64).sort((a,b)=>a.r.origin.localeCompare(b.r.origin));
@@ -33,20 +37,30 @@ export function statisticsRenderer(viewer:C.Viewer,{controller,boundaries}:Study
   const color=C.Color.fromCssColorString(originColors[Math.max(0,data.flows?.origins.indexOf(r.origin)??0)%originColors.length]);
   return[{r,color,line:links.add({id:{upariRegion:r.destination},positions,width:2,material:flowMaterial(color,Math.max(0,data.flows?.origins.indexOf(r.origin)??0)*.23),show:false})}];
  });
- const sample=import.meta.env.DEV?new FrameSample(120):undefined;let warmup=0;
+ const diagnostic=import.meta.env.DEV||new URLSearchParams(location.search).get('perf')==='1';
+ const sample=diagnostic?new FrameSample(120):undefined;let warmup=0;
+ let labelKey='',portraitLabel:boolean|undefined;
  let previous='',bound=false,gone=false,edgesBound=false,visibleLinks=0;const motion=new FlowMotion();let motionReport=0,previousEdge='';const showSymbol=new Map<string,boolean>(),normal=new C.Cartesian3(),direction=new C.Cartesian3();
  const media=matchMedia('(prefers-reduced-motion: reduce)');
+ const documentaryLabelVisible=()=>{const s=controller.snapshot(),r=regionByID.get(s.country);if(!controller.director||r?.longitude==null||r.latitude==null)return false;C.Ellipsoid.WGS84.geodeticSurfaceNormal(caption.position,normal);C.Cartesian3.subtract(viewer.camera.positionWC,caption.position,direction);return C.Cartesian3.dot(normal,direction)>0;};
  const draw=()=>{
   if(gone||viewer.isDestroyed()||!fill.ready)return;
   const visibility=(point:C.PointPrimitive)=>{C.Ellipsoid.WGS84.geodeticSurfaceNormal(point.position,normal);C.Cartesian3.subtract(viewer.camera.positionWC,point.position,direction);return C.Cartesian3.dot(normal,direction)>0;};
-  for(const [code,point] of symbols)point.show=showSymbol.get(code)===true&&visibility(point);
+  if(!controller.director)for(const [code,point] of symbols)point.show=showSymbol.get(code)===true&&visibility(point);
   if(!bound){for(const b of bindings)b.attributes=fill.getGeometryInstanceAttributes(b.id) as {color:Uint8Array};bound=true;instances.length=0;}
   if(edge.ready&&!edgesBound){for(const b of bindings)b.edgeAttributes=edge.getGeometryInstanceAttributes(b.id) as {color:Uint8Array};edgesBound=true;}
-  const hover=hovered(),s=controller.snapshot(),edgeKey=[s.country,hover?.id].join('|');if(edgesBound&&edgeKey!==previousEdge){previousEdge=edgeKey;for(const b of bindings){const selected=b.region===s.country,hot=b.id.boundary.startsWith((hover?.id??'!')+':');b.edgeAttributes!.color=C.ColorGeometryInstanceAttribute.toValue(hot?C.Color.fromCssColorString('#a3ffed'):selected?C.Color.WHITE:new C.Color(.52,.66,.74,.28));}}
-  const time=media.matches?Math.floor(s.time):s.time,key=[Math.floor(time*1000),s.indicator,s.secondary,s.country,hover?.id].join('|');if(key===previous)return;previous=key;
+  const hover=hovered(),s=controller.snapshot(),documentary=Boolean(controller.director),edgeKey=[s.country,hover?.id,documentary].join('|');if(edgesBound&&edgeKey!==previousEdge){previousEdge=edgeKey;for(const b of bindings){const selected=b.region===s.country,hot=b.id.boundary.startsWith((hover?.id??'!')+':');b.edgeAttributes!.color=C.ColorGeometryInstanceAttribute.toValue(hot?C.Color.fromCssColorString('#a3ffed'):selected?C.Color.WHITE:new C.Color(.52,.66,.74,documentary?0:.28));}}
+  fill.show=!documentary;points.show=!documentary;
+  const portrait=viewer.container.clientWidth<760;if(portrait!==portraitLabel){portraitLabel=portrait;caption.horizontalOrigin=portrait?C.HorizontalOrigin.CENTER:C.HorizontalOrigin.LEFT;caption.verticalOrigin=portrait?C.VerticalOrigin.TOP:C.VerticalOrigin.BOTTOM;caption.pixelOffset=new C.Cartesian2(portrait?0:16,portrait?70:-24);labelKey='';}
+  const time=media.matches?Math.floor(s.time):s.time,key=[Math.floor(time*1000),s.indicator,s.secondary,s.country,hover?.id,documentary].join('|');if(key===previous){if(documentaryLabelVisible()){caption.show=true;stem.show=true;}else{caption.show=false;stem.show=false;}return;}previous=key;
   const primary=data.indicators.find(m=>m.id===s.indicator)!,secondary=data.indicators.find(m=>m.id===s.secondary);
-  for(const b of bindings){const pair=b.region?annualPair(data,s.indicator,b.region,time):null,left=statColor(pair?.left??null,primary.domain),right=statColor(pair?.right??null,primary.domain),color=b.attributes?.color;if(color){for(let i=0;i<4;i++)color[i]=Math.round(left[i]*(1-(pair?.mix??0))+right[i]*(pair?.mix??0));b.attributes!.color=color;}}
-  for(const [code,p] of symbols){
+  const region=regionByID.get(s.country),feature=boundaries.features.find(f=>f.properties.statCode===s.country),lon=feature?.properties.longitude??region?.longitude,lat=feature?.properties.latitude??region?.latitude;
+  const labelYear=Math.floor(time),nextLabel=[documentary,s.country,s.indicator,labelYear].join('|');
+  if(nextLabel!==labelKey){labelKey=nextLabel;const available=documentary&&lon!=null&&lat!=null;caption.show=available;stem.show=available;if(available){caption.position=C.Cartesian3.fromDegrees(lon,lat,180000);stem.positions=[C.Cartesian3.fromDegrees(lon,lat,80),caption.position];caption.text=(feature?.properties.name??region?.name??s.country)+' · '+labelYear+'\n'+formatStat(annualPair(data,s.indicator,s.country,labelYear).left)+(viewer.container.clientWidth<760?'\n':' ')+primary.unit;}}
+  if(documentary&&caption.show){C.Ellipsoid.WGS84.geodeticSurfaceNormal(caption.position,normal);C.Cartesian3.subtract(viewer.camera.positionWC,caption.position,direction);caption.show=C.Cartesian3.dot(normal,direction)>0;stem.show=caption.show;}
+
+  if(!documentary)for(const b of bindings){const pair=b.region?annualPair(data,s.indicator,b.region,time):null,left=statColor(pair?.left??null,primary.domain),right=statColor(pair?.right??null,primary.domain),color=b.attributes?.color;if(color){for(let i=0;i<4;i++)color[i]=Math.round(left[i]*(1-(pair?.mix??0))+right[i]*(pair?.mix??0));b.attributes!.color=color;}}
+  if(!documentary)for(const [code,p] of symbols){
    const pair=secondary?annualPair(data,s.secondary,code,time):null,value=pair?(pair.left!==null&&pair.right!==null?(pair.left*(1-pair.mix)+pair.right*pair.mix):null):null,selected=code===s.country;
    showSymbol.set(code,selected||value!==null);p.show=(selected||value!==null)&&visibility(p);p.color=selected?C.Color.fromCssColorString('#ffffff'):C.Color.fromCssColorString('#fd9bd4').withAlpha(.75);
    // Circle area represents the second indicator on its fixed full-period scale; tween is visual only.
@@ -63,10 +77,10 @@ export function statisticsRenderer(viewer:C.Viewer,{controller,boundaries}:Study
   if(import.meta.env.DEV)viewer.container.setAttribute('data-study-frame' ,JSON.stringify({time,from:Math.floor(time),to:Math.ceil(time),indicator:s.indicator,features:boundaries.features.length,instances:bindings.length}));
  };
  const wake=()=>{if(!gone&&!viewer.isDestroyed())viewer.scene.requestRender();};
- const offControl=controller.subscribe(wake),offUpdate=viewer.scene.preUpdate.addEventListener(()=>{if(gone||viewer.isDestroyed())return;const now=performance.now();controller.advance(now,document.hidden);const state=controller.snapshot(),playing=state.playing,animated=state.indicator===data.flows?.indicator&&visibleLinks>0&&state.flowMotion&&!media.matches&&!document.hidden;const phase=motion.tick(now,animated,document.hidden);for(const {line} of arcs)if(line.show)line.material.uniforms.phase=phase;if(import.meta.env.DEV&&now-motionReport>1000){motionReport=now;viewer.container.setAttribute('data-flow-motion',JSON.stringify({phase,animated,visibleLinks}));}if(sample){if(!(playing||animated)||!fill.ready){sample.reset();warmup=0;}else if(++warmup>=30)sample.begin(now);}if(playing||animated||!fill.ready||!edge.ready)wake();}),offDraw=viewer.scene.preRender.addEventListener(draw);
- const offSample=sample?viewer.scene.postRender.addEventListener(()=>{if(warmup<30)return;const result=sample.frame(performance.now());if(result)viewer.container.setAttribute('data-study-sample',JSON.stringify(result));}):()=>{};
- const visible=()=>{controller.suspend();motion.suspend();sample?.reset();warmup=0;wake();};document.addEventListener('visibilitychange',visible);
+ const offControl=controller.subscribe(wake),offUpdate=viewer.scene.preUpdate.addEventListener(()=>{if(gone||viewer.isDestroyed())return;const now=performance.now();controller.advance(now,document.hidden);const state=controller.snapshot(),playing=state.playing,animated=state.indicator===data.flows?.indicator&&visibleLinks>0&&state.flowMotion&&!media.matches&&!document.hidden;const phase=motion.tick(now,animated,document.hidden);for(const {line} of arcs)if(line.show)line.material.uniforms.phase=phase;if(import.meta.env.DEV&&now-motionReport>1000){motionReport=now;viewer.container.setAttribute('data-flow-motion',JSON.stringify({phase,animated,visibleLinks}));}if(sample){if(!(playing||animated)||!fill.ready){sample.reset();warmup=0;}else if(++warmup>=30)sample.begin(now);}if(playing||animated||controller.director?.snapshot().playing||!fill.ready||!edge.ready)wake();}),offDraw=viewer.scene.preRender.addEventListener(draw);
+ const offSample=sample?viewer.scene.postRender.addEventListener(()=>{if(warmup<30)return;const result=sample.frame(performance.now());if(result){const s=controller.snapshot();viewer.container.setAttribute('data-study-sample',JSON.stringify({...result,at:new Date().toISOString(),indicator:s.indicator,country:s.country,time:s.time,documentary:Boolean(controller.director),viewport:[viewer.container.clientWidth,viewer.container.clientHeight],buffer:[viewer.scene.drawingBufferWidth,viewer.scene.drawingBufferHeight],dpr:window.devicePixelRatio}));}}):()=>{};
+ const visible=()=>{controller.director?.suspend();controller.suspend();motion.suspend();sample?.reset();warmup=0;wake();};document.addEventListener('visibilitychange',visible);
  const handler=new C.ScreenSpaceEventHandler(viewer.canvas);handler.setInputAction((click:{position:C.Cartesian2})=>{const picked=viewer.scene.pick(click.position);const code=picked?.id?.upariRegion;if(typeof code==='string'&&regionByID.has(code))controller.configure({country:code});},C.ScreenSpaceEventType.LEFT_CLICK);
  wake();
- return()=>{gone=true;offControl();offUpdate();offDraw();offSample();document.removeEventListener('visibilitychange',visible);handler.destroy();controller.suspend();if(!viewer.isDestroyed()){for(const name of ['data-study-frame','data-study-sample','data-flow-count','data-flow-motion'])viewer.container.removeAttribute(name);viewer.scene.primitives.remove(fill);viewer.scene.primitives.remove(edge);viewer.scene.primitives.remove(points);viewer.scene.primitives.remove(links);}};
+ return()=>{gone=true;offControl();offUpdate();offDraw();offSample();document.removeEventListener('visibilitychange',visible);handler.destroy();controller.suspend();if(!viewer.isDestroyed()){for(const name of ['data-study-frame','data-study-sample','data-flow-count','data-flow-motion'])viewer.container.removeAttribute(name);viewer.scene.primitives.remove(fill);viewer.scene.primitives.remove(edge);viewer.scene.primitives.remove(points);viewer.scene.primitives.remove(links);viewer.scene.primitives.remove(labels);viewer.scene.primitives.remove(leader);}};
 }

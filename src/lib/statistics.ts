@@ -7,7 +7,7 @@ export const initialStudy:StudyState={enabled:false,dataset:'world',indicator:'b
 const id=(s:unknown):s is string=>typeof s==='string'&&/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,47}$/.test(s);
 const text=(s:unknown,max=6000):s is string=>typeof s==='string'&&s.trim().length>0&&s.length<=max;
 export function publicURL(raw:unknown):raw is string{try{if(!text(raw,2000))return false;const u=new URL(raw);return u.protocol==='https:'&&!u.username&&!u.password&&![...u.searchParams.keys()].some(k=>/token|secret|password|api.?key|signature|^(?:key|access[_-]?key|authorization|auth)$/i.test(k));}catch{return false;}}
-const freeLicenses=['CC-BY-4.0','CC-BY-3.0-IGO','CC0-1.0','Public-Domain'];
+const freeLicenses=['CC-BY-4.0','CC-BY-3.0-IGO','CC0-1.0','Public-Domain','Eurostat-Reuse'];
 function demand(ok:unknown,message:string):asserts ok{if(!ok)throw new Error(message);}
 export function validateStatistics(raw:unknown):Statistics{
  const p=raw as Statistics;demand(p?.version===1,'Versione del pacchetto statistico non supportata.');

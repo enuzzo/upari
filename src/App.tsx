@@ -1,7 +1,8 @@
+import type {JourneyDirector} from './lib/journeys';
 import {initialStudy,resolveStudy,type StudyState} from './lib/statistics';
 import type {StudySession} from './lib/statistics-renderer';
 import { lazy,Suspense,useCallback,useEffect,useRef,useState } from 'react';
-import { Globe2,Orbit,Bell,Settings,MapPin,ChevronDown,Layers,Monitor,X,WifiOff } from 'lucide-react';
+import { Globe2,Orbit,Bell,Settings,MapPin,ChevronDown,Layers,Monitor,X,WifiOff,Clapperboard } from 'lucide-react';
 import type { Preferences,Pass,Layer,SceneState,CameraView } from './types';
 import { loadPreferences,initialPreferences,writeState,readState } from './lib/storage';
 import { initialLayers,layerDate,refreshLayers,frameDates } from './lib/layers';
@@ -36,9 +37,10 @@ export default function App(){
   const [vectorField,setVectorField]=useState<VectorField|null>(null);
   const [displayed,setDisplayed]=useState<FrameSpec|null>(null),[transition,setTransition]=useState<FrameSpec|undefined>();
   const [ar,setAR]=useState<Pass|null>(null),[toast,setToast]=useState(''),[online,setOnline]=useState(navigator.onLine),[install,setInstall]=useState<InstallEvent|null>(null);
+  const [journey,setJourney]=useState<JourneyDirector|null>(null),[journeyCatalogue,setJourneyCatalogue]=useState(false);
   const [studySession,setStudySession]=useState<StudySession|null>(null);
   const studyReader=useRef<StudySession|null>(null);studyReader.current=studySession;
-  function liveStudy(s:SceneState){return resolveStudy(s.study,studyReader.current?.controller.snapshot());}
+  function liveStudy(s:SceneState){return resolveStudy(s.study,studyReader.current?.controller.snapshotForScene());}
   const onStudyState=useCallback((study:StudyState)=>setScene(s=>({...s,study})),[]);
   const cameraReader=useRef<(()=>CameraView)|null>(null);
   function readCurrentCamera(){const view=cameraReader.current?.()??camera.current;camera.current=view;return view;}
@@ -107,7 +109,7 @@ export default function App(){
   const displayLayer=layers.find(l=>l.key===displayed?.key.split('|')[0])??layer;
   const actual=displayed;
   const viewCaption=layer?(displayLayer?.source??'NASA')+' · '+dataDateLabel(displayLayer??layer,actual?.date??scene.date,actual?.compareDate)+(transition?' · transizione verso '+transition.date:actual&&actual.date!==scene.date?' · preparo '+scene.date:''):'NASA / EOX · mosaico Sentinel-2 2016 · circa 10 m'+(scene.lighting?' · luci NASA 2016':'');
-  const go=(view:Tab)=>{if(view!=='earth'&&studyReader.current){const study=studyReader.current.controller.snapshot();setScene(s=>({...s,study}));}setPlaying(false);setTab(view);setModal(null);};
+  const go=(view:Tab)=>{if(view!=='earth'&&studyReader.current){studyReader.current.controller.director?.pause();const study=studyReader.current.controller.snapshotForScene();setScene(s=>({...s,study}));}setPlaying(false);setTab(view);setModal(null);};
   const preloadDate=playing?playFrames.current[(playFrames.current.indexOf(scene.date)+1)%playFrames.current.length]:undefined;
   return <div className={'app-shell '+(ar?'ar-open':'')} data-view={tab}>
     <header className="app-header">
@@ -122,9 +124,10 @@ export default function App(){
     {!online&&<div className="offline-banner"><WifiOff size={14}/> Offline · immagini già visitate e dati salvati</div>}
     <main className="shell-main">
       {tab==='earth'?<div className="earth-layout"><div className="earth-surface">
-        {!ar&&(hydrated?<RenderBoundary><Suspense fallback={loading}><Globe study={studySession} autoRotate={scene.rotationEnabled} rotationSpeed={scene.rotationSpeed} onRotationChange={onRotationChange} onRotationSpeedChange={onRotationSpeedChange} key={sceneRevision} onVectorChange={setVectorField} vectorKey={scene.study?.enabled?'none':scene.vectorKey} vectorMotion={scene.vectorMotion} visualStyle={scene.visualStyle} visualStrength={scene.visualStrength} layer={scene.study?.enabled?null:layer} date={scene.date} opacity={scene.opacity} compare={scene.study?.enabled?false:scene.compare} compareDate={scene.compareDate} split={scene.split} place={place} orbit={iss.orbit} showISS={prefs.issEnabled} sunOffset={scene.sunOffset} lighting={scene.lighting} quality={prefs.renderQuality} initialCamera={readCurrentCamera()} onCameraReader={onCameraReader} onCameraChange={onCameraChange} onFrameChange={onFrameChange} onLoadingChange={onLoadingChange} onImageryError={playing?onImageryError:undefined} preloadDate={preloadDate}/></Suspense></RenderBoundary>:loading)}
+        {!ar&&(hydrated?<RenderBoundary><Suspense fallback={loading}><Globe journey={journey} study={studySession} autoRotate={scene.rotationEnabled} rotationSpeed={scene.rotationSpeed} onRotationChange={onRotationChange} onRotationSpeedChange={onRotationSpeedChange} key={sceneRevision} onVectorChange={setVectorField} vectorKey={scene.study?.enabled?'none':scene.vectorKey} vectorMotion={scene.vectorMotion} visualStyle={scene.visualStyle} visualStrength={scene.visualStrength} layer={scene.study?.enabled?null:layer} date={scene.date} opacity={scene.opacity} compare={scene.study?.enabled?false:scene.compare} compareDate={scene.compareDate} split={scene.split} place={place} orbit={iss.orbit} showISS={prefs.issEnabled} sunOffset={scene.sunOffset} lighting={scene.lighting} quality={prefs.renderQuality} initialCamera={readCurrentCamera()} onCameraReader={onCameraReader} onCameraChange={onCameraChange} onFrameChange={onFrameChange} onLoadingChange={onLoadingChange} onImageryError={playing?onImageryError:undefined} preloadDate={preloadDate}/></Suspense></RenderBoundary>:loading)}
         {!scene.study?.enabled&&<button className="floating-layer" aria-label={'Modifica la vista: '+viewName} onClick={()=>openLayers('details')}><Layers size={19}/><span><b>{layer&&actual&&!actual.key.startsWith(layer.key+'|')?(displayLayer?.name??viewName)+' · preparo '+viewName:viewName}</b>{scene.sunOffset!==0&&<small>Anteprima Sole {scene.sunOffset>0?'+':''}{scene.sunOffset} h</small>}<small>{playing?'Animazione · ':''}{viewCaption}</small>{scene.vectorKey&&scene.vectorKey!=='none'&&<small>{vectorField?(vectorField.kind==='wind'?'Vento':'Correnti · archivio')+' · dati '+new Date(vectorField.time).toLocaleString('it-IT',{timeZone:'UTC',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+' UTC':'Carico il campo vettoriale…'}</small>}</span><ChevronDown size={16}/></button>}
-        {hydrated&&scene.study?.enabled&&<Suspense fallback={null}><StatisticsStudy key={sceneRevision} initial={scene.study} onSession={setStudySession} onState={onStudyState} onExit={()=>{const study=liveStudy(latestScene.current)??initialStudy;studyReader.current=null;setStudySession(null);setScene(s=>({...s,study:{...study,enabled:false,playing:false}}));}}/></Suspense>}
+        {hydrated&&scene.study?.enabled&&<Suspense fallback={null}><StatisticsStudy key={sceneRevision} initial={scene.study} initialCatalogue={journeyCatalogue} onJourney={setJourney} onSession={setStudySession} onState={onStudyState} onExit={()=>{const study=liveStudy(latestScene.current)??initialStudy;studyReader.current=null;setStudySession(null);setScene(s=>({...s,study:{...study,enabled:false,playing:false}}));}}/></Suspense>}
+        {!scene.study?.enabled&&<button className="journey-entry" onClick={()=>{setPlaying(false);setJourneyCatalogue(true);setScene(s=>({...s,compare:false,study:{...initialStudy,...s.study,enabled:true,playing:false}}));}}><Clapperboard size={17}/><span>Percorsi del mondo</span></button>}
         <button className="saver-button" onClick={()=>setModal('saver')}><Monitor size={18}/><span>Salvaschermo</span></button>
         {scene.compare&&layer&&<div className="compare-control"><span>{scene.date}</span><input type="range" min="5" max="95" value={scene.split*100} onChange={e=>setScene(s=>({...s,split:+e.target.value/100}))} aria-label="Posizione del confronto tra le date"/><span>{scene.compareDate}</span></div>}
         <div className="canvas-hint desktop-only">Trascina per ruotare · scorri per lo zoom</div>
@@ -137,7 +140,7 @@ export default function App(){
     </nav>
     {modal&&<Modal className={modal==='layers'?'scene-modal':''} title={modal==='places'?'I tuoi luoghi':modal==='layers'?'La tua vista':modal==='saver'?'Salvaschermo':modal==='diary'?'Diario delle osservazioni':'Il tuo Upari'} onClose={()=>setModal(null)}>
       {modal==='places'?<PlaceEditor prefs={prefs} onChange={p=>{changePrefs(p);if(p.activePlace!==prefs.activePlace)setModal(null);}}/>:
-       modal==='layers'?<SceneInspector onStatistics={()=>{setPlaying(false);setModal(null);setScene(s=>({...s,study:{...(s.study??initialStudy),enabled:true,playing:false},compare:false}));}} scientificVisible={!!displayLayer&&!displayLayer.regional} layers={layers} layer={layer} scene={scene} onScene={changeScene} pane={pane} onPane={setPane} onChoose={choose} favorites={favorites} onFavorite={favorite} playing={playing} onPlay={play}/>:
+       modal==='layers'?<SceneInspector onStatistics={()=>{setJourneyCatalogue(false);setPlaying(false);setModal(null);setScene(s=>({...s,study:{...(s.study??initialStudy),enabled:true,playing:false},compare:false}));}} scientificVisible={!!displayLayer&&!displayLayer.regional} layers={layers} layer={layer} scene={scene} onScene={changeScene} pane={pane} onPane={setPane} onChoose={choose} favorites={favorites} onFavorite={favorite} playing={playing} onPlay={play}/>:
        modal==='saver'?<SaverLauncher scene={getCurrentScene()} place={place} viewName={viewName} onClose={()=>setModal(null)}/>:
        modal==='diary'?<Suspense fallback={loading}><DiaryPanel forecast={iss.forecast} place={place}/></Suspense>:
        <SettingsPanel getScene={getCurrentScene} onDiary={()=>setModal('diary')} onImported={state=>{const imported=state.scene??getCurrentScene();cameraReader.current=null;studyReader.current=null;setStudySession(null);camera.current=imported.camera;setPlaying(false);setScene(imported);setDisplayed(null);setTransition(undefined);setSceneRevision(r=>r+1);if(state.favorites)setFavorites(state.favorites);changePrefs(state.preferences);}} prefs={prefs} onPrefs={changePrefs} onMessage={setToast} install={install} onInstall={async()=>{if(install){await install.prompt();await install.userChoice;setInstall(null);}}}/>}

@@ -1,6 +1,8 @@
 import {initialStudy,validateStudy,type Statistics,type StudyState} from './statistics';
+import type {JourneyDirector} from './journeys';
 /** Shared by Cesium and the UI: no animation timer, fetch or React render per map frame. */
 export class StudyController{
+ director:JourneyDirector|null=null;
  private state:StudyState;private previous?:number;private published=0;private listeners=new Set<()=>void>();
  constructor(public readonly data:Statistics,initial:Partial<StudyState>={}){this.state=this.normalise({...initialStudy,...initial,enabled:true});}
  private normalise(raw:Partial<StudyState>){
@@ -11,12 +13,15 @@ export class StudyController{
   s.start=Math.max(min,Math.min(max,s.start));s.end=Math.max(s.start,Math.min(max,s.end));s.time=Math.max(s.start,Math.min(s.end,s.time));if(s.start===s.end)s.playing=false;return s;
  }
  snapshot=()=>({...this.state});
+ /** A documentary is not serialized as an unattended manual timeline. */
+ snapshotForScene=()=>this.director?{...this.state,playing:false,speed:1}:this.snapshot();
  subscribe=(listener:()=>void)=>{this.listeners.add(listener);return()=>{this.listeners.delete(listener);};};
  private publish(){for(const listener of this.listeners)listener();}
  configure(patch:Partial<StudyState>){this.state=this.normalise({...this.state,...patch});this.publish();}
  seek(time:number){this.previous=undefined;this.configure({time,playing:false});}
  suspend(){this.previous=undefined;}
  advance(now:number,hidden:boolean){
+  this.director?.tick(now,hidden);
   if(hidden||!this.state.playing){this.previous=undefined;return false;}
   if(this.previous===undefined){this.previous=now;return false;}
   const dt=Math.max(0,Math.min(.12,(now-this.previous)/1000));this.previous=now;if(!dt)return false;

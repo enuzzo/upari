@@ -1,3 +1,4 @@
+import type {JourneyDirector} from '../lib/journeys';
 import {countryHover,type CountryHover} from '../lib/country-hover';
 import {tooltipPosition} from '../lib/country-index';
 import {loadIncludedBoundaries} from '../lib/load-statistics';
@@ -22,7 +23,7 @@ import { initialCamera } from '../lib/scene';
 import { ImageryBuffer,type FrameSpec } from '../lib/imagery-buffer';
 import { removeGlobeEntities } from '../lib/globe-lifecycle';
 
-type Props={study?:StudySession|null;layer:Layer|null;date:string;opacity:number;compare:boolean;compareDate:string;split:number;place:Place;orbit?:OrbitData|null;showISS?:boolean;sunOffset:number;lighting:boolean;quality:RenderQuality;initialCamera?:CameraView;onCameraChange?:(view:CameraView,persist?:boolean)=>void;onCameraReader?:(read:()=>CameraView)=>void;onRotationChange?:(enabled:boolean)=>void;onRotationSpeedChange?:(speed:number)=>void;autoRotate?:boolean;rotationSpeed?:number;hideTools?:boolean;preloadDate?:string;onLoadingChange?:(loading:boolean)=>void;onImageryError?:(message:string)=>void;onFrameChange?:(frame:FrameSpec|undefined,transition?:FrameSpec)=>void;vectorKey?:"none"|"wind"|"currents";vectorMotion?:boolean;onVectorChange?:(field:VectorField|null)=>void;visualStyle?:EarthStyle;visualStrength?:number};
+type Props={journey?:JourneyDirector|null;study?:StudySession|null;layer:Layer|null;date:string;opacity:number;compare:boolean;compareDate:string;split:number;place:Place;orbit?:OrbitData|null;showISS?:boolean;sunOffset:number;lighting:boolean;quality:RenderQuality;initialCamera?:CameraView;onCameraChange?:(view:CameraView,persist?:boolean)=>void;onCameraReader?:(read:()=>CameraView)=>void;onRotationChange?:(enabled:boolean)=>void;onRotationSpeedChange?:(speed:number)=>void;autoRotate?:boolean;rotationSpeed?:number;hideTools?:boolean;preloadDate?:string;onLoadingChange?:(loading:boolean)=>void;onImageryError?:(message:string)=>void;onFrameChange?:(frame:FrameSpec|undefined,transition?:FrameSpec)=>void;vectorKey?:"none"|"wind"|"currents";vectorMotion?:boolean;onVectorChange?:(field:VectorField|null)=>void;visualStyle?:EarthStyle;visualStrength?:number};
 function provider(layer:Layer,date:string){return new C.UrlTemplateImageryProvider({url:tileURL(layer,date),tilingScheme:new C.WebMercatorTilingScheme(),tileWidth:256,tileHeight:256,maximumLevel:layer.maxLevel,rectangle:layer.coverage?C.Rectangle.fromDegrees(...layer.coverage):undefined,credit:new C.Credit(layer.source??('NASA EOSDIS GIBS · '+layer.id))});}
 function addImagery(viewer:C.Viewer,source:C.ImageryProvider,index?:number){
   const layer=new C.ImageryLayer(source,{maximumAnisotropy:8,minificationFilter:C.TextureMinificationFilter.LINEAR,magnificationFilter:C.TextureMagnificationFilter.LINEAR});
@@ -210,10 +211,10 @@ function Globe(p:Props){
     v.clock.currentTime=C.JulianDate.fromDate(new Date(Date.now()+p.sunOffset*3600000));v.scene.requestRender();
   },[ready,p.opacity,p.split,p.sunOffset,p.lighting,p.layer]);
   useEffect(()=>{
-    const v=viewer.current;if(!ready||!v||p.hideTools)return;
+    const v=viewer.current;if(!ready||!v||p.hideTools||p.journey)return;
     const marker=v.entities.add({position:C.Cartesian3.fromDegrees(p.place.longitude,p.place.latitude),point:{pixelSize:8,color:C.Color.fromCssColorString('#69f6dc'),outlineColor:C.Color.fromCssColorString('#0a161e'),outlineWidth:2,disableDepthTestDistance:0},label:{text:p.place.name,font:'12px system-ui',fillColor:C.Color.WHITE,pixelOffset:new C.Cartesian2(0,-22),showBackground:true,backgroundColor:C.Color.fromCssColorString('#060b13').withAlpha(.85),distanceDisplayCondition:new C.DistanceDisplayCondition(0,10000000)}});
     v.scene.requestRender();return()=>removeGlobeEntities(v,[marker]);
-  },[ready,p.place,p.hideTools]);
+  },[ready,p.place,p.hideTools,p.journey]);
   useEffect(()=>{
     const v=viewer.current;if(!ready||!v||!p.showISS||!p.orbit)return;
     let gone=false,timer:ReturnType<typeof setInterval>|undefined;const entities:C.Entity[]=[];
@@ -240,6 +241,20 @@ function Globe(p:Props){
     if(previousAuto.current===false&&p.autoRotate===true)setMotionOptIn(true);previousAuto.current=p.autoRotate;
     setRotating(p.autoRotate??true);
   },[p.autoRotate]);
+  useEffect(()=>{
+    const v=viewer.current,director=p.journey;if(!ready||!v||!director)return;
+    let index=-1,wasPlaying=false;
+    const frame=()=>{
+      if(v.isDestroyed())return;const s=director.snapshot(),changed=index!==s.index;
+      if(!s.playing&&!changed){v.camera.cancelFlight();wasPlaying=false;return;}
+      if(changed||s.playing&&!wasPlaying){const view=director.chapter.camera;v.camera.cancelFlight();rotationClock.current.hold(performance.now(),4500);v.camera.flyTo({destination:C.Cartesian3.fromDegrees(view.longitude,view.latitude,view.height),orientation:{heading:view.heading,pitch:view.pitch,roll:view.roll},duration:matchMedia('(prefers-reduced-motion: reduce)').matches?0:3.8,easingFunction:C.EasingFunction.QUINTIC_IN_OUT,maximumHeight:Math.max(view.height,v.camera.positionCartographic.height)});v.scene.requestRender();}
+      index=s.index;wasPlaying=s.playing;
+    };
+    const pause=()=>director.pause(),visible=()=>{if(document.hidden){director.pause();v.camera.cancelFlight();}};
+    const host=node.current!;host.addEventListener('pointerdown',pause);host.addEventListener('wheel',pause,{passive:true});document.addEventListener('visibilitychange',visible);
+    const off=director.subscribe(frame);frame();
+    return()=>{off();host.removeEventListener('pointerdown',pause);host.removeEventListener('wheel',pause);document.removeEventListener('visibilitychange',visible);if(!v.isDestroyed())v.camera.cancelFlight();};
+  },[ready,p.journey]);
   useEffect(()=>{setRotationSpeed(p.rotationSpeed??defaultRotationSpeed);},[p.rotationSpeed]);
   useEffect(()=>{
     const media=matchMedia('(prefers-reduced-motion: reduce)');
@@ -286,6 +301,7 @@ function Globe(p:Props){
     // Use Cesium's existing frame loop, honoring its bounded 30/61 fps profile.
     const offRotation=v.scene.preUpdate.addEventListener(()=>{
       if(v.isDestroyed())return;
+      if(latest.current.journey){clock.reset();return;}
       if(sample&&diagnosticVersion!==diagnosticRevision.current)updateDiagnosticProfile();
       const now=performance.now(),degrees=clock.tick(now,rotationSpeed,v.camera.positionCartographic.height,document.hidden);
       if(!degrees){sample?.reset();warmup=0;return;}
@@ -296,17 +312,17 @@ function Globe(p:Props){
   },[ready,rotationRunning,rotationSpeed,p.layer?.key,p.date,p.opacity,p.compare,p.compareDate,p.split,p.lighting,p.sunOffset,p.visualStyle,p.visualStrength,p.vectorKey,p.vectorMotion]);
   function toggleRotation(){const next=!rotationRunning;publishCamera();setMotionOptIn(next);setRotating(next);latest.current.onRotationChange?.(next);}
   function changeRotationSpeed(speed:number){setRotationSpeed(speed);latest.current.onRotationSpeedChange?.(speed);}
-  const flight=(view:CameraView)=>{rotationClock.current.hold(performance.now(),1800);viewer.current?.camera.flyTo({destination:C.Cartesian3.fromDegrees(view.longitude,view.latitude,view.height),orientation:{heading:view.heading,pitch:view.pitch,roll:view.roll},duration:matchMedia('(prefers-reduced-motion: reduce)').matches?0:1.2});};
+  const flight=(view:CameraView)=>{p.journey?.pause();rotationClock.current.hold(performance.now(),1800);viewer.current?.camera.flyTo({destination:C.Cartesian3.fromDegrees(view.longitude,view.latitude,view.height),orientation:{heading:view.heading,pitch:view.pitch,roll:view.roll},duration:matchMedia('(prefers-reduced-motion: reduce)').matches?0:1.2});};
   const hoverMetric=p.study?.controller.data.indicators.find(m=>m.id===p.study?.controller.snapshot().indicator),hoverPair=hover?.region&&p.study&&hoverMetric?annualPair(p.study.controller.data,hoverMetric.id,hover.region,p.study.controller.snapshot().time):null;
   const hoverPosition=hover?tooltipPosition(hover.x,hover.y,node.current?.clientWidth??0,node.current?.clientHeight??0):null;
   return <div className={'globe-stage '+(p.hideTools?'globe-ambient':'')}>
     <div className="globe-canvas" ref={node} aria-label="Globo interattivo: trascina per ruotare, usa due dita per lo zoom"/>
     {hover&&hoverPosition&&<div className="country-hover" role="tooltip" style={{left:hoverPosition.x,top:hoverPosition.y}}><span className="country-hover-kicker">{p.study?'Territorio · '+(hoverPair?(hoverPair.from===hoverPair.to?hoverPair.from:hoverPair.from+' → '+hoverPair.to):Math.floor(p.study.controller.snapshot().time)):'La Terra'}</span><b>{hover.name}</b>{hoverMetric&&<><small>{hoverMetric.name}</small><span className="country-hover-value">{hoverPair?(hoverPair.from===hoverPair.to?formatStat(hoverPair.left):formatStat(hoverPair.left)+' ↔ '+formatStat(hoverPair.right)):'Non disponibile'} · {hoverMetric.unit}</span></>}<span className="country-hover-note">{p.study?'Fonte e metodo nella scheda · tocca per selezionare':'Confini generalizzati · Natural Earth'}</span></div>}
-    {showPerformance&&<div className="globe-performance" role="status" aria-label="Diagnostica locale della fluidità"><b>Diagnostica locale</b>{performanceReport?<><strong>{performanceReport.fps.toFixed(1)} fps</strong><span>300 fotogrammi · 95% degli intervalli ≤ {performanceReport.intervalMs.p95.toFixed(1)} ms</span></>:<span>{rotationRunning?'Attendo immagini e 300 fotogrammi…':'Premi Play per misurare.'}</span>}<small>Solo su questo dispositivo · pausa/play ripete la misura.</small></div>}
+    {showPerformance&&!p.journey&&<div className="globe-performance" role="status" aria-label="Diagnostica locale della fluidità"><b>Diagnostica locale</b>{performanceReport?<><strong>{performanceReport.fps.toFixed(1)} fps</strong><span>300 fotogrammi · 95% degli intervalli ≤ {performanceReport.intervalMs.p95.toFixed(1)} ms</span></>:<span>{rotationRunning?'Attendo immagini e 300 fotogrammi…':'Premi Play per misurare.'}</span>}<small>Solo su questo dispositivo · pausa/play ripete la misura.</small></div>}
     {error&&<div className="globe-error" role="alert">{error}<button onClick={()=>location.reload()}>Riprova</button></div>}
     {!p.hideTools&&<div className="globe-tools" aria-label="Controlli del globo">
       <button aria-label="Vai al mio luogo" title="Vai al mio luogo" onClick={()=>flight({...initialCamera,longitude:p.place.longitude,latitude:p.place.latitude,height:12000})}><Crosshair size={20}/></button>
-      <div className="zoom-tools"><button aria-label="Avvicina" onClick={()=>{rotationClock.current.hold(performance.now());const v=viewer.current;if(v){v.camera.zoomIn(v.camera.positionCartographic.height*.35);publishCamera();v.scene.requestRender();}}}><Plus size={21}/></button><button aria-label="Allontana" onClick={()=>{rotationClock.current.hold(performance.now());const v=viewer.current;if(v){v.camera.zoomOut(v.camera.positionCartographic.height*.55);publishCamera();v.scene.requestRender();}}}><Minus size={21}/></button></div>
+      <div className="zoom-tools"><button aria-label="Avvicina" onClick={()=>{p.journey?.pause();rotationClock.current.hold(performance.now());const v=viewer.current;if(v){v.camera.zoomIn(v.camera.positionCartographic.height*.35);publishCamera();v.scene.requestRender();}}}><Plus size={21}/></button><button aria-label="Allontana" onClick={()=>{p.journey?.pause();rotationClock.current.hold(performance.now());const v=viewer.current;if(v){v.camera.zoomOut(v.camera.positionCartographic.height*.55);publishCamera();v.scene.requestRender();}}}><Minus size={21}/></button></div>
       <button aria-label="Vista pianeta" title="Vista pianeta" onClick={()=>flight(initialCamera)}><Globe2 size={20}/></button>
       <div className="rotation-tools" ref={rotationControls}>
         <button aria-label={rotationRunning?'Ferma rotazione':'Avvia rotazione'} title={rotationRunning?'Pausa rotazione':'Avvia rotazione'} aria-pressed={rotationRunning} className={rotationRunning?'selected':''} onClick={toggleRotation}>{rotationRunning?<Pause size={19}/>:<Play size={19}/>}</button>

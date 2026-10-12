@@ -83,3 +83,15 @@ Implementazione 0.3.0 salvata nel commit locale `96c26f4`; documentazione e reso
 - Gate finali: TypeScript/build/SW; 82 test in 31 file, incluso HTTP loopback; revisione 12 test mirati verdi. Browser desktop + 390×844, sette stili in sviluppo, Naturale/ASCII/Voxel compilati, salvaschermo e reload. Un campione play termico: 10 aggiornamenti in 302 ms, max gap 38 ms, senza promettere 60 fps.
 - Prove e limiti in VERIFICATION.md/EARTH_STYLES.md. Shell 377 file/route, 12.658.980 byte. Scena originale aerosol dell'utente conservata e ISS off; anteprima 4175 separata.
 - Nessun deploy/push o invio sui canali. Restano performance/AR su telefono reale, PWA installata e canali propri; voxel geometrico e fonti operative aggiuntive non sono dichiarati implementati.
+
+
+## 11–12 ottobre 2026 — rotazione ambientale 0.4.1
+
+- Rotazione default 0,08°/s; pausa/play e pannello velocità nella barra destra, preset e cursore 0,02–1°/s. Scene precedenti migrate, impostazioni persistenti e trasmesse al salvaschermo. Play delle date indipendente.
+- Un solo ciclo Cesium; fattore quota per rendere leggibile il terreno, pausa su tutti i puntatori/ruota/voli, reset al background, passo limitato. Movimento ridotto inizialmente fermo, avvio esplicito disponibile.
+- Revisione P2: backup legge la camera corrente invece dello snapshot ormai vecchio. Flush camera al background/chiusura best-effort, nessuna scrittura per frame. Liberati puntatori interrotti al cambio visibilità/blur; revisore senza ulteriori rilievi concreti, 10 test mirati verdi.
+- Download/studio grafico della reference autorizzato; checkout ignorato e originale MIT conservato. Scoperta accidentale dei test esterni corretta con include esplicito delle radici Upari. Metodo/revisione in REFERENCE_STUDY.md.
+- 88 test / 33 file, TypeScript/build/SW verdi; browser desktop, portrait 390×844 e landscape 844×390. Pausa/velocità/camera conservate al reload, backup UI con camera in movimento, salvaschermo rispetta pausa e riparte manualmente. In landscape corretto pannello che incrociava il pulsante Salvaschermo. Screenshot reali temporanei; nessuna misura sostenuta di fps/consumo.
+- Nessun deploy/push. Prove telefono reale, PWA installata e canali propri ancora aperte; riferimento preciso e prompt aggiornato in HANDOFF.md.
+
+Implementazione 0.4.1 salvata nel commit locale `eb68b44`; documentazione aggiornata nel commit successivo. Build finale `app-T578fIU0.js`, rotazione default confermata nella scena originale, console senza errori/warning.

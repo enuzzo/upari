@@ -4,9 +4,15 @@ Esplorare la Terra. Ritrovare il cielo.
 
 PWA italiana gratuita e ospitabile come directory statica. Globo con fotografia dettagliata, dieci prodotti NASA, SWISSIMAGE e una pagina salvaschermo autonoma. ISS, guida AR e avvisi sono strumenti opzionali, inizialmente spenti. Luoghi, orizzonti, diario e preferenze rimangono sul dispositivo.
 
-Revisione **0.4.0**, preparata senza deploy come richiesto. Lo stato del sito pubblicato non è stato verificato in questa sessione. Leggere il [passaggio UI/UX](docs/UIUX_PASS_02.md).
+Revisione **0.4.1**, preparata senza deploy come richiesto. Lo stato del sito pubblicato non è stato verificato in questa sessione. Leggere il [passaggio UI/UX](docs/UIUX_PASS_02.md).
 
 **Prima di continuare:** leggere [AGENTS.md](AGENTS.md), [stato del lavoro](docs/HANDOFF.md) e [verifiche](docs/VERIFICATION.md). La verifica nel browser è stata eseguita su mobile e desktop; le prove AR e notifiche su dispositivi e servizi reali restano aperte.
+
+## Rotazione ambientale 0.4.1
+
+La Terra ruota lentamente di default (0,08°/s dalla vista orbitale, circa 75 minuti per giro). Nella barra destra: pausa/play e velocità, con cursore 0,02–1°/s e tre preset. Il movimento rallenta vicino al terreno e si sospende durante i gesti; rispetta il movimento ridotto del dispositivo. Pausa e velocità si conservano nella scena, nel backup e nel salvaschermo. Il play delle date resta indipendente.
+
+[Studio della reference originale](docs/REFERENCE_STUDY.md), scaricata nella cartella ignorata `.references/`.
 
 ## Qualità visiva 0.4
 
@@ -60,7 +66,7 @@ Su iPhone: Safari → Share → Add to Home Screen. Anche senza installazione l�
 4. Premi `Apri salvaschermo`.
 5. Nella nuova pagina, premi `Schermo intero` se il browser offre il comando.
 
-Risultato atteso: `screensaver.html` mostra la vista scelta, con rotazione lenta. La pagina funziona anche se chiudi la scheda principale. Tocca o muovi il puntatore per mostrare i controlli. Le opzioni sono salvate nell'indirizzo della pagina; puoi copiarlo e riaprirlo sullo stesso hosting. Il meteo viene richiesto a Open-Meteo solo quando attivato.
+Risultato atteso: `screensaver.html` mostra la vista scelta, conservando pausa e velocità di rotazione. La pagina funziona anche se chiudi la scheda principale. Tocca o muovi il puntatore per mostrare i controlli. Le opzioni sono salvate nell'indirizzo della pagina; puoi copiarlo e riaprirlo sullo stesso hosting. Il meteo viene richiesto a Open-Meteo solo quando attivato.
 
 Per usare ISS, apri `Strumenti` o le impostazioni e attiva `ISS e osservazione`. Compaiono `ISS` e `Avvisi`. Il comando AR si trova nella sezione ISS, per un passaggio calcolato.
 

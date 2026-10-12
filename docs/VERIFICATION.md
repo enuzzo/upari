@@ -1,6 +1,44 @@
+# Upari — verifiche locali 0.4.1
+
+11–12 ottobre 2026. Codice locale `eb68b44`, continuazione di `bf85a66`. **Nessun push o deploy.** Questa sezione descrive lo stato corrente; le sezioni precedenti conservate sotto sono storiche.
+
+## Gate
+
+- **88 test in 33 file**, giro finale verde; TypeScript/build di produzione/sintassi service worker superati. Nessuna nuova dipendenza npm. Include Vitest limita la scoperta a `src/`, `bridge/`, `scripts/`: checkout ignorato escluso. Incidente iniziale di scoperta esterna documentato in REFERENCE_STUDY.md.
+- Nuove prove: migrazione/default, pausa/speed nel backup e nel salvaschermo, validazione/clamp, passo indipendente da 30/60 fps, quota/stalli, multi-touch/inerzia/background; markup movimento ridotto/default; snapshot camera corrente esportato con segreti esclusi.
+- Revisione indipendente: P2 backup con camera vecchia corretto via getter al click; snapshot background best-effort senza scrittura per frame, reset puntatori interrotti. Ultimo giro mirato **10/10** verde, nessun altro rilievo concreto.
+- Manifest offline finale: **376 route/file, 12.666.108 byte**. SHA-256 dell’elenco ordinato `JSON.stringify(await offlineFiles())`: `ec7881c569d78cc3ee65f39d691db1520a143a4731728eb594e03d88824ea0da`. Checksum del manifest, non dei contenuti. Trovati asset generati obsoleti dopo la lunga sospensione della QA: build rigenerata e manifest ricalcolato sulla directory pulita; causa della ricomparsa non accertata.
+- Chunk globo/Cesium 4.260,24 kB / 1.146,99 kB gzip, warning dimensione noto. Asset finale osservato nel DOM `/assets/app-T578fIU0.js`.
+
+## Browser
+
+Browser interno su questo Mac; build 4175 separata dalla scena dell’utente 4173. Nessuna autorizzazione fotocamera/GPS, canale live o deploy.
+
+| Prova | Risultato osservato |
+|---|---|
+| Rotazione e velocità | Barra destra mostra pausa attiva e 0,08; preset Rapida mostra 0,20, link salvaschermo trasmette entrambi i campi. Camera nei link cambia effettivamente da 12° a 10,444752°, poi 9,195552° prima della pausa; non è una misura di fps |
+| Pausa/reload | Dopo pausa, scena `rotationEnabled=false`, speed 0,20; ricaricamento conserva entrambi e la stessa longitudine, differenza 0° |
+| Backup corrente | Esportazione via UI dopo riavvio Play: enabled=true, speed=0,20, camera aggiornata a 48,651052°. Il download ha avuto una lunga sospensione del controllo: nessuna misura di prestazioni o durata sostenuta deriva da questo intervallo. Snapshot al click coperto anche automaticamente |
+| Preset base | Ripristinato 0,08; pannello si chiude con Escape, selezione confermata nel browser |
+| Salvaschermo | Link con pausa apre “Ruota il mondo”; avvio manuale mostra “Ferma il mondo” e aggiorna il link. Console senza errori/warning osservati |
+| Portrait | 390×844: pausa/velocità presenti, pannello completo, `scrollWidth=clientWidth=390` |
+| Landscape finale | 844×390: tutti i controlli principali 44×44 px, preset 64×44; `scrollWidth=clientWidth=844`. Corretto incrocio con Salvaschermo: pannello termina a y=298, pulsante inizia a y=312, nessuna sovrapposizione |
+| Scena dell’utente | Reload sulla build finale conserva aerosol e data 10/10/2026, ISS spenta; nuovo default rotazione applicato. Anteprima fotografica separata lasciata disponibile |
+
+Screenshot reali temporanei: `/private/tmp/upari-qa/041-rotation-desktop.png` (Naturale con anteprima Sole −6 h dichiarata), `041-rotation-mobile.png`, `041-rotation-landscape.png`. Non fanno parte della distribuzione. La correzione finale riguarda il layout landscape; desktop/portrait invariati.
+
+## Prove da completare con l’utente
+
+- Telefono reale: fluidità prolungata, consumo/memoria, DPR 2/3, drag/pinch e rientro dal background, movimento ridotto reale; camera/bussola/AR e permessi. Le unità verificano la politica dei gesti; il browser responsive non simula sensori/hardware.
+- PWA installata: offline reale, aggiornamento tra versioni e fullscreen.
+- Canali propri: recapito/cancellazione con pagina chiusa o telefono bloccato e restart del bridge. Nessun invio live effettuato.
+- OSCAR v2: acquisizione autorizzata del file operativo ancora mancante. Restano i limiti dei dati e dell’astronomia descritti nelle sezioni storiche.
+
+---
+
 # Upari — verifiche locali 0.4.0
 
-11 ottobre 2026. Codice locale `bf85a66`, base precedente `96c26f4`. **Nessun push o deploy.** Questa sezione è lo stato corrente; le verifiche 0.3/0.2 sotto sono storiche.
+11 ottobre 2026. Codice locale `bf85a66`, base precedente `96c26f4`. **Nessun push o deploy.** Questa sezione descrive la revisione storica 0.4.0.
 
 ## Gate
 
@@ -33,7 +71,7 @@ Telefono reale: DPR 2/3, fluidità/consumo/memoria dei sette shader, gesti, sosp
 
 # Upari — verifiche locali 0.3.0
 
-11 ottobre 2026. Base Git `ab609bb`; implementazione locale `96c26f4`, versione corrente 0.3.0. **Nessun push o deploy.** Questa sezione è lo stato corrente; la 0.2.1 conservata sotto descrive controlli storici, con numeri e limiti dell'epoca.
+11 ottobre 2026. Base Git `ab609bb`; implementazione locale `96c26f4`, versione corrente 0.3.0. **Nessun push o deploy.** Questa sezione descrive la revisione storica 0.3.0; la 0.2.1 sotto conserva controlli precedenti.
 
 ## Gate automatici
 

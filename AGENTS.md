@@ -19,7 +19,7 @@ Read this file before changing anything. Then read `docs/HANDOFF.md`, `docs/VERI
 1. Inspect current source and verification before implementation. Keep the approved palette and visual hierarchy.
 2. Run `npm ci`, `npm run check`, `npm run test`, `npm run build` as appropriate. Reuse a successful check when inputs have not changed. Do not claim browser/device verification from unit tests or a build.
 3. Keep small traceable Git commits. Update `docs/WORK_LOG.md`, `docs/HANDOFF.md`, and `docs/VERIFICATION.md` for each meaningful milestone. The delivery includes a Git bundle; use it when you want the actual history.
-4. Do not read or copy application source from the original reference repository. Original source here is MIT; dependencies and data retain their own licenses and credits. The private handoff may mention the research reference; product UI needs only relevant data credits.
+4. Latest user authorization: downloading and studying the reference repository, including graphics code, is allowed. Keep the checkout under ignored `.references/`; do not run its scripts or copy application code/assets into the MIT implementation. Document the studied revision and visual findings. Dependencies/data retain their own licenses and credits.
 5. No fabricated pass times, weather, accuracy, live data, vector currents, tracking of plankton, or hidden fallback demo data. Black Marble is 2016. Layer dates are separate from ISS/Sun time.
 6. Satellite forecasts run in a worker, never block the UI. Keep UTC internally. Geometry uses WGS84, radians inside satellite.js, kilometres in satellite.js, metres in Cesium. NASA WMTS here is EPSG:3857 with 256 px tiles and the documented matrix sets.
 7. Keep camera/orientation/geolocation behind a user gesture. Provide the manual guide. Stop video tracks and listeners on exit. Test both landscape directions and permission rejection on real iPhone/Android before calling AR accurate.
@@ -30,7 +30,11 @@ Read this file before changing anything. Then read `docs/HANDOFF.md`, `docs/VERI
     Native DPR is explicitly enabled in Cesium. The resolution scale is effectiveRatio/nativeDPR, not a second reduction with browser-recommended resolution enabled. See the regression tests. ISS off means no new ephemeris fetches, forecast workers, tracking or periodic refreshes.
 12. If Sites is available, `.openai/hosting.json` is the authoritative project identity. Reuse its exact `project_id`; preserve private access. Never create a second Site. Otherwise work locally or use the user's hosting.
 
-## Current local milestone — 0.4.0, 11 October 2026
+## Current local milestone — 0.4.1, 12 October 2026
+
+Implemented locally in `eb68b44`: default slow Earth rotation (0.08 degrees/s at orbital altitude), pause/play and speed in the right toolbar. Persistent scene/backup/screensaver settings; reduce motion starts paused but allows explicit play. A single Cesium preUpdate callback, no additional frame timer; slow down near terrain and hold during interaction. Export reads live camera, background snapshot is best-effort, never write IndexedDB each frame. 88 tests / 33 files; browser portrait/landscape checks and remaining device limits in VERIFICATION.md. Reference source study is now explicitly authorized; ignored checkout revision/findings in REFERENCE_STUDY.md. No push/deploy.
+
+## Previous local milestone — 0.4.0, 11 October 2026
 
 Latest user request: maximum visual quality, especially the default Earth when zooming out; optional cartoon/cel/pixel/voxel/ASCII styles. Implemented locally in `bf85a66`: photographic NASA/Esri altitude blending, actual solar lighting and historical NASA 2016 lights, single-pass original shaders, seven persistent styles and adjustable strength in app/screensaver. Read `docs/EARTH_STYLES.md`. Voxel is explicitly a 2D isometric effect; stars are decorative, not an astronomical catalogue. Natural grading must protect both requested and actually visible scientific frames, including crossfades/failure. Cesium atmospheric fade distances are measured from Earth's centre, not altitude. Preserve the reviewed conversion and mobile/close-up visibility.
 
@@ -40,7 +44,7 @@ The continuation below is historical planning. Playback/source dates, real dated
 
 ## Priorities for continuation
 
-1. Browser QA of the compiled 0.2 app at 390×844 and desktop, including the separate screensaver. Compare palette/planet hierarchy with the concept while retaining the user's later UI changes. See docs/UIUX_PASS_02.md and docs/SCREENSAVER.md. Verify high-DPR sharpness, tiles, dialogs, optional ISS, fullscreen, clock, weather, backgrounding and keyboard.
+1. Browser QA of the compiled current app at 390×844 and desktop, including the separate screensaver. Compare palette/planet hierarchy with the concept while retaining the user's later UI changes. See docs/UIUX_PASS_02.md and docs/SCREENSAVER.md. Verify high-DPR sharpness, tiles, dialogs, optional ISS, fullscreen, clock, weather, backgrounding and keyboard.
 2. Real camera/compass QA and complete sensor lifecycle (including denial, repeated activation and backgrounding).
 3. Real ntfy/HA end-to-end test with the user's chosen endpoints, cancellation, partial failure, restart and page closed. There are no live credentials in this package.
 4. Independent event/visibility validation across dates, latitudes, DST, horizon masks and shadow boundaries. Preserve the existing reference fixtures.

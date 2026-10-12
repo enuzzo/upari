@@ -1,6 +1,6 @@
-# Terra e stili — 0.4.0
+# Terra e stili — 0.4.1
 
-La richiesta dell'11 ottobre 2026 mette al primo posto una vista Naturale suggestiva anche allontanandosi, e chiede alternative cartoon/cel/pixel/voxel/ASCII. La reference iniziale è [kedube/ha-iss-tracker](https://github.com/kedube/ha-iss-tracker): recuperata dalla conversazione, consultati README e screenshot pubblici (in particolare [globe-night.jpg](https://github.com/kedube/ha-iss-tracker/blob/main/docs/images/globe-night.jpg)), senza leggere/copiare il sorgente applicativo. Elementi ripresi come obiettivo visivo: volume della Terra, notte leggibile, luci e bordo atmosferico. Il renderer resta Cesium, il design resta nero/turchese con pannelli su richiesta.
+La richiesta dell'11 ottobre 2026 mette al primo posto una vista Naturale suggestiva anche allontanandosi, e chiede alternative cartoon/cel/pixel/voxel/ASCII. La reference iniziale è [kedube/ha-iss-tracker](https://github.com/kedube/ha-iss-tracker): recuperata dalla conversazione, consultati README e screenshot pubblici (in particolare [globe-night.jpg](https://github.com/kedube/ha-iss-tracker/blob/main/docs/images/globe-night.jpg)), allora senza leggere/copiare il sorgente applicativo. Il successivo studio del codice grafico, autorizzato dall’utente per la 0.4.1, è documentato in [REFERENCE_STUDY.md](REFERENCE_STUDY.md). Elementi ripresi come obiettivo visivo: volume della Terra, notte leggibile, luci e bordo atmosferico. Il renderer resta Cesium, il design resta nero/turchese con pannelli su richiesta.
 
 ## Naturale
 
@@ -29,6 +29,14 @@ Apri la vista corrente → “Un altro modo di guardare”.
 Intensità 0–100% negli effetti alternativi. Gli effetti modificano il canvas della Terra, senza filtrare l'interfaccia HTML. Sui layer scientifici compare “colori rielaborati”: selezionare Naturale per usare la legenda. Il warning considera anche il precedente raster ancora visibile durante il cambio di fonte.
 
 Stile/intensità sono validati con whitelist, salvati nella scena locale e nei backup v2, inclusi nel link del salvaschermo. Le vecchie scene senza stile diventano Naturale; la loro scelta esplicita giorno/notte è conservata. Le nuove scene partono con giorno/notte attivo. Nel salvaschermo si può cambiare lo stile dalle opzioni; l'orologio resta indipendente dal renderer.
+
+## Rotazione ambientale
+
+Attiva di default a **0,08°/s**, circa 75 minuti per un giro dalla vista orbitale. Nella barra destra: pausa/play, indicatore numerico e pannello con cursore **0,02–1°/s**, preset Lenta 0,04 / Base 0,08 / Rapida 0,20. Pausa e velocità sono validate e persistite nella scena, nei backup v2 e nel salvaschermo; le scene precedenti ricevono il nuovo default. La pausa del play delle date è indipendente.
+
+La velocità si riduce con la quota (fattore quota / 3.000 km, limitato a 0,0001–1). Trascinamento/pinch sospendono il moto per tutti i puntatori attivi e per 1,8 secondi dopo il rilascio; ruota, zoom e voli della camera hanno la stessa pausa. Il ritorno dal background azzera il passo temporale e libera i puntatori interrotti. Passo massimo 100 ms, per evitare recuperi bruschi dopo uno stallo.
+
+Un unico callback nel ciclo `preUpdate` di Cesium rispetta il profilo adattivo 30/60 fps; nessun timer aggiuntivo. Le preferenze di movimento ridotto avviano la Terra ferma; Play permette una scelta esplicita. I listener vengono rimossi all’uscita. La camera corrente viene aggiornata in memoria: il backup la legge al click e il background tenta un solo snapshot. Non si scrive su IndexedDB ogni fotogramma; il flush durante la chiusura è best-effort, non una garanzia di completamento del browser.
 
 ## Rendering e limiti
 

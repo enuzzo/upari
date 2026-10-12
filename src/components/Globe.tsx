@@ -1,4 +1,6 @@
+import {CameraSnapshot} from '../lib/camera-snapshot';
 import {RotationClock,defaultRotationSpeed} from '../lib/earth-rotation';
+import {FrameSample} from '../lib/frame-sample';
 import {atmosphereBlend,ZoomBlend} from '../lib/earth-look';
 import {earthShader} from '../lib/earth-shader';
 import {earthStyles,spaceBlend,naturalGradeAllowed,type EarthStyle} from '../lib/earth-style';
@@ -10,22 +12,26 @@ import type { Layer,Place,OrbitData,RenderQuality,CameraView } from '../types';
 import { validateField,type VectorField } from '../lib/vectors';
 import { vectorRenderer } from '../lib/vector-renderer';
 import { initialLayers,tileURL } from '../lib/layers';
-import { renderProfile } from '../lib/render-quality';
+import { renderProfile,frameRateLimit } from '../lib/render-quality';
 import { initialCamera } from '../lib/scene';
 import { ImageryBuffer,type FrameSpec } from '../lib/imagery-buffer';
 import { removeGlobeEntities } from '../lib/globe-lifecycle';
 
-type Props={layer:Layer|null;date:string;opacity:number;compare:boolean;compareDate:string;split:number;place:Place;orbit?:OrbitData|null;showISS?:boolean;sunOffset:number;lighting:boolean;quality:RenderQuality;initialCamera?:CameraView;onCameraChange?:(view:CameraView,persist?:boolean)=>void;onRotationChange?:(enabled:boolean)=>void;onRotationSpeedChange?:(speed:number)=>void;autoRotate?:boolean;rotationSpeed?:number;hideTools?:boolean;preloadDate?:string;onLoadingChange?:(loading:boolean)=>void;onImageryError?:(message:string)=>void;onFrameChange?:(frame:FrameSpec|undefined,transition?:FrameSpec)=>void;vectorKey?:"none"|"wind"|"currents";vectorMotion?:boolean;onVectorChange?:(field:VectorField|null)=>void;visualStyle?:EarthStyle;visualStrength?:number};
+type Props={layer:Layer|null;date:string;opacity:number;compare:boolean;compareDate:string;split:number;place:Place;orbit?:OrbitData|null;showISS?:boolean;sunOffset:number;lighting:boolean;quality:RenderQuality;initialCamera?:CameraView;onCameraChange?:(view:CameraView,persist?:boolean)=>void;onCameraReader?:(read:()=>CameraView)=>void;onRotationChange?:(enabled:boolean)=>void;onRotationSpeedChange?:(speed:number)=>void;autoRotate?:boolean;rotationSpeed?:number;hideTools?:boolean;preloadDate?:string;onLoadingChange?:(loading:boolean)=>void;onImageryError?:(message:string)=>void;onFrameChange?:(frame:FrameSpec|undefined,transition?:FrameSpec)=>void;vectorKey?:"none"|"wind"|"currents";vectorMotion?:boolean;onVectorChange?:(field:VectorField|null)=>void;visualStyle?:EarthStyle;visualStrength?:number};
 function provider(layer:Layer,date:string){return new C.UrlTemplateImageryProvider({url:tileURL(layer,date),tilingScheme:new C.WebMercatorTilingScheme(),tileWidth:256,tileHeight:256,maximumLevel:layer.maxLevel,rectangle:layer.coverage?C.Rectangle.fromDegrees(...layer.coverage):undefined,credit:new C.Credit(layer.source??('NASA EOSDIS GIBS · '+layer.id))});}
 function addImagery(viewer:C.Viewer,source:C.ImageryProvider,index?:number){
   const layer=new C.ImageryLayer(source,{maximumAnisotropy:8,minificationFilter:C.TextureMinificationFilter.LINEAR,magnificationFilter:C.TextureMagnificationFilter.LINEAR});
   viewer.imageryLayers.add(layer,index);return layer;
 }
 function Globe(p:Props){
+  const [showPerformance]=useState(()=>typeof location!=='undefined'&&new URLSearchParams(location.search).get('perf')==='1');
+  const measuring=import.meta.env.DEV||showPerformance;
+  const [performanceReport,setPerformanceReport]=useState<ReturnType<FrameSample['frame']>>();
   const node=useRef<HTMLDivElement>(null),viewer=useRef<C.Viewer|null>(null),buffer=useRef<ImageryBuffer<C.ImageryLayer[]>|null>(null),wakeBuffer=useRef<()=>void>(()=>{}),latest=useRef(p);latest.current=p;
   const [ready,setReady]=useState(false),[error,setError]=useState(''),[loading,setLoading]=useState(false),[tileError,setTileError]=useState(''),[baseError,setBaseError]=useState(''),[styleError,setStyleError]=useState(''),[rotating,setRotating]=useState(p.autoRotate??true);
   const [rotationSpeed,setRotationSpeed]=useState(p.rotationSpeed??defaultRotationSpeed),[speedOpen,setSpeedOpen]=useState(false),[reducedMotion,setReducedMotion]=useState(()=>matchMedia('(prefers-reduced-motion: reduce)').matches),[motionOptIn,setMotionOptIn]=useState(false);
   const rotationClock=useRef(new RotationClock()),rotationControls=useRef<HTMLDivElement>(null),previousAuto=useRef(p.autoRotate),rotationID=useId();
+  const diagnosticRevision=useRef(0),cameraSnapshot=useRef<CameraSnapshot|null>(null);
   const rotationRunning=rotating&&(!reducedMotion||motionOptIn);
   const speedLabel=rotationSpeed.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});
   const photographic=()=>{const key=buffer.current?.displaying?.key.split('|')[0];const shown=key?(initialLayers.find(l=>l.key===key)??{regional:false}):null;return naturalGradeAllowed(latest.current.layer,shown);};
@@ -55,7 +61,6 @@ function Globe(p:Props){
       let blending=false;
       const updateBase=()=>{
         if(!v||v.isDestroyed()||document.hidden)return;
-        publishCamera(); // Keep exports/links aligned with the visible camera during flights and gestures too.
         const height=v.camera.positionCartographic.height,far=spaceBlend(height),before=baseBlend.value;
         const moving=aerial?baseBlend.tick(1-far,performance.now(),v.scene.globe.tilesLoaded,motionMedia.matches):false;
         if(aerial)aerial.alpha=baseBlend.value;
@@ -68,6 +73,10 @@ function Globe(p:Props){
       off.push(v.scene.preRender.addEventListener(updateBase));
       const camera=p.initialCamera??initialCamera;
       v.camera.setView({destination:C.Cartesian3.fromDegrees(camera.longitude,camera.latitude,camera.height),orientation:{heading:camera.heading,pitch:camera.pitch,roll:camera.roll}});
+      const snapshot=new CameraSnapshot(camera,()=>{
+        if(!v||v.isDestroyed())return null;const c=v.camera.positionCartographic;
+        return {longitude:C.Math.toDegrees(c.longitude),latitude:C.Math.toDegrees(c.latitude),height:c.height,heading:v.camera.heading,pitch:v.camera.pitch,roll:v.camera.roll};
+      });cameraSnapshot.current=snapshot;latest.current.onCameraReader?.(snapshot.read);
       off.push(v.scene.globe.tileLoadProgressEvent.addEventListener((count:number)=>{setLoading(count>0);}));
       off.push(v.camera.moveEnd.addEventListener(()=>{
         if(!v||v.isDestroyed())return;
@@ -82,6 +91,7 @@ function Globe(p:Props){
       }).catch(()=>{if(!gone)setBaseError('Fotografia non disponibile · base NASA di riserva.');});
       setReady(true);
     }catch{
+      cameraSnapshot.current?.release();cameraSnapshot.current=null;
       if(v&&!v.isDestroyed())v.destroy();viewer.current=null;
       setError('Il globo richiede WebGL. Prova un browser aggiornato.');return;
     }
@@ -95,7 +105,7 @@ function Globe(p:Props){
     const timer=setInterval(clock,30000);
     const visible=()=>{if(instance.isDestroyed())return;baseBlend.suspend();instance.useDefaultRenderLoop=!document.hidden;if(!document.hidden){instance.resize();clock();instance.scene.requestRender();}};
     document.addEventListener('visibilitychange',visible);visible();
-    return()=>{gone=true;clearInterval(timer);document.removeEventListener('visibilitychange',visible);off.forEach(f=>f());viewer.current=null;latest.current.onLoadingChange?.(false);if(!instance.isDestroyed())instance.destroy();};
+    return()=>{gone=true;clearInterval(timer);document.removeEventListener('visibilitychange',visible);off.forEach(f=>f());cameraSnapshot.current?.release();cameraSnapshot.current=null;viewer.current=null;latest.current.onLoadingChange?.(false);if(!instance.isDestroyed())instance.destroy();};
   },[]);
   useEffect(()=>{
     const v=viewer.current;if(!ready||!v||!node.current)return;
@@ -105,8 +115,10 @@ function Globe(p:Props){
       const box=element.getBoundingClientRect(),profile=renderProfile(box.width,box.height,window.devicePixelRatio,p.quality);
       if(v.scene.skyAtmosphere)v.scene.skyAtmosphere.perFragmentAtmosphere=p.quality!=='battery';
       v.resolutionScale=profile.resolutionScale;v.scene.globe.maximumScreenSpaceError=profile.screenSpaceError;v.scene.globe.tileCacheSize=profile.cacheSize;v.scene.msaaSamples=profile.msaaSamples;
-      v.scene.postProcessStages.fxaa.enabled=profile.effectiveRatio<1.5;v.targetFrameRate=p.hideTools||p.quality==='battery'?30:60;
-      v.resize();v.scene.requestRender();
+      v.scene.postProcessStages.fxaa.enabled=profile.effectiveRatio<1.5;
+      // One Hz of margin avoids the widget's strict > deadline at a 60 Hz display.
+      v.targetFrameRate=frameRateLimit(p.quality,p.hideTools);
+      v.resize();if(measuring)diagnosticRevision.current++;v.scene.requestRender();
     };
     const observer=new ResizeObserver(resize);observer.observe(node.current);window.addEventListener('resize',resize);resize();
     return()=>{stopped=true;observer.disconnect();window.removeEventListener('resize',resize);};
@@ -236,34 +248,47 @@ function Globe(p:Props){
     canvas.addEventListener('pointerdown',down);window.addEventListener('pointerup',up);window.addEventListener('pointercancel',up);canvas.addEventListener('wheel',wheel,{passive:true});document.addEventListener('visibilitychange',visibility);window.addEventListener('blur',visibility);
     return()=>{canvas.removeEventListener('pointerdown',down);window.removeEventListener('pointerup',up);window.removeEventListener('pointercancel',up);canvas.removeEventListener('wheel',wheel);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('blur',visibility);};
   },[ready]);
-  function publishCamera(persist=false){
-    const v=viewer.current;if(!v||v.isDestroyed())return;const c=v.camera.positionCartographic;
-    latest.current.onCameraChange?.({longitude:C.Math.toDegrees(c.longitude),latitude:C.Math.toDegrees(c.latitude),height:c.height,heading:v.camera.heading,pitch:v.camera.pitch,roll:v.camera.roll},persist);
-  }
+  function publishCamera(persist=false){const snapshot=cameraSnapshot.current;if(snapshot)latest.current.onCameraChange?.(snapshot.read(),persist);}
+
   useEffect(()=>{
     const v=viewer.current;if(!ready||!v||!rotationRunning)return;
     const clock=rotationClock.current;clock.reset();
-    // Bounded development-only observation; no timer, GPU readback or production telemetry.
-    let warmup=0,sampled=0,previous=0,total=0,maxGap=0;
-    if(import.meta.env.DEV)node.current?.removeAttribute('data-render-sample');
-    // Use Cesium's existing frame loop, honoring its adaptive 30/60 fps profile.
-    return v.scene.preUpdate.addEventListener(()=>{
+    // Actual rendered frames after tiles settle; development or explicit ?perf=1; no GPU readback or timer.
+    const sample=measuring?new FrameSample():undefined;let warmup=0,diagnosticVersion=-1;
+    // Bounded RAF cadence observer, no rendering; distinguishes display timing from engine cost.
+    let rafID=0,rafWarmup=0;const rafSample=sample?new FrameSample():undefined;
+    const observeRAF=(time:number)=>{
+      if(!rafSample)return;
+      if(document.hidden){rafSample.reset();rafWarmup=0;}
+      else if(++rafWarmup>30){rafSample.begin(time);const result=rafSample.frame(time);if(result){node.current?.setAttribute('data-raf-sample',JSON.stringify({fps:result.fps,intervalMs:result.intervalMs,frames:result.frames}));return;}}
+      rafID=requestAnimationFrame(observeRAF);
+    };
+    if(rafSample){node.current?.removeAttribute('data-raf-sample');rafID=requestAnimationFrame(observeRAF);}
+    const updateDiagnosticProfile=()=>{
+      if(!sample)return;diagnosticVersion=diagnosticRevision.current;sample.reset();warmup=0;setPerformanceReport(undefined);
+      node.current?.removeAttribute('data-render-sample');
+      const gl=v.canvas.getContext('webgl2'),debug=gl?.getExtension('WEBGL_debug_renderer_info');
+      node.current?.setAttribute('data-render-profile',JSON.stringify({renderer:gl?.getParameter(debug?.UNMASKED_RENDERER_WEBGL??gl.RENDERER),viewport:[node.current.clientWidth,node.current.clientHeight],buffer:[v.scene.drawingBufferWidth,v.scene.drawingBufferHeight],dpr:window.devicePixelRatio,msaa:v.scene.msaaSamples,perFragment:v.scene.skyAtmosphere?.perFragmentAtmosphere,targetFPS:v.targetFrameRate??'display',focused:document.hasFocus(),visibility:document.visibilityState}));
+    };
+    updateDiagnosticProfile();
+    const offSample=sample?v.scene.postRender.addEventListener(()=>{if(warmup<30)return;const result=sample.frame(performance.now());if(result){setPerformanceReport(result);node.current?.setAttribute('data-render-sample',JSON.stringify({...result,at:new Date().toISOString(),focused:document.hasFocus(),visibility:document.visibilityState}));}}):()=>{};
+    // Use Cesium's existing frame loop, honoring its bounded 30/61 fps profile.
+    const offRotation=v.scene.preUpdate.addEventListener(()=>{
       if(v.isDestroyed())return;
+      if(sample&&diagnosticVersion!==diagnosticRevision.current)updateDiagnosticProfile();
       const now=performance.now(),degrees=clock.tick(now,rotationSpeed,v.camera.positionCartographic.height,document.hidden);
-      if(!degrees){if(import.meta.env.DEV)warmup=sampled=previous=total=maxGap=0;return;}
-      if(import.meta.env.DEV&&sampled<120){
-        if(warmup++>=8&&previous){const gap=now-previous;total+=gap;maxGap=Math.max(maxGap,gap);sampled++;
-          if(sampled===120)node.current?.setAttribute('data-render-sample',JSON.stringify({frames:sampled,meanMs:Math.round(total/sampled*100)/100,maxMs:Math.round(maxGap*100)/100,targetFPS:v.targetFrameRate}));
-        }previous=now;
-      }
+      if(!degrees){sample?.reset();warmup=0;return;}
+      if(sample){if(!v.scene.globe.tilesLoaded){sample.reset();warmup=0;}else if(++warmup>=30)sample.begin(now);}
       v.camera.rotate(C.Cartesian3.UNIT_Z,C.Math.toRadians(degrees));v.scene.requestRender();
     });
-  },[ready,rotationRunning,rotationSpeed]);
+    return()=>{if(rafID)cancelAnimationFrame(rafID);offSample();offRotation();};
+  },[ready,rotationRunning,rotationSpeed,p.layer?.key,p.date,p.opacity,p.compare,p.compareDate,p.split,p.lighting,p.sunOffset,p.visualStyle,p.visualStrength,p.vectorKey,p.vectorMotion]);
   function toggleRotation(){const next=!rotationRunning;publishCamera();setMotionOptIn(next);setRotating(next);latest.current.onRotationChange?.(next);}
   function changeRotationSpeed(speed:number){setRotationSpeed(speed);latest.current.onRotationSpeedChange?.(speed);}
   const flight=(view:CameraView)=>{rotationClock.current.hold(performance.now(),1800);viewer.current?.camera.flyTo({destination:C.Cartesian3.fromDegrees(view.longitude,view.latitude,view.height),orientation:{heading:view.heading,pitch:view.pitch,roll:view.roll},duration:matchMedia('(prefers-reduced-motion: reduce)').matches?0:1.2});};
   return <div className={'globe-stage '+(p.hideTools?'globe-ambient':'')}>
     <div className="globe-canvas" ref={node} aria-label="Globo interattivo: trascina per ruotare, usa due dita per lo zoom"/>
+    {showPerformance&&<div className="globe-performance" role="status" aria-label="Diagnostica locale della fluidità"><b>Diagnostica locale</b>{performanceReport?<><strong>{performanceReport.fps.toFixed(1)} fps</strong><span>300 fotogrammi · 95% degli intervalli ≤ {performanceReport.intervalMs.p95.toFixed(1)} ms</span></>:<span>{rotationRunning?'Attendo immagini e 300 fotogrammi…':'Premi Play per misurare.'}</span>}<small>Solo su questo dispositivo · pausa/play ripete la misura.</small></div>}
     {error&&<div className="globe-error" role="alert">{error}<button onClick={()=>location.reload()}>Riprova</button></div>}
     {!p.hideTools&&<div className="globe-tools" aria-label="Controlli del globo">
       <button aria-label="Vai al mio luogo" title="Vai al mio luogo" onClick={()=>flight({...initialCamera,longitude:p.place.longitude,latitude:p.place.latitude,height:12000})}><Crosshair size={20}/></button>

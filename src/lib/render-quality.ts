@@ -1,5 +1,8 @@
 import type { RenderQuality } from '../types';
 
+/** Small margin avoids the strict widget deadline at 60 Hz, without uncapping high-refresh displays. */
+export const frameRateLimit=(quality:RenderQuality,ambient=false)=>ambient||quality==='battery'?30:61;
+
 /** CSS viewport budget; Cesium's native DPR is enabled explicitly by the renderer. */
 export function renderProfile(width:number,height:number,dpr:number,quality:RenderQuality) {
   const ratio=Number.isFinite(dpr)&&dpr>0?dpr:1;

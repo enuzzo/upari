@@ -1,5 +1,5 @@
 import { describe,it,expect } from 'vitest';
-import { renderProfile } from './render-quality';
+import { renderProfile,frameRateLimit } from './render-quality';
 describe('render budget with native Cesium DPR enabled',()=>{
   it('renders a triple-density phone at two pixels per CSS pixel in automatic mode',()=>{
     const p=renderProfile(390,720,3,'auto');
@@ -17,5 +17,11 @@ describe('render budget with native Cesium DPR enabled',()=>{
     expect(renderProfile(500,500,.8,'auto').resolutionScale).toBe(1);
     const p=renderProfile(500,500,6,'high');expect(p.resolutionScale*6).toBe(3);
     expect(renderProfile(500,500,NaN,'auto').resolutionScale).toBe(1);
+  });
+  it('gives 60 Hz scheduling a small margin while retaining sharpness and low-power caps',()=>{
+    expect(frameRateLimit('auto',false)).toBeGreaterThan(60);expect(frameRateLimit('auto',false)).toBeLessThan(62);expect(frameRateLimit('high',false)).toBe(61);
+    expect(frameRateLimit('battery',false)).toBe(30);expect(frameRateLimit('auto',true)).toBe(30);
+    const p=renderProfile(1701,1191,2,'auto');
+    expect(1701*1191*p.effectiveRatio**2).toBeCloseTo(3000000);expect(p.msaaSamples).toBe(4);expect(p.screenSpaceError).toBe(1.5);
   });
 });

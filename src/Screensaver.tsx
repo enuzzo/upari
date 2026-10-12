@@ -45,6 +45,7 @@ function WeatherReading({place}:{place:Place}){
 }
 function readConfig(){try{return {config:decodeSaver(location.hash),error:''};}catch(e){return {config:null,error:e instanceof Error?e.message:'Configurazione non valida.'};}}
 export default function Screensaver(){
+  const [diagnostics]=useState(()=>new URLSearchParams(location.search).get('perf')==='1');
   const [field,setField]=useState<VectorField|null>(null);
   const [initial]=useState(readConfig),[config,setConfig]=useState<SaverConfig|null>(initial.config),[visible,setVisible]=useState(true),[settings,setSettings]=useState(false),[rotating,setRotating]=useState(()=>initial.config?.scene.rotationEnabled!==false&&!matchMedia('(prefers-reduced-motion: reduce)').matches),[fullscreen,setFullscreen]=useState(!!document.fullscreenElement),[message,setMessage]=useState('');
   const timeout=useRef<ReturnType<typeof setTimeout>|undefined>(undefined),focused=useRef(false);
@@ -55,7 +56,7 @@ export default function Screensaver(){
     document.documentElement.dataset.theme='night';
     return()=>{if(timeout.current)clearTimeout(timeout.current);window.removeEventListener('keydown',key);document.removeEventListener('fullscreenchange',full);};
   },[]);
-  useEffect(()=>{if(config)history.replaceState(null,'',saverURL(config));},[config]);
+  useEffect(()=>{if(config){const url=new URL(saverURL(config),location.href);if(diagnostics)url.searchParams.set('perf','1');history.replaceState(null,'',url.pathname+url.search+url.hash);}},[config,diagnostics]);
   useEffect(()=>{if(!message)return;const timer=setTimeout(()=>setMessage(''),5000);return()=>clearTimeout(timer);},[message]);
   if(!config)return <main className="saver-invalid"><h1>Una vista da portare con te.</h1><p>{initial.error}</p><a className="primary" href="/">Apri Upari</a></main>;
   const layer=initialLayers.find(l=>l.key===config.scene.layerKey)??null,s=config.scene;

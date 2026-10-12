@@ -34,6 +34,8 @@ export default function App(){
   const [vectorField,setVectorField]=useState<VectorField|null>(null);
   const [displayed,setDisplayed]=useState<FrameSpec|null>(null),[transition,setTransition]=useState<FrameSpec|undefined>();
   const [ar,setAR]=useState<Pass|null>(null),[toast,setToast]=useState(''),[online,setOnline]=useState(navigator.onLine),[install,setInstall]=useState<InstallEvent|null>(null);
+  const cameraReader=useRef<(()=>CameraView)|null>(null);
+  function readCurrentCamera(){const view=cameraReader.current?.()??camera.current;camera.current=view;return view;}
   const camera=useRef<CameraView>(initialScene.camera),latestScene=useRef(scene),mounted=useRef(false),catalogLoaded=useRef(false),tilesLoading=useRef(false),playFrames=useRef<string[]>([]),committedAt=useRef(0);latestScene.current=scene;
   const layer=layers.find(l=>l.key===scene.layerKey)??null,place=prefs.places.find(p=>p.id===prefs.activePlace)??prefs.places[0];
   const iss=useISS(prefs.issEnabled,hydrated,place,prefs.minElevation,prefs.satelliteId,sceneRevision);
@@ -48,7 +50,7 @@ export default function App(){
     return()=>{live=false;mounted.current=false;window.removeEventListener('online',network);window.removeEventListener('offline',network);window.removeEventListener('beforeinstallprompt',installer);};
   },[]);
   useEffect(()=>{document.documentElement.dataset.theme=prefs.theme;},[prefs.theme]);
-  useEffect(()=>{if(hydrated)writeState('scene',{...scene,camera:camera.current}).catch(()=>{});},[scene,hydrated]);
+  useEffect(()=>{if(hydrated)writeState('scene',{...scene,camera:readCurrentCamera()}).catch(()=>{});},[scene,hydrated]);
   useEffect(()=>{
     if(modal!=='layers'||catalogLoaded.current)return;
     catalogLoaded.current=true;
@@ -78,7 +80,8 @@ export default function App(){
   const onCameraChange=useCallback((view:CameraView,persist=true)=>{camera.current=view;if(persist)writeState('scene',{...latestScene.current,camera:view}).catch(()=>{});},[]);
   const onRotationChange=useCallback((rotationEnabled:boolean)=>setScene(s=>({...s,rotationEnabled})),[]);
   const onRotationSpeedChange=useCallback((rotationSpeed:number)=>setScene(s=>({...s,rotationSpeed})),[]);
-  const getCurrentScene=useCallback(()=>({...latestScene.current,camera:camera.current}),[]);
+  const onCameraReader=useCallback((read:()=>CameraView)=>{cameraReader.current=read;},[]);
+  const getCurrentScene=useCallback(()=>({...latestScene.current,camera:readCurrentCamera()}),[]);
   useEffect(()=>{
     if(!hydrated)return;
     const save=()=>{writeState('scene',getCurrentScene()).catch(()=>{});};
@@ -112,7 +115,7 @@ export default function App(){
     {!online&&<div className="offline-banner"><WifiOff size={14}/> Offline · immagini già visitate e dati salvati</div>}
     <main className="shell-main">
       {tab==='earth'?<div className="earth-layout"><div className="earth-surface">
-        {!ar&&(hydrated?<RenderBoundary><Suspense fallback={loading}><Globe autoRotate={scene.rotationEnabled} rotationSpeed={scene.rotationSpeed} onRotationChange={onRotationChange} onRotationSpeedChange={onRotationSpeedChange} key={sceneRevision} onVectorChange={setVectorField} vectorKey={scene.vectorKey} vectorMotion={scene.vectorMotion} visualStyle={scene.visualStyle} visualStrength={scene.visualStrength} layer={layer} date={scene.date} opacity={scene.opacity} compare={scene.compare} compareDate={scene.compareDate} split={scene.split} place={place} orbit={iss.orbit} showISS={prefs.issEnabled} sunOffset={scene.sunOffset} lighting={scene.lighting} quality={prefs.renderQuality} initialCamera={camera.current} onCameraChange={onCameraChange} onFrameChange={onFrameChange} onLoadingChange={onLoadingChange} onImageryError={playing?onImageryError:undefined} preloadDate={preloadDate}/></Suspense></RenderBoundary>:loading)}
+        {!ar&&(hydrated?<RenderBoundary><Suspense fallback={loading}><Globe autoRotate={scene.rotationEnabled} rotationSpeed={scene.rotationSpeed} onRotationChange={onRotationChange} onRotationSpeedChange={onRotationSpeedChange} key={sceneRevision} onVectorChange={setVectorField} vectorKey={scene.vectorKey} vectorMotion={scene.vectorMotion} visualStyle={scene.visualStyle} visualStrength={scene.visualStrength} layer={layer} date={scene.date} opacity={scene.opacity} compare={scene.compare} compareDate={scene.compareDate} split={scene.split} place={place} orbit={iss.orbit} showISS={prefs.issEnabled} sunOffset={scene.sunOffset} lighting={scene.lighting} quality={prefs.renderQuality} initialCamera={readCurrentCamera()} onCameraReader={onCameraReader} onCameraChange={onCameraChange} onFrameChange={onFrameChange} onLoadingChange={onLoadingChange} onImageryError={playing?onImageryError:undefined} preloadDate={preloadDate}/></Suspense></RenderBoundary>:loading)}
         <button className="floating-layer" aria-label={'Modifica la vista: '+viewName} onClick={()=>openLayers('details')}><Layers size={19}/><span><b>{layer&&actual&&!actual.key.startsWith(layer.key+'|')?(displayLayer?.name??viewName)+' · preparo '+viewName:viewName}</b>{scene.sunOffset!==0&&<small>Anteprima Sole {scene.sunOffset>0?'+':''}{scene.sunOffset} h</small>}{scene.visualStyle&&scene.visualStyle!=='natural'&&<small>Stile {earthStyleName(scene.visualStyle)}{displayLayer&&!displayLayer.regional||layer&&!layer.regional?' · colori rielaborati':''}</small>}<small>{playing?'Animazione · ':''}{viewCaption}</small>{scene.vectorKey&&scene.vectorKey!=='none'&&<small>{vectorField?(vectorField.kind==='wind'?'Vento':'Correnti · archivio')+' · dati '+new Date(vectorField.time).toLocaleString('it-IT',{timeZone:'UTC',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+' UTC':'Carico il campo vettoriale…'}</small>}</span><ChevronDown size={16}/></button>
         <button className="saver-button" onClick={()=>setModal('saver')}><Monitor size={18}/><span>Salvaschermo</span></button>
         {scene.compare&&layer&&<div className="compare-control"><span>{scene.date}</span><input type="range" min="5" max="95" value={scene.split*100} onChange={e=>setScene(s=>({...s,split:+e.target.value/100}))} aria-label="Posizione del confronto tra le date"/><span>{scene.compareDate}</span></div>}
@@ -127,9 +130,9 @@ export default function App(){
     {modal&&<Modal className={modal==='layers'?'scene-modal':''} title={modal==='places'?'I tuoi luoghi':modal==='layers'?'La tua vista':modal==='saver'?'Salvaschermo':modal==='diary'?'Diario delle osservazioni':'Il tuo Upari'} onClose={()=>setModal(null)}>
       {modal==='places'?<PlaceEditor prefs={prefs} onChange={p=>{changePrefs(p);if(p.activePlace!==prefs.activePlace)setModal(null);}}/>:
        modal==='layers'?<SceneInspector scientificVisible={!!displayLayer&&!displayLayer.regional} layers={layers} layer={layer} scene={scene} onScene={changeScene} pane={pane} onPane={setPane} onChoose={choose} favorites={favorites} onFavorite={favorite} playing={playing} onPlay={play}/>:
-       modal==='saver'?<SaverLauncher scene={{...scene,camera:camera.current}} place={place} viewName={viewName} onClose={()=>setModal(null)}/>:
+       modal==='saver'?<SaverLauncher scene={getCurrentScene()} place={place} viewName={viewName} onClose={()=>setModal(null)}/>:
        modal==='diary'?<Suspense fallback={loading}><DiaryPanel forecast={iss.forecast} place={place}/></Suspense>:
-       <SettingsPanel getScene={getCurrentScene} onDiary={()=>setModal('diary')} onImported={state=>{const imported=state.scene??{...latestScene.current,camera:camera.current};camera.current=imported.camera;setPlaying(false);setScene(imported);setDisplayed(null);setTransition(undefined);setSceneRevision(r=>r+1);if(state.favorites)setFavorites(state.favorites);changePrefs(state.preferences);}} prefs={prefs} onPrefs={changePrefs} onMessage={setToast} install={install} onInstall={async()=>{if(install){await install.prompt();await install.userChoice;setInstall(null);}}}/>}
+       <SettingsPanel getScene={getCurrentScene} onDiary={()=>setModal('diary')} onImported={state=>{const imported=state.scene??getCurrentScene();cameraReader.current=null;camera.current=imported.camera;setPlaying(false);setScene(imported);setDisplayed(null);setTransition(undefined);setSceneRevision(r=>r+1);if(state.favorites)setFavorites(state.favorites);changePrefs(state.preferences);}} prefs={prefs} onPrefs={changePrefs} onMessage={setToast} install={install} onInstall={async()=>{if(install){await install.prompt();await install.userChoice;setInstall(null);}}}/>}
     </Modal>}
     {ar&&prefs.issEnabled&&<Suspense fallback={<div className="ar-screen globe-loading">Preparo il cielo…</div>}><SkyAR pass={ar} onClose={()=>setAR(null)}/></Suspense>}
     {toast&&<div className="toast" role="status">{toast}<button aria-label="Chiudi messaggio" onClick={()=>setToast('')}><X size={17}/></button></div>}

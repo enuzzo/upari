@@ -195,3 +195,8 @@ dialog.ar-screen{margin:0;padding:0;border:0;width:100vw;height:100dvh;max-width
 .globe-tools .rotation-presets button{width:100%;font-size:12px;border:1px solid #2a3a4b;border-radius:10px}
 .rotation-popover p{font-size:11px;line-height:1.5;color:#9ba9bd;margin:12px 0 0}
 @media(max-height:520px) and (orientation:landscape){.globe-tools{display:grid;grid-template-columns:44px 44px;gap:4px}.globe-tools .zoom-tools{grid-row:span 2}.rotation-tools{display:contents}.rotation-popover{top:0;right:100px}}
+
+.globe-performance{position:absolute;left:24px;bottom:52px;max-width:calc(100% - 100px);padding:12px 16px;display:flex;flex-direction:column;gap:5px;color:#eef7fa;background:#08111eeb;border:1px solid #2a3a4b;border-radius:14px;font-size:12px;pointer-events:none}.globe-performance strong{font-size:22px;color:#69f6dc;font-variant-numeric:tabular-nums}.globe-performance small{font-size:10px;color:#a9b9c7}
+
+@media(max-width:760px){.globe-performance{left:16px;bottom:112px;max-width:calc(100% - 88px)}}
+@media(max-width:760px) and (max-height:500px){.globe-performance{bottom:12px;max-width:210px;padding:8px 12px;font-size:10px}.globe-performance strong{font-size:18px}.globe-performance small{display:none}}

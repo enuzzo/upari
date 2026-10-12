@@ -1,9 +1,10 @@
+import {RotationClock,defaultRotationSpeed} from '../lib/earth-rotation';
 import {earthShader} from '../lib/earth-shader';
 import {earthStyles,spaceBlend,naturalGradeAllowed,type EarthStyle} from '../lib/earth-style';
-import { memo,useEffect,useRef,useState } from 'react';
+import { memo,useEffect,useRef,useState,useId } from 'react';
 import * as C from 'cesium';
 import 'cesium/Build/Cesium/Widgets/widgets.css';
-import { Crosshair,Plus,Minus,Globe2,RefreshCw,ScanLine } from 'lucide-react';
+import { Crosshair,Plus,Minus,Globe2,Pause,Play,Gauge,X,ScanLine } from 'lucide-react';
 import type { Layer,Place,OrbitData,RenderQuality,CameraView } from '../types';
 import { validateField,type VectorField } from '../lib/vectors';
 import { vectorRenderer } from '../lib/vector-renderer';
@@ -13,7 +14,7 @@ import { initialCamera } from '../lib/scene';
 import { ImageryBuffer,type FrameSpec } from '../lib/imagery-buffer';
 import { removeGlobeEntities } from '../lib/globe-lifecycle';
 
-type Props={layer:Layer|null;date:string;opacity:number;compare:boolean;compareDate:string;split:number;place:Place;orbit?:OrbitData|null;showISS?:boolean;sunOffset:number;lighting:boolean;quality:RenderQuality;initialCamera?:CameraView;onCameraChange?:(view:CameraView)=>void;autoRotate?:boolean;rotationSpeed?:number;hideTools?:boolean;preloadDate?:string;onLoadingChange?:(loading:boolean)=>void;onImageryError?:(message:string)=>void;onFrameChange?:(frame:FrameSpec|undefined,transition?:FrameSpec)=>void;vectorKey?:"none"|"wind"|"currents";vectorMotion?:boolean;onVectorChange?:(field:VectorField|null)=>void;visualStyle?:EarthStyle;visualStrength?:number};
+type Props={layer:Layer|null;date:string;opacity:number;compare:boolean;compareDate:string;split:number;place:Place;orbit?:OrbitData|null;showISS?:boolean;sunOffset:number;lighting:boolean;quality:RenderQuality;initialCamera?:CameraView;onCameraChange?:(view:CameraView,persist?:boolean)=>void;onRotationChange?:(enabled:boolean)=>void;onRotationSpeedChange?:(speed:number)=>void;autoRotate?:boolean;rotationSpeed?:number;hideTools?:boolean;preloadDate?:string;onLoadingChange?:(loading:boolean)=>void;onImageryError?:(message:string)=>void;onFrameChange?:(frame:FrameSpec|undefined,transition?:FrameSpec)=>void;vectorKey?:"none"|"wind"|"currents";vectorMotion?:boolean;onVectorChange?:(field:VectorField|null)=>void;visualStyle?:EarthStyle;visualStrength?:number};
 function provider(layer:Layer,date:string){return new C.UrlTemplateImageryProvider({url:tileURL(layer,date),tilingScheme:new C.WebMercatorTilingScheme(),tileWidth:256,tileHeight:256,maximumLevel:layer.maxLevel,rectangle:layer.coverage?C.Rectangle.fromDegrees(...layer.coverage):undefined,credit:new C.Credit(layer.source??('NASA EOSDIS GIBS · '+layer.id))});}
 function addImagery(viewer:C.Viewer,source:C.ImageryProvider,index?:number){
   const layer=new C.ImageryLayer(source,{maximumAnisotropy:8,minificationFilter:C.TextureMinificationFilter.LINEAR,magnificationFilter:C.TextureMagnificationFilter.LINEAR});
@@ -21,7 +22,11 @@ function addImagery(viewer:C.Viewer,source:C.ImageryProvider,index?:number){
 }
 function Globe(p:Props){
   const node=useRef<HTMLDivElement>(null),viewer=useRef<C.Viewer|null>(null),buffer=useRef<ImageryBuffer<C.ImageryLayer[]>|null>(null),wakeBuffer=useRef<()=>void>(()=>{}),latest=useRef(p);latest.current=p;
-  const [ready,setReady]=useState(false),[error,setError]=useState(''),[loading,setLoading]=useState(false),[tileError,setTileError]=useState(''),[baseError,setBaseError]=useState(''),[styleError,setStyleError]=useState(''),[rotating,setRotating]=useState(p.autoRotate??false);
+  const [ready,setReady]=useState(false),[error,setError]=useState(''),[loading,setLoading]=useState(false),[tileError,setTileError]=useState(''),[baseError,setBaseError]=useState(''),[styleError,setStyleError]=useState(''),[rotating,setRotating]=useState(p.autoRotate??true);
+  const [rotationSpeed,setRotationSpeed]=useState(p.rotationSpeed??defaultRotationSpeed),[speedOpen,setSpeedOpen]=useState(false),[reducedMotion,setReducedMotion]=useState(()=>matchMedia('(prefers-reduced-motion: reduce)').matches),[motionOptIn,setMotionOptIn]=useState(false);
+  const rotationClock=useRef(new RotationClock()),rotationControls=useRef<HTMLDivElement>(null),previousAuto=useRef(p.autoRotate),rotationID=useId();
+  const rotationRunning=rotating&&(!reducedMotion||motionOptIn);
+  const speedLabel=rotationSpeed.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});
   useEffect(()=>{
     (window as unknown as {CESIUM_BASE_URL:string}).CESIUM_BASE_URL='/cesium/';
     let v:C.Viewer|null=null,gone=false;const off:(()=>void)[]=[];
@@ -192,26 +197,64 @@ function Globe(p:Props){
     fetch('/vectors/'+p.vectorKey+'.json',{signal:controller.signal}).then(r=>{if(!r.ok)throw new Error('missing');return r.json();}).then(validateField).then(field=>{if(!controller.signal.aborted&&!v.isDestroyed()){cleanup=vectorRenderer(v,field,p.quality,p.vectorMotion!==false);latest.current.onVectorChange?.(field);}}).catch(()=>{if(!controller.signal.aborted)setTileError('Campo vettoriale non disponibile. Nessuna scia simulata.');});
     return()=>{controller.abort();cleanup?.();};
   },[ready,p.vectorKey,p.vectorMotion,p.quality]);
-  useEffect(()=>{setRotating(p.autoRotate??false);},[p.autoRotate]);
   useEffect(()=>{
-    const v=viewer.current;if(!ready||!v||!rotating)return;
-    let previous=performance.now();
-    const timer=setInterval(()=>{
-      const now=performance.now(),elapsed=Math.min(200,now-previous);previous=now;
-      if(document.hidden||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-      v.camera.rotate(C.Cartesian3.UNIT_Z,C.Math.toRadians(p.rotationSpeed??.2)*elapsed/1000);v.scene.requestRender();
-    },1000/30);
-    return()=>clearInterval(timer);
-  },[ready,rotating,p.rotationSpeed]);
-  const flight=(view:CameraView)=>viewer.current?.camera.flyTo({destination:C.Cartesian3.fromDegrees(view.longitude,view.latitude,view.height),orientation:{heading:view.heading,pitch:view.pitch,roll:view.roll},duration:matchMedia('(prefers-reduced-motion: reduce)').matches?0:1.2});
+    if(previousAuto.current===false&&p.autoRotate===true)setMotionOptIn(true);previousAuto.current=p.autoRotate;
+    setRotating(p.autoRotate??true);
+  },[p.autoRotate]);
+  useEffect(()=>{setRotationSpeed(p.rotationSpeed??defaultRotationSpeed);},[p.rotationSpeed]);
+  useEffect(()=>{
+    const media=matchMedia('(prefers-reduced-motion: reduce)');
+    const changed=()=>{setReducedMotion(media.matches);setMotionOptIn(false);};
+    media.addEventListener('change',changed);return()=>media.removeEventListener('change',changed);
+  },[]);
+  useEffect(()=>{
+    if(!speedOpen)return;
+    const outside=(e:PointerEvent)=>{if(!rotationControls.current?.contains(e.target as Node))setSpeedOpen(false);};
+    const key=(e:KeyboardEvent)=>{if(e.key==='Escape')setSpeedOpen(false);};
+    document.addEventListener('pointerdown',outside);document.addEventListener('keydown',key);
+    return()=>{document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',key);};
+  },[speedOpen]);
+  useEffect(()=>{
+    const canvas=node.current;if(!ready||!canvas)return;const clock=rotationClock.current;
+    const down=(e:PointerEvent)=>clock.down(e.pointerId),up=(e:PointerEvent)=>clock.up(e.pointerId,performance.now()),wheel=()=>clock.hold(performance.now()),visibility=()=>clock.suspend();
+    canvas.addEventListener('pointerdown',down);window.addEventListener('pointerup',up);window.addEventListener('pointercancel',up);canvas.addEventListener('wheel',wheel,{passive:true});document.addEventListener('visibilitychange',visibility);window.addEventListener('blur',visibility);
+    return()=>{canvas.removeEventListener('pointerdown',down);window.removeEventListener('pointerup',up);window.removeEventListener('pointercancel',up);canvas.removeEventListener('wheel',wheel);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('blur',visibility);};
+  },[ready]);
+  function publishCamera(persist=false){
+    const v=viewer.current;if(!v||v.isDestroyed())return;const c=v.camera.positionCartographic;
+    latest.current.onCameraChange?.({longitude:C.Math.toDegrees(c.longitude),latitude:C.Math.toDegrees(c.latitude),height:c.height,heading:v.camera.heading,pitch:v.camera.pitch,roll:v.camera.roll},persist);
+  }
+  useEffect(()=>{
+    const v=viewer.current;if(!ready||!v||!rotationRunning)return;
+    const clock=rotationClock.current;clock.reset();
+    // Use Cesium's existing frame loop, honoring its adaptive 30/60 fps profile.
+    return v.scene.preUpdate.addEventListener(()=>{
+      if(v.isDestroyed())return;
+      const degrees=clock.tick(performance.now(),rotationSpeed,v.camera.positionCartographic.height,document.hidden);
+      if(!degrees)return;
+      v.camera.rotate(C.Cartesian3.UNIT_Z,C.Math.toRadians(degrees));publishCamera();v.scene.requestRender();
+    });
+  },[ready,rotationRunning,rotationSpeed]);
+  function toggleRotation(){const next=!rotationRunning;publishCamera();setMotionOptIn(next);setRotating(next);latest.current.onRotationChange?.(next);}
+  function changeRotationSpeed(speed:number){setRotationSpeed(speed);latest.current.onRotationSpeedChange?.(speed);}
+  const flight=(view:CameraView)=>{rotationClock.current.hold(performance.now(),1800);viewer.current?.camera.flyTo({destination:C.Cartesian3.fromDegrees(view.longitude,view.latitude,view.height),orientation:{heading:view.heading,pitch:view.pitch,roll:view.roll},duration:matchMedia('(prefers-reduced-motion: reduce)').matches?0:1.2});};
   return <div className={'globe-stage '+(p.hideTools?'globe-ambient':'')}>
     <div className="globe-canvas" ref={node} aria-label="Globo interattivo: trascina per ruotare, usa due dita per lo zoom"/>
     {error&&<div className="globe-error" role="alert">{error}<button onClick={()=>location.reload()}>Riprova</button></div>}
     {!p.hideTools&&<div className="globe-tools" aria-label="Controlli del globo">
       <button aria-label="Vai al mio luogo" title="Vai al mio luogo" onClick={()=>flight({...initialCamera,longitude:p.place.longitude,latitude:p.place.latitude,height:12000})}><Crosshair size={20}/></button>
-      <div className="zoom-tools"><button aria-label="Avvicina" onClick={()=>{const v=viewer.current;if(v){v.camera.zoomIn(v.camera.positionCartographic.height*.35);v.scene.requestRender();}}}><Plus size={21}/></button><button aria-label="Allontana" onClick={()=>{const v=viewer.current;if(v){v.camera.zoomOut(v.camera.positionCartographic.height*.55);v.scene.requestRender();}}}><Minus size={21}/></button></div>
+      <div className="zoom-tools"><button aria-label="Avvicina" onClick={()=>{rotationClock.current.hold(performance.now());const v=viewer.current;if(v){v.camera.zoomIn(v.camera.positionCartographic.height*.35);v.scene.requestRender();}}}><Plus size={21}/></button><button aria-label="Allontana" onClick={()=>{rotationClock.current.hold(performance.now());const v=viewer.current;if(v){v.camera.zoomOut(v.camera.positionCartographic.height*.55);v.scene.requestRender();}}}><Minus size={21}/></button></div>
       <button aria-label="Vista pianeta" title="Vista pianeta" onClick={()=>flight(initialCamera)}><Globe2 size={20}/></button>
-      <button aria-label={rotating?'Ferma rotazione':'Ruota lentamente'} title={rotating?'Ferma rotazione':'Ruota lentamente'} aria-pressed={rotating} className={rotating?'selected':''} onClick={()=>setRotating(!rotating)}><RefreshCw size={19}/></button>
+      <div className="rotation-tools" ref={rotationControls}>
+        <button aria-label={rotationRunning?'Ferma rotazione':'Avvia rotazione'} title={rotationRunning?'Pausa rotazione':'Avvia rotazione'} aria-pressed={rotationRunning} className={rotationRunning?'selected':''} onClick={toggleRotation}>{rotationRunning?<Pause size={19}/>:<Play size={19}/>}</button>
+        <button className="rotation-speed-button" aria-label={'Velocità di rotazione: '+speedLabel+' gradi al secondo'} title="Velocità di rotazione" aria-expanded={speedOpen} aria-controls={rotationID} onClick={()=>setSpeedOpen(!speedOpen)}><Gauge size={16}/><span>{speedLabel}</span></button>
+        {speedOpen&&<div className="rotation-popover" id={rotationID} role="group" aria-label="Velocità della Terra">
+          <h3>Rotazione</h3><button className="rotation-close" aria-label="Chiudi velocità di rotazione" onClick={()=>setSpeedOpen(false)}><X size={16}/></button>
+          <label className="range-label">Velocità <strong>{speedLabel}°/s</strong><input type="range" aria-label="Velocità della Terra" min=".02" max="1" step=".02" value={rotationSpeed} onChange={e=>changeRotationSpeed(+e.target.value)}/></label>
+          <div className="rotation-presets">{[{speed:.04,label:'Lenta'},{speed:.08,label:'Base'},{speed:.2,label:'Rapida'}].map(preset=><button key={preset.speed} className={rotationSpeed===preset.speed?'selected':''} aria-pressed={rotationSpeed===preset.speed} onClick={()=>changeRotationSpeed(preset.speed)}>{preset.label}</button>)}</div>
+          <p>Rallenta vicino al terreno. Si sospende mentre esplori.{reducedMotion&&!motionOptIn?' Movimento ridotto: avvia manualmente.':''}</p>
+        </div>}
+      </div>
     </div>}
     {(loading||tileError||baseError||styleError)&&<div className="globe-status" role="status">{styleError||tileError||baseError||<><ScanLine size={14}/> Caricamento immagini</>}</div>}
   </div>;

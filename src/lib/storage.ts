@@ -4,7 +4,7 @@ import {cleanSavedOrbit,cleanSavedSatellites} from './orbit-backup';
 import { validateScene,initialScene } from './scene';
 import { initialLayers } from './layers';
 import { openDB } from 'idb';
-import type { Preferences, OrbitData, QueueItem,DiaryEntry } from '../types';
+import type { Preferences, OrbitData, QueueItem,DiaryEntry,SceneState } from '../types';
 let db: ReturnType<typeof openDB>|null=null;
 function database(){return db??(db=openDB('upari', 1, { upgrade(d) { d.createObjectStore('state'); } }));}
 export async function readState<T>(key: string, fallback: T): Promise<T> { try { return (await (await database()).get('state', key)) ?? fallback; } catch { return fallback; } }
@@ -26,9 +26,9 @@ export function validatePreferences(raw: unknown): Preferences {
 }
 export async function loadPreferences() { return validatePreferences(await readState('preferences', initialPreferences)); }
 const cleanFavorites=(raw:unknown)=>Array.isArray(raw)?raw.filter((key,i)=>typeof key==='string'&&initialLayers.some(l=>l.key===key)&&raw.indexOf(key)===i):[];
-export async function exportBackup() {
+export async function exportBackup(currentScene?:SceneState) {
   const [preferences,scene,favorites,diary,satellites,orbit]=await Promise.all([loadPreferences(),readState('scene',initialScene),readState('favorites',[]),readState('diary',[]),readState('satellites',[]),readState<OrbitData|null>('orbit',null)]);
-  return JSON.stringify({format:'upari-backup',version:2,exportedAt:new Date().toISOString(),preferences:validatePreferences(preferences),scene:validateScene(scene),favorites:cleanFavorites(favorites),diary:validateDiary(diary),satellites:cleanSavedSatellites(satellites),orbit:orbit?cleanSavedOrbit(orbit):null},null,2);
+  return JSON.stringify({format:'upari-backup',version:2,exportedAt:new Date().toISOString(),preferences:validatePreferences(preferences),scene:validateScene(currentScene??scene),favorites:cleanFavorites(favorites),diary:validateDiary(diary),satellites:cleanSavedSatellites(satellites),orbit:orbit?cleanSavedOrbit(orbit):null},null,2);
 }
 export function validateBackup(raw:unknown){
   const b=raw as Record<string,unknown>;

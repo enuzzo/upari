@@ -183,3 +183,15 @@ dialog.ar-screen{margin:0;padding:0;border:0;width:100vw;height:100dvh;max-width
 .style-ascii{background:#081520;position:relative}.style-ascii::after{content:'@';font:27px monospace;color:#69f6dc;position:absolute;inset:0;text-align:center}
 .style-engraving{background:repeating-linear-gradient(45deg,#d7ddd0 0 3px,#446374 3px 4px)}
 .style-science-note{font-size:12px;line-height:1.5;border-left:2px solid var(--accent);padding-left:12px;color:var(--muted)}
+
+/* Compact right-hand rotation controls; the setting stays visible while paused. */
+.rotation-tools{position:relative;display:flex;flex-direction:column;gap:9px}
+.rotation-tools>button{background:#09121ede;color:#f2f6fa;border:1px solid #2a3a4b;border-radius:15px;backdrop-filter:blur(10px)}
+.globe-tools .rotation-speed-button{flex-direction:column;gap:2px;font-size:10px;font-variant-numeric:tabular-nums}
+.rotation-popover{position:absolute;right:55px;top:0;width:238px;padding:16px;background:#0c131ef5;border:1px solid #2a3a4b;border-radius:18px;box-shadow:0 14px 44px #0007;backdrop-filter:blur(16px)}
+.rotation-popover h3{margin:0 40px 18px 0;font-size:15px}
+.globe-tools .rotation-close{position:absolute;right:4px;top:4px}
+.rotation-presets{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px}
+.globe-tools .rotation-presets button{width:100%;font-size:12px;border:1px solid #2a3a4b;border-radius:10px}
+.rotation-popover p{font-size:11px;line-height:1.5;color:#9ba9bd;margin:12px 0 0}
+@media(max-height:520px) and (orientation:landscape){.globe-tools{display:grid;grid-template-columns:44px 44px;gap:4px}.globe-tools .zoom-tools{grid-row:span 2}.rotation-tools{display:contents}.rotation-popover{top:0;right:100px}}

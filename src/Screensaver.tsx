@@ -46,7 +46,7 @@ function WeatherReading({place}:{place:Place}){
 function readConfig(){try{return {config:decodeSaver(location.hash),error:''};}catch(e){return {config:null,error:e instanceof Error?e.message:'Configurazione non valida.'};}}
 export default function Screensaver(){
   const [field,setField]=useState<VectorField|null>(null);
-  const [initial]=useState(readConfig),[config,setConfig]=useState<SaverConfig|null>(initial.config),[visible,setVisible]=useState(true),[settings,setSettings]=useState(false),[rotating,setRotating]=useState(true),[fullscreen,setFullscreen]=useState(!!document.fullscreenElement),[message,setMessage]=useState('');
+  const [initial]=useState(readConfig),[config,setConfig]=useState<SaverConfig|null>(initial.config),[visible,setVisible]=useState(true),[settings,setSettings]=useState(false),[rotating,setRotating]=useState(()=>initial.config?.scene.rotationEnabled!==false&&!matchMedia('(prefers-reduced-motion: reduce)').matches),[fullscreen,setFullscreen]=useState(!!document.fullscreenElement),[message,setMessage]=useState('');
   const timeout=useRef<ReturnType<typeof setTimeout>|undefined>(undefined),focused=useRef(false);
   function wake(){setVisible(true);if(timeout.current)clearTimeout(timeout.current);timeout.current=setTimeout(()=>{if(!focused.current)setVisible(false);},6500);}
   useEffect(()=>{
@@ -66,7 +66,7 @@ export default function Screensaver(){
     <div className="saver-toolbar" onFocusCapture={()=>{focused.current=true;wake();}} onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget as Node)){focused.current=false;wake();}}}>
       <a href="/" className="saver-return" aria-label="Torna a Upari"><ArrowLeft size={17}/> upari</a>
       <div className="saver-actions">
-        <button className="icon-button" aria-label={rotating?'Ferma il mondo':'Ruota il mondo'} title={rotating?'Ferma il mondo':'Ruota il mondo'} onClick={()=>setRotating(!rotating)}>{rotating?<Pause size={19}/>:<Play size={19}/>}</button>
+        <button className="icon-button" aria-label={rotating?'Ferma il mondo':'Ruota il mondo'} title={rotating?'Ferma il mondo':'Ruota il mondo'} onClick={()=>{setRotating(!rotating);update({scene:{...s,rotationEnabled:!rotating}});}}>{rotating?<Pause size={19}/>:<Play size={19}/>}</button>
         {canFullscreen&&<button className="icon-button" aria-label={fullscreen?'Esci da schermo intero':'Schermo intero'} title={fullscreen?'Esci da schermo intero':'Schermo intero'} onClick={async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{setMessage('Il browser non consente lo schermo intero.');}}}>{fullscreen?<Minimize size={19}/>:<Maximize size={19}/>}</button>}
         <button className="icon-button" aria-label="Opzioni del salvaschermo" title="Opzioni" onClick={()=>{setSettings(true);wake();}}><Settings size={19}/></button>
       </div>
@@ -76,7 +76,7 @@ export default function Screensaver(){
     {settings&&<Modal title="Il tuo salvaschermo" onClose={()=>{setSettings(false);wake();}}>
       <label className="toggle-row"><span>Ora corrente</span><input type="checkbox" checked={config.showClock} onChange={e=>update({showClock:e.target.checked})}/></label>
       <label className="toggle-row"><span>Meteo di {config.place.name}<small>Stima Open-Meteo; usa le coordinate del luogo</small></span><input type="checkbox" checked={config.showWeather} onChange={e=>update({showWeather:e.target.checked})}/></label>
-      <label className="range-label">Rotazione <strong>{config.rotationSpeed.toFixed(2)}°/s</strong><input type="range" aria-label="Velocità di rotazione" min=".05" max=".8" step=".05" value={config.rotationSpeed} onChange={e=>update({rotationSpeed:+e.target.value})}/></label>
+      <label className="range-label">Rotazione <strong>{config.rotationSpeed.toFixed(2)}°/s</strong><input type="range" aria-label="Velocità di rotazione" min=".02" max="1" step=".02" value={config.rotationSpeed} onChange={e=>update({rotationSpeed:+e.target.value})}/></label>
       <StyleControls scene={s} onScene={changes=>update({scene:{...s,...changes}})} scientific={!!layer&&!layer.regional}/>
       <p className="footnote">I controlli scompaiono dopo pochi secondi. Tocca la pagina o premi un tasto per ritrovarli. Il mondo rispetta la preferenza di movimento ridotto del dispositivo.</p>
       <button className="secondary" onClick={async()=>{try{await navigator.clipboard.writeText(location.href);setMessage('Link della vista copiato.');}catch{setMessage('Copia l’indirizzo dalla barra del browser.');}}}>Copia link della vista</button>

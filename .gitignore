@@ -18,3 +18,5 @@ bridge-data/
 
 __pycache__/
 *.pyc
+
+/.references/

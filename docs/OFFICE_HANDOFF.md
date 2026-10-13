@@ -1,6 +1,6 @@
 # Upari — ripresa dall’ufficio, 13 ottobre 2026
 
-Questo è il punto di ingresso operativo. Versione **0.6.0**, codice documentario `1dce320`, cache basata sui contenuti `913aa53`, documentazione iniziale `0c0edc0`; successiva consegna/licenza e verifiche in WORK_LOG.md e VERIFICATION.md. Repository pubblica creata: https://github.com/enuzzo/upari . L’ultimo commit del ramo main è l’autorità; non il vecchio ZIP/bundle/DELIVERY0.2.
+Questo è il punto di ingresso operativo. Versione **0.6.0**, codice documentario `1dce320`, cache basata sui contenuti `913aa53`, documentazione iniziale `0c0edc0`; successiva consegna/licenza e verifiche in WORK_LOG.md e VERIFICATION.md. Repository pubblica creata: https://github.com/enuzzo/upari . Primo push verificato su `3c85134`; `origin` ora punta aGitHub e `delivery-bundle` conserva ilremote originale. L’ultimo commit del ramo main è l’autorità; non il vecchio ZIP/bundle/DELIVERY0.2.
 
 ## Stato e decisioni da conservare
 
@@ -15,13 +15,13 @@ Questo è il punto di ingresso operativo. Versione **0.6.0**, codice documentari
 | Materiale | Dove e cosa dimostra |
 |---|---|
 | Sorgenti e storia | Repository main; bundle aggiornato separato nella cartella esterna `office-handoff-2026-10-13` |
-| Identità e integrità | `office-handoff-2026-10-13/REVISION.txt`, `SOURCE_INPUTS.sha256`, `SHA256SUMS`; verificare sul Mac reale prima di lavorare |
+| Identità e integrità | `office-handoff-2026-10-13/REVISION.txt`, `SOURCE_INPUTS.sha256`, `SHA256SUMS`; bundle ripristinato e199file verificati su questoMac, da ricontrollare sul Mac reale prima di lavorare |
 | Screenshot reali | `docs/evidence/0.6.0/`: desktop, portrait, landscape, salvaschermo. Sono prove della QA locale, non concept né accettazione del telefono |
 | Ricerca/licenze/metodi | DOCUMENTARY.md, STATISTICAL_ATLAS.md, SOURCES.md, THIRD_PARTY_NOTICES.md e LICENSING.md |
 | Misure e gate | PERFORMANCE.md, performance/0.6.0-journeys.json e VERIFICATION.md; condizioni e limiti dichiarati |
 | Prompt pronto | OFFICE_START.txt; da incollare nella chat dell’ufficio |
 
-La cartella esterna conterrà bundleGit, archivio dei sorgenti e checksum generati dalla revisione di consegna. ZIP/bundle/DELIVERY originali e reference ignorata restano intatti. Le vecchie copie dist in `/private/tmp` e l’anteprima4182 sono locali a questo Mac: non necessari per ricostruire il progetto e non garantiti dopo chiusura/reboot.
+La cartella esterna contiene bundleGit, archivio dei sorgenti e checksum generati dalla revisione di consegna. ZIP/bundle/DELIVERY originali e reference ignorata restano intatti. Le vecchie copie dist in `/private/tmp` e l’anteprima4182 sono locali a questo Mac: non necessari per ricostruire il progetto e non garantiti dopo chiusura/reboot.
 
 ## Avvio sul Mac dell’ufficio
 

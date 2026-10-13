@@ -1,6 +1,6 @@
 # Upari — passaggio locale 0.6.0
 
-13 ottobre 2026. Base `8c2ffde`; implementazione `1dce320`, correzione cache offline `913aa53`. **Alla consegna iniziale nessun push/deploy/invio; il13ottobre l’utente ha poi autorizzato creazione repo e push. Deploy e invii restano rinviati.** ZIP, bundle, DELIVERY, reference e dati degli origin precedenti preservati. Questo blocco è corrente; le sezioni successive sono lo storico.
+13 ottobre 2026. Base `8c2ffde`; implementazione `1dce320`, correzione cache offline `913aa53`. **Repository pubblica enuzzo/upari creata e storia main inviata il13ottobre su richiesta dell’utente; prima conferma remota 3c85134. Deploy del sito e invii restano rinviati.** ZIP, bundle, DELIVERY, reference e dati degli origin precedenti preservati. Questo blocco è corrente; le sezioni successive sono lo storico.
 
 Per la prossima sessione dall’ufficio, partire da [OFFICE_HANDOFF.md](OFFICE_HANDOFF.md) e [OFFICE_START.txt](OFFICE_START.txt). Licenza corrente Apache-2.0 con NOTICE a enuzzo/repository; lo storico MIT resta tale.
 
@@ -10,8 +10,8 @@ Per la prossima sessione dall’ufficio, partire da [OFFICE_HANDOFF.md](OFFICE_H
 | Nuova fonte | Eurostat diretto: quota rinnovabili nel consumo finale lordo, 27 paesi UE, 2004–2024, 567 valori originali. Nove indicatori complessivi; politica di riuso statistico e cambio metodo RED nel 2021 dichiarati |
 | Lifecycle | Un solo Cesium, nessun timer di regia. Gesti/zoom/background mettono in pausa; movimento ridotto usa capitoli manuali. Scene, backup e salvaschermo conservano un fotogramma fermo |
 | Qualità | Solo Naturale, Alta predefinita, ISS inizialmente spenta; fotografia storica EOX/NASA con date e crediti. Nessuna dipendenza npm nuova o dato annuale inventato |
-| Offline | Quattro pacchetti statistici inclusi; 383 file/route, 14.362.916 byte. Cache basata anche sui byte: un aggiornamento dei soli dati cambia generazione (`a282b79f31c7`) |
-| Verifica | 121 test in 44 file, tre test Python CSV e tre Eurostat; TypeScript/build/postbuild verdi. Revisione indipendente e browser compilato desktop, portrait, landscape e salvaschermo |
+| Offline | Quattro pacchetti statistici e licenza/crediti inclusi; 386 file/route, 14.378.369 byte. Cache basata sui byte, generazione finale `3542ac3f3946` |
+| Verifica | 122 test in 44 file, tre test Python CSV e tre Eurostat; TypeScript/build/postbuild verdi. Revisione indipendente e browser compilato desktop, portrait, landscape e salvaschermo |
 | Prestazioni | Campioni brevi: 26,59 fps desktop DPR2 e 49,34 fps portrait DPR1. Condizioni diverse, nessun confronto causale o certificazione di 60 fps/4K. Qualità non ridotta |
 
 ## Anteprima e documentazione

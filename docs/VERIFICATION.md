@@ -1,6 +1,6 @@
 # Consegna ufficio e licenza — 13 ottobre 2026
 
-Creata la repository pubblica https://github.com/enuzzo/upari su richiesta esplicita; push autorizzato e preparato. Il sito non è stato distribuito e non sono stati inviati messaggi/notifiche. I blocchi precedenti mantengono lo storico delle consegne.
+Creata la repository pubblica https://github.com/enuzzo/upari su richiesta esplicita; push eseguito: prima conferma su `3c85134`, stesso SHA locale/remoto. Il sito non è stato distribuito e non sono stati inviati messaggi/notifiche. I blocchi precedenti mantengono lo storico delle consegne.
 
 - **122 test /44 file**, suite completa verde; tre prove Python CSV e tre Eurostat verdi. TypeScript/build/postbuild/sintassiSW verdi. Test nuovo di attribuzione offline osservato rosso prima della correzione, poi verde. HTTP solamente loopback.
 - Apache-2.0 ufficiale in LICENSE, NOTICE a enuzzo/repository e THIRD_PARTY_NOTICES.md copiati in dist; confronto dei byte con gli originali verde. LICENSE identico al testo ufficiale scaricato daApache. Revisioni storiche giàMIT mantengono quella licenza; non è imposto un banner.
@@ -9,7 +9,7 @@ Creata la repository pubblica https://github.com/enuzzo/upari su richiesta espli
 - Screenshot reali preservati in `docs/evidence/0.6.0/` (quattroPNG): desktop/portrait/landscape/salvaschermo. Handoff operativo e prompt in OFFICE_HANDOFF.md/OFFICE_START.txt. Le prove del Mac dell’ufficio e del telefono non sono state eseguite da questoMac.
 - Build precedente conservata in `/private/tmp/upari-dist-before-licensing-0yil6yek/dist`; originaliZIP/bundle/DELIVERY intatti. Solo warning noto sulla dimensionechunkCesium. Prestazioni restano quelle documentate, nessuna nuova misuraGPU/60fps/UHD.
 
-La prova del pacchetto portabile e la conferma del push sono registrate nel WORK_LOG e nel REVISION.txt esterno dopo l’esecuzione. Non copiare le dipendenze x86_64 sulMacAppleSilicon; ripartire da clone/lockfile e verifiche native. Nessun deploy delSite.
+Bundle portabile verificato e clonato in una directory temporanea nuova: SHA del commit e tutti i199file versionati corrispondono. Checksum del pacchetto verificati. La copia di consegna viene rigenerata dall’ultimo commit di documentazione e verificata di nuovo; REVISION.txt ne riporta il commit esatto. Il ripristino su questoMac non certifica Dropbox o l’esecuzione all’ufficio. Non copiare le dipendenze x86_64 sulMacAppleSilicon; ripartire da clone/lockfile e verifiche native. Nessun deploy delSite.
 
 ---
 

@@ -165,3 +165,10 @@ Codice salvato nel commit locale `5f5ca08`; documentazione/evidenze in commit se
 - Apache-2.0 ufficiale + NOTICE a enuzzo/Upari contributors/repository. Obbligo di conservazione dei crediti nelle redistribuzioni secondo la sezione4, non obbligo universale di banner. Revisioni storicheMIT e condizioni di terzi preservate. LICENSE/NOTICE/THIRD_PARTY_NOTICES.md incluse in build e shelloffline, testrosso→verde.
 - OFFICE_HANDOFF.md e OFFICE_START.txt: clone nativo fuoriDropbox consigliato, singolo scrittore, integrità/commit, gate, avvio locale/LAN, IndexedDB non trasferito daGit, provaMac/iPhone, limitiPWA/AR/canali, rollback e fonti ancora in coda. Quattro screenshot reali conservati nel repo; misure esistenti conservate senza nuova certificazione.
 - Gateattuali122test/44file +6Python, TypeScript/build/postbuild/SW/diffcheck verdi. Shell386route/14.378.369byte/generazione3542ac3f3946; crediti dist uguali agli originali. Scansione formati segreti della storia senza sospetti, portata limitata. Ilpush e ilpacchetto portabile sono verificati nel passaggio successivo. OriginaliZIP/bundle/DELIVERY intatti.
+
+
+### Conferma push e ripristino portabile
+
+- Primo push `3c8513444b4c567a665652c144dbb6b11ccc34a0` riuscito su https://github.com/enuzzo/upari, pubblico. SHA letto dalremote uguale aHEAD, main tracciaorigin/main; remote bundle originale conservato come delivery-bundle. Nessun forcepush, tag/release o deploySite.
+- Pacchetto esterno `../office-handoff-2026-10-13/`: bundle completo main, archivio dei sorgenti, prompt, REVISION.txt, SOURCE_INPUTS.sha256 e SHA256SUMS. `git bundle verify`, clone nuovo temporaneo e confronto di199file verdi; checksum di tutti i file del pacchetto verificati. Dopo questo commit documentale il pacchetto è rigenerato e confrontato con la nuovaHEAD, poi viene verificato lo SHA remoto finale.
+- Copia ufficio/Dropbox e avvio sulMac destinatario ancora da eseguire manualmente dall’utente. Nessuna chat/automazione o trasferimento di IndexedDB avviato. Dipendenze/dist si rigenerano localmente dallockfile; originaliZIP/bundle/DELIVERY conservati.

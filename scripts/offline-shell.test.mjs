@@ -16,3 +16,12 @@ it('changes the offline generation when only dataset bytes change and keeps unch
   expect(await shellVersion(root,files)).not.toBe(before);
  }finally{await rm(root,{recursive:true,force:true});}
 });
+
+
+it('keeps application license and attribution available in the offline distribution',async()=>{
+ const root=await mkdtemp(join(tmpdir(),'upari-notices-'));
+ try{
+  for(const file of ['LICENSE','NOTICE','THIRD_PARTY_NOTICES.md']) await writeFile(join(root,file),'distribution notice');
+  expect(await offlineFiles(root)).toEqual(expect.arrayContaining(['/LICENSE','/NOTICE','/THIRD_PARTY_NOTICES.md']));
+ }finally{await rm(root,{recursive:true,force:true});}
+});

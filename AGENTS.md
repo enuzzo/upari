@@ -12,7 +12,8 @@ Read this file before changing anything. Then read `docs/HANDOFF.md`, `docs/VERI
 - The user asked for this complete package so Codex can continue. Continue the existing work; do not start over or replace the geospatial renderer without a concrete reason.
 - **Latest instructions, 11 October 2026:** improve image quality and mobile/desktop UX; remove the permanent AR/pass box; ISS must be optional and initially off. These instructions supersede the old concept's bottom pass strip. Earth occupies the available viewport. Panels appear on demand.
 - **Screensaver:** every Earth view can open a separate static page with its exact camera, layer/date/comparison, slow rotation, current clock and optional real weather. Keep the clock independent of WebGL rendering. Preserve native source resolution and credits.
-- **Publication is deferred:** the user said “Dopo faremo deploy”. Version 0.2 is local, not pushed or deployed. The existing Site still serves 0.1. Do not publish until the user asks for the next deployment step.
+- **Latest instruction, 13 October 2026:** prepare office handoff, create the public GitHub repository `enuzzo/upari` if missing, and push. Current application distribution is Apache-2.0 with NOTICE attribution to enuzzo and the source repository; historical MIT revisions remain MIT. Git push is authorized; website deployment and channel sends remain deferred. Read `docs/OFFICE_HANDOFF.md` and `docs/OFFICE_START.txt` before resuming on the office Mac.
+- **Website publication is deferred:** the user said “Dopo faremo deploy”. Version 0.2 is local, not pushed or deployed. The existing Site still serves 0.1. Do not publish until the user asks for the next deployment step.
 
 ## Working rules
 

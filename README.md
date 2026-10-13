@@ -4,15 +4,21 @@ Esplorare la Terra. Ritrovare il cielo.
 
 PWA italiana gratuita e ospitabile come directory statica. Globo con fotografia dettagliata, dieci prodotti NASA, SWISSIMAGE e una pagina salvaschermo autonoma. ISS, guida AR e avvisi sono strumenti opzionali, inizialmente spenti. Luoghi, orizzonti, diario e preferenze rimangono sul dispositivo.
 
-Revisione **0.5.0**, preparata senza deploy come richiesto. Lo stato del sito pubblicato non è stato verificato in questa sessione. Leggere il [passaggio UI/UX](docs/UIUX_PASS_02.md).
+Revisione **0.6.0**, repository open source [enuzzo/upari](https://github.com/enuzzo/upari); sito senza nuovo deploy. Lo stato del sito pubblicato non è stato verificato in questa sessione. Leggere il [passaggio UI/UX](docs/UIUX_PASS_02.md).
 
 **Prima di continuare:** leggere [AGENTS.md](AGENTS.md), [stato del lavoro](docs/HANDOFF.md) e [verifiche](docs/VERIFICATION.md). La verifica nel browser è stata eseguita su mobile e desktop; le prove AR e notifiche su dispositivi e servizi reali restano aperte.
 
-## Società nel tempo 0.5.0
+## Percorsi documentari 0.6.0
 
-Otto indicatori,217 paesi/territori,1960–2025: demografia e stime ILO tramite World Bank, domande di asilo UNHCR da tre origini. Timeline play/pausa/velocità e trascinamento, valori annuali reali, confronto di variabili, curve con buchi, fonti/licenze e CSV/JSON. Relazioni geografiche schematiche, non viaggi. Tool per pacchetti documentati anche su confini regionali, senza imputazioni o upload.
+Energia europea, speranza di vita e protezione: tre percorsi a capitoli sul globo fotografico, camera cancellabile, pausa, curve e valori annuali originali. Nuova fonte Eurostat: 567 valori sulle rinnovabili, 27 paesi UE, 2004–2024. [Ricerca e metodo](docs/DOCUMENTARY.md).
 
-[Guida, fonti, metodi, licenze, tool e idee in coda](docs/STATISTICAL_ATLAS.md). Progetto gratuito/open source/nonprofit, codice MIT. Nessun deploy. iPhone17Pro nella stessa Wi-Fi: prove reali rimandate dall'utente a domani.
+**Ripresa dall’ufficio:** [handoff operativo](docs/OFFICE_HANDOFF.md) e [prompt pronto](docs/OFFICE_START.txt). 122 test della consegna attuale, misure di fluidità e prove fisiche ancora aperte in VERIFICATION.md; non sono una certificazione del telefono o di 60 fps sostenuti.
+
+## Società nel tempo
+
+Nove indicatori,217 paesi/territori,1960–2025: demografia e stime ILO tramite World Bank, domande di asilo UNHCR da tre origini. Timeline play/pausa/velocità e trascinamento, valori annuali reali, confronto di variabili, curve con buchi, fonti/licenze e CSV/JSON. Relazioni geografiche schematiche, non viaggi. Tool per pacchetti documentati anche su confini regionali, senza imputazioni o upload.
+
+[Guida, fonti, metodi, licenze, tool e idee in coda](docs/STATISTICAL_ATLAS.md). Progetto gratuito/open source/nonprofit, codice Apache-2.0. Nessun deploy. iPhone17Pro nella stessa Wi-Fi: prove reali previste alla ripresa dall’ufficio.
 
 ## Fluidità locale 0.4.3
 
@@ -127,4 +133,4 @@ Lo scheduler registra la presa in carico prima dell’invio: evita duplicati dop
 
 ## Licenze
 
-Codice originale: MIT. Cesium: Apache-2.0; React, satellite.js, lucide e altre dipendenze conservano le rispettive licenze. I font sono SIL OFL. Dati NASA, orbitali, EOX e statistici hanno fonti/attribuzioni proprie. Vedere `docs/SOURCES.md` e `THIRD_PARTY_NOTICES.md`.
+Codice originale della distribuzione corrente: **Apache-2.0** con [NOTICE](NOTICE) per i crediti a enuzzo e alla repository. Chi redistribuisce conserva licenza e attribuzioni secondo la sezione4; non è imposto un banner nell’interfaccia. Le revisioni storiche già MIT rimangono MIT. Cesium: Apache-2.0; React, satellite.js, lucide e altre dipendenze conservano le rispettive licenze. I font sono SIL OFL. Dati NASA, orbitali, EOX e statistici hanno fonti/attribuzioni proprie. Vedere `docs/SOURCES.md` e `THIRD_PARTY_NOTICES.md`.

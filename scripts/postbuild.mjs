@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { offlineFiles,shellVersion } from './offline-shell.mjs';
 await mkdir('dist/cesium', { recursive: true });
 for (const dir of ['Assets', 'Widgets', 'Workers', 'ThirdParty']) await cp(`node_modules/cesium/Build/Cesium/${dir}`, `dist/cesium/${dir}`, { recursive: true });
+for (const file of ['LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES.md']) await cp(file, `dist/${file}`);
 const files = await offlineFiles();
 const version = await shellVersion('dist',files);
 let sw = await readFile('public/sw.js', 'utf8');

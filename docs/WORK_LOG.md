@@ -157,3 +157,11 @@ Codice salvato nel commit locale `5f5ca08`; documentazione/evidenze in commit se
 - Gate finali: 121 test/44 file, tre test Python CSV e tre Eurostat, TypeScript/build/postbuild/SW/diffcheck verdi. HTTP solo loopback; nessun canale personale. Nessuna dipendenza npm nuova.
 - Browser IAB compilato: desktop1280×720/DPR2, portrait390×844/DPR1, landscape844×390/DPR1, pause/capitoli/drag/zoom/timeline/fonti/reload e salvaschermo. Nessun overflow orizzontale o errore/warning applicativo osservato nei flussi finali. Screenshot temporanei reali; preview4182 lasciata a dimensioni normali, DEV4180 fermato, origin precedenti conservati.
 - Campioni120frame:26,59fpsdesktopDPR2 e49,34fpsportraitDPR1, non prova sostenuta/GPU né certificazione60fps/4K. Telefono reale, PWA/AR/permessi e canali restano aperti; qualità non ridotta. Dati e condizioni in PERFORMANCE.md. Nessun push/deploy. HANDOFF.md include il prompt per la prova iPhone17Pro già sulla stessa Wi-Fi.
+
+
+## 13 ottobre 2026 — consegna ufficio, repository e licenza
+
+- L’utente ha richiesto documentazione completa, handoff e push; constatato origin verso il bundle locale, ha autorizzato la creazione della repository mancante e la scelta di una licenza open source con attribuzione. Creata https://github.com/enuzzo/upari pubblica; nessun nuovoSite o deploy.
+- Apache-2.0 ufficiale + NOTICE a enuzzo/Upari contributors/repository. Obbligo di conservazione dei crediti nelle redistribuzioni secondo la sezione4, non obbligo universale di banner. Revisioni storicheMIT e condizioni di terzi preservate. LICENSE/NOTICE/THIRD_PARTY_NOTICES.md incluse in build e shelloffline, testrosso→verde.
+- OFFICE_HANDOFF.md e OFFICE_START.txt: clone nativo fuoriDropbox consigliato, singolo scrittore, integrità/commit, gate, avvio locale/LAN, IndexedDB non trasferito daGit, provaMac/iPhone, limitiPWA/AR/canali, rollback e fonti ancora in coda. Quattro screenshot reali conservati nel repo; misure esistenti conservate senza nuova certificazione.
+- Gateattuali122test/44file +6Python, TypeScript/build/postbuild/SW/diffcheck verdi. Shell386route/14.378.369byte/generazione3542ac3f3946; crediti dist uguali agli originali. Scansione formati segreti della storia senza sospetti, portata limitata. Ilpush e ilpacchetto portabile sono verificati nel passaggio successivo. OriginaliZIP/bundle/DELIVERY intatti.

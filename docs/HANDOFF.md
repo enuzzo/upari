@@ -1,6 +1,8 @@
 # Upari — passaggio locale 0.6.0
 
-13 ottobre 2026. Base `8c2ffde`; implementazione `1dce320`, correzione cache offline `913aa53`. **Nessun push, deploy o invio sui canali.** ZIP, bundle, DELIVERY, reference e dati degli origin precedenti preservati. Questo blocco è corrente; le sezioni successive sono lo storico.
+13 ottobre 2026. Base `8c2ffde`; implementazione `1dce320`, correzione cache offline `913aa53`. **Alla consegna iniziale nessun push/deploy/invio; il13ottobre l’utente ha poi autorizzato creazione repo e push. Deploy e invii restano rinviati.** ZIP, bundle, DELIVERY, reference e dati degli origin precedenti preservati. Questo blocco è corrente; le sezioni successive sono lo storico.
+
+Per la prossima sessione dall’ufficio, partire da [OFFICE_HANDOFF.md](OFFICE_HANDOFF.md) e [OFFICE_START.txt](OFFICE_START.txt). Licenza corrente Apache-2.0 con NOTICE a enuzzo/repository; lo storico MIT resta tale.
 
 | Ambito | Consegna corrente |
 |---|---|
@@ -14,7 +16,7 @@
 
 ## Anteprima e documentazione
 
-Anteprima dell’agente solo loopback: [127.0.0.1:4182](http://127.0.0.1:4182/). DEV4180 fermato; server preesistenti4179/4181 conservati. Il browser finale è tornato a dimensioni desktop normali, senza HUD diagnostico. Screenshot reali temporanei in `/private/tmp/upari-qa/060-*.png`; non sono asset distribuiti né approvazione visiva dell’utente.
+Anteprima dell’agente solo loopback: [127.0.0.1:4182](http://127.0.0.1:4182/). DEV4180 fermato; server preesistenti4179/4181 conservati. Il browser finale è tornato a dimensioni desktop normali, senza HUD diagnostico. Screenshot reali ora conservati in `docs/evidence/0.6.0/`, oltre alle copie temporanee; documentano la QA locale, non l’accettazione fisica. La preview è del Mac di casa, non trasferita all’ufficio.
 
 - `DOCUMENTARY.md`: ricerca primaria, alternative, tre percorsi, metodo e lifecycle.
 - `STATISTICAL_ATLAS.md`: coperture, limiti, licenze e hash dei quattro pacchetti.

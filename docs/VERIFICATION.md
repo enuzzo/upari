@@ -1,3 +1,18 @@
+# Consegna ufficio e licenza — 13 ottobre 2026
+
+Creata la repository pubblica https://github.com/enuzzo/upari su richiesta esplicita; push autorizzato e preparato. Il sito non è stato distribuito e non sono stati inviati messaggi/notifiche. I blocchi precedenti mantengono lo storico delle consegne.
+
+- **122 test /44 file**, suite completa verde; tre prove Python CSV e tre Eurostat verdi. TypeScript/build/postbuild/sintassiSW verdi. Test nuovo di attribuzione offline osservato rosso prima della correzione, poi verde. HTTP solamente loopback.
+- Apache-2.0 ufficiale in LICENSE, NOTICE a enuzzo/repository e THIRD_PARTY_NOTICES.md copiati in dist; confronto dei byte con gli originali verde. LICENSE identico al testo ufficiale scaricato daApache. Revisioni storiche giàMIT mantengono quella licenza; non è imposto un banner.
+- Shell finale **386 route/file,14.378.369 byte**, generazione `3542ac3f3946`, coerente con dist/sw.js. Nuove tre route di licenza/crediti incluse offline. Fileapp/Globe/screensaver invariati rispetto alla QA0.6.0: cambiamento di confezionamento/licenza, nessuna nuova accettazione visiva implicita.
+- Scansione della storiaGit per formati riconoscibili di tokenGitHub/AWS/chiavi private: zero file sospetti; controllo limitato, non certificazione universale. Nessun .env, token, backup browser, node_modules o referenceGPL ignorata incluso nella consegnaGit.
+- Screenshot reali preservati in `docs/evidence/0.6.0/` (quattroPNG): desktop/portrait/landscape/salvaschermo. Handoff operativo e prompt in OFFICE_HANDOFF.md/OFFICE_START.txt. Le prove del Mac dell’ufficio e del telefono non sono state eseguite da questoMac.
+- Build precedente conservata in `/private/tmp/upari-dist-before-licensing-0yil6yek/dist`; originaliZIP/bundle/DELIVERY intatti. Solo warning noto sulla dimensionechunkCesium. Prestazioni restano quelle documentate, nessuna nuova misuraGPU/60fps/UHD.
+
+La prova del pacchetto portabile e la conferma del push sono registrate nel WORK_LOG e nel REVISION.txt esterno dopo l’esecuzione. Non copiare le dipendenze x86_64 sulMacAppleSilicon; ripartire da clone/lockfile e verifiche native. Nessun deploy delSite.
+
+---
+
 # Verifiche locali0.6.0 —13ottobre2026
 
 Solo locale, nessun push/deploy o invio ai canali. Build finale `app-oeS3s4Bb.js` / `Globe-DCKy9DLI.js`. Fonti e regia in DOCUMENTARY.md; ledger in STATISTICAL_ATLAS.md.

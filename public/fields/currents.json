@@ -1,0 +1,10 @@
+{
+ "kind": "currents",
+ "time": "2014-09-26T00:00:00Z",
+ "source": "OSCAR · NOAA CoastWatch",
+ "url": "https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplOscar.html",
+ "width": 1080,
+ "height": 540,
+ "scale": 1.6,
+ "valid": 314009
+}

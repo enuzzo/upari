@@ -1,0 +1,15 @@
+{
+ "id": "sst",
+ "width": 4096,
+ "height": 2048,
+ "coverage": 0.68705,
+ "dates": [
+  "2026-10-23"
+ ],
+ "unit": "°C",
+ "scale": "linear",
+ "min": -2,
+ "max": 34,
+ "source": "GHRSST MUR · JPL · GIBS",
+ "layer": "GHRSST_L4_MUR_Sea_Surface_Temperature"
+}

@@ -2,9 +2,9 @@ Upari
 Copyright 2026 enuzzo and Upari contributors
 
 Created and maintained by enuzzo.
-Original project and source repository: https://github.com/enuzzo/upari
+Source repository: https://github.com/enuzzo/upari
 
-The original application code in this distribution is licensed under the
+The application code in this distribution is licensed under the
 Apache License, Version 2.0. See LICENSE.
 Third-party code, fonts, imagery and datasets retain their own licenses and
-attribution requirements. See THIRD_PARTY_NOTICES.md and docs/SOURCES.md.
+attribution requirements. See THIRD_PARTY_NOTICES.md.

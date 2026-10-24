@@ -1,136 +1,43 @@
-# Upari
+# Upari 1.0
 
-Esplorare la Terra. Ritrovare il cielo.
+Il pianeta Terra raccontato dai suoi dati di oggi. Un documentario interattivo per desktop: undici capitoli brevi, una voce narrante scritta, un globo che si può trascinare, avvicinare fino a 10 m per pixel e interrogare punto per punto.
 
-PWA italiana gratuita e ospitabile come directory statica. Globo con fotografia dettagliata, dieci prodotti NASA, SWISSIMAGE e una pagina salvaschermo autonoma. ISS, guida AR e avvisi sono strumenti opzionali, inizialmente spenti. Luoghi, orizzonti, diario e preferenze rimangono sul dispositivo.
+## Capitoli
 
-Revisione **0.6.0**, repository open source [enuzzo/upari](https://github.com/enuzzo/upari); sito senza nuovo deploy. Lo stato del sito pubblicato non è stato verificato in questa sessione. Leggere il [passaggio UI/UX](docs/UIUX_PASS_02.md).
+Il pianeta · Il respiro (venti GFS) · Le correnti (OSCAR) · Il calore del mare (GHRSST MUR) · La febbre (anomalie) · Il mare che fiorisce (PACE) · La pioggia (GPM IMERG, 24 ore) · Il fuoco (FIRMS) · Il ghiaccio (GAMSSA) · Le luci (Black Marble) · Lassù (ISS in tempo reale).
 
-**Prima di continuare:** leggere [AGENTS.md](AGENTS.md), [stato del lavoro](docs/HANDOFF.md) e [verifiche](docs/VERIFICATION.md). La verifica nel browser è stata eseguita su mobile e desktop; le prove AR e notifiche su dispositivi e servizi reali restano aperte.
+Le frasi con numeri (il vento più forte, il mare più caldo, la quota della Stazione Spaziale, la percentuale di oceani oltre la media) sono calcolate dai dati all'apertura.
 
-## Percorsi documentari 0.6.0
+## Motore
 
-Energia europea, speranza di vita e protezione: tre percorsi a capitoli sul globo fotografico, camera cancellabile, pausa, curve e valori annuali originali. Nuova fonte Eurostat: 567 valori sulle rinnovabili, 27 paesi UE, 2004–2024. [Ricerca e metodo](docs/DOCUMENTARY.md).
+three.js e shader propri: scattering atmosferico a singola diffusione (Rayleigh + Mie) sia sul bordo sia sulla superficie, luce del Sole calcolata per l'istante presente, rilievo da DEM in luce radente, nuvole trasportate dai venti reali (flow map), particelle GPU per venti e correnti, palette scientifiche ricampionate in bicubico, bloom HDR e tone mapping ACES. Da vicino si caricano le tessere Sentinel-2 cloudless di EOX. La risoluzione si adatta da sola se la GPU fatica.
 
-**Ripresa dall’ufficio:** [handoff operativo](docs/OFFICE_HANDOFF.md) e [prompt pronto](docs/OFFICE_START.txt). 122 test della consegna attuale, misure di fluidità e prove fisiche ancora aperte in VERIFICATION.md; non sono una certificazione del telefono o di 60 fps sostenuti.
+## Comandi
 
-## Società nel tempo
-
-Nove indicatori,217 paesi/territori,1960–2025: demografia e stime ILO tramite World Bank, domande di asilo UNHCR da tre origini. Timeline play/pausa/velocità e trascinamento, valori annuali reali, confronto di variabili, curve con buchi, fonti/licenze e CSV/JSON. Relazioni geografiche schematiche, non viaggi. Tool per pacchetti documentati anche su confini regionali, senza imputazioni o upload.
-
-[Guida, fonti, metodi, licenze, tool e idee in coda](docs/STATISTICAL_ATLAS.md). Progetto gratuito/open source/nonprofit, codice Apache-2.0. Nessun deploy. iPhone17Pro nella stessa Wi-Fi: prove reali previste alla ripresa dall’ufficio.
-
-## Fluidità locale 0.4.3
-
-Camera letta su richiesta, cap con margine 61 fps (30 per Batteria/salvaschermo), qualità visiva invariata. Diagnostica locale con `?perf=1`. Target 60 fps ancora da verificare con Mac senza limiti prestazionali; iPhone 17 Pro scelto per le prove reali. [Campioni, metodo e prove telefono](docs/PERFORMANCE.md).
-
-## Vista Naturale 0.4.2
-
-Atmosfera più pulita, bordo blu sul lato illuminato e crepuscolo caldo riferito al Sole. Transizione NASA→EOX2016 continua lungo lo zoom, con attesa delle immagini e dissolvenza nel ciclo esistente. Effetti attenuati nel dettaglio e palette scientifiche protette. [Metodo e limiti](docs/EARTH_STYLES.md); performance su telefono reale ancora da verificare.
-
-## Rotazione ambientale 0.4.1
-
-La Terra ruota lentamente di default (0,08°/s dalla vista orbitale, circa 75 minuti per giro). Nella barra destra: pausa/play e velocità, con cursore 0,02–1°/s e tre preset. Il movimento rallenta vicino al terreno e si sospende durante i gesti; rispetta il movimento ridotto del dispositivo. Pausa e velocità si conservano nella scena, nel backup e nel salvaschermo. Il play delle date resta indipendente.
-
-[Studio della reference originale](docs/REFERENCE_STUDY.md), scaricata nella cartella ignorata `.references/`.
-
-## Qualità visiva 0.4
-
-- Vista Naturale: base NASA dallo spazio, dettaglio EOX2016 avvicinandosi, atmosfera e transizione giorno/notte, luci reali del composito NASA 2016. Nel dettaglio l'illuminazione si attenua per leggere le fotografie.
-- Solo **Naturale**, senza cartoon/pixel/voxel/ASCII. Scene precedenti convertite; qualità Alta di default, Auto/Batteria ancora disponibili. Atmosfera e crepuscolo originali, stelle decorative.
-- EOX2016 è CC BY4.0, acquisizione2016–2017, circa10m nativi: storico e meno dettagliato a terra rispetto alla precedente base Esri. La fotografia NASA orbitale e SWISSIMAGE regionale rimangono.
-- [Metodo e limiti del rendering](docs/EARTH_STYLES.md). Nessun deploy. Prestazioni su telefono reale ancora da misurare.
-
-## Nuove funzioni 0.3
-
-- Data e fonte del fotogramma sempre visibili; confronto con due date. Playback con attesa delle tile, precaricamento Cesium limitato e dissolvenza di 320 ms.
-- Vento marino ASCAT datato 10 ottobre 2026 e correnti OSCAR storiche del 26 settembre 2014, con velocità reali e celle mancanti. [Metodo, fonti e convertitori](docs/VECTORS.md).
-- Orizzonte degli ostacoli: apri il luogo, poi le otto direzioni. Diario accessibile dagli strumenti anche con ISS spenta.
-- Satelliti locali: attiva lo strumento, apri ISS → Satellite e importa un file OMM/TLE recente. Gli avvisi restano dedicati alla ISS.
-- [Provider regionali configurabili](docs/REGIONAL_IMAGERY.md), SWISSIMAGE incluso, date di acquisizione variabili per zona.
-- Backup v2 include scena/camera, diario, orizzonti, preferiti e orbite, senza credenziali; import v1 compatibile.
-- [Bridge HA, Gotify e webhook](docs/CHANNELS.md), con coda persistente. Stato della cache e pacchetti offline negli strumenti.
-
-## Avvio locale — ✈️ STE100
-
-Requisito: Node.js 22.12 o successivo, npm, connessione per installare le dipendenze.
-
-1. Estrai lo ZIP.
-2. Apri il terminale nella directory `upari`.
-3. Esegui `npm ci`.
-4. Esegui `npm run build`.
-5. Esegui `npm run preview`.
-6. Apri l’indirizzo mostrato dal terminale.
-
-Risultato atteso: app e asset Cesium serviti dalla build in `dist`. La build inclusa nello ZIP è già pronta.
-
-Per modificare il codice, esegui `npm run dev`. Il comando copia prima gli asset Cesium in `public/cesium`. Non aprire `index.html` come file locale.
-
-## Hosting HTTPS — ✈️ STE100
-
-1. Copia **il contenuto** di `dist/` nella radice web di un dominio HTTPS.
-2. Apri il dominio nel browser.
-3. Controlla il caricamento del globo.
-4. Apri `Layer` e prova una vista NASA.
-5. Apri `Salvaschermo` e controlla la pagina separata.
-
-Risultato atteso: Upari funziona senza backend obbligatorio. Fotocamera e sensori richiedono HTTPS, o localhost durante lo sviluppo. La build usa percorsi assoluti: per ospitare sotto una sottodirectory occorre adattare base URL, manifest, service worker e asset Cesium.
-
-Su iPhone: Safari → Share → Add to Home Screen. Anche senza installazione l’app funziona nel browser.
-
-## Salvaschermo — ✈️ STE100
-
-1. Scegli il layer, la data e lo zoom sulla Terra.
-2. Premi `Salvaschermo`.
-3. Scegli se mostrare l'ora e il meteo.
-4. Premi `Apri salvaschermo`.
-5. Nella nuova pagina, premi `Schermo intero` se il browser offre il comando.
-
-Risultato atteso: `screensaver.html` mostra la vista scelta, conservando pausa e velocità di rotazione. La pagina funziona anche se chiudi la scheda principale. Tocca o muovi il puntatore per mostrare i controlli. Le opzioni sono salvate nell'indirizzo della pagina; puoi copiarlo e riaprirlo sullo stesso hosting. Il meteo viene richiesto a Open-Meteo solo quando attivato.
-
-Per usare ISS, apri `Strumenti` o le impostazioni e attiva `ISS e osservazione`. Compaiono `ISS` e `Avvisi`. Il comando AR si trova nella sezione ISS, per un passaggio calcolato.
-
-## Verifiche
-
-```sh
-npm run check
-npm run test
-npm run build
+```bash
+npm install
+npm run dev          # http://127.0.0.1:4181
+npm run build        # dist/
 ```
 
-I test automatici coprono SGP4, Sole/ombra, proiezione del cielo, notifiche/bridge, budget del rendering, migrazione delle preferenze, salvataggio delle viste e validazione dei dati meteo. I trasporti sono verificati con simulazioni e un ricevitore HTTP locale reale; non sono state mandate notifiche all’utente o a terzi. La resa e le interazioni delle due pagine sono state provate nel browser interno; DPR 2 reale, installazione/offline completa e hardware restano da verificare.
+Dati (tutti rigenerabili, richiedono ImageMagick):
 
-## Struttura
+```bash
+node scripts/prepare-earth.mjs    # texture giorno, notte, nuvole, rilievo
+node scripts/prepare-fields.mjs   # venti GFS e correnti OSCAR
+node scripts/prepare-layers.mjs   # mare, anomalie, ghiaccio, clorofilla, pioggia, fuochi
+node scripts/prepare-stars.mjs    # Yale Bright Star Catalogue
+node tools/shots.mjs http://127.0.0.1:4181/ shots   # screenshot di QA in Chrome headless
+```
 
-- `src/`: app React/TypeScript, UI, adattatori e worker.
-- `public/`: manifest, service worker, icone, font e snapshot ISS datato.
-- `scripts/`: build e controllo indipendente opzionale Skyfield.
-- `bridge/`: scheduler personale Node per Home Assistant/Gotify/webhook; zero dipendenze npm aggiuntive.
-- `docs/`: specifica originale, conversazione recuperata, concept scelto, metodo, verifiche e stato.
-- `dist/`: build statica pronta, con asset Cesium.
-- `screensaver.html`: secondo ingresso della build; non dipende dalla scheda principale.
-- `upari-history.bundle`: storia Git trasportabile, quando presente nella consegna.
+Tastiera: spazio pausa, frecce capitoli, I approfondimento, F schermo intero, + e − zoom.
 
-## Bridge Home Assistant — ✈️ STE100
+## Aggiornamento quotidiano
 
-Requisiti: Node.js 22+, Home Assistant raggiungibile e un reverse proxy HTTPS. Il bridge ascolta solo su localhost per impostazione predefinita.
+Il workflow [`pages.yml`](.github/workflows/pages.yml) gira ogni giorno alle 10:41 UTC (dopo che NASA pubblica i dati del giorno prima), a ogni push su `main` e a richiesta. Scarica venti, mare, anomalie, ghiaccio, fitoplancton, 24 ore di pioggia, fuochi e l'orbita della ISS, ricostruisce il sito e lo pubblica su GitHub Pages: https://enuzzo.github.io/upari/
 
-1. Configura le variabili elencate in `bridge/.env.example` nel tuo service manager.
-2. Crea un token bridge casuale di almeno 32 caratteri.
-3. Imposta il token Home Assistant nel processo del bridge.
-4. Imposta `UPARI_HA_SERVICE` al tuo servizio `notify.mobile_app_*`.
-5. Imposta `UPARI_ALLOWED_ORIGIN` all’origine HTTPS di Upari.
-6. Esegui `node bridge/server.mjs`.
-7. Esponi il bridge tramite il reverse proxy HTTPS.
-8. Inserisci l’URL del bridge e il suo token nella sezione `Avvisi` di Upari.
-9. Premi `Invia piano al bridge`.
+I dati freschi non vengono committati: il repository conserva un'istantanea verificata, che il sito usa ogni volta che una fonte è in ritardo, incompleta o irraggiungibile (il riepilogo del workflow lo segnala). Uno strato nuovo entra solo se la sua copertura è almeno l'80% di quella dell'istantanea (il ghiaccio, che cambia con le stagioni, il 50% e con ghiaccio a entrambi i poli; la pioggia con almeno 20 fotogrammi su 24; i fuochi con almeno il 30% delle celle; il vento con il 95% della griglia). Correnti, rilievo, texture e stelle sono statici.
 
-Risultato atteso: il bridge salva il piano e invia gli eventi validi anche a pagina chiusa. Riapri Upari e invia un nuovo piano per aggiornare le successive 48 ore. `UPARI_PRESENCE_ENTITY` e `UPARI_WEATHER_ENTITY` sono filtri facoltativi. Il token HA non entra nel browser.
+GitHub sospende i workflow pianificati dopo 60 giorni senza attività sul repository: per evitarlo, il primo di ogni mese il workflow committa gli elementi orbitali aggiornati della ISS. Se fosse comunque sospeso, si riattiva dalla scheda Actions.
 
-API bridge: `GET /status`, `PUT /plan`, `DELETE /plan`, con bearer token. Se montato sotto `/upari`, il proxy deve rimuovere il prefisso.
-
-Lo scheduler registra la presa in carico prima dell’invio: evita duplicati dopo un crash, ma può perdere un invio se muore fra la registrazione e la richiesta HTTP. Gli avvisi in ritardo oltre 60 s sono scartati. Non è una promessa di consegna esatta una volta.
-
-## Licenze
-
-Codice originale della distribuzione corrente: **Apache-2.0** con [NOTICE](NOTICE) per i crediti a enuzzo e alla repository. Chi redistribuisce conserva licenza e attribuzioni secondo la sezione4; non è imposto un banner nell’interfaccia. Le revisioni storiche già MIT rimangono MIT. Cesium: Apache-2.0; React, satellite.js, lucide e altre dipendenze conservano le rispettive licenze. I font sono SIL OFL. Dati NASA, orbitali, EOX e statistici hanno fonti/attribuzioni proprie. Vedere `docs/SOURCES.md` e `THIRD_PARTY_NOTICES.md`.
+La versione precedente (0.7.x, Cesium e React) resta nella storia git.

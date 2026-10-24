@@ -1,28 +1,41 @@
 # Third-party notices
 
-Application code in the current distribution is original and Apache-2.0 licensed; see LICENSE and NOTICE. Historical revisions already licensed under MIT retain that license. No application code or assets from the researched ISS-tracker reference repository were copied.
+Upari's own code is licensed under the Apache License 2.0 (see LICENSE and NOTICE). The libraries, fonts, imagery and datasets below keep their own licences and attribution requirements. Using them does not imply endorsement by their authors or by the agencies that produce them.
 
-- CesiumJS / @cesium: Apache License 2.0. Keep the included package notices and runtime credits.
-- React and React DOM: MIT.
-- satellite.js: MIT.
-- idb: ISC.
-- lucide: ISC.
-- Vite, TypeScript, Vitest and build dependencies: see their package licenses; they are reproducibly installed from `package-lock.json`.
-- DM Sans and Space Grotesk: SIL Open Font License; license files are in `public/fonts`.
-- NASA EOSDIS GIBS / Blue Marble / Black Marble: keep the source/product/date and scientific attribution. NASA imagery does not imply NASA endorsement.
-- CelesTrak orbital data: retain source and epoch; follow the linked usage policy.
-- Sentinel-2 cloudless2016, EOX IT Services GmbH: CC BY4.0; Contains modified Copernicus Sentinel data2016 &2017. https://cloudless.eox.at/pricing . Attribution displayed by Cesium. Only2016 is used, not later NC releases. Esri World Imagery was removed in0.5.0. NASA Blue Marble remains the orbital base.
-- Open-Meteo: optional external weather data for the screensaver. Source/model attribution is displayed; see https://open-meteo.com/en/docs and https://open-meteo.com/en/terms for service and data conditions.
+## Code
 
-The selected design concept is a generated UI reference, not a scientific Earth asset and not a rendered screenshot of this implementation.
+- **three.js** — Copyright © 2010-2024 three.js authors. MIT License (text below). https://github.com/mrdoob/three.js
+- **satellite.js** — Copyright (C) 2013 Shashwat Kandadai, UCSC Jack Baskin School of Engineering. MIT License (text below). https://github.com/shashwatak/satellite-js
+- Vite, TypeScript, Vitest and the other build tools are used only to build the site and keep their own package licences (see `package-lock.json`).
 
-- OSCAR / Earth & Space Research, distributed by NOAA CoastWatch ERDDAP: historical 2014 surface velocity data, source/epoch/method retained. https://coastwatch.pfeg.noaa.gov/erddap/info/jplOscar/index.html . Dataset conditions and scientific limitations remain separate from the application's Apache-2.0 license.
-- ASCAT Metop-C marine wind, EUMETSAT/product contributors, distributed by NOAA OceanWatch: 2026-10-10 daily composite. https://coastwatch.pfeg.noaa.gov/erddap/info/erdQCwindproducts1day/index.html . Keep product attribution and date; no NOAA/EUMETSAT endorsement.
-- SWISSIMAGE, ©swisstopo: official regional mosaic with differing acquisition years; credits displayed by Cesium. https://www.swisstopo.admin.ch/it/ortofoto-swissimage-10-cm . Coverage includes surrounding SPOT5 historical imagery as documented by the WMTS service.
-- Optional scientific distributor tooling: xarray, numpy, scipy, h5netcdf/h5py retain their package licenses. They are not included in the PWA or mandatory Node dependencies.
+## Fonts
 
-- World Bank World Development Indicators: six individually verified CC BY4.0 indicators; original UN/ILO/national statistical/Eurostat provenance retained. Natural balance is derived by Upari. https://datacatalog.worldbank.org/public-licenses#cc-by and https://data.worldbank.org/summary-terms-of-use .
-- UNHCR Refugee Population Statistics Database, AsylumApplications: CC BY4.0; Upari subset/annual sums/schematic relations described in docs/STATISTICAL_ATLAS.md. https://refugeedata.unhcr.org/en/terms-and-conditions-of-use/ .
-- Natural Earth1:110m countries: public domain. https://www.naturalearthdata.com/about/terms-of-use/ . Contemporary generalized boundaries, not historical reconstructions or political endorsement.
+- **Instrument Serif** and **Inter Tight**, loaded from Google Fonts — SIL Open Font License 1.1. They are not redistributed in this repository.
 
-- Eurostat nrg_ind_ren A/REN/PC, EU27 2004–2024: statistical reuse policy with attribution, not the CC BY license of editorial text. Selection/translation by Upari; Eurostat is not responsible for this reuse. Method break RED I/RED II in 2021; see docs/STATISTICAL_ATLAS.md and https://ec.europa.eu/eurostat/help/copyright-notice .
+## Imagery and data
+
+Files in `public/` are derived from the sources below by the scripts in `scripts/`. The GitHub Actions workflow regenerates the daily layers every day; the committed copies are a validated fallback snapshot.
+
+- **NASA Global Imagery Browse Services (GIBS)** — Blue Marble Next Generation, VIIRS Black Marble 2016, GHRSST, PACE and GPM layers. "We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS)." https://www.earthdata.nasa.gov/gibs
+- **NASA Visible Earth**, cloud composite (NASA Goddard Space Flight Center). https://visibleearth.nasa.gov/
+- **GHRSST MUR** sea surface temperature and anomalies — NASA JPL, distributed through GIBS.
+- **GHRSST GAMSSA** sea ice concentration — Australian Bureau of Meteorology, distributed through GIBS.
+- **NASA PACE OCI** chlorophyll-a — NASA Ocean Biology Processing Group, distributed through GIBS.
+- **NASA GPM IMERG** precipitation rate, 30-minute Early Run — distributed through GIBS.
+- **NASA FIRMS**, VIIRS NOAA-20 active fires (375 m). "We acknowledge the use of data and/or imagery from NASA's Fire Information for Resource Management System (FIRMS), part of NASA's Earth Science Data and Information System (ESDIS)." https://firms.modaps.eosdis.nasa.gov/
+- **NOAA GFS** 10 m winds, 0.5° — U.S. National Weather Service, distributed by PacIOOS ERDDAP. https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global.html
+- **OSCAR** surface currents, 26 September 2014 — Earth & Space Research / NASA, distributed by NOAA CoastWatch ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap/info/jplOscar/index.html
+- **Terrain Tiles** (Mapzen, hosted on AWS Open Data), used to derive the relief texture. Required attribution: ArcticDEM terrain data DEM(s) were created from DigitalGlobe, Inc., imagery and funded under National Science Foundation awards 1043681, 1559691, and 1542736; Australia terrain data © Commonwealth of Australia (Geoscience Australia) 2017; Austria terrain data © offene Daten Österreichs – Digitales Geländemodell (DGM) Österreich; Canada terrain data contains information licensed under the Open Government Licence – Canada; Europe terrain data produced using Copernicus data and information funded by the European Union - EU-DEM layers; Global ETOPO1 terrain data U.S. National Oceanic and Atmospheric Administration; Mexico terrain data source: INEGI, Continental relief, 2016; New Zealand terrain data Copyright 2011 Crown copyright (c) Land Information New Zealand and the New Zealand Government (All rights reserved); Norway terrain data © Kartverket; United Kingdom terrain data © Environment Agency copyright and/or database right 2015. All rights reserved; United States 3DEP (formerly NED) and global GMTED2010 and SRTM terrain data courtesy of the U.S. Geological Survey. https://github.com/tilezen/joerd/blob/master/docs/attribution.md
+- **EOxCloudless 2016** (Sentinel-2 cloudless) https://cloudless.eox.at by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2016 & 2017) — CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ . Tiles are loaded at runtime for close-ups, lit and blended by Upari's shaders, and credited on screen while visible; they are not redistributed.
+- **CelesTrak** general perturbations elements for the ISS (NORAD 25544). The workflow refreshes `public/sky/iss.json` once a day; visitors contact CelesTrak only if that copy is more than two days old. https://celestrak.org/
+- **Yale Bright Star Catalogue**, 5th revised edition (Hoffleit & Warren, 1991), via the JSON edition at https://github.com/brettonw/YaleBrightStarCatalog — Copyright (c) 2016 Bretton Wade, MIT License (text below).
+
+## MIT License text
+
+Applies to three.js, satellite.js and the YaleBrightStarCatalog JSON edition, with the copyright lines given above.
+
+> Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+>
+> The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

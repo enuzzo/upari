@@ -1,2 +1,117 @@
 <!doctype html>
-<html lang="it"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/><meta name="theme-color" content="#060b13"/><meta name="description" content="Esplora la Terra, scegli una vista e trasformala in un salvaschermo. ISS opzionale."/><link rel="icon" type="image/svg+xml" href="/icon.svg"/><link rel="manifest" href="/manifest.webmanifest"/><link rel="apple-touch-icon" href="/icon-192.png"/><title>Upari · Esplora la Terra</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#030407" />
+  <meta name="description" content="Upari: il pianeta Terra raccontato dai dati satellitari di oggi. Venti, correnti, mari, pioggia, fuochi, ghiaccio, luci e la Stazione Spaziale." />
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet" />
+  <title>Upari · Il pianeta, adesso</title>
+</head>
+<body>
+  <canvas id="scene" aria-label="Il globo terrestre"></canvas>
+
+  <div class="anchors" id="anchors"></div>
+
+  <div class="probe" id="probe" aria-hidden="true">
+    <span class="probe-ring"></span>
+    <span class="probe-text"><b></b><small></small></span>
+  </div>
+
+  <header class="top">
+    <button class="brand" id="brand" aria-label="Torna all’inizio">Upari</button>
+    <div class="top-actions">
+      <span class="clock" id="clock"></span>
+      <button class="icon-btn" id="credits-btn" aria-label="Fonti e crediti" title="Fonti e crediti">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>
+      </button>
+      <button class="icon-btn" id="fs-btn" aria-label="Schermo intero" title="Schermo intero (F)">
+        <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="caption hidden" id="caption" aria-live="polite">
+    <div class="kicker"><span class="num" id="cap-num"></span><span id="cap-kicker"></span></div>
+    <h1 class="title" id="cap-title"></h1>
+    <p class="line" id="cap-line"></p>
+    <div class="cap-actions">
+      <button class="more" id="more-btn"><span>Scopri di più</span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <span class="data-clock" id="data-clock"></span>
+    </div>
+  </section>
+
+  <aside class="legend" id="legend" aria-hidden="true">
+    <div class="legend-title" id="legend-title"></div>
+    <div class="legend-bar" id="legend-bar"></div>
+    <div class="legend-ends"><span id="legend-left"></span><span id="legend-right"></span></div>
+  </aside>
+
+  <nav class="rail" id="rail" aria-label="Capitoli">
+    <button class="play" id="play-btn" aria-label="Pausa">
+      <svg class="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>
+      <svg class="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></svg>
+    </button>
+    <ol class="chapters" id="chapters"></ol>
+    <div class="zoom">
+      <button class="icon-btn" id="zoom-in" aria-label="Avvicina"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button class="icon-btn" id="zoom-out" aria-label="Allontana"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+    </div>
+  </nav>
+
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <button class="icon-btn drawer-close" id="drawer-close" aria-label="Chiudi"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="drawer-kicker" id="drawer-kicker"></div>
+    <h2 id="drawer-title"></h2>
+    <div class="facts" id="drawer-facts"></div>
+    <p class="drawer-text" id="drawer-text"></p>
+    <p class="drawer-source" id="drawer-source"></p>
+  </aside>
+
+  <div class="tile-credit" id="tile-credit"><a href="https://cloudless.eox.at" target="_blank" rel="noopener">EOxCloudless 2016</a> di EOX IT Services GmbH · contiene dati Copernicus Sentinel 2016 e 2017 modificati · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></div>
+
+  <div class="hint" id="hint">Trascina per ruotare · rotella per avvicinarti · tocca un punto per leggerlo</div>
+
+  <div class="veil" id="veil">
+    <div class="intro" id="intro">
+      <div class="intro-mark">Upari</div>
+      <p class="intro-line">Il pianeta, raccontato dai suoi dati di oggi.</p>
+      <div class="intro-actions">
+        <button class="cta" id="start-btn">Inizia il racconto</button>
+        <button class="ghost" id="explore-btn">Esplora da solo</button>
+      </div>
+      <div class="loader" id="loader"><span id="loader-bar"></span></div>
+    </div>
+  </div>
+
+  <div class="credits" id="credits" aria-hidden="true">
+    <div class="credits-inner">
+      <button class="icon-btn drawer-close" id="credits-close" aria-label="Chiudi"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <h2>Da dove vengono queste immagini</h2>
+      <p>Tutto quello che vedi è un dato vero. Nessuna immagine è inventata: dove i satelliti non vedono, la mappa sfuma.</p>
+      <ul>
+        <li><b>Terra di giorno</b> NASA Blue Marble Next Generation, via NASA GIBS</li>
+        <li><b>Terra di notte</b> NASA Black Marble, VIIRS 2016, via NASA GIBS</li>
+        <li><b>Nuvole</b> NASA Visible Earth, composito delle nuvole</li>
+        <li><b>Rilievo</b> Mapzen Terrain Tiles su AWS: USGS SRTM e GMTED2010, NOAA ETOPO1, EU-DEM Copernicus e altri modelli nazionali</li>
+        <li><b>Da vicino</b> <a href="https://cloudless.eox.at" target="_blank" rel="noopener">EOxCloudless 2016</a> di EOX IT Services GmbH (contiene dati Copernicus Sentinel 2016 e 2017 modificati), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></li>
+        <li><b>Venti</b> NOAA GFS 0,5°, via PacIOOS ERDDAP</li>
+        <li><b>Correnti</b> OSCAR, ESR / NASA, via NOAA CoastWatch ERDDAP</li>
+        <li><b>Mare e anomalie</b> GHRSST MUR, NASA JPL, via NASA GIBS</li>
+        <li><b>Ghiaccio</b> GHRSST GAMSSA, Bureau of Meteorology australiano, via NASA GIBS</li>
+        <li><b>Fitoplancton</b> NASA PACE OCI, via NASA GIBS</li>
+        <li><b>Pioggia</b> NASA GPM IMERG, via NASA GIBS</li>
+        <li><b>Fuochi</b> NASA FIRMS, VIIRS NOAA-20</li>
+        <li><b>Stazione Spaziale</b> elementi orbitali CelesTrak, propagazione SGP4 con satellite.js</li>
+        <li><b>Stelle</b> Yale Bright Star Catalogue</li>
+      </ul>
+      <p class="credits-foot">I dati del giorno si aggiornano ogni mattina. Immagini fornite dai servizi NASA GIBS, parte di NASA ESDIS. Attribuzioni e licenze complete in <a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener">THIRD_PARTY_NOTICES</a>. Upari è software libero, licenza Apache 2.0: <a href="https://github.com/enuzzo/upari" target="_blank" rel="noopener">codice sorgente</a>.</p>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

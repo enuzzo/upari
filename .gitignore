@@ -1,22 +1,19 @@
 node_modules/
 dist/
-.openai/runtime/
-.sites-runtime/
 *.zip
 .env*
-!/.env.example
-!bridge/.env.example
-bridge-data/
 *.tsbuildinfo
-.qa-ephemerides/
-
 .DS_Store
-/upari-history.bundle
-/DELIVERY.json
-
-/public/cesium/
-
 __pycache__/
 *.pyc
+/shots/
 
+# Local material from the 0.7 MVP, kept on disk but never published
+/upari-history.bundle
+/DELIVERY.json
+/.qa-ephemerides/
 /.references/
+/.openai/
+/bridge-data/
+/node_modules 2/
+/public/cesium/

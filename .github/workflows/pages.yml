@@ -1,0 +1,144 @@
+name: Dati del giorno e pubblicazione
+
+# Every day: fetch today's planet (winds, sea, ice, plankton, rain, fires, ISS orbit),
+# rebuild the site and publish it on GitHub Pages. Also runs on every push to main.
+# 10:41 UTC comes after NASA publishes yesterday's GHRSST MUR and GAMSSA days.
+# Fresh data are not committed: the repository keeps a validated snapshot that is
+# used whenever a source is late, partial or unreachable.
+'on':
+  schedule:
+    - cron: '41 10 * * *'
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.repository == 'enuzzo/upari'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Leggi il codice
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: ImageMagick
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends imagemagick
+          convert -version | head -1
+
+      - name: Dipendenze
+        run: npm ci --no-audit --no-fund
+
+      - name: Dati del giorno
+        id: refresh
+        # A source that fails keeps its published snapshot; the site is rebuilt anyway.
+        continue-on-error: true
+        timeout-minutes: 25
+        env:
+          MAGICK_BIN: convert
+          UPARI_TMP: ${{ runner.temp }}/upari
+          UPARI_DEADLINE_MIN: '20'
+        run: |
+          status=0
+          node scripts/prepare-fields.mjs wind || status=1
+          node scripts/prepare-layers.mjs sst anomaly ice chlorophyll rain fires || status=1
+          exit $status
+
+      - name: Orbita della ISS
+        # One request a day to CelesTrak instead of one per visitor.
+        continue-on-error: true
+        timeout-minutes: 2
+        run: |
+          curl -fsS --max-time 60 'https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=JSON' -o "$RUNNER_TEMP/iss.json"
+          node -e 'const [o]=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")); if(!o||o.NORAD_CAT_ID!==25544||!o.EPOCH) process.exit(1)' "$RUNNER_TEMP/iss.json"
+          cp "$RUNNER_TEMP/iss.json" public/sky/iss.json
+
+      - name: Riepilogo dei dati
+        if: always()
+        run: |
+          {
+            echo '## Dati pubblicati'
+            echo
+            echo '| Strato | Date | Copertura |'
+            echo '|---|---|---|'
+            for f in public/layers/sst.json public/layers/anomaly.json public/layers/ice.json public/layers/chlorophyll.json; do
+              node -e 'const m=require("./"+process.argv[1]); console.log(`| ${m.id} | ${(m.dates||[]).at(-1)} → ${(m.dates||[])[0]} | ${m.coverage ?? "n/d"} |`)' "$f"
+            done
+            node -e 'const m=require("./public/layers/rain.json"); console.log(`| pioggia | ${m.frames[0].time} → ${m.frames.at(-1).time} | ${m.frames.length} fotogrammi |`)'
+            node -e 'const m=require("./public/layers/fires.json"); console.log(`| fuochi | fino al ${m.newest} | ${m.detections} rilevamenti |`)'
+            node -e 'const m=require("./public/fields/wind.json"); console.log(`| vento | ${m.time} | ${m.valid} celle |`)'
+            node -e 'const [o]=require("./public/sky/iss.json"); console.log(`| ISS | epoca ${o.EPOCH} | |`)'
+            echo
+            if [ "${{ steps.refresh.outcome }}" != "success" ]; then
+              echo '> Almeno una fonte non era disponibile o incompleta: per quella resta la versione precedente.'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Build
+        run: npm run build
+
+      - name: Prepara Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - name: Carica il sito
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist
+
+  # Scheduled workflows stop after 60 days without repository activity:
+  # once a month, commit the fresh ISS elements to keep the daily refresh alive.
+  keepalive:
+    if: github.event_name == 'schedule' && github.repository == 'enuzzo/upari'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Primo del mese?
+        id: day
+        run: echo "first=$([ "$(date -u +%d)" = 01 ] && echo yes || echo no)" >> "$GITHUB_OUTPUT"
+      - name: Leggi il codice
+        if: steps.day.outputs.first == 'yes'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Aggiorna e committa l'orbita della ISS
+        if: steps.day.outputs.first == 'yes'
+        run: |
+          curl -fsS --max-time 60 'https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=JSON' -o "$RUNNER_TEMP/iss.json"
+          node -e 'const [o]=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")); if(!o||o.NORAD_CAT_ID!==25544||!o.EPOCH) process.exit(1)' "$RUNNER_TEMP/iss.json"
+          cp "$RUNNER_TEMP/iss.json" public/sky/iss.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/sky/iss.json
+          git diff --cached --quiet || git commit -m 'Aggiorna gli elementi orbitali della ISS'
+          git push
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Pubblica
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

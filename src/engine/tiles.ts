@@ -100,7 +100,7 @@ export class Tiles {
 
   private load(t: Tile, renderer: WebGLRenderer) {
     if (t.failed && t.tries < 3 && this.frame - t.failedAt > 600) t.failed = false;
-    if (t.loading || t.texture || t.failed || this.inflight > 16) return;
+    if (t.loading || t.texture || t.failed || this.inflight >= 24) return;
     t.loading = true;
     t.tries++;
     this.inflight++;
@@ -181,32 +181,33 @@ export class Tiles {
     const want: Tile[] = [];
     for (const c of accepted) {
       if (c.z < 3) continue;
-      const key = `${c.z}/${c.x}/${c.y}`;
-      let t = this.tiles.get(key);
-      if (!t) { t = { key, z: c.z, x: c.x, y: c.y, mesh: null, texture: null, loading: false, failed: false, tries: 0, failedAt: 0, lastUsed: 0, fade: 0 }; this.tiles.set(key, t); }
-      want.push(t);
+      want.push(this.entry(c.z, c.x, c.y));
     }
 
     // Draw wanted tiles; while one is loading, keep its loaded ancestor visible.
     const show = new Set<Tile>();
-    const ancestor = (t: Tile, load: boolean): Tile | null => {
+    const ancestor = (t: Tile): Tile | null => {
       for (let z = t.z - 1, x = t.x >> 1, y = t.y >> 1; z >= 3; z--, x >>= 1, y >>= 1) {
         const a = this.tiles.get(`${z}/${x}/${y}`);
         if (a?.mesh) return a;
-        if (load && a && !a.texture && !a.failed && !a.loading) this.load(a, renderer);
       }
       return null;
     };
+    // Coarse first: after a long flight the view is covered by Sentinel-2 in a moment, then sharpens.
+    // A missing tile also asks for its grandparent, which arrives sooner and covers its neighbours too.
+    const order = [...want];
+    for (const t of want) if (!t.mesh && t.z - 2 >= 3) { const a = this.entry(t.z - 2, t.x >> 2, t.y >> 2); a.lastUsed = this.frame; order.push(a); }
+    order.sort((a, b) => a.z - b.z);
+    for (const t of order) this.load(t, renderer);
     for (const t of want) {
       t.lastUsed = this.frame;
-      this.load(t, renderer);
-      const s = t.mesh ? t : ancestor(t, true);
+      const s = t.mesh ? t : ancestor(t);
       if (s) { s.lastUsed = this.frame; show.add(s); }
     }
     // A tile fading in sits on its parent; a parent coming back takes over at once from its children.
     const under = new Set<Tile>();
     for (const t of show) {
-      if (t.fade < 1) { const a = ancestor(t, false); if (a && !show.has(a)) { a.lastUsed = this.frame; under.add(a); } }
+      if (t.fade < 1) { const a = ancestor(t); if (a && !show.has(a)) { a.lastUsed = this.frame; under.add(a); } }
     }
     for (const t of show) {
       if (t.fade > 0) continue;
@@ -238,6 +239,13 @@ export class Tiles {
       else u.uTileEdge.value.set(0, 0, 0, 0);
     }
     if (this.frame % 60 === 0) this.evict(this.frame - 600);
+  }
+
+  private entry(z: number, x: number, y: number): Tile {
+    const key = `${z}/${x}/${y}`;
+    let t = this.tiles.get(key);
+    if (!t) { t = { key, z, x, y, mesh: null, texture: null, loading: false, failed: false, tries: 0, failedAt: 0, lastUsed: 0, fade: 0 }; this.tiles.set(key, t); }
+    return t;
   }
 
   /** Split tiles until no two neighbours differ by more than one level. */

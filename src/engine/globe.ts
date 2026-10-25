@@ -9,7 +9,7 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { CameraRig } from './camera';
 import { createAtmosphere, createEarth, earthUniforms, type EarthUniforms } from './earth';
 import { createSky, createSun } from './sky';
-import { FlowField } from './flow';
+import { FlowField, coherenceTexture } from './flow';
 import { FLOW_COLORS } from './palettes';
 import { createFires, Station } from './markers';
 import { DATA, LayerStore, Sampler, loadTexture, type DataId, type LayerMeta } from './layers';
@@ -185,7 +185,11 @@ export class Globe {
     const tex = await loadTexture(`fields/${id}.png`, { mipmaps: false });
     const style = id === 'wind'
       ? { scale: meta.scale, speed: 22000, vmax: 26, colors: FLOW_COLORS.wind as unknown as [number, number, number][], life: 7, fade: 0.988, intensity: 0.28 }
-      : { scale: meta.scale, speed: 240000, vmax: 1.2, colors: FLOW_COLORS.currents as unknown as [number, number, number][], life: 9, fade: 0.99, intensity: 0.3, curve: [0.0, 2.0] as [number, number] };
+      : {
+        scale: meta.scale, speed: 240000, vmax: 1.2, colors: FLOW_COLORS.currents as unknown as [number, number, number][], life: 9, fade: 0.99, intensity: 0.3, curve: [0.0, 2.0] as [number, number],
+        // Eddies (about 1-2° across) cancel out over ±5 texels (±1.7°); steady currents do not.
+        weight: coherenceTexture(tex.image as HTMLImageElement, 5),
+      };
     const flow = new FlowField(this.renderer, tex, style, id === 'wind' ? 192 : 256, [2048, 1024]);
     this.flows[id] = flow;
     this.flowSamplers[id] = { s: Sampler.fromImage(tex.image as HTMLImageElement, id === 'wind' ? 720 : 1080), scale: meta.scale };

@@ -17,7 +17,66 @@ export interface FlowStyle {
   fade: number;
   intensity: number;
   curve?: [number, number];
+  /** Per-place brightness, 0..1 (see coherenceTexture). */
+  weight?: Texture;
 }
+
+/**
+ * How organised the flow is around each place: |mean velocity| / mean speed over a
+ * box of `radius` texels. A steady current scores near 1; eddies, whose velocities
+ * cancel, score low. Used to calm the eddies without hiding them.
+ */
+export function coherenceTexture(img: CanvasImageSource & { width: number; height: number }, radius: number): DataTexture {
+  const W = img.width, H = img.height;
+  const c = new OffscreenCanvas(W, H);
+  const ctx = c.getContext('2d', { willReadFrequently: true })!;
+  ctx.drawImage(img, 0, 0);
+  const px = ctx.getImageData(0, 0, W, H).data;
+  const n = W * H;
+  const ch = [new Float32Array(n), new Float32Array(n), new Float32Array(n), new Float32Array(n)]; // u, v, speed, valid
+  for (let i = 0; i < n; i++) {
+    if (px[i * 4 + 2] < 128) continue;
+    const u = px[i * 4] / 255 - 0.5, v = px[i * 4 + 1] / 255 - 0.5;
+    ch[0][i] = u; ch[1][i] = v; ch[2][i] = Math.hypot(u, v); ch[3][i] = 1;
+  }
+  // Separable box sums; longitude wraps, latitude clamps.
+  const tmp = new Float32Array(n);
+  for (const a of ch) {
+    for (let y = 0; y < H; y++) {
+      let s = 0;
+      for (let k = -radius; k <= radius; k++) s += a[y * W + ((k % W) + W) % W];
+      for (let x = 0; x < W; x++) {
+        tmp[y * W + x] = s;
+        s += a[y * W + (x + radius + 1) % W] - a[y * W + ((x - radius) % W + W) % W];
+      }
+    }
+    for (let x = 0; x < W; x++) {
+      for (let y = 0; y < H; y++) {
+        let s = 0;
+        for (let k = Math.max(0, y - radius); k <= Math.min(H - 1, y + radius); k++) s += tmp[k * W + x];
+        a[y * W + x] = s;
+      }
+    }
+  }
+  const out = new Uint8Array(n * 4);
+  for (let i = 0; i < n; i++) {
+    const k = ch[2][i] > 1e-6 ? Math.hypot(ch[0][i], ch[1][i]) / ch[2][i] : 0;
+    out[i * 4] = out[i * 4 + 1] = out[i * 4 + 2] = Math.round(Math.min(1, k) * 255);
+    out[i * 4 + 3] = 255;
+  }
+  // Rows go south to north in WebGL, like the field texture once flipped.
+  const flipped = new Uint8Array(n * 4);
+  for (let y = 0; y < H; y++) flipped.set(out.subarray(y * W * 4, (y + 1) * W * 4), (H - 1 - y) * W * 4);
+  const t = new DataTexture(flipped, W, H, RGBAFormat);
+  t.magFilter = t.minFilter = LinearFilter;
+  t.wrapS = RepeatWrapping;
+  t.wrapT = ClampToEdgeWrapping;
+  t.needsUpdate = true;
+  return t;
+}
+
+const white = new DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1, RGBAFormat);
+white.needsUpdate = true;
 
 const quadVertex = /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
 
@@ -61,16 +120,19 @@ const drawVertex = /* glsl */ `
 precision highp float;
 uniform sampler2D uCurr;
 uniform sampler2D uField;
+uniform sampler2D uWeight;
 uniform float uScale;
 uniform float uVmax;
 uniform float uSize;
 attribute vec2 ref;
 varying float vSpeed;
 varying float vAge;
+varying float vWeight;
 void main() {
   vec4 b = texture2D(uCurr, ref);
   vec4 f = texture2D(uField, b.xy);
   vSpeed = clamp(length((f.rg - 0.5) * 2.0 * uScale) / uVmax, 0.0, 1.0);
+  vWeight = texture2D(uWeight, b.xy).r;
   vAge = b.z;
   bool skip = f.b < 0.5 || b.z < 0.02;
   gl_Position = skip ? vec4(2.0, 2.0, 2.0, 1.0) : vec4(b.xy * 2.0 - 1.0, 0.0, 1.0);
@@ -83,15 +145,18 @@ precision highp float;
 uniform vec3 uColors[5];
 uniform float uIntensity;
 uniform vec2 uCurve; // x: floor, y: gamma
+uniform vec2 uCalm;  // coherence below x is dimmed to y
 varying float vSpeed;
 varying float vAge;
+varying float vWeight;
 void main() {
   float x = vSpeed * 4.0;
   int i = int(min(floor(x), 3.0));
   vec3 c = mix(uColors[i], uColors[i + 1], fract(x));
   if (x >= 4.0) c = uColors[4];
   float fadeIn = smoothstep(0.0, 0.8, vAge);
-  gl_FragColor = vec4(c * uIntensity * fadeIn * (uCurve.x + 1.1 * pow(vSpeed, uCurve.y)), 1.0);
+  float calm = mix(uCalm.y, 1.0, smoothstep(uCalm.x * 0.35, uCalm.x, vWeight));
+  gl_FragColor = vec4(c * uIntensity * fadeIn * calm * (uCurve.x + 1.1 * pow(vSpeed, uCurve.y)), 1.0);
 }
 `;
 
@@ -175,7 +240,8 @@ export class FlowField {
     while (colors.length < 5) colors.push(colors[colors.length - 1].clone());
     this.drawMat = new ShaderMaterial({
       uniforms: {
-        uCurr: { value: null }, uField: { value: field }, uScale: { value: style.scale }, uSize: { value: 1.6 },
+        uCurr: { value: null }, uField: { value: field }, uWeight: { value: style.weight ?? white }, uCalm: { value: new Vector2(0.8, style.weight ? 0.22 : 1) },
+        uScale: { value: style.scale }, uSize: { value: 1.6 },
         uVmax: { value: style.vmax }, uColors: { value: colors.slice(0, 5) }, uIntensity: { value: style.intensity }, uCurve: { value: new Vector2(...(style.curve ?? [0.15, 1.3])) },
       },
       vertexShader: drawVertex, fragmentShader: drawFragment, blending: AdditiveBlending, depthTest: false, depthWrite: false, transparent: true,

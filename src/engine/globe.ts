@@ -13,7 +13,7 @@ import { FlowField, coherenceTexture } from './flow';
 import { FLOW_COLORS } from './palettes';
 import { createFires, Station } from './markers';
 import { DATA, LayerStore, Sampler, loadTexture, type DataId, type LayerMeta } from './layers';
-import { gmst, lonLatToVec, sunDirection, vecToLonLat } from './astro';
+import { gmst, lonLatToVec, moonBrightness, moonDirection, sunDirection, vecToLonLat } from './astro';
 import { Tiles } from './tiles';
 
 export type FlowId = 'wind' | 'currents';
@@ -98,6 +98,7 @@ export class Globe {
   private sun = createSun();
   private tiles: Tiles | null = null;
   private sunVec = new Vector3(1, 0, 0);
+  private moonVec = new Vector3(1, 0, 0);
   private studioVec = new Vector3();
   private pinVec = new Vector3();
   private raycaster = new Raycaster();
@@ -105,7 +106,7 @@ export class Globe {
   /** Simulated time. Runs at real speed unless scrubbed. */
   timeOffset = 0;
   /** Master gains, tuned by eye. */
-  tune = { atmo: 5, haze: 0.6, limb: 2, sun: 2.2, night: 3.2, relief: 9, bloom: 0.6 };
+  tune = { atmo: 5, haze: 0.6, limb: 2, sun: 2.2, night: 3.2, relief: 9, bloom: 0.6, moon: 0.06, airglow: 0.05 };
   rainSpeed = 1.8;
   onFrame: (dt: number) => void = () => {};
 
@@ -287,6 +288,11 @@ export class Globe {
     u.uHaze.value = this.tune.haze * (0.45 + 0.55 * lowS);
     u.uLimb.value = this.tune.limb;
     u.uGlint.value = 1 - c.studio;
+    // Moonlight and airglow are real but faint: exposed like a long night photograph.
+    moonDirection(date, this.moonVec);
+    const nightK = Math.min(1, c.night) * (1 - c.studio);
+    u.uMoon.value.set(this.moonVec.x, this.moonVec.y, this.moonVec.z, this.tune.moon * moonBrightness(this.sunVec, this.moonVec) * nightK);
+    u.uAirglow.value = this.tune.airglow * nightK;
     this.renderer.toneMappingExposure = c.exposure;
     this.bloom.strength = this.tune.bloom * c.bloom;
     this.sun.place(this.sunVec);

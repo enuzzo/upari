@@ -59,6 +59,7 @@ uniform float uDataFx;   // 1: rain, drawn as falling streaks instead of a glowi
 uniform sampler2D uTrail;
 uniform float uTrailGain;
 
+uniform vec4 uMoon;      // xyz: direction, w: moonlight at the ground
 uniform vec4 uPin;       // xyz: direction, w: intensity
 uniform vec3 uPinColor;
 
@@ -153,7 +154,13 @@ void main() {
   float nl = max(dot(n, L), 0.0);
   float NL = dot(N, L);
   vec3 sky = vec3(0.03, 0.06, 0.12) * smoothstep(-0.25, 0.3, NL) + vec3(0.004, 0.006, 0.011);
-  vec3 surface = albedo * (sunT * nl * (1.0 - cloudShadow * 0.55) * uSunPower + sky);
+  // Twilight: past the terminator the sky still lights the ground, warm at first, then blue.
+  float below = max(-NL, 0.0);
+  sky += mix(vec3(0.15, 0.085, 0.06), vec3(0.025, 0.04, 0.10), smoothstep(0.0, 0.07, below)) * exp(-abs(NL + 0.012) / 0.05) * 0.8;
+  // Moonlight, from the real Moon and its phase; drawn cool, as the eye sees the night.
+  float night = smoothstep(0.06, -0.12, NL);
+  vec3 moonC = vec3(0.62, 0.74, 1.0) * uMoon.w * night;
+  vec3 surface = albedo * (sunT * nl * (1.0 - cloudShadow * 0.55) * uSunPower + sky + moonC * max(dot(n, uMoon.xyz), 0.0) * (1.0 - cloudShadow * 0.5));
 
   // Ocean glint.
   vec3 H = normalize(L + V);
@@ -161,6 +168,8 @@ void main() {
   float glint = pow(max(dot(N, H), 0.0), 140.0) * 0.55 + pow(max(dot(N, H), 0.0), 14.0) * 0.03;
   surface += (1.0 - land) * sunT * glint * (1.0 - cloud) * uSunPower * (1.0 - uBaseDim) * uGlint;
   surface += (1.0 - land) * fres * vec3(0.10, 0.18, 0.32) * smoothstep(-0.2, 0.4, NL) * 0.35 * (1.0 - uBaseDim);
+  vec3 Hm = normalize(uMoon.xyz + V);
+  surface += (1.0 - land) * moonC * pow(max(dot(N, Hm), 0.0), 160.0) * 0.8 * (1.0 - cloud) * uGlint;
 
   // ---- Data layer below the clouds.
   vec4 dataColor = vec4(0.0);
@@ -187,7 +196,7 @@ void main() {
   }
 
   // ---- Cloud layer.
-  vec3 cloudLight = sunT * (smoothstep(-0.12, 0.6, NL) * 0.92 + 0.04) * uSunPower + sky * 0.6;
+  vec3 cloudLight = sunT * (smoothstep(-0.12, 0.6, NL) * 0.92 + 0.04) * uSunPower + sky * 0.6 + moonC * (smoothstep(-0.2, 0.6, dot(N, uMoon.xyz)) * 0.9 + 0.1);
   vec3 col = mix(surface, vec3(0.58) * cloudLight * (1.0 - uBaseDim * 0.6), cloud);
 
   if (uDataMix > 0.001 && uDataStyle.w > 0.5) {
@@ -263,6 +272,8 @@ export function earthUniforms(t: EarthTextures) {
     uDataFx: { value: 0 },
     uTrail: { value: blank as Texture },
     uTrailGain: { value: 0 },
+    uMoon: { value: new Vector4(1, 0, 0, 0) },
+    uAirglow: { value: 0 },
     uPin: { value: new Vector4(1, 0, 0, 0) },
     uPinColor: { value: new Vector3(1, 0.85, 0.6) },
   };
@@ -283,20 +294,27 @@ ${atmosphereGLSL}
 uniform vec3 uSun;
 uniform float uAtmoPower;
 uniform float uLimb;
+uniform float uAirglow;
 varying vec3 vPos;
 void main() {
   vec3 rd = normalize(vPos - cameraPosition);
   vec2 tp = raySphere(cameraPosition, rd, R_PLANET);
   if (tp.x > 0.0 && tp.x < 1e8) discard; // the planet is in front (a miss returns 1e9)
+  vec3 L = normalize(uSun);
   vec3 trans;
-  vec3 c = scatter(cameraPosition, rd, 1e9, normalize(uSun), 16, trans);
-  gl_FragColor = vec4(c * uAtmoPower * uLimb, 1.0);
+  vec3 c = scatter(cameraPosition, rd, 1e9, L, 16, trans) * uAtmoPower * uLimb;
+  // Airglow: oxygen near 95 km glows faintly green all night. Seen edge-on, it draws the night limb.
+  vec3 pc = cameraPosition + rd * max(-dot(cameraPosition, rd), 0.0);
+  float hT = length(pc) - R_PLANET;
+  float glow = exp(-pow((hT - 95.0 / 6371.0 * ATM_SCALE) / (22.0 / 6371.0 * ATM_SCALE), 2.0));
+  c += vec3(0.36, 0.8, 0.52) * glow * smoothstep(0.1, -0.2, dot(normalize(pc), L)) * uAirglow;
+  gl_FragColor = vec4(c, 1.0);
 }
 `;
 
 export function createAtmosphere(uniforms: EarthUniforms): Mesh {
   const material = new ShaderMaterial({
-    uniforms: { uSun: uniforms.uSun, uAtmoPower: uniforms.uAtmoPower, uLimb: uniforms.uLimb },
+    uniforms: { uSun: uniforms.uSun, uAtmoPower: uniforms.uAtmoPower, uLimb: uniforms.uLimb, uAirglow: uniforms.uAirglow },
     vertexShader: /* glsl */ `
       varying vec3 vPos;
       void main() { vec4 w = modelMatrix * vec4(position, 1.0); vPos = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,

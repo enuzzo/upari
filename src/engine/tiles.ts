@@ -39,6 +39,9 @@ interface Tile {
   texture: Texture | null;
   loading: boolean;
   failed: boolean;
+  /** Failed downloads are retried a few times, ten seconds apart. */
+  tries: number;
+  failedAt: number;
   lastUsed: number;
   fade: number;
 }
@@ -96,8 +99,10 @@ export class Tiles {
   }
 
   private load(t: Tile, renderer: WebGLRenderer) {
+    if (t.failed && t.tries < 3 && this.frame - t.failedAt > 600) t.failed = false;
     if (t.loading || t.texture || t.failed || this.inflight > 16) return;
     t.loading = true;
+    t.tries++;
     this.inflight++;
     const url = URL_TEMPLATE.replace('{z}', String(t.z)).replace('{x}', String(t.x)).replace('{y}', String(t.y));
     this.loader.load(url, (tex) => {
@@ -121,7 +126,7 @@ export class Tiles {
       t.mesh = new Mesh(this.geometry(t.z, t.x, t.y), mat);
       t.mesh.renderOrder = 1 + t.z * 0.01;
       this.group.add(t.mesh);
-    }, undefined, () => { this.inflight--; t.loading = false; t.failed = true; });
+    }, undefined, () => { this.inflight--; t.loading = false; t.failed = true; t.failedAt = this.frame; });
   }
 
   update(rig: CameraRig, renderer: WebGLRenderer) {
@@ -178,7 +183,7 @@ export class Tiles {
       if (c.z < 3) continue;
       const key = `${c.z}/${c.x}/${c.y}`;
       let t = this.tiles.get(key);
-      if (!t) { t = { key, z: c.z, x: c.x, y: c.y, mesh: null, texture: null, loading: false, failed: false, lastUsed: 0, fade: 0 }; this.tiles.set(key, t); }
+      if (!t) { t = { key, z: c.z, x: c.x, y: c.y, mesh: null, texture: null, loading: false, failed: false, tries: 0, failedAt: 0, lastUsed: 0, fade: 0 }; this.tiles.set(key, t); }
       want.push(t);
     }
 
@@ -260,6 +265,8 @@ export class Tiles {
   }
 
   private evict(before: number) {
+    // Tiles wanted for a moment during a flight and never fetched cost nothing to forget.
+    for (const [key, t] of this.tiles) if (!t.texture && !t.loading && !t.failed && t.lastUsed < this.frame - 60) this.tiles.delete(key);
     if (this.tiles.size < 220 && before > 0) return;
     for (const [key, t] of this.tiles) {
       if (t.lastUsed < before && !t.loading) {

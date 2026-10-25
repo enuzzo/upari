@@ -41,6 +41,35 @@ body.ready .top { opacity: 1; }
 }
 .icon-btn:hover { color: var(--ink); background: rgba(255, 255, 255, 0.06); }
 
+/* ——— Search ——— */
+.search { position: relative; width: 0; opacity: 0; visibility: hidden; transition: width 0.6s var(--ease), opacity 0.4s, visibility 0s linear 0.6s; }
+.search.on { width: 260px; opacity: 1; visibility: visible; margin-right: 4px; transition-delay: 0s; }
+.search input {
+  width: 100%; box-sizing: border-box; background: none; border: 0; border-bottom: 1px solid var(--ink-4); border-radius: 0;
+  color: var(--ink); font-family: var(--serif); font-size: 21px; padding: 4px 0 6px; outline: none; transition: border-color 0.3s;
+}
+.search input::placeholder { color: var(--ink-3); font-style: italic; }
+.search input:focus { border-color: var(--ink-2); }
+.search input::-webkit-search-cancel-button { display: none; }
+.search:not(.on) input { pointer-events: none; }
+.search-panel {
+  position: absolute; top: calc(100% + 14px); left: 0; right: 0; padding: 14px 0 0; display: none;
+  background: linear-gradient(rgba(3, 4, 7, 0.82), rgba(3, 4, 7, 0.72)); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--ink-4);
+}
+.search.on.has-results .search-panel { display: block; }
+.search-note { margin: 0 0 6px; font-size: 13px; color: var(--ink-3); padding: 0 14px; }
+.search-note:empty { display: none; }
+.search.busy .search-note { animation: breathe 1.4s ease-in-out infinite; }
+@keyframes breathe { 50% { opacity: 0.4; } }
+.search-results { list-style: none; margin: 0; padding: 0; }
+.search-results button { display: block; width: 100%; text-align: left; padding: 8px 14px; color: var(--ink-2); transition: color 0.3s, background 0.3s; }
+.search-results button:hover, .search-results button.current { color: var(--ink); background: rgba(255, 255, 255, 0.05); }
+.search-results b { display: block; font-family: var(--serif); font-weight: 400; font-size: 19px; line-height: 1.15; }
+.search-results small { display: block; font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.search-credit { margin: 8px 0 0; padding: 8px 14px 10px; font-size: 10.5px; color: var(--ink-3); border-top: 1px solid rgba(255, 255, 255, 0.06); }
+.search-credit a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--ink-4); }
+
 /* ——— Caption: the narration ——— */
 .caption {
   position: fixed; left: var(--gutter); bottom: calc(var(--gutter) + 74px); z-index: 5;

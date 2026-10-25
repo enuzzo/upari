@@ -2,6 +2,7 @@ import './styles.css';
 import { Globe } from './engine/globe';
 import { Director } from './story/director';
 import { sunDirection, vecToLonLat } from './engine/astro';
+import { framing, initSearch, type Place } from './story/search';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -69,6 +70,14 @@ $('credits-btn').addEventListener('click', () => $('credits').classList.add('on'
 $('credits-close').addEventListener('click', () => $('credits').classList.remove('on'));
 $('credits').addEventListener('click', (e) => { if (e.target === $('credits')) $('credits').classList.remove('on'); });
 
+const search = initSearch((p: Place) => {
+  if (!started) begin(false);
+  director.showPlace(p.lon, p.lat, p.name, p.context);
+  globe.rig.drift = 0;
+  const { dist, tilt } = framing(p);
+  void globe.rig.flyTo({ lon: p.lon, lat: p.lat, dist, tilt });
+});
+
 function toggleFullscreen() {
   if (document.fullscreenElement) void document.exitFullscreen();
   else void document.documentElement.requestFullscreen().catch(() => {});
@@ -76,7 +85,9 @@ function toggleFullscreen() {
 
 addEventListener('keydown', (e) => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
-  if (e.key === 'Escape') { $('credits').classList.remove('on'); director.closeDrawer(); return; }
+  if (e.target instanceof HTMLInputElement) return;
+  if (e.key === 'Escape') { $('credits').classList.remove('on'); director.closeDrawer(); search.close(); return; }
+  if (e.key === '/') { e.preventDefault(); search.open(); return; }
   if (!started) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); begin(true); } return; }
   if (e.key === ' ') { e.preventDefault(); director.setPlaying(!director.playing); }
   else if (e.key === 'ArrowRight') director.next();

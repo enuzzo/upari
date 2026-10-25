@@ -306,6 +306,7 @@ export class Globe {
 
     // Pin.
     u.uPin.value.set(this.pinVec.x, this.pinVec.y, this.pinVec.z, c.pin);
+    u.uPinScale.value = Math.min(1.2, Math.max(0.004, alt / 2.4));
 
     // Data layer: fade out, swap, fade in.
     const want = L.data;

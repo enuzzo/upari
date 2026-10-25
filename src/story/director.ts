@@ -17,6 +17,8 @@ export class Director {
   private lineReady = false;
   private anchors: Anchor[] = [];
   private following = false;
+  /** The viewer left the chapter (a place search): resuming restarts it. */
+  private detour = false;
   private chapterEls: HTMLLIElement[] = [];
 
   constructor(private globe: Globe) {
@@ -50,7 +52,8 @@ export class Director {
     $('play-btn').setAttribute('aria-label', v ? 'Pausa' : 'Riprendi il racconto');
     if (v && this.chapter) {
       // Resuming: go back to the chapter's framing.
-      if (this.elapsed > this.chapter.duration - 4) this.next();
+      if (this.detour) this.go(this.index);
+      else if (this.elapsed > this.chapter.duration - 4) this.next();
       else void this.frame(this.chapter, this.token);
     }
   }
@@ -62,6 +65,7 @@ export class Director {
     const c = CHAPTERS[i];
     const token = ++this.token;
     this.index = i;
+    this.detour = false;
     this.elapsed = 0;
     this.lineReady = false;
     this.following = false;
@@ -146,6 +150,23 @@ export class Director {
       if (token !== this.token) return;
       this.addAnchor(p.lon, p.lat, 0, `<b>${p.label}</b><small>${p.sub}</small>`);
     }, 1400);
+  }
+
+  /** Leave the story to show a place the viewer looked for. */
+  showPlace(lon: number, lat: number, name: string, context: string) {
+    this.setPlaying(false);
+    this.detour = true;
+    this.following = false;
+    this.clearAnchors();
+    $('legend').classList.remove('on');
+    $('caption').classList.add('hidden');
+    this.globe.setLook({ sun: 'real', clouds: 1, night: 1, pin: { lon, lat } });
+    const el = document.createElement('div');
+    const b = document.createElement('b'), small = document.createElement('small');
+    b.textContent = name;
+    small.textContent = context;
+    el.append(b, small);
+    setTimeout(() => this.addAnchor(lon, lat, 0, el.innerHTML), 900);
   }
 
   private anchorStation() {

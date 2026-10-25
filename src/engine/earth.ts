@@ -61,6 +61,7 @@ uniform float uTrailGain;
 
 uniform vec4 uMoon;      // xyz: direction, w: moonlight at the ground
 uniform vec4 uPin;       // xyz: direction, w: intensity
+uniform float uPinScale; // shrinks the pulse as the camera comes down
 uniform vec3 uPinColor;
 
 #ifdef TILE
@@ -226,10 +227,10 @@ void main() {
 
   // ---- Pin: a soft pulse that draws the eye to a place.
   if (uPin.w > 0.001) {
-    float ang = acos(clamp(dot(N, normalize(uPin.xyz)), -1.0, 1.0));
-    float r = fract(uTime * 0.45) * 0.09;
-    float ring = exp(-pow((ang - r) / 0.004, 2.0)) * (1.0 - fract(uTime * 0.45));
-    float dot0 = exp(-pow(ang / 0.006, 2.0));
+    float ang = length(N - normalize(uPin.xyz)); // chord: acos is too coarse at these tiny angles
+    float r = fract(uTime * 0.45) * 0.09 * uPinScale;
+    float ring = exp(-pow((ang - r) / (0.004 * uPinScale), 2.0)) * (1.0 - fract(uTime * 0.45));
+    float dot0 = exp(-pow(ang / (0.0045 * uPinScale), 2.0));
     col += uPinColor * (ring * 1.6 + dot0 * 2.5) * uPin.w;
   }
 
@@ -291,6 +292,7 @@ export function earthUniforms(t: EarthTextures) {
     uAirglow: { value: 0 },
     uPin: { value: new Vector4(1, 0, 0, 0) },
     uPinColor: { value: new Vector3(1, 0.85, 0.6) },
+    uPinScale: { value: 1 },
   };
 }
 

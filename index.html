@@ -24,6 +24,17 @@
   <header class="top">
     <button class="brand" id="brand" aria-label="Torna all’inizio">Upari</button>
     <div class="top-actions">
+      <form class="search" id="search" role="search" autocomplete="off">
+        <input id="search-input" type="search" placeholder="Cerca un luogo" aria-label="Cerca un luogo" enterkeyhint="search" spellcheck="false" />
+        <div class="search-panel">
+          <p class="search-note" id="search-note" aria-live="polite"></p>
+          <ol class="search-results" id="search-results"></ol>
+          <p class="search-credit">Ricerca <a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a> · dati © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></p>
+        </div>
+      </form>
+      <button class="icon-btn" id="search-btn" aria-label="Cerca un luogo" title="Cerca un luogo (/)">
+        <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></svg>
+      </button>
       <span class="clock" id="clock"></span>
       <button class="icon-btn" id="credits-btn" aria-label="Fonti e crediti" title="Fonti e crediti">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>
@@ -73,7 +84,7 @@
 
   <div class="tile-credit" id="tile-credit"><a href="https://cloudless.eox.at" target="_blank" rel="noopener">EOxCloudless 2016</a> di EOX IT Services GmbH · contiene dati Copernicus Sentinel 2016 e 2017 modificati · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></div>
 
-  <div class="hint" id="hint">Trascina per ruotare · rotella per avvicinarti · tocca un punto per leggerlo</div>
+  <div class="hint" id="hint">Trascina per ruotare · rotella per avvicinarti · tocca un punto per leggerlo · / per cercare un luogo</div>
 
   <div class="veil" id="veil">
     <div class="intro" id="intro">
@@ -107,6 +118,7 @@
         <li><b>Fuochi</b> NASA FIRMS, VIIRS NOAA-20</li>
         <li><b>Stazione Spaziale</b> elementi orbitali CelesTrak, propagazione SGP4 con satellite.js</li>
         <li><b>Stelle</b> Yale Bright Star Catalogue</li>
+        <li><b>Ricerca dei luoghi</b> <a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, dati © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, ODbL</li>
       </ul>
       <p class="credits-foot">I dati del giorno si aggiornano ogni mattina. Immagini fornite dai servizi NASA GIBS, parte di NASA ESDIS. Attribuzioni e licenze complete in <a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener">THIRD_PARTY_NOTICES</a>. Upari è software libero, licenza Apache 2.0: <a href="https://github.com/enuzzo/upari" target="_blank" rel="noopener">codice sorgente</a>.</p>
     </div>

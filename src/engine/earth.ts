@@ -54,6 +54,7 @@ uniform float uDataBlend;
 uniform float uDataMix;
 uniform vec4 uDataStyle; // x: lit, y: glow, z: mask (0 any, 1 ocean, 2 land), w: above clouds
 uniform vec2 uDataRange;
+uniform float uDataFx;   // 1: rain, drawn as falling streaks instead of a glowing veil
 
 uniform sampler2D uTrail;
 uniform float uTrailGain;
@@ -74,6 +75,25 @@ float decodeHeight(float e) {
   // Signed sqrt encoding: 0.502 = sea level.
   float s = (e * 255.0 - 128.0);
   return s >= 0.0 ? pow(s / 127.0, 2.0) * 8.8 : -pow(-s / 128.0, 2.0) * 11.0; // km
+}
+
+// Slanted dashes that slide along themselves: the map sign for rain. Their size is
+// held at a few pixels on screen, blending two octaves so zooming never pops.
+float rainDashes(vec2 km, float t) {
+  float pxKm = max(length(fwidth(vPos)) * 6371.0, 1e-3);
+  float level = log2(pxKm * 10.0);
+  float l0 = floor(level);
+  float s = 0.0;
+  for (int k = 0; k < 2; k++) {
+    float period = exp2(l0 + float(k));
+    vec2 q = mat2(0.906, -0.423, 0.423, 0.906) * km / period;
+    float col = floor(q.x);
+    float line = 1.0 - smoothstep(0.06, 0.2, abs(fract(q.x) - 0.5));
+    float y = fract(q.y * 0.3 + fract(sin(col * 91.7) * 4375.85) * 7.0 + t);
+    float dash = smoothstep(0.0, 0.12, y) * (1.0 - smoothstep(0.42, 0.58, y));
+    s += line * dash * (k == 0 ? 1.0 - fract(level) : fract(level));
+  }
+  return s;
 }
 
 vec3 desaturate(vec3 c, float k) {
@@ -153,6 +173,11 @@ void main() {
     pal.rgb *= pal.rgb;
     float mask = uDataStyle.z < 0.5 ? 1.0 : (uDataStyle.z < 1.5 ? 1.0 - land : land);
     float a = clamp(d.g * 1.15, 0.0, 1.0) * pal.a * mask * uDataMix;
+    if (uDataFx > 0.5) {
+      float dashes = rainDashes(vec2(uv.x * 40075.0 * cosLat, uv.y * 20004.0), uTime * 0.8);
+      a *= 0.42 + 0.75 * dashes;
+      pal.rgb *= 0.8 + 0.45 * dashes;
+    }
     float light = mix(1.0, 0.25 + 0.75 * smoothstep(-0.15, 0.35, NL), uDataStyle.x);
     dataColor = vec4(pal.rgb * light, a);
     if (uDataStyle.w < 0.5) {
@@ -235,6 +260,7 @@ export function earthUniforms(t: EarthTextures) {
     uDataMix: { value: 0 },
     uDataStyle: { value: new Vector4(0, 0, 1, 0) },
     uDataRange: { value: new Vector2(0, 1) },
+    uDataFx: { value: 0 },
     uTrail: { value: blank as Texture },
     uTrailGain: { value: 0 },
     uPin: { value: new Vector4(1, 0, 0, 0) },

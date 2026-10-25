@@ -106,7 +106,7 @@ export class Globe {
   timeOffset = 0;
   /** Master gains, tuned by eye. */
   tune = { atmo: 5, haze: 0.6, limb: 2, sun: 2.2, night: 3.2, relief: 9, bloom: 0.6 };
-  rainSpeed = 2.2;
+  rainSpeed = 1.8;
   onFrame: (dt: number) => void = () => {};
 
   constructor(private canvas: HTMLCanvasElement) {
@@ -319,6 +319,7 @@ export class Globe {
             u.uDataSize.value.set(meta.width, meta.height);
             u.uPalette.value = this.layers.palette(want);
             u.uDataStyle.value.set(...DATA[want].style);
+            u.uDataFx.value = DATA[want].fx ?? 0;
             u.uDataBlend.value = 0;
           }).catch((err) => {
             this.dataPending = null;
@@ -443,6 +444,11 @@ export class Globe {
   dataFrameTime(): string | null {
     if (!this.dataMeta?.frames || this.dataShown !== 'rain') return null;
     return this.dataMeta.frames[Math.floor(this.frame) % this.dataMeta.frames.length]?.time ?? null;
+  }
+  /** How far through the rain loop the frame on screen is, 0..1. */
+  dataFrameProgress(): number {
+    const n = this.dataFrames.length;
+    return n > 1 ? Math.min(1, this.frame / (n - 1)) : 0;
   }
   screenOf(v: Vector3): { x: number; y: number; visible: boolean } {
     const p = v.clone().project(this.rig.camera);

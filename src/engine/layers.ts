@@ -20,6 +20,8 @@ export interface DataDef {
   palette: Stop[];
   /** x: lit by the sun, y: glow (emissive), z: mask (0 any, 1 ocean, 2 land), w: drawn above clouds. */
   style: [number, number, number, number];
+  /** Surface effect: 1 draws rain as falling streaks. */
+  fx?: number;
   decode: (v: number, m: LayerMeta) => number;
   format: (x: number) => string;
 }
@@ -42,7 +44,7 @@ export const DATA: Record<DataId, DataDef> = {
     decode: lin, format: (x) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${nf(1).format(Math.abs(x))} °C rispetto al normale`,
   },
   rain: {
-    palette: PALETTES.rain, style: [0.0, 1.1, 0, 1],
+    palette: PALETTES.rain, style: [0.0, 0.3, 0, 1], fx: 1,
     decode: (v) => Math.pow(10, v * Math.log10(51)) - 1,
     format: (x) => (x < 0.1 ? 'pioggia appena percettibile' : `${nf(1).format(x)} mm di pioggia all’ora`),
   },

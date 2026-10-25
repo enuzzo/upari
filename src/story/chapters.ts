@@ -214,7 +214,7 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: 'pioggia', title: 'La pioggia', kicker: 'Ventiquattro ore',
-    look: { sun: 'studio', data: 'rain', clouds: 0.18, dim: 0.62, desat: 0.55, night: 0, atmo: 0.8, bloom: 1.2 },
+    look: { sun: 'studio', data: 'rain', clouds: 0.18, dim: 0.62, desat: 0.55, night: 0, atmo: 0.8, bloom: 0.8 },
     duration: 24,
     clock: 'rain',
     legend: { stops: PALETTES.rain, left: 'pioviggine', right: 'nubifragio', title: 'intensità della pioggia' },

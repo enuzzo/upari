@@ -74,14 +74,16 @@ export const PALETTES: Record<string, Stop[]> = {
     [0.86, '#f0702e', 1],
     [1.0, '#ffd27a', 1],
   ],
+  // Rain like a weather radar: drizzle a thin blue, downpours warm. No white, so it never reads as cloud.
   rain: [
-    [0.0, '#3a7bd5', 0.0],
-    [0.08, '#3a8ee8', 0.45],
-    [0.25, '#2fd4ff', 0.9],
-    [0.45, '#b9fbff', 1],
-    [0.65, '#ffffff', 1],
-    [0.82, '#ff9ef0', 1],
-    [1.0, '#ff4fd8', 1],
+    [0.0, '#1d4fa6', 0.0],
+    [0.05, '#2560c4', 0.38],
+    [0.18, '#2c86ec', 0.72],
+    [0.34, '#36bff7', 0.92],
+    [0.5, '#5fe3c8', 1],
+    [0.64, '#f4d35e', 1],
+    [0.8, '#ff8a3d', 1],
+    [1.0, '#ff3f7f', 1],
   ],
   ice: [
     [0.0, '#cfe8ff', 0.0],

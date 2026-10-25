@@ -244,7 +244,8 @@ export class Director {
     const dc = $('data-clock');
     if (t) {
       const d = new Date(t);
-      dc.textContent = `${d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', timeZone: 'UTC' })} · ${d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} UTC`;
+      $('data-time').textContent = `${d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', timeZone: 'UTC' })} · ${d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} UTC`;
+      $('data-dot').style.left = `${(this.globe.dataFrameProgress() * 100).toFixed(2)}%`;
       dc.classList.add('on');
     } else dc.classList.remove('on');
   }

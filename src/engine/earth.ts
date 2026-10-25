@@ -65,7 +65,9 @@ uniform vec3 uPinColor;
 
 #ifdef TILE
 uniform sampler2D uTile;
-uniform float uTileMix;
+uniform float uTileMix;   // Blue Marble → Sentinel-2, by altitude
+uniform float uTileAlpha; // fade over the parent tile
+uniform vec4 uTileEdge;   // mip bias towards coarser neighbours: west, east, south, north
 varying vec2 vTileUv;
 #endif
 
@@ -128,11 +130,20 @@ void main() {
   vec3 albedo = texture(uDay, uv).rgb;
   albedo = pow(albedo, vec3(2.2)); // to linear
 #ifdef TILE
-  vec3 tileC = pow(texture(uTile, vTileUv).rgb, vec3(2.2)) * 0.78;
+  // Next to a coarser tile, blur towards its resolution so the seam disappears.
+  vec2 tu = vTileUv;
+  float bias = max(max(uTileEdge.x * (1.0 - smoothstep(0.0, 0.3, tu.x)), uTileEdge.y * (1.0 - smoothstep(0.0, 0.3, 1.0 - tu.x))),
+                   max(uTileEdge.z * (1.0 - smoothstep(0.0, 0.3, tu.y)), uTileEdge.w * (1.0 - smoothstep(0.0, 0.3, 1.0 - tu.y))));
+  vec3 s2 = pow(texture(uTile, tu, bias).rgb, vec3(2.2));
+  // Sentinel-2 cloudless graded to Blue Marble (per-channel quantile fit on land), so the hand-over has no colour jump.
+  vec3 tileC = vec3(0.55, 0.47, 0.86) * pow(max(s2 - vec3(0.005, 0.0175, 0.02), 0.0), vec3(0.82, 0.76, 1.2));
   albedo = mix(albedo, tileC, uTileMix);
 #endif
   float depth = clamp((0.502 - hc) / 0.502, 0.0, 1.0);
   float shelf = (1.0 - smoothstep(0.0, 0.16, depth)) * (1.0 - land);
+#ifdef TILE
+  shelf *= 1.0 - uTileMix; // Sentinel-2 shows the real shallows
+#endif
   albedo = mix(albedo, albedo * vec3(0.7, 1.35, 1.45) + vec3(0.0, 0.012, 0.018), shelf * 0.75);
   albedo = desaturate(albedo, uBaseDesat) * (1.0 - uBaseDim);
 
@@ -229,7 +240,11 @@ void main() {
   vec3 inscatter = scatter(cameraPosition, rd, tHit, L, 10, trans);
   col = col * mix(vec3(1.0), trans, uHaze) + inscatter * uAtmoPower * uHaze;
 
+#ifdef TILE
+  gl_FragColor = vec4(col, uTileAlpha);
+#else
   gl_FragColor = vec4(col, 1.0);
+#endif
 }
 `;
 

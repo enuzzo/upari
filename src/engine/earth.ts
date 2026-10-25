@@ -261,7 +261,7 @@ varying vec3 vPos;
 void main() {
   vec3 rd = normalize(vPos - cameraPosition);
   vec2 tp = raySphere(cameraPosition, rd, R_PLANET);
-  if (tp.x > 0.0) discard;
+  if (tp.x > 0.0 && tp.x < 1e8) discard; // the planet is in front (a miss returns 1e9)
   vec3 trans;
   vec3 c = scatter(cameraPosition, rd, 1e9, normalize(uSun), 16, trans);
   gl_FragColor = vec4(c * uAtmoPower * uLimb, 1.0);

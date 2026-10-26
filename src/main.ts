@@ -4,6 +4,7 @@ import { Director } from './story/director';
 import { sunDirection, vecToLonLat } from './engine/astro';
 import { framing, initSearch, type Place } from './story/search';
 import { Sound, type Ambience } from './engine/audio';
+import { Explorer } from './story/explore';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -11,6 +12,11 @@ const canvas = $<HTMLCanvasElement>('scene');
 const globe = new Globe(canvas);
 const director = new Director(globe);
 const sound = new Sound();
+const explorer = new Explorer(globe, director);
+// Back to the story: the panel gives way.
+$('play-btn').addEventListener('click', () => { if (director.playing) explorer.toggle(false); });
+$('stories').addEventListener('click', () => explorer.toggle(false));
+$('next-story').addEventListener('click', () => explorer.toggle(false));
 let started = false;
 
 const soundBtn = $('sound-btn');
@@ -62,6 +68,8 @@ async function boot() {
     $('people-btn').removeAttribute('disabled');
     $('explore-btn').removeAttribute('disabled');
   }, 900);
+  // A shared link opens the explorer on what it showed.
+  if (/^#[a-z]+/.test(location.hash)) setTimeout(() => { begin(null); explorer.restore(location.hash); }, 700);
   // Warm the first chapters while the title is on screen.
   void globe.prepare({ flow: 'wind' });
 }
@@ -81,6 +89,7 @@ function begin(story: string | null) {
     globe.rig.drift = 0;
     $('caption').classList.add('hidden');
     globe.rig.flyTo({ lon: 12, lat: 38, dist: 2.6 });
+    explorer.toggle(true);
     $('hint').classList.add('on');
     setTimeout(() => $('hint').classList.remove('on'), 6000);
   }
@@ -113,14 +122,15 @@ function toggleFullscreen() {
 addEventListener('keydown', (e) => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.target instanceof HTMLInputElement) return;
-  if (e.key === 'Escape') { $('credits').classList.remove('on'); director.closeDrawer(); search.close(); return; }
+  if (e.key === 'Escape') { $('credits').classList.remove('on'); director.closeDrawer(); search.close(); explorer.toggle(false); return; }
   if (e.key === '/') { e.preventDefault(); search.open(); return; }
   if (!started) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); begin('pianeta'); } return; }
-  if (e.key === ' ') { e.preventDefault(); director.setPlaying(!director.playing); }
+  if (e.key === ' ') { e.preventDefault(); director.setPlaying(!director.playing); if (director.playing) explorer.toggle(false); }
   else if (e.key === 'ArrowRight') director.next();
   else if (e.key === 'ArrowLeft') director.prev();
   else if (e.key === 'f' || e.key === 'F') toggleFullscreen();
   else if (e.key === 'm' || e.key === 'M') { sound.start(); sound.toggle(); }
+  else if (e.key === 'l' || e.key === 'L') explorer.toggle();
   else if (e.key === 'i' || e.key === 'I') { if (director.drawerOpen) director.closeDrawer(); else void director.openDrawer(); }
   else if (e.key === '+' || e.key === '=') globe.rig.zoomBy(0.6);
   else if (e.key === '-') globe.rig.zoomBy(1.6);
@@ -139,6 +149,7 @@ addEventListener('pointerup', () => { pressed = false; });
 let clockT = 0;
 globe.onFrame = (dt) => {
   director.tick(dt);
+  explorer.tick(dt);
   sound.setAmbience(started ? ambienceOf() : null);
   if (pointer && started && !pressed) {
     const p = globe.probe(pointer.x, pointer.y);

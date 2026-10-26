@@ -206,6 +206,17 @@ export class Director {
     }, 1400);
   }
 
+  /** Leave the story where it is, for free exploration; resuming restarts the chapter. */
+  leave() {
+    if (this.playing) this.setPlaying(false);
+    if (!this.chapter) return;
+    this.detour = true;
+    this.following = false;
+    this.clearAnchors();
+    $('legend').classList.remove('on');
+    $('caption').classList.add('hidden');
+  }
+
   /** Leave the story to show a place the viewer looked for. */
   showPlace(lon: number, lat: number, name: string, context: string) {
     this.setPlaying(false);

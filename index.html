@@ -39,6 +39,9 @@
         <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></svg>
       </button>
       <span class="clock" id="clock"></span>
+      <button class="icon-btn" id="layers-btn" aria-label="Esplora: strati e controlli" title="Esplora (L)">
+        <svg viewBox="0 0 24 24"><path d="M12 4l8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4M4 16l8 4 8-4"/></svg>
+      </button>
       <button class="icon-btn sound-btn" id="sound-btn" aria-label="Audio" aria-pressed="true" title="Audio (M)">
         <svg class="i-on" viewBox="0 0 24 24"><path d="M4 10v4h3.5L12 18V6L7.5 10z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></svg>
         <svg class="i-off" viewBox="0 0 24 24"><path d="M4 10v4h3.5L12 18V6L7.5 10z"/><path d="M16 10l4 4M20 10l-4 4"/></svg>
@@ -102,9 +105,37 @@
     <p class="drawer-source" id="drawer-source"></p>
   </aside>
 
+  <aside class="explore" id="explore" aria-hidden="true" aria-label="Esplora">
+    <button class="icon-btn drawer-close ex-close" id="explore-close" aria-label="Chiudi"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="ex-head">Esplora</div>
+    <div id="ex-layers"></div>
+    <div class="ex-block ex-years" id="ex-years">
+      <div class="ex-title">Anno <b id="ex-year-label">2024</b></div>
+      <div class="ex-row">
+        <button class="ex-play" id="ex-play" aria-label="Fai scorrere gli anni"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></svg></button>
+        <input type="range" id="ex-year" min="1960" max="2025" step="1" value="2024" aria-label="Anno" />
+      </div>
+    </div>
+    <div class="ex-block ex-legend" id="ex-legend">
+      <div class="ex-title" id="ex-legend-title"></div>
+      <div class="legend-bar" id="ex-legend-bar"></div>
+      <div class="legend-ends"><span id="ex-legend-left"></span><span id="ex-legend-right"></span></div>
+    </div>
+    <button class="more ex-iss" id="ex-iss"><span>Raggiungi la Stazione</span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    <div class="ex-block">
+      <div class="ex-title">Ora <b id="ex-hours-label">adesso</b> <button class="ex-now" id="ex-now">torna ad adesso</button></div>
+      <input type="range" id="ex-hours" min="-24" max="24" step="0.25" value="0" aria-label="Ore da adesso" />
+    </div>
+    <div class="ex-block ex-switches">
+      <label><input type="checkbox" id="ex-real" /> Luce vera del Sole</label>
+      <label><input type="checkbox" id="ex-clouds" /> Nuvole</label>
+      <label><input type="checkbox" id="ex-spin" /> Rotazione lenta</label>
+    </div>
+  </aside>
+
   <div class="tile-credit" id="tile-credit"><a href="https://cloudless.eox.at" target="_blank" rel="noopener">EOxCloudless 2016</a> di EOX IT Services GmbH · contiene dati Copernicus Sentinel 2016 e 2017 modificati · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></div>
 
-  <div class="hint" id="hint">Trascina per ruotare · rotella per avvicinarti · tocca un punto per leggerlo · / per cercare un luogo · M per l’audio</div>
+  <div class="hint" id="hint">Trascina per ruotare · rotella per avvicinarti · tocca un punto per leggerlo · L per gli strati · / per cercare · M per l’audio</div>
 
   <div class="veil" id="veil">
     <div class="intro" id="intro">

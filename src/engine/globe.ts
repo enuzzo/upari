@@ -15,7 +15,9 @@ import { createFires, createQuakes, placeIt, Station, type Quake } from './marke
 import { DATA, LayerStore, Sampler, SplitSampler, loadTexture, type DataId, type LayerMeta } from './layers';
 import { gmst, lonLatToVec, moonBrightness, moonDirection, sunDirection, vecToLonLat } from './astro';
 import { Tiles } from './tiles';
-import { ATLAS, Atlas, type AtlasId } from './atlas';
+import { ATLAS, Atlas, atlasText, type AtlasId } from './atlas';
+import { t } from '../i18n';
+import { num } from '../i18n/format';
 
 export type FlowId = 'wind' | 'currents';
 
@@ -554,10 +556,10 @@ export class Globe {
         sub = `${country.name} · ${year}`;
         if (L.migration && country.stat) {
           const n = this.atlas.asylumByCountry[country.stat]?.[year - this.atlas.years[0]];
-          text = n ? `${n.toLocaleString('it-IT')} domande di asilo` : 'nessuna domanda pubblicata';
+          text = n ? t.probe.asylum(num(n)) : t.probe.noAsylum;
         } else if (L.atlas) {
           const v = country.stat ? this.atlas.value(L.atlas, country.stat, year) : null;
-          text = v == null ? 'nessun dato per quest’anno' : ATLAS[L.atlas].format(v);
+          text = v == null ? t.probe.noData : atlasText(L.atlas).format(v);
         }
         return { lon, lat, text, sub };
       }
@@ -576,14 +578,13 @@ export class Globe {
         const speed = Math.hypot(ue, vn);
         if (L.flow === 'wind') {
           const from = (Math.atan2(-ue, -vn) * 180 / Math.PI + 360) % 360;
-          const names = ['nord', 'nord-est', 'est', 'sud-est', 'sud', 'sud-ovest', 'ovest', 'nord-ovest'];
-          text = `${Math.round(speed * 3.6)} km/h`;
-          sub = `vento da ${names[Math.round(from / 45) % 8]}`;
+          text = `${num(speed * 3.6)} ${t.units.kmh}`;
+          sub = t.probe.windFrom(t.probe.directions[Math.round(from / 45) % 8]);
         } else {
-          text = `${(speed * 3.6).toLocaleString('it-IT', { maximumFractionDigits: 1 })} km/h`;
+          const kmh = speed * 3.6;
+          text = `${num(kmh, kmh < 10 && kmh % 1 > 0.05 ? 1 : 0)} ${t.units.kmh}`;
           const to = (Math.atan2(ue, vn) * 180 / Math.PI + 360) % 360;
-          const names = ['nord', 'nord-est', 'est', 'sud-est', 'sud', 'sud-ovest', 'ovest', 'nord-ovest'];
-          sub = `l’acqua scorre verso ${names[Math.round(to / 45) % 8]}`;
+          sub = t.probe.waterTo(t.probe.directions[Math.round(to / 45) % 8]);
         }
       }
     } else if (L.quakes && this.quakes) {
@@ -597,10 +598,10 @@ export class Globe {
       }
       if (best) {
         const hours = (Date.now() - best[4]) / 3600e3;
-        const ago = hours < 1 ? 'meno di un’ora fa' : hours < 48 ? `${Math.round(hours)} ore fa` : `${Math.round(hours / 24)} giorni fa`;
-        text = `magnitudo ${best[3].toLocaleString('it-IT', { minimumFractionDigits: 1 })}`;
-        sub = `${placeIt(best[5])} · ${best[2]} km di profondità · ${ago}`;
-      } else { text = 'nessun terremoto qui'; sub = 'magnitudo 2,5 o più, ultimi 7 giorni'; }
+        const ago = hours < 1 ? t.probe.lessThanHour : hours < 48 ? t.probe.hoursAgo(Math.round(hours)) : t.probe.daysAgo(Math.round(hours / 24));
+        text = t.probe.magnitude(num(best[3], 1));
+        sub = t.probe.quake(placeIt(best[5]), num(best[2]), ago);
+      } else { text = t.probe.noQuake; sub = t.probe.noQuakeSub; }
     } else if (L.fires && this.fireData) {
       const p = lonLatToVec(lon, lat), q = new Vector3();
       let n = 0;
@@ -610,8 +611,8 @@ export class Globe {
         lonLatToVec(d[i + 1], d[i], 1, q);
         if (q.dot(p) > cosMax) n++;
       }
-      text = n ? `${n.toLocaleString('it-IT')} ${n === 1 ? 'fuoco' : 'fuochi'}` : 'nessun fuoco';
-      sub = 'entro 150 km, ultimi 7 giorni';
+      text = n ? t.probe.fires(n, num(n)) : t.probe.noFire;
+      sub = t.probe.firesSub;
     }
     if (!text) {
       // Local solar time: where the Sun is, it is noon.
@@ -621,7 +622,7 @@ export class Globe {
       const hh = Math.floor(h), mm = Math.floor((h - hh) * 60);
       text = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
       const day = hit.clone().normalize().dot(this.sunVec);
-      sub = day > 0.05 ? 'ora solare · è giorno' : day < -0.05 ? 'ora solare · è notte' : 'ora solare · crepuscolo';
+      sub = day > 0.05 ? t.probe.solarDay : day < -0.05 ? t.probe.solarNight : t.probe.solarDusk;
     }
     return { lon, lat, text, sub };
   }

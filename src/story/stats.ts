@@ -1,6 +1,7 @@
 import type { Globe } from '../engine/globe';
 import { DATA, type DataId } from '../engine/layers';
 import { Sampler } from '../engine/layers';
+import { t } from '../i18n';
 
 export interface Extreme { lon: number; lat: number; value: number }
 
@@ -107,7 +108,8 @@ export const stats = {
 };
 
 export function formatLonLat(lon: number, lat: number): string {
-  const la = `${Math.abs(Math.round(lat))}° ${lat >= 0 ? 'N' : 'S'}`;
-  const lo = `${Math.abs(Math.round(lon))}° ${lon >= 0 ? 'E' : 'O'}`;
+  const c = t.compass;
+  const la = `${Math.abs(Math.round(lat))}° ${lat >= 0 ? c.N : c.S}`;
+  const lo = `${Math.abs(Math.round(lon))}° ${lon >= 0 ? c.E : c.W}`;
   return `${la}, ${lo}`;
 }

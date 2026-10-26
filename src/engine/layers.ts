@@ -1,5 +1,7 @@
 import { LinearFilter, LinearMipmapLinearFilter, RepeatWrapping, Texture, TextureLoader, ClampToEdgeWrapping } from 'three';
 import { PALETTES, paletteTexture, type Stop } from './palettes';
+import { t } from '../i18n';
+import { num } from '../i18n/format';
 
 export type DataId = 'chlorophyll' | 'sst' | 'anomaly' | 'rain' | 'ice' | 'ndvi' | 'aerosol' | 'coral' | 'forest';
 
@@ -32,46 +34,45 @@ export interface DataDef {
 }
 
 const lin = (v: number, m: LayerMeta) => m.min + v * (m.max - m.min);
-const nf = (d: number) => new Intl.NumberFormat('it-IT', { maximumFractionDigits: d, minimumFractionDigits: d });
 
 export const DATA: Record<DataId, DataDef> = {
   chlorophyll: {
     palette: PALETTES.chlorophyll, style: [0.35, 0.9, 1, 0], fps: 0.9, hold: 2.5,
     decode: (v, m) => Math.pow(10, lin(v, m)),
-    format: (x) => `${nf(x < 1 ? 2 : 1).format(x)} mg/m³`,
+    format: (x) => `${num(x, x < 1 ? 2 : 1)} mg/m³`,
   },
   sst: {
     palette: PALETTES.sst, style: [0.55, 0.12, 1, 0], fps: 0.9, hold: 2.5,
-    decode: lin, format: (x) => `${nf(1).format(x)} °C`,
+    decode: lin, format: (x) => `${num(x, 1)} °C`,
   },
   anomaly: {
     palette: PALETTES.anomaly, style: [0.25, 0.6, 1, 0], fps: 0.9, hold: 2.5,
-    decode: lin, format: (x) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${nf(1).format(Math.abs(x))} °C rispetto al normale`,
+    decode: lin, format: (x) => t.data.anomaly(`${x > 0 ? '+' : x < 0 ? '−' : ''}${num(Math.abs(x), 1)}`),
   },
   rain: {
     palette: PALETTES.rain, style: [0.0, 0.3, 0, 1], fx: 1,
     decode: (v) => Math.pow(10, v * Math.log10(51)) - 1,
-    format: (x) => (x < 0.1 ? 'pioggia appena percettibile' : `${nf(1).format(x)} mm di pioggia all’ora`),
+    format: (x) => (x < 0.1 ? t.data.rainTrace : t.data.rain(num(x, 1))),
   },
   ice: {
     palette: PALETTES.ice, style: [0.8, 0.05, 1, 0], fps: 1.8, hold: 2.5,
-    decode: lin, format: (x) => `ghiaccio al ${Math.round(x)}%`,
+    decode: lin, format: (x) => t.data.ice(num(x)),
   },
   ndvi: {
     palette: PALETTES.ndvi, style: [0.6, 0.15, 2, 0], fps: 0.9, hold: 2.5,
-    decode: lin, format: (x) => (x < 0.15 ? 'suolo quasi nudo' : `verde ${nf(2).format(x)} (NDVI)`),
+    decode: lin, format: (x) => (x < 0.15 ? t.data.bare : t.data.ndvi(num(x, 2))),
   },
   coral: {
     palette: PALETTES.coral, style: [0.35, 0.5, 1, 0], fps: 0.9, hold: 2.5,
-    decode: lin, format: (x) => (x < 1 ? 'nessuno stress termico' : `${nf(1).format(x)} settimane di calore (°C)`),
+    decode: lin, format: (x) => (x < 1 ? t.data.noStress : t.data.coral(num(x, 1))),
   },
   forest: {
     palette: PALETTES.forest, style: [0.5, 0.35, 2, 0], fx: 2,
-    decode: (v) => 2000 + Math.round(v * 25.5), format: (x) => `foresta perduta nel ${x}`,
+    decode: (v) => 2000 + Math.round(v * 25.5), format: (x) => t.data.forest(x),
   },
   aerosol: {
     palette: PALETTES.aerosol, style: [0.2, 0.08, 0, 1], fps: 0.9, hold: 2.5,
-    decode: lin, format: (x) => `aria velata ${nf(2).format(x)} (AOD)`,
+    decode: lin, format: (x) => t.data.aerosol(num(x, 2)),
   },
 };
 

@@ -1,0 +1,552 @@
+import { num } from './format';
+import type { Dict } from './it';
+
+// Português (Brasil), legível também para quem fala português em outros lugares.
+
+const WDI_NOTE = 'Valores anuais originais, sem estimativas acrescentadas pelo Upari: um país sem dado para um ano fica cinza. As cores fluem de um ano para o outro; os números, não. Fronteiras atuais da Natural Earth, não as da época.';
+
+// Artigos e contrações para nomes de países e mares: «no Brasil», «na Índia», «em Portugal», «nos Estados Unidos».
+const NO_ARTICLE = new Set([
+  'Andorra', 'Angola', 'Antígua e Barbuda', 'Aruba', 'Barbados', 'Belize', 'Botsuana', 'Burquina Faso', 'Burkina Faso',
+  'Cabo Verde', 'Camarões', 'Chipre', 'Chipre do Norte', 'Cuba', 'Curaçao', 'Djibuti', 'Dominica', 'El Salvador', 'Fiji',
+  'Gana', 'Gibraltar', 'Granada', 'Guam', 'Honduras', 'Hong Kong', 'Israel', 'Liechtenstein', 'Macau', 'Madagascar',
+  'Malta', 'Maurício', 'Mianmar', 'Moçambique', 'Mônaco', 'Mónaco', 'Montenegro', 'Nauru', 'Omã', 'Palau', 'Porto Rico',
+  'Portugal', 'Quiribati', 'Ruanda', 'Samoa', 'San Marino', 'Santa Lúcia', 'São Cristóvão e Névis', 'São Martinho',
+  'São Tomé e Príncipe', 'São Vicente e Granadinas', 'Singapura', 'Sint Maarten', 'Taiwan', 'Timor-Leste', 'Tonga',
+  'Trinidad e Tobago', 'Tuvalu', 'Uganda', 'Vanuatu',
+]);
+const PLURAL: Record<string, string> = {
+  'Estados Unidos': 'os', 'Emirados Árabes Unidos': 'os', 'Países Baixos': 'os', 'Territórios palestinos': 'os',
+  'Territórios Franceses do Sul': 'os', Bahamas: 'as', Bermudas: 'as', Comores: 'as', Filipinas: 'as', Maldivas: 'as', Seicheles: 'as',
+};
+const MASC = new Set(['Camboja', 'Quênia', 'Canadá', 'Panamá', 'Sri Lanka', 'Alaska', 'Hawaii']);
+const FEM = new Set(['África do Sul', 'Dorsal Mesoatlântica', 'California']);
+const article = (name: string): string => {
+  if (NO_ARTICLE.has(name)) return '';
+  if (PLURAL[name]) return PLURAL[name];
+  if (MASC.has(name)) return 'o';
+  if (FEM.has(name)) return 'a';
+  if (/^Ilhas /.test(name)) return 'as';
+  if (/^(Ilha|República|Costa) /.test(name) || /Guiné/.test(name)) return 'a';
+  // Nomes que ficaram em inglês, ou com vírgulas: sem artigo.
+  if (/[,()]/.test(name) || /\b(Southern|Northern|Central|Eastern|Western|region|Islands?|of|the|Coast)\b/.test(name)) return '';
+  const head = name.split(/ (?:do|da|dos|das|de|e) /)[0];
+  return /a$/.test(head) ? 'a' : 'o';
+};
+/** «no Níger», «na Somália», «em Angola». */
+const em = (name: string) => { const a = article(name); return a ? `n${a} ${name}` : `em ${name}`; };
+/** «do Afeganistão», «da Síria», «de Cuba». */
+const de = (name: string) => { const a = article(name); return a ? `d${a} ${name}` : `de ${name}`; };
+/** «o Atlântico Norte», «a Nigéria», «Angola». */
+const art = (name: string) => { const a = article(name); return a ? `${a} ${name}` : name; };
+/** "Hoje", "Em 22 de outubro": at the start of a sentence. */
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+/** A formatted number ("1,4", "670"): below 2, Portuguese says «milhão», «bilhão». */
+const below2 = (s: string) => parseFloat(s.replace(/\./g, '').replace(',', '.')) < 2;
+const milhoes = (s: string) => (below2(s) ? 'milhão' : 'milhões');
+const bilhoes = (s: string) => (below2(s) ? 'bilhão' : 'bilhões');
+
+const pt: Dict = {
+  lang: { name: 'Português', locale: 'pt-BR', dir: 'ltr' },
+
+  page: {
+    title: 'Upari · O planeta, agora',
+    description: 'Upari: o planeta Terra contado pelos dados de satélite de hoje. Ventos, correntes, mares, chuva, incêndios, gelo, luzes e a Estação Espacial.',
+    globe: 'O globo terrestre',
+    home: 'Voltar ao início',
+    stories: 'Histórias',
+    search: 'Procurar um lugar',
+    searchKey: 'Procurar um lugar (/)',
+    searchCredit: 'Busca por <a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a> · dados © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
+    searching: 'Procurando…',
+    noPlace: 'Nenhum lugar com esse nome.',
+    searchDown: 'A busca não está respondendo. Tente de novo daqui a pouco.',
+    explore: 'Explorar: camadas e controles',
+    exploreKey: 'Explorar (L)',
+    audio: 'Som',
+    audioKey: 'Som (M)',
+    audioOn: 'Ligar o som',
+    audioOff: 'Desligar o som',
+    credits: 'Fontes e créditos',
+    fullscreen: 'Tela cheia',
+    fullscreenKey: 'Tela cheia (F)',
+    language: 'Idioma',
+    more: 'Saiba mais',
+    next: (story: string) => `A seguir: ${story}`,
+    chapters: 'Capítulos',
+    pause: 'Pausar',
+    resume: 'Retomar a história',
+    zoomIn: 'Aproximar',
+    zoomOut: 'Afastar',
+    close: 'Fechar',
+    tileCredit: '<a href="https://cloudless.eox.at" target="_blank" rel="noopener">EOxCloudless 2016</a> por EOX IT Services GmbH · contém dados modificados do Copernicus Sentinel de 2016 e 2017 · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>',
+    hint: 'Arraste para girar · role para se aproximar · toque num ponto para lê-lo · L para as camadas · / para procurar · M para o som',
+    intro: 'O planeta, contado pelos seus dados de hoje.',
+    exploreAlone: 'Explorar por conta própria',
+    noWebgl: 'É preciso um navegador com WebGL 2 para ver o planeta.',
+    clock: (day: string, time: string) => `${day} · ${time} UTC`,
+    about: 'Por que Upari',
+  },
+
+  stories: { pianeta: 'O planeta, agora', natura: 'A natureza', persone: 'As pessoas' },
+
+  compass: { N: 'N', S: 'S', E: 'L', W: 'O' },
+
+  units: { km: 'km', kmh: 'km/h' },
+
+  when: { today: 'hoje', yesterday: 'ontem', on: (day: string) => `em ${day}`, recent: 'recentemente' },
+
+  station: {
+    name: 'Estação Espacial',
+    panel: 'A Estação Espacial, agora',
+    title: 'Estação Espacial · agora',
+    alt: 'Altitude',
+    speed: 'Velocidade',
+    below: 'Abaixo',
+    light: 'A bordo',
+    pos: 'Posição',
+    orbit: 'Órbita',
+    day: 'dia',
+    night: 'noite',
+    sunsetIn: (min: string) => `pôr do sol em ${min} min`,
+    sunriseIn: (min: string) => `nascer do sol em ${min} min`,
+    orbitOfDay: (n: number) => `${n}ª do dia`,
+  },
+
+  explore: {
+    title: 'Explorar',
+    year: 'Ano',
+    playYears: 'Percorrer os anos',
+    reach: 'Ir até a Estação',
+    hour: 'Hora',
+    now: 'agora',
+    backToNow: 'voltar para agora',
+    hoursFromNow: 'Horas a partir de agora',
+    realLight: 'Luz real do Sol',
+    clouds: 'Nuvens',
+    spin: 'Rotação lenta',
+    groups: { planet: 'O planeta', nature: 'A natureza', people: 'As pessoas' },
+    layers: {
+      adesso: 'A Terra, agora', venti: 'Ventos', correnti: 'Correntes', mare: 'Temperatura do mar',
+      anomalia: 'Mar mais quente que o normal', plancton: 'Fitoplâncton', pioggia: 'Chuva, últimas 24 horas',
+      fuochi: 'Incêndios, últimos 7 dias', terremoti: 'Terremotos, últimos 7 dias', ghiaccio: 'Gelo marinho',
+      luci: 'As luzes da noite', stazione: 'Estação Espacial',
+      verde: 'Vegetação, mês a mês', foreste: 'Florestas perdidas, 2001 – 2024', aria: 'Poeira e fumaça no ar',
+      coralli: 'Calor nos recifes de coral',
+      popolazione: 'População', nascite: 'Natalidade', mortalita: 'Mortalidade', saldo: 'Saldo natural',
+      vita: 'Expectativa de vida', bambini: 'Mortalidade de menores de 5 anos', elettricita: 'Acesso à eletricidade',
+      disoccupazione: 'Desemprego (estimativas da OIT)', asilo: 'Pedidos de asilo',
+    },
+  },
+
+  credits: {
+    title: 'De onde vêm estas imagens',
+    intro: 'Tudo o que você vê é dado real. Nenhuma imagem é inventada: onde os satélites não enxergam, o mapa esmaece.',
+    items: [
+      ['Terra de dia', 'NASA Blue Marble Next Generation, via NASA GIBS'],
+      ['Terra de noite', 'NASA Black Marble, VIIRS 2016, via NASA GIBS'],
+      ['Nuvens', 'NASA Visible Earth, composição de nuvens'],
+      ['Relevo', 'Mapzen Terrain Tiles na AWS: USGS SRTM e GMTED2010, NOAA ETOPO1, EU-DEM Copernicus e outros modelos nacionais'],
+      ['De perto', '<a href="https://cloudless.eox.at" target="_blank" rel="noopener">EOxCloudless 2016</a> por EOX IT Services GmbH (contém dados modificados do Copernicus Sentinel de 2016 e 2017), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>'],
+      ['Ventos', 'NOAA GFS 0,5°, via PacIOOS ERDDAP'],
+      ['Correntes', 'OSCAR, ESR / NASA, via NOAA CoastWatch ERDDAP'],
+      ['Mar e anomalias', 'GHRSST MUR, NASA JPL, via NASA GIBS'],
+      ['Gelo', 'GHRSST GAMSSA, Bureau of Meteorology da Austrália, via NASA GIBS'],
+      ['Fitoplâncton', 'NASA PACE OCI, via NASA GIBS'],
+      ['Chuva', 'NASA GPM IMERG, via NASA GIBS'],
+      ['Vegetação', 'NASA VIIRS (Suomi NPP), NDVI mensal, via NASA GIBS'],
+      ['Poeira e fumaça', 'NASA GMAO MERRA-2, espessura óptica dos aerossóis, via NASA GIBS'],
+      ['Florestas perdidas', 'Hansen et al. 2013, University of Maryland, via Global Forest Watch, CC BY 4.0'],
+      ['Recifes de coral', 'NOAA Coral Reef Watch, Degree Heating Week 5 km, via PacIOOS ERDDAP'],
+      ['Terremotos', 'USGS Earthquake Hazards Program, feed dos últimos 7 dias'],
+      ['Incêndios', 'NASA FIRMS, VIIRS NOAA-20'],
+      ['Estação Espacial', 'elementos orbitais CelesTrak, propagação SGP4 com satellite.js; modelo 3D NASA 3D Resources, ISS (B), de Michael D. Carbajal'],
+      ['Estrelas', 'Yale Bright Star Catalogue'],
+      ['As pessoas', 'World Bank, World Development Indicators (com dados do World Population Prospects da ONU, do UN IGME e da OIT), CC BY 4.0; pedidos de asilo UNHCR Refugee Data Portal, CC BY 4.0; fronteiras Natural Earth, domínio público'],
+      ['Música e sons', 'compostos para o Upari com Magnific (Google Lyria, ElevenLabs)'],
+      ['Busca de lugares', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, dados © colaboradores do <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>, ODbL'],
+      ['Traduções', 'escritas com a ajuda do Claude (Anthropic) a partir do texto italiano'],
+    ],
+    foot: 'Os dados do dia são atualizados todas as manhãs. Imagens fornecidas pelos serviços NASA GIBS, parte do NASA ESDIS. Atribuições e licenças completas em <a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener">THIRD_PARTY_NOTICES</a>. O Upari é um projeto do <a href="https://netmilk.ch" target="_blank" rel="noopener">Netmilk Studio</a>, software livre sob a licença Apache 2.0: <a href="https://github.com/enuzzo/upari" target="_blank" rel="noopener">código-fonte</a>.',
+  },
+
+  about: {
+    kicker: 'Por que Upari',
+    title: 'De graça, como a chuva.',
+    lead: 'O Upari é a Terra como ela está agora. Os ventos de hoje, o mar de ontem, os incêndios e os terremotos desta semana, a Estação Espacial deslizando lá em cima enquanto você lê esta linha. Nada foi pintado à mão: o que você vê foi medido por satélites e sensores e entregue a qualquer um que tenha vontade de olhar. Nós só aprendemos a escutar.',
+    aims: 'Fizemos o Upari para três coisas, nesta ordem: deixar você maravilhado, deixar você informado e fazer você se apaixonar perdidamente por esta pedra absurda, giratória, única no mundo. Nesta ordem, porque ninguém jamais defendeu aquilo que o entediava.',
+    costTitle: 'Quanto custa',
+    cost: 'Nada. É de graça, como é de graça a luz do Sol, como é de graça a chuva, como o vento que hoje de manhã atravessou um oceano só para bagunçar o seu cabelo e nunca mandou fatura nenhuma. Sem anúncios, sem cadastro, ninguém no seu encalço.',
+    price: 'Em troca, pedimos uma coisa só, e ela não sai barato:',
+    child: 'Olhe para o planeta com os olhos de uma criança.',
+    warrior: 'Defenda-o com a coragem de um guerreiro.',
+    both: 'As duas coisas ao mesmo tempo, de preferência. As crianças não têm medo, e todo guerreiro já foi criança.',
+    whoTitle: 'Quem somos',
+    who: 'Somos o Netmilk Studio. Fazemos sites para viver e, de vez em quando, uma coisa como esta por nenhum outro motivo além do amor. O Upari é open source, sob a licença Apache 2.0: desmonte, aprenda com ele, melhore. Planeta, só existe um. O código, pelo menos, dá para forkar.',
+    visit: 'Visite o Netmilk Studio',
+    source: 'Código-fonte',
+    signoff: 'Feito na Terra.',
+  },
+
+  countries: {
+    CD: 'República Democrática do Congo', CG: 'República do Congo', CYN: 'Chipre do Norte', SOL: 'Somalilândia',
+    HK: 'Hong Kong', MO: 'Macau', PS: 'Palestina', MM: 'Mianmar',
+  },
+
+  sea: {
+    arctic: { in: 'no Oceano Ártico', name: 'Oceano Ártico' },
+    southern: { in: 'no Oceano Antártico', name: 'Oceano Antártico' },
+    med: { in: 'no Mediterrâneo', name: 'Mediterrâneo' },
+    red: { in: 'no Mar Vermelho', name: 'Mar Vermelho' },
+    persian: { in: 'no Golfo Pérsico', name: 'Golfo Pérsico' },
+    mexico: { in: 'no Golfo do México', name: 'Golfo do México' },
+    caribbean: { in: 'no Mar do Caribe', name: 'Mar do Caribe' },
+    southChina: { in: 'no Mar da China Meridional', name: 'Mar da China Meridional' },
+    indonesia: { in: 'entre as ilhas da Indonésia', name: 'Indonésia' },
+    indianSouth: { in: 'no Oceano Índico meridional', name: 'Oceano Índico meridional' },
+    indian: { in: 'no Oceano Índico', name: 'Oceano Índico' },
+    atlanticNorth: { in: 'no Atlântico Norte', name: 'Atlântico Norte' },
+    atlanticTropical: { in: 'no Atlântico tropical', name: 'Atlântico tropical' },
+    atlanticSouth: { in: 'no Atlântico Sul', name: 'Atlântico Sul' },
+    atlanticSouthern: { in: 'no Atlântico tropical sul', name: 'Atlântico tropical sul' },
+    pacificNorth: { in: 'no Pacífico Norte', name: 'Pacífico Norte' },
+    pacificTropical: { in: 'no Pacífico tropical', name: 'Pacífico tropical' },
+    pacificSouth: { in: 'no Pacífico Sul', name: 'Pacífico Sul' },
+    pacificSouthern: { in: 'no Pacífico tropical sul', name: 'Pacífico tropical sul' },
+  },
+
+  quake: {
+    distance: (km: string, place: string) => `a ${km} km de ${place}`,
+    near: (place: string) => `perto de ${place}`,
+    region: (place: string) => `na região ${de(place)}`,
+    regions: { sandwich: 'Ilhas Sandwich do Sul', kermadec: 'Ilhas Kermadec', ridge: 'Dorsal Mesoatlântica' },
+  },
+
+  probe: {
+    asylum: (n: string) => `${n} ${n === '1' ? 'pedido' : 'pedidos'} de asilo`,
+    noAsylum: 'nenhum pedido publicado',
+    noData: 'sem dados para este ano',
+    directions: ['norte', 'nordeste', 'leste', 'sudeste', 'sul', 'sudoeste', 'oeste', 'noroeste'],
+    windFrom: (dir: string) => `vento do ${dir}`,
+    waterTo: (dir: string) => `a água corre para o ${dir}`,
+    magnitude: (m: string) => `magnitude ${m}`,
+    quake: (place: string, depthKm: string, ago: string) => `${place} · ${depthKm} km de profundidade · ${ago}`,
+    lessThanHour: 'há menos de uma hora',
+    hoursAgo: (h: number) => `há ${h} ${h === 1 ? 'hora' : 'horas'}`,
+    daysAgo: (d: number) => `há ${d} ${d === 1 ? 'dia' : 'dias'}`,
+    noQuake: 'nenhum terremoto aqui',
+    noQuakeSub: 'magnitude 2,5 ou mais, últimos 7 dias',
+    fires: (n: number, s: string) => `${s} ${n === 1 ? 'foco de incêndio' : 'focos de incêndio'}`,
+    noFire: 'nenhum foco de incêndio',
+    firesSub: 'num raio de 150 km, últimos 7 dias',
+    solarDay: 'hora solar · é dia',
+    solarNight: 'hora solar · é noite',
+    solarDusk: 'hora solar · crepúsculo',
+  },
+
+  data: {
+    anomaly: (signed: string) => `${signed} °C em relação ao normal`,
+    rainTrace: 'chuva quase imperceptível',
+    rain: (mm: string) => `${mm} mm de chuva por hora`,
+    ice: (pct: string) => `${pct}% de gelo`,
+    bare: 'solo quase nu',
+    ndvi: (v: string) => `verde ${v} (NDVI)`,
+    noStress: 'nenhum estresse térmico',
+    coral: (v: string) => `${v} semanas de calor (°C)`,
+    forest: (year: number) => `floresta perdida em ${year}`,
+    aerosol: (v: string) => `ar turvo ${v} (AOD)`,
+  },
+
+  atlas: {
+    population: {
+      title: 'pessoas', left: '', right: '', source: 'World Bank, World Development Indicators · SP.POP.TOTL (ONU, institutos nacionais de estatística, Eurostat)',
+      format: (v: number) => {
+        if (v >= 1e9) { const s = num(v / 1e9, 2); return `${s} ${bilhoes(s)}`; }
+        if (v >= 1e6) { const s = num(v / 1e6, 1); return `${s} ${milhoes(s)}`; }
+        return `${num(v)} pessoas`;
+      },
+    },
+    birth: {
+      title: 'nascimentos por 1.000 habitantes', left: '5', right: '50', source: 'World Bank, World Development Indicators · SP.DYN.CBRT.IN',
+      format: (v: number) => `${num(v, 1)} nascimentos por 1.000`,
+    },
+    death: {
+      title: 'óbitos por 1.000 habitantes', left: '2', right: '30', source: 'World Bank, World Development Indicators · SP.DYN.CDRT.IN',
+      format: (v: number) => `${num(v, 1)} óbitos por 1.000`,
+    },
+    balance: {
+      title: 'nascimentos menos óbitos, por 1.000', left: '−10', right: '+40', source: 'World Bank, World Development Indicators · natalidade menos mortalidade (cálculo do Upari)',
+      format: (v: number) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${num(Math.abs(v), 1)} por 1.000`,
+    },
+    life: {
+      title: 'expectativa de vida ao nascer', left: '35 anos', right: '85', source: 'World Bank, World Development Indicators · SP.DYN.LE00.IN',
+      format: (v: number) => `${num(v, 1)} anos`,
+    },
+    under5: {
+      title: 'crianças que morrem antes dos 5 anos, por 1.000', left: '0', right: '300', source: 'UN IGME via World Bank WDI · SH.DYN.MORT',
+      format: (v: number) => `${num(v)} por 1.000 nascidos vivos`,
+    },
+    electricity: {
+      title: 'pessoas com eletricidade', left: '0%', right: '100%', source: 'World Bank, ODS 7.1.1 · EG.ELC.ACCS.ZS',
+      format: (v: number) => `${num(v)}% da população`,
+    },
+    unemployment: {
+      title: 'desemprego, estimativas modeladas da OIT', left: '0%', right: '30%', source: 'OIT, estimativas modeladas, via World Bank WDI · SL.UEM.TOTL.ZS',
+      format: (v: number) => `${num(v, 1)}% da força de trabalho`,
+    },
+  },
+
+  legends: {
+    wind: { title: 'velocidade do vento', left: 'calmaria', right: '80 km/h' },
+    currents: { title: 'velocidade da corrente', left: 'lenta', right: '4 km/h' },
+    sst: { title: 'temperatura da água', left: '−2 °C', right: '34 °C' },
+    anomaly: { title: 'diferença em relação à média', left: '−3 °C', right: '+3 °C' },
+    chlorophyll: { title: 'clorofila na superfície', left: 'água límpida', right: 'floração' },
+    rain: { title: 'intensidade da chuva', left: 'chuvisco', right: 'temporal' },
+    quakes: { title: 'profundidade do terremoto', left: 'na superfície', right: '700 km' },
+    ice: { title: 'mar congelado', left: '15%', right: '100%' },
+    asylum: { title: 'pedidos de asilo, por país de origem', left: 'Síria · Ucrânia', right: 'Afeganistão' },
+    ndvi: { title: 'quão verde é a terra (NDVI)', left: 'solo nu', right: 'floresta densa' },
+    forest: { title: 'árvores perdidas, por ano', left: 'anos atrás', right: 'este ano' },
+    aerosol: { title: 'quanta luz as partículas retêm (AOD)', left: 'ar limpo', right: 'ar carregado' },
+    coral: { title: 'estresse térmico acumulado', left: '0', right: '20 °C · semanas' },
+  },
+
+  // ——— O planeta, agora ———
+
+  pianeta: {
+    title: 'O planeta', kicker: 'Agora',
+    narrate: 'Esta é a Terra, neste exato instante. Metade no dia, metade na noite. A linha da sombra desliza sobre o equador a 1.670 quilômetros por hora.',
+    facts: [
+      ['1.670 km/h', 'a velocidade da rotação no equador'],
+      ['8′ 20″', 'o tempo que a luz do Sol leva para chegar até aqui'],
+    ],
+    hour: 'a hora do globo que você vê: a luz é a de verdade',
+    text: 'Dia, noite e crepúsculo são calculados para o instante presente. As nuvens se deslocam com os ventos de hoje; as montanhas projetam sombra quando o Sol está baixo.',
+    source: 'NASA Blue Marble · NASA Black Marble · modelo de terreno Mapzen/AWS · ventos NOAA GFS',
+  },
+  respiro: {
+    title: 'O sopro', kicker: 'Os ventos de hoje',
+    narrate: (p: { where: string; kmh: string }) => `O ar nunca fica parado. Estes são os ventos de hoje: rios invisíveis que levam o calor dos trópicos rumo aos polos. O mais forte, agora, sopra ${p.where} a ${p.kmh} km/h.`,
+    strongest: (coords: string) => `o vento mais forte do momento, ${coords}`,
+    facts: [
+      ['10 m', 'a altura acima do solo em que é medido'],
+      ['× 22.000', 'quanto os rastros são acelerados, para que se possa vê-los andar'],
+    ],
+    text: 'Altas e baixas pressões giram em sentidos opostos nos dois hemisférios: é a rotação da Terra que curva os ventos. Toque num ponto para ler a velocidade e a direção.',
+    source: (time: string) => `Modelo NOAA GFS 0,5° · análise de ${time} UTC`,
+    pin: 'o vento mais forte, agora',
+  },
+  correnti: {
+    title: 'As correntes', kicker: 'Rios no mar',
+    narrate: 'Sob as ondas, o mar tem os seus próprios rios. A Corrente do Golfo transporta dezenas de vezes a água de todos os rios da Terra juntos, e leva um pouco dos trópicos até a Europa.',
+    facts: [
+      ['30 milhões', 'de metros cúbicos por segundo na Corrente do Golfo, ao largo da Flórida'],
+      ['1,2 milhão', 'de metros cúbicos por segundo: todos os rios do mundo juntos'],
+      ['15 m', 'a camada de água de superfície representada'],
+    ],
+    text: 'As correntes mostradas são as de um único dia de setembro: as grandes correntes mudam devagar de um ano para outro, enquanto os redemoinhos nas suas bordas nascem e morrem em poucas semanas.',
+    source: 'OSCAR · NOAA CoastWatch ERDDAP · 26 de setembro de 2014, resolução de 1/3°',
+  },
+  calore: {
+    title: 'O calor do mar', kicker: 'Um ano de temperatura do mar',
+    narrate: (p: { when: string; today: boolean; where: string; temp: string | null }) => `O mar é o grande aquecedor do planeta. O ponto mais quente, ${p.when}, ${p.today ? 'está' : 'estava'} ${p.where}: ${p.temp ? `${p.temp} graus` : 'mais de 32 graus'}. Veja a água quente subir para o norte no verão e voltar para o sul no inverno: um ano em poucos segundos.`,
+    hottest: (when: string, coords: string) => `o mar mais quente ${when}, ${coords}`,
+    facts: [
+      ['−1,8 °C', 'a temperatura em que a água do mar congela'],
+      ['1 km', 'a resolução do mapa original'],
+    ],
+    text: 'O oceano absorve mais de 90% do calor em excesso retido pelos gases de efeito estufa. As correntes quentes aparecem como línguas alaranjadas que sobem em direção aos polos.',
+    pin: 'o mar mais quente',
+  },
+  febbre: {
+    title: 'A febre', kicker: 'Um ano, comparado com o normal',
+    narrate: (p: { when: string; today: boolean; pct: string }) => `Em vermelho, o mar mais quente que o normal; em azul, o mais frio; mês após mês, durante um ano. ${cap(p.when)}, ${p.pct}% dos oceanos ${p.today ? 'estão' : 'estavam'} mais quentes que a média.`,
+    share: 'da superfície do mar acima da média',
+    strongest: (where: string) => `a anomalia mais forte, ${where}`,
+    over3: 'acima de +3',
+    normal: ['2003–2014', 'o período que serve de “normal”'],
+    text: 'Uma anomalia compara a temperatura de um dia com a média do mesmo dia nos anos de referência. As ondas de calor marinhas duram semanas e põem em apuros corais, peixes e pradarias submarinas.',
+    source: 'Anomalias GHRSST MUR, NASA JPL',
+    pin: 'a anomalia mais forte',
+  },
+  fioritura: {
+    title: 'O mar em flor', kicker: 'Um ano de fitoplâncton',
+    narrate: 'Cada brilho verde é uma pradaria invisível: bilhões de algas microscópicas, o fitoplâncton. Elas produzem cerca de metade do oxigênio que respiramos, e florescem onde chega a primavera, primeiro num hemisfério, depois no outro.',
+    oxygen: ['≈ 50%', 'do oxigênio do planeta vem do mar'],
+    days: (n: number) => `${n} ${n === 1 ? 'dia' : 'dias'}`,
+    daysLabel: 'de observações combinadas para tirar as nuvens',
+    range: 'miligramas de clorofila por metro cúbico, do azul ao verde',
+    text: 'As florações seguem as estações e as águas ricas em nutrientes: ao longo das costas, onde a água profunda aflora, e na primavera, nas altas latitudes. Em outubro é primavera no hemisfério sul.',
+  },
+  pioggia: {
+    title: 'A chuva', kicker: 'Vinte e quatro horas',
+    narrate: 'Um dia inteiro de chuva, em poucos segundos. Ao longo do equador, o ar quente sobe, esfria e devolve ao mar a água que o Sol lhe tinha tirado.',
+    interval: ['30 min', 'entre uma imagem e a seguinte da constelação GPM'],
+    hours: '24 horas',
+    since: (time: string) => `desde ${time} UTC`,
+    yearly: ['≈ 1 m', 'a chuva que cai em um ano, em média, sobre todo o planeta'],
+    text: (last: string) => `Cada quadro é uma estimativa de chuva feita por satélite; as transições entre uma imagem e outra são interpoladas. Último quadro: ${last} UTC.`,
+  },
+  fuoco: {
+    title: 'O fogo', kicker: 'Últimos sete dias',
+    narrate: (p: { thousands: string; approx: string }) => `Cada centelha é um incêndio visto do espaço. Em sete dias, os satélites contaram mais de ${p.thousands} mil. Quase todos são acesos por nós: para limpar os campos, para abrir espaço para o pasto.`,
+    count: 'focos de calor detectados em 7 dias',
+    facts: [
+      ['375 m', 'o tamanho do pixel que enxerga o fogo'],
+      ['2 vezes', 'por dia, de dia e de noite, o NOAA‑20 passa sobre cada ponto'],
+    ],
+    text: 'O brilho de cada ponto é proporcional à potência do fogo; os mais recentes brilham mais. Na África Austral e na América do Sul é a estação das queimadas agrícolas.',
+    source: (day: string) => `NASA FIRMS · VIIRS NOAA-20 · atualizado em ${day}`,
+  },
+  terremoti: {
+    title: 'A Terra treme', kicker: 'Últimos sete dias',
+    narrate: (p: { count: string; mag: string; where: string }) => `Em sete dias, a Terra tremeu ${p.count} vezes com magnitude 2,5 ou mais: a semana passa em poucos segundos. O mais forte, de magnitude ${p.mag}, foi ${p.where}. Juntos, eles desenham as bordas das placas.`,
+    count: 'terremotos de magnitude 2,5 ou mais nos últimos 7 dias',
+    strong: 'de magnitude 5 ou mais',
+    deepest: (where: string) => `o mais profundo, ${where}`,
+    text: 'Cada ponto é um terremoto, do tamanho da sua magnitude e colorido conforme a profundidade: âmbar na superfície, rosa em profundidade média, violeta abaixo dos 300 km, onde uma placa mergulha sob a outra. Fora dos Estados Unidos, a rede do USGS registra sobretudo os terremotos de magnitude 4 para cima.',
+    source: (day: string) => `USGS Earthquake Hazards Program · atualizado em ${day}`,
+    pin: (mag: string) => `magnitude ${mag}`,
+    pinSub: 'o mais forte da semana',
+  },
+  ghiaccio: {
+    title: 'O gelo', kicker: 'Um ano nos polos',
+    narrate: (p: { when: string; today: boolean; area: string }) => `No topo do mundo, o mar congela. ${cap(p.when)}, o gelo do Ártico ${p.today ? 'cobre' : 'cobria'} ${p.area} ${milhoes(p.area)} de quilômetros quadrados, e a cada inverno se expande por uma área maior que a Europa. Aqui passa um ano: o Ártico derrete enquanto a Antártida congela.`,
+    area: (mkm2: string) => `${mkm2} ${milhoes(mkm2)} de km²`,
+    arctic: (when: string) => `gelo marinho do Ártico, ${when}`,
+    antarctic: 'gelo ao redor da Antártida',
+    decline: ['−12%', 'por década: a queda do mínimo de verão do Ártico desde 1979'],
+    text: 'A extensão é a soma das áreas com pelo menos 15% de gelo, ponderada pela concentração. O gelo reflete a luz do Sol: quando ele recua, o mar escuro absorve mais calor.',
+    source: 'GHRSST GAMSSA, Bureau of Meteorology · concentração do gelo',
+  },
+  luci: {
+    title: 'As luzes', kicker: 'A noite, agora',
+    narrate: 'Quando a noite cai, o planeta se acende. Estas luzes são o retrato mais fiel de onde vivemos: ao longo das costas, dos rios, das estradas.',
+    facts: [
+      ['≈ 57%', 'da humanidade vive em cidades'],
+      ['742 m', 'o pixel com que um satélite fotografa as luzes'],
+      ['2016', 'o ano do mosaico noturno, sem nuvens nem Lua'],
+    ],
+    text: 'O rio de luz do Nilo, a teia da Europa, as costas do Japão: as luzes contam também o que falta, como as grandes florestas e os desertos, quase às escuras.',
+    source: 'NASA Black Marble · VIIRS 2016',
+  },
+  lassu: {
+    title: 'Lá em cima', kicker: 'A Estação Espacial, agora',
+    narrate: (p: { alt: string; speed: string }) => `E lá em cima, a ${p.alt} quilômetros de altitude, a Estação Espacial gira em torno de tudo isto a ${p.speed} km/h. Uma volta completa a cada 92 minutos: dezesseis amanheceres por dia.`,
+    arrive: (p: { below: string; day: boolean | null; minutes: string }) => {
+      const min = p.minutes === '1' ? 'minuto' : 'minutos';
+      return `Isto é o que a tripulação vê agora pela janela: abaixo dela, ${p.below}.${p.day === null ? '' : p.day ? ` A bordo é dia: o próximo pôr do sol é daqui a ${p.minutes} ${min}.` : ` A bordo é noite: o próximo nascer do sol é daqui a ${p.minutes} ${min}.`}`;
+    },
+    alt: 'de altitude, neste momento',
+    speed: 'cerca de 7,7 km a cada segundo',
+    dawns: ['16', 'amanheceres e anoiteceres por dia para a tripulação'],
+    text: 'A posição é calculada agora a partir dos elementos orbitais publicados pelo CelesTrak. A linha mostra uma órbita completa: meia hora no passado e uma hora no futuro. De perto, a estação voa com a sua atitude real: os módulos no sentido do movimento, a treliça perpendicular à órbita.',
+    source: 'Elementos orbitais NORAD 25544 · CelesTrak · propagação SGP4 · modelo 3D da NASA',
+  },
+
+  // ——— A natureza ———
+
+  verde: {
+    title: 'A respiração verde', kicker: 'Um ano de vegetação',
+    narrate: (p: { hi: string; hiMonth: string; lo: string; loMonth: string }) => `A Terra respira com as estações. Entre 30 e 65 graus norte, as folhas cobrem ${p.hi}% das terras em ${p.hiMonth}, e apenas ${p.lo}% em ${p.loMonth}. Depois, o verde passa para o outro hemisfério.`,
+    dense: (month: string) => `das terras entre 30° e 65° norte com vegetação densa (NDVI acima de 0,5), em ${month}`,
+    sparse: (month: string) => `em ${month}`,
+    months: (n: number) => `${n} ${n === 1 ? 'mês' : 'meses'}`,
+    span: (from: string, to: string) => `de ${from} a ${to}`,
+    text: 'O NDVI compara a luz vermelha, que as folhas absorvem, com o infravermelho próximo, que elas refletem: quanto mais alto, mais densa e ativa é a vegetação. Cada quadro é a média de um mês; onde as nuvens cobrem o mês inteiro, o valor falta.',
+    source: 'NASA VIIRS (Suomi NPP) · NDVI mensal · GIBS',
+  },
+  foreste: {
+    title: 'As florestas perdidas', kicker: 'Cobertura arbórea perdida, 2001 – 2024',
+    narrate: (peak: number) => `Cada ponto é um pedaço de floresta que já não existe: cortado, queimado, transformado em lavoura. Brilha no ano em que desapareceu, depois vira cicatriz. O pior ano de toda a série foi ${peak}.`,
+    peak: 'o ano com a maior perda desde 2001',
+    recent: (from: number, to: number) => `da perda de toda a série ocorreu nos últimos cinco anos (${from}–${to})`,
+    early: (from: number, to: number) => `nos cinco primeiros (${from}–${to})`,
+    text: 'Perda de cobertura arbórea: árvores de pelo menos 5 metros de altura que sumiram de um pixel de 30 metros, por incêndio, corte ou doença. Não distingue o desmatamento do manejo florestal, nem conta o que volta a crescer. Aqui está reduzida a cerca de 10 km por ponto; as parcelas de cada ano são calculadas sobre este mapa, ponderadas pela intensidade.',
+    source: 'Hansen et al. 2013, University of Maryland · Global Forest Watch v1.12 · CC BY 4.0',
+  },
+  aria: {
+    title: 'O ar', kicker: 'Um ano de poeira e fumaça',
+    narrate: (p: { where: string; month: string; worst: string }) => `Areia do Saara sobre o Atlântico, fumaça dos incêndios, smog das cidades: o ar carrega tudo. No último ano, o véu mais espesso esteve sobre ${art(p.where)}, em ${p.month}; o mês mais turvo do planeta foi ${p.worst}.`,
+    thickest: (where: string, month: string) => `a maior espessura óptica do ano: ${where}, ${month}`,
+    worst: 'o mês com o ar mais carregado, em média no planeta',
+    wavelength: ['550 nm', 'o comprimento de onda da luz verde em que é medida'],
+    text: 'A espessura óptica dos aerossóis diz quanta luz do Sol é barrada pelas partículas em suspensão: 0,1 é ar limpo; acima de 1, o céu fica opaco. São estimativas da reanálise MERRA-2 da NASA, que funde satélites e um modelo da atmosfera; sozinhas, não distinguem a poeira da fumaça.',
+    source: 'NASA GMAO · MERRA-2 · espessura óptica dos aerossóis a 550 nm, mensal · GIBS',
+  },
+  coralli: {
+    title: 'Os recifes de coral', kicker: 'Um ano de calor no mar',
+    narrate: (p: { now: string; peakMonth: string | null; peak: string }) => `Quando o mar fica quente demais por semanas, os corais expulsam as algas que os alimentam e ficam brancos. Hoje, ${p.now}% dos mares tropicais estão acima do limiar: ${p.peakMonth ? `no último ano, o pico foi em ${p.peakMonth}, com ${p.peak}%` : 'é o valor mais alto do último ano'}.`,
+    alert: 'dos mares tropicais (30° N – 30° S) acima de 4 °C-semanas, onde o branqueamento é provável',
+    severe: 'acima de 8, onde muitos corais morrem',
+    worst: (pct: string) => `o mês mais crítico do último ano (${pct}%)`,
+    text: 'As semanas de calor (Degree Heating Weeks) somam, ao longo das últimas doze semanas, quanto a água ultrapassou a temperatura máxima habitual daquele lugar. A medida vale para todo o mar: os recifes de coral só existem onde a água é rasa e límpida.',
+    source: 'NOAA Coral Reef Watch v3.1 · 5 km · via PacIOOS ERDDAP',
+  },
+
+  // ——— As pessoas ———
+
+  wdiNote: WDI_NOTE,
+  popolazione: {
+    title: 'Oito bilhões', kicker: 'População, 1960 – 2025',
+    narrate: (p: { then: string; now: string }) => `Em 1960, éramos ${p.then} ${bilhoes(p.then)}. Em 2025, somos ${p.now}. Cada ponto de luz é um quarto de milhão de pessoas: ele se acende onde elas vivem, ano após ano.`,
+    billions: (b: string) => `${b} ${bilhoes(b)}`,
+    total: 'habitantes em 2025, soma dos 217 territórios',
+    dot: ['250.000', 'pessoas para cada ponto de luz'],
+    largest: (people: string) => `o país mais populoso: ${people}`,
+    text: 'Os pontos estão espalhados dentro de cada país, onde há luzes à noite (NASA Black Marble): mostram onde se vive, não endereços exatos. A cada ano se acendem tantos quantos forem necessários para contar a população daquele ano.',
+    borders: 'fronteiras Natural Earth',
+  },
+  nascite: {
+    title: 'Menos nascimentos', kicker: 'Natalidade, 1960 – 2024',
+    narrate: (p: { then: string; now: string; top: string }) => `Em 1960, nasciam ${p.then} crianças para cada mil pessoas. Em 2024, ${p.now}. A queda chegou a quase toda parte; hoje, a taxa mais alta está ${em(p.top)}.`,
+    world: 'nascimentos por mil habitantes no mundo, em 2024 (média ponderada pela população)',
+    highest: (country: string) => `a mais alta, ${em(country)}`,
+    lowest: (country: string) => `a mais baixa, ${em(country)}`,
+    text: 'Taxa bruta: depende também da idade da população.',
+  },
+  vita: {
+    title: 'Vidas mais longas', kicker: 'Expectativa de vida, 1960 – 2024',
+    narrate: (p: { then: string; now: string }) => `Em 1960, quem nascia podia esperar viver, em média, ${p.then} anos. Hoje, ${p.now}. É uma das grandes conquistas do século, e ainda não terminou.`,
+    years: (y: string) => `${y} anos`,
+    world: 'expectativa de vida ao nascer no mundo, 2024 (média ponderada pela população)',
+    highest: (country: string) => `a mais alta, ${em(country)}`,
+    lowest: (country: string) => `a mais baixa, ${em(country)}`,
+    text: 'Medida de período: quanto viveria quem nasce hoje se os riscos de morte em cada idade continuassem os daquele ano. As quedas repentinas são guerras, fomes e epidemias.',
+  },
+  bambini: {
+    title: 'As crianças', kicker: 'Mortalidade de menores de cinco anos, 1960 – 2024',
+    narrate: (p: { many: string; top: string; now: string; then: string | null }) => `Em 1960, em ${p.many} países, mais de uma criança em cada quatro morria antes dos cinco anos. Hoje, a taxa mais alta está ${em(p.top)}: ${p.now} por mil${p.then ? `, contra ${p.then} em 1960` : ''}.`,
+    then: 'países em 1960 com pelo menos 250 mortes por mil nascidos',
+    now: 'países em 2024 com pelo menos 100 por mil',
+    goal: ['ODS 3.2', 'a meta da ONU: no máximo 25 por mil até 2030'],
+    text: 'Estimativas de período do UN IGME: não são contagens de óbitos, nem o destino de uma criança em particular; pequenas diferenças não são diferenças certas.',
+  },
+  saldo: {
+    title: 'O saldo', kicker: 'Nascimentos menos óbitos, 1960 – 2024',
+    narrate: (n: string) => `Nascimentos menos óbitos. Em ${n} países, hoje, morre mais gente do que nasce: em azul, sobretudo na Europa e no Leste Asiático. Onde é âmbar, a população cresce por si só.`,
+    now: 'países com mais óbitos do que nascimentos em 2024',
+    then: 'quantos eram em 1960',
+    world: 'saldo natural do mundo, em 2024',
+    text: 'Calculado pelo Upari como natalidade menos mortalidade, para o mesmo país e ano, só onde existem as duas. As migrações não entram na conta: um país pode crescer mesmo com saldo negativo.',
+  },
+  luce: {
+    title: 'A luz elétrica', kicker: 'Acesso à eletricidade, 2000 – 2024',
+    narrate: (p: { then: string; now: string; without: string }) => `Em 2000, ${p.then}% das pessoas tinham eletricidade; hoje, ${p.now}%. Ainda vivem sem ela ${p.without} ${milhoes(p.without)} de pessoas, sobretudo na África Subsaariana.`,
+    world: 'das pessoas com eletricidade em 2024 (média ponderada pela população)',
+    millions: (m: string) => `${m} ${milhoes(m)}`,
+    first: (country: string) => `de pessoas sem eletricidade ${em(country)}`,
+    second: (country: string) => em(country),
+    text: 'Acesso pela rede, por minirredes ou por sistemas autônomos: não diz nada sobre continuidade, qualidade ou preço. Começa em 2000 porque, antes disso, muitos países não têm valores.',
+  },
+  fuga: {
+    title: 'Em fuga', kicker: 'Pedidos de asilo, 2011 – 2024',
+    narrate: (p: { year: number; total: string }) => `Quem foge da Síria, da Ucrânia e do Afeganistão, e o país onde pediu asilo. A guerra síria chega ao auge em ${p.year}: ${p.total} pedidos num único ano.`,
+    peak: (origin: string, year: number) => `pedidos vindos ${de(origin)}, em ${year} (ano de pico)`,
+    text: 'Novos pedidos individuais apresentados às autoridades governamentais, por país de apresentação. Só três origens: não são todas as migrações, nem pessoas únicas. Desde 2022, a maior parte de quem deixou a Ucrânia recebeu na União Europeia a proteção temporária, que não é contada aqui. Os arcos ligam as capitais: são esquemáticos, não viagens observadas.',
+    source: 'UNHCR, Refugee Data Portal · AsylumApplications, CC BY 4.0',
+  },
+};
+
+export default pt;

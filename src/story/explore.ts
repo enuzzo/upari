@@ -1,59 +1,65 @@
 import type { Globe, Look } from '../engine/globe';
-import { ATLAS, type AtlasId } from '../engine/atlas';
+import { ATLAS, atlasText, type AtlasId } from '../engine/atlas';
 import { cssGradient } from '../engine/palettes';
 import { CHAPTERS, type Chapter, type Legend } from './chapters';
 import { PEOPLE } from './people';
 import { NATURE } from './nature';
 import type { Director } from './director';
+import { t } from '../i18n';
+import { num } from '../i18n/format';
 
 // Free exploration: every layer of both stories, the year, the hour, the sky, the station,
 // and a link that remembers what is on screen.
 
-interface Layer { id: string; label: string; look: () => Partial<Look>; legend?: Legend; people?: boolean }
+type LayerId = keyof typeof t.explore.layers;
+interface Layer { id: LayerId; look: () => Partial<Look>; legend?: Legend; people?: boolean }
 
 const chapterLook = (id: string) => () => ({ ...CHAPTERS.find((c) => c.id === id)!.look });
 const chapterLegend = (id: string) => CHAPTERS.find((c) => c.id === id)?.legend;
 const peopleBase = { sun: 'studio' as const, clouds: 0, dim: 0.66, desat: 0.6, night: 0, atmo: 0.8 };
-const atlasLayer = (id: string, label: string, atlas: AtlasId, extra: Partial<Look> = {}): Layer => ({
-  id, label, people: true, look: () => ({ ...peopleBase, atlas, ...extra }),
-  legend: ATLAS[atlas].fill ? { stops: ATLAS[atlas].palette, left: ATLAS[atlas].left, right: ATLAS[atlas].right, title: ATLAS[atlas].title } : undefined,
+const atlasLayer = (id: LayerId, atlas: AtlasId, extra: Partial<Look> = {}): Layer => ({
+  id, people: true, look: () => ({ ...peopleBase, atlas, ...extra }),
+  legend: ATLAS[atlas].fill ? {
+    stops: ATLAS[atlas].palette,
+    get left() { return atlasText(atlas).left; }, get right() { return atlasText(atlas).right; }, get title() { return atlasText(atlas).title; },
+  } : undefined,
 });
 
 const PLANET: Layer[] = [
-  { id: 'adesso', label: 'La Terra, adesso', look: chapterLook('pianeta') },
-  { id: 'venti', label: 'Venti', look: chapterLook('respiro'), legend: chapterLegend('respiro') },
-  { id: 'correnti', label: 'Correnti', look: chapterLook('correnti'), legend: chapterLegend('correnti') },
-  { id: 'mare', label: 'Temperatura del mare', look: chapterLook('calore'), legend: chapterLegend('calore') },
-  { id: 'anomalia', label: 'Mare più caldo del solito', look: chapterLook('febbre'), legend: chapterLegend('febbre') },
-  { id: 'plancton', label: 'Fitoplancton', look: chapterLook('fioritura'), legend: chapterLegend('fioritura') },
-  { id: 'pioggia', label: 'Pioggia, ultime 24 ore', look: chapterLook('pioggia'), legend: chapterLegend('pioggia') },
-  { id: 'fuochi', label: 'Fuochi, ultimi 7 giorni', look: chapterLook('fuoco') },
-  { id: 'terremoti', label: 'Terremoti, ultimi 7 giorni', look: () => ({ ...chapterLook('terremoti')(), quakeReplay: 0 }), legend: chapterLegend('terremoti') },
-  { id: 'ghiaccio', label: 'Ghiaccio marino', look: chapterLook('ghiaccio'), legend: chapterLegend('ghiaccio') },
-  { id: 'luci', label: 'Le luci della notte', look: chapterLook('luci') },
-  { id: 'stazione', label: 'Stazione Spaziale', look: chapterLook('lassu') },
+  { id: 'adesso', look: chapterLook('pianeta') },
+  { id: 'venti', look: chapterLook('respiro'), legend: chapterLegend('respiro') },
+  { id: 'correnti', look: chapterLook('correnti'), legend: chapterLegend('correnti') },
+  { id: 'mare', look: chapterLook('calore'), legend: chapterLegend('calore') },
+  { id: 'anomalia', look: chapterLook('febbre'), legend: chapterLegend('febbre') },
+  { id: 'plancton', look: chapterLook('fioritura'), legend: chapterLegend('fioritura') },
+  { id: 'pioggia', look: chapterLook('pioggia'), legend: chapterLegend('pioggia') },
+  { id: 'fuochi', look: chapterLook('fuoco') },
+  { id: 'terremoti', look: () => ({ ...chapterLook('terremoti')(), quakeReplay: 0 }), legend: chapterLegend('terremoti') },
+  { id: 'ghiaccio', look: chapterLook('ghiaccio'), legend: chapterLegend('ghiaccio') },
+  { id: 'luci', look: chapterLook('luci') },
+  { id: 'stazione', look: chapterLook('lassu') },
 ];
 
 const HUMAN: Layer[] = [
-  atlasLayer('popolazione', 'Popolazione', 'population', { dust: 1, dim: 0.76, bloom: 1.2 }),
-  atlasLayer('nascite', 'Natalità', 'birth'),
-  atlasLayer('mortalita', 'Mortalità', 'death'),
-  atlasLayer('saldo', 'Saldo naturale', 'balance'),
-  atlasLayer('vita', 'Speranza di vita', 'life'),
-  atlasLayer('bambini', 'Mortalità sotto i 5 anni', 'under5'),
-  atlasLayer('elettricita', 'Accesso all’elettricità', 'electricity'),
-  atlasLayer('disoccupazione', 'Disoccupazione (stime ILO)', 'unemployment'),
+  atlasLayer('popolazione', 'population', { dust: 1, dim: 0.76, bloom: 1.2 }),
+  atlasLayer('nascite', 'birth'),
+  atlasLayer('mortalita', 'death'),
+  atlasLayer('saldo', 'balance'),
+  atlasLayer('vita', 'life'),
+  atlasLayer('bambini', 'under5'),
+  atlasLayer('elettricita', 'electricity'),
+  atlasLayer('disoccupazione', 'unemployment'),
   {
-    id: 'asilo', label: 'Domande di asilo', people: true, look: () => ({ ...peopleBase, dim: 0.72, migration: 1, bloom: 1.3 }),
+    id: 'asilo', people: true, look: () => ({ ...peopleBase, dim: 0.72, migration: 1, bloom: 1.3 }),
     legend: PEOPLE.find((c) => c.id === 'fuga')!.legend,
   },
 ];
 
 const NATURE_LAYERS: Layer[] = [
-  { id: 'verde', label: 'Vegetazione, mese per mese', look: () => ({ ...NATURE.find((c) => c.id === 'verde')!.look }), legend: NATURE.find((c) => c.id === 'verde')!.legend },
-  { id: 'foreste', label: 'Foreste perdute, 2001 – 2024', people: true, look: () => ({ ...NATURE.find((c) => c.id === 'foreste')!.look, years: null }), legend: NATURE.find((c) => c.id === 'foreste')!.legend },
-  { id: 'aria', label: 'Polveri e fumo nell’aria', look: () => ({ ...NATURE.find((c) => c.id === 'aria')!.look }), legend: NATURE.find((c) => c.id === 'aria')!.legend },
-  { id: 'coralli', label: 'Calore sulle barriere coralline', look: () => ({ ...NATURE.find((c) => c.id === 'coralli')!.look }), legend: NATURE.find((c) => c.id === 'coralli')!.legend },
+  { id: 'verde', look: () => ({ ...NATURE.find((c) => c.id === 'verde')!.look }), legend: NATURE.find((c) => c.id === 'verde')!.legend },
+  { id: 'foreste', people: true, look: () => ({ ...NATURE.find((c) => c.id === 'foreste')!.look, years: null }), legend: NATURE.find((c) => c.id === 'foreste')!.legend },
+  { id: 'aria', look: () => ({ ...NATURE.find((c) => c.id === 'aria')!.look }), legend: NATURE.find((c) => c.id === 'aria')!.legend },
+  { id: 'coralli', look: () => ({ ...NATURE.find((c) => c.id === 'coralli')!.look }), legend: NATURE.find((c) => c.id === 'coralli')!.legend },
 ];
 
 const LAYERS = [...PLANET, ...NATURE_LAYERS, ...HUMAN];
@@ -92,22 +98,7 @@ export class Explorer {
   }
 
   private build() {
-    const group = (title: string, layers: Layer[]) => {
-      const box = document.createElement('div');
-      box.className = 'ex-group';
-      box.innerHTML = `<div class="ex-title">${title}</div>`;
-      for (const l of layers) {
-        const b = document.createElement('button');
-        b.className = 'ex-layer';
-        b.dataset.layer = l.id;
-        b.textContent = l.label;
-        b.addEventListener('click', () => this.select(l.id));
-        box.appendChild(b);
-      }
-      return box;
-    };
-    const list = $('ex-layers');
-    list.append(group('Il pianeta', PLANET), group('La natura', NATURE_LAYERS), group('Le persone', HUMAN));
+    this.buildLayers();
     const year = $<HTMLInputElement>('ex-year');
     year.addEventListener('input', () => { this.year = Number(year.value); this.globe.setYear(this.year); this.refresh(); });
     $('ex-play').addEventListener('click', () => this.playYears());
@@ -123,6 +114,37 @@ export class Explorer {
     toggle('ex-clouds', 'clouds');
     toggle('ex-spin', 'spin');
     $('ex-iss').addEventListener('click', () => this.reachStation());
+  }
+
+  private buildLayers() {
+    const group = (title: string, layers: Layer[]) => {
+      const box = document.createElement('div');
+      box.className = 'ex-group';
+      const head = document.createElement('div');
+      head.className = 'ex-title';
+      head.textContent = title;
+      box.appendChild(head);
+      for (const l of layers) {
+        const b = document.createElement('button');
+        b.className = 'ex-layer';
+        b.dataset.layer = l.id;
+        b.textContent = t.explore.layers[l.id];
+        b.addEventListener('click', () => this.select(l.id));
+        box.appendChild(b);
+      }
+      return box;
+    };
+    const list = $('ex-layers');
+    list.innerHTML = '';
+    const g = t.explore.groups;
+    list.append(group(g.planet, PLANET), group(g.nature, NATURE_LAYERS), group(g.people, HUMAN));
+  }
+
+  /** The words follow the language. */
+  relabel() {
+    this.buildLayers();
+    this.refresh();
+    this.applyTime();
   }
 
   /** Open or close the panel; opening during a story leaves the story where it is. */
@@ -165,7 +187,7 @@ export class Explorer {
 
   private applyTime() {
     this.globe.timeOffset = this.hours * 3600e3;
-    $('ex-hours-label').textContent = this.hours === 0 ? 'adesso' : `${this.hours > 0 ? '+' : '−'}${Math.abs(this.hours)} h`;
+    $('ex-hours-label').textContent = this.hours === 0 ? t.explore.now : `${this.hours > 0 ? '+' : '−'}${num(Math.abs(this.hours), this.hours % 1 ? 2 : 0)} h`;
   }
 
   private playYears() {

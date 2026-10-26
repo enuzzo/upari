@@ -44,8 +44,8 @@ body.started .stories { opacity: 1; visibility: visible; transition-delay: 0.6s,
 .brand { font-family: var(--serif); font-size: 30px; letter-spacing: 0.01em; line-height: 1; opacity: 0; visibility: hidden; transition: opacity 1.2s var(--ease) 0.6s, visibility 0s 1.8s; }
 /* The title already says Upari: the small mark appears once the planet takes the stage. */
 body.started .brand { opacity: 1; visibility: visible; transition-delay: 0.6s, 0s; }
-.top-actions { display: flex; align-items: center; gap: 6px; }
-.clock { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); text-shadow: var(--halo-soft); margin-right: 14px; font-variant-numeric: tabular-nums; }
+.top-actions { display: flex; align-items: center; gap: 6px; margin-right: 46px; }
+.clock { white-space: nowrap; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); text-shadow: var(--halo-soft); margin-right: 14px; font-variant-numeric: tabular-nums; }
 .icon-btn {
   width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: var(--ink-2); filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.8));
   transition: color 0.3s, background 0.3s;
@@ -157,7 +157,7 @@ body.started .brand { opacity: 1; visibility: visible; transition-delay: 0.6s, 0
 .legend { text-shadow: var(--halo-soft); }
 .legend-title { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 10px; }
 .legend-bar { height: 6px; border-radius: 3px; box-shadow: 0 0 24px rgba(255, 255, 255, 0.06); }
-.legend-ends { display: flex; justify-content: space-between; margin-top: 8px; font-family: var(--serif); font-size: 17px; color: var(--ink); }
+.legend-ends { direction: ltr; display: flex; justify-content: space-between; margin-top: 8px; font-family: var(--serif); font-size: 17px; color: var(--ink); }
 
 /* ——— Telemetry ——— */
 .telemetry {
@@ -305,7 +305,8 @@ body.exploring .caption { opacity: 0; pointer-events: none; }
 .veil > * { position: relative; }
 .veil.gone { pointer-events: none; }
 .veil.gone .intro { opacity: 0; transform: translateY(-14px); filter: blur(8px); }
-.intro { max-width: 640px; transition: opacity 1.4s var(--ease), transform 1.6s var(--ease), filter 1.4s var(--ease); }
+/* As wide as its content: in Arabic it reads right to left without drifting onto the planet. */
+.intro { width: fit-content; max-width: 640px; transition: opacity 1.4s var(--ease), transform 1.6s var(--ease), filter 1.4s var(--ease); }
 .intro-mark {
   font-family: var(--serif); font-size: clamp(110px, 13vw, 220px); line-height: 0.82; letter-spacing: -0.02em;
   /* The gradient is clipped to the text box: pad it so the descender of the p is painted. */
@@ -333,7 +334,7 @@ body.exploring .caption { opacity: 0; pointer-events: none; }
 .cta-line:hover { box-shadow: inset 0 0 0 1px var(--ink), 0 0 40px 2px rgba(255, 224, 180, 0.18); }
 .next-story { display: none; color: var(--warm); border-color: rgba(255, 217, 160, 0.4); }
 .next-story.on { display: inline-flex; }
-.cta:hover { transform: translateY(-1px); box-shadow: 0 0 40px 2px rgba(255, 224, 180, 0.28); }
+.cta:hover { box-shadow: 0 0 40px 2px rgba(255, 224, 180, 0.28); }
 .ghost { font-size: 13px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-2); text-shadow: 0 0 16px rgba(0, 0, 0, 0.9); padding: 18px 0; border-bottom: 1px solid transparent; transition: color 0.3s, border-color 0.3s; }
 .ghost:hover { color: var(--ink); border-color: var(--ink-3); }
 .intro-actions button:disabled { opacity: 0.35; cursor: progress; }
@@ -356,7 +357,7 @@ body.exploring .caption { opacity: 0; pointer-events: none; }
   opacity: 0; pointer-events: none; transition: opacity 0.6s var(--ease);
 }
 .credits.on { opacity: 1; pointer-events: auto; }
-.credits-inner { position: relative; width: min(680px, 86vw); max-height: 86vh; overflow: auto; padding: 56px 56px 44px; user-select: text; }
+.credits-inner { position: relative; width: min(680px, 86vw); max-height: 86vh; overflow: auto; padding: 56px 56px 44px; user-select: text; scrollbar-width: thin; scrollbar-color: var(--ink-4) transparent; }
 .credits h2 { font-family: var(--serif); font-weight: 400; font-size: 44px; line-height: 1.05; margin: 0 0 14px; }
 .credits p { color: var(--ink-2); line-height: 1.6; font-size: 15px; }
 .credits ul { list-style: none; padding: 0; margin: 26px 0; display: grid; gap: 10px; }
@@ -384,3 +385,127 @@ body.reading .anchors { opacity: 0; }
 .tile-credit.on { opacity: 1; pointer-events: auto; }
 body.started .tile-credit.on ~ .hint { opacity: 0; }
 .ex-close { top: 6px; right: 8px; }
+
+/* ——— Language, top right: above the opening veil, so it can be chosen before starting ——— */
+.lang {
+  position: fixed; top: calc(var(--gutter) * 0.55); right: var(--gutter); z-index: 26;
+  opacity: 0; transition: opacity 1.6s var(--ease);
+}
+body.ready .lang { opacity: 1; }
+body.reading .lang { opacity: 0; pointer-events: none; transition-duration: 0.4s; }
+.lang-btn {
+  display: grid; place-items: center; height: 38px; min-width: 38px; padding: 0 8px; border-radius: 19px;
+  font-size: 11.5px; font-weight: 600; letter-spacing: 0.14em; color: var(--ink-2); text-shadow: var(--halo-soft);
+  transition: color 0.3s, background 0.3s;
+}
+.lang-btn:hover, .lang.open .lang-btn { color: var(--ink); background: rgba(255, 255, 255, 0.06); }
+.lang-list {
+  position: absolute; top: 46px; right: 0; margin: 0; padding: 8px 0; list-style: none; min-width: 170px;
+  background: rgba(4, 6, 10, 0.92); backdrop-filter: blur(10px); border: 1px solid var(--ink-4); border-radius: 14px;
+  opacity: 0; visibility: hidden; transform: translateY(-6px);
+  transition: opacity 0.3s var(--ease), transform 0.4s var(--ease), visibility 0s 0.4s;
+}
+.lang.open .lang-list { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+.lang-list button {
+  display: block; width: 100%; text-align: start; padding: 6px 18px; font-family: var(--serif); font-size: 19px; line-height: 1.3;
+  color: var(--ink-2); transition: color 0.2s, background 0.2s;
+}
+.lang-list button:hover { color: var(--ink); background: rgba(255, 255, 255, 0.05); }
+.lang-list button.current { color: var(--warm); }
+/* Each name in its own script, whatever the language of the page. */
+.lang-list button[lang=ru] { font-family: 'Cormorant Garamond', var(--serif); }
+.lang-list button[lang=zh] { font-family: 'Noto Serif SC', var(--serif); }
+.lang-list button[lang=ja] { font-family: 'Noto Serif JP', var(--serif); }
+.lang-list button[lang=ko] { font-family: 'Noto Serif KR', var(--serif); }
+.lang-list button[lang=ar] { font-family: 'Noto Naskh Arabic', var(--serif); }
+.lang-list button[lang=hi] { font-family: 'Noto Serif Devanagari', var(--serif); }
+
+/* ——— Footer: © year, version; it opens "Why Upari" ——— */
+.footer {
+  position: fixed; right: var(--gutter); bottom: 9px; z-index: 26;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-3); text-shadow: var(--halo-soft);
+  opacity: 0; transition: opacity 1.6s var(--ease) 2.2s, color 0.3s, bottom 1.2s var(--ease), right 1.2s var(--ease);
+}
+body.ready .footer { opacity: 1; }
+/* On the opening title it sits where the signature used to be. */
+body:not(.started) .footer { right: calc(var(--gutter) * 1.6); bottom: calc(var(--gutter) * 0.9); font-size: 11px; }
+.footer:hover { color: var(--ink); }
+
+/* ——— Why Upari ——— */
+.about { z-index: 31; }
+.about-inner { width: min(620px, 88vw); }
+.about-kicker { font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--warm); margin-bottom: 14px; }
+.about h2 { font-size: clamp(44px, 5vw, 64px); line-height: 1; margin-bottom: 26px; }
+.about h3 { font-family: var(--serif); font-weight: 400; font-size: 28px; line-height: 1.1; margin: 34px 0 10px; color: var(--ink); }
+.about p { font-size: 16px; }
+.about .about-lead { font-family: var(--serif); font-size: 22px; line-height: 1.4; color: var(--ink); }
+.about-oath { margin: 18px 0; }
+.about-oath b { display: block; font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 2.6vw, 34px); line-height: 1.2; color: var(--warm); }
+.about-actions { display: flex; align-items: center; gap: 26px; flex-wrap: wrap; margin: 34px 0 26px; }
+.about-actions .cta { text-decoration: none; display: inline-block; }
+.about-link { font-size: 13px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--ink-4); padding-bottom: 3px; }
+.about-link:hover { color: var(--ink); border-color: var(--ink-3); }
+.about .about-signoff { font-family: var(--serif); font-style: italic; font-size: 20px; color: var(--ink-3); margin: 0; }
+
+/* ——— Other scripts ——— */
+:root[lang=ru] { --serif: 'Instrument Serif', 'Cormorant Garamond', Georgia, serif; }
+:root[lang=zh] { --serif: 'Instrument Serif', 'Noto Serif SC', serif; --sans: 'Inter Tight', 'Noto Sans SC', sans-serif; }
+:root[lang=ja] { --serif: 'Instrument Serif', 'Noto Serif JP', serif; --sans: 'Inter Tight', 'Noto Sans JP', sans-serif; }
+:root[lang=ko] { --serif: 'Instrument Serif', 'Noto Serif KR', serif; --sans: 'Inter Tight', 'Noto Sans KR', sans-serif; }
+:root[lang=ar] { --serif: 'Instrument Serif', 'Noto Naskh Arabic', serif; --sans: 'Inter Tight', 'Noto Sans Arabic', sans-serif; }
+:root[lang=hi] { --serif: 'Instrument Serif', 'Noto Serif Devanagari', serif; --sans: 'Inter Tight', 'Noto Sans Devanagari', sans-serif; }
+/* Tracking breaks Arabic joining and the Devanagari headline; in Chinese, Japanese and Korean it only loosens the text. */
+:root:is([lang=ar], [lang=hi]) body *:not(.intro-mark):not(.brand) { letter-spacing: 0 !important; }
+:root:is([lang=zh], [lang=ja], [lang=ko]) body *:not(.intro-mark):not(.brand) { letter-spacing: 0.04em !important; }
+/* No true italics in these scripts. */
+:root:is([lang=zh], [lang=ja], [lang=ko], [lang=ar], [lang=hi]) :is(.intro-line, .line em, .about-signoff, .search input::placeholder) { font-style: normal; }
+/* Taller letters: give the big titles room. */
+:root:is([lang=zh], [lang=ja], [lang=ko], [lang=ar], [lang=hi]) :is(.title, .drawer h2, .credits h2, .about h2) { line-height: 1.2; }
+
+/* ——— The buttons of the opening title (src/intro.ts, after React Bits) ——— */
+/* The first story on its own row, the others below it: no label ever breaks in two. */
+.intro-actions { flex-wrap: wrap; row-gap: 22px; }
+.intro-actions .break { flex-basis: 100%; height: 0; }
+.intro-actions .cta, .intro-actions .ghost { white-space: nowrap; }
+.intro-actions button { transform: translate(var(--mx, 0px), var(--my, 0px)); }
+.intro-actions .cta { position: relative; transition: transform 0.7s var(--ease), box-shadow 0.5s var(--ease); }
+.intro-actions .cta:hover { transform: translate(var(--mx, 0px), calc(var(--my, 0px) - 1px)); }
+.cta > span[data-t] { position: relative; }
+/* Star Border: a star travels the outline, with its trail. */
+.orbit {
+  position: absolute; overflow: visible; pointer-events: none;
+  filter: drop-shadow(0 0 2px rgba(255, 224, 180, 0.95)) drop-shadow(0 0 9px rgba(255, 190, 120, 0.55));
+  transition: opacity 0.8s var(--ease);
+}
+.orbit rect { fill: none; stroke: var(--warm); stroke-linecap: round; animation: orbit linear infinite; }
+@keyframes orbit { from { stroke-dashoffset: var(--l); } to { stroke-dashoffset: calc(var(--l) - 1); } }
+/* The other stories light their star when you reach for them. */
+.cta-line .orbit { opacity: 0; }
+.cta-line:hover .orbit, .cta-line:focus-visible .orbit { opacity: 1; }
+.cta-line:hover { box-shadow: inset 0 0 0 1px rgba(255, 217, 160, 0.55), 0 0 40px 2px rgba(255, 224, 180, 0.16); }
+/* Glare Hover: a sheen crosses the pill. */
+.glare { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; }
+.glare::before {
+  content: ''; position: absolute; top: -40%; bottom: -40%; left: -70%; width: 45%;
+  background: linear-gradient(100deg, transparent, rgba(255, 196, 120, 0.55), transparent); transform: skewX(-18deg);
+  transition: left 1.1s var(--ease);
+}
+.cta-line .glare::before { background: linear-gradient(100deg, transparent, rgba(255, 230, 200, 0.16), transparent); }
+.cta:hover .glare::before, .cta:focus-visible .glare::before { left: 135%; }
+/* Click Spark: the journey starts with a few sparks. */
+.spark {
+  position: fixed; z-index: 40; width: 12px; height: 2px; margin: -1px 0 0 -6px; border-radius: 2px; pointer-events: none;
+  background: linear-gradient(90deg, rgba(255, 217, 160, 0), var(--warm)); box-shadow: 0 0 6px rgba(255, 217, 160, 0.8);
+  animation: spark 0.75s var(--ease) forwards;
+}
+@keyframes spark {
+  from { opacity: 1; transform: translate(0, 0) rotate(var(--r)) scaleX(1); }
+  to { opacity: 0; transform: translate(var(--x), var(--y)) rotate(var(--r)) scaleX(0.2); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbit, .glare { display: none; }
+}
+/* Narrow windows: the clock gives way, so the bar and the language never collide. */
+@media (max-width: 1000px) { .clock { display: none; } }
+/* Values ("> 32 °C", "−1,8 °C", "102 km/h") take their direction from their own first letter, even inside Arabic blocks. */
+:is(.anchor b, .fact b, .probe-text b, .telemetry dd, .data-clock) { unicode-bidi: plaintext; }

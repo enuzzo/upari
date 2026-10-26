@@ -7,6 +7,8 @@ import { stats, formatLonLat } from './stats';
 import { seaName } from './places';
 import { loadCountries, placeBelow } from './geo';
 import { placeIt, type Quake } from '../engine/markers';
+import { t } from '../i18n';
+import { num, dayMonth, dayMonthTime, timeLocal, timeUtc } from '../i18n/format';
 
 export interface Beat {
   shot: Shot;
@@ -19,12 +21,13 @@ export interface Beat {
 }
 export interface Fact { value: string; label: string }
 export interface Detail { facts: Fact[]; text: string; source: string }
-export interface Legend { stops: Stop[]; left: string; right: string; title: string }
+export interface Legend { stops: Stop[]; readonly left: string; readonly right: string; readonly title: string }
 
 export interface Chapter {
   id: string;
-  title: string;
-  kicker: string;
+  /** Title and kicker are in the language of the page. */
+  readonly title: string;
+  readonly kicker: string;
   look: Partial<Look>;
   duration: number;
   narrate: (g: Globe) => Promise<string>;
@@ -45,19 +48,35 @@ export interface Chapter {
   pin?: (g: Globe) => Promise<{ lon: number; lat: number; label: string; sub: string } | null>;
 }
 
-const it = (n: number, d = 0) => n.toLocaleString('it-IT', { maximumFractionDigits: d, minimumFractionDigits: d });
-const dateIt = (iso: string) => new Date(iso + (iso.length === 10 ? 'T12:00:00Z' : '')).toLocaleDateString('it-IT', { day: 'numeric', month: 'long' });
+/** The words of a chapter: every chapter id has its entry in the dictionaries. */
+type Texts = { title: string; kicker: string };
+export type ChapterId = { [K in keyof typeof t]: (typeof t)[K] extends Texts ? K : never }[keyof typeof t];
 
-/** "oggi", "ieri" or "il 22 ottobre", from the day a layer actually shows. */
-function when(iso: string | undefined): string {
-  if (!iso) return 'di recente';
+/** Chapters with their title and kicker read from the dictionary of the moment. */
+export function titled(list: Omit<Chapter, 'title' | 'kicker'>[]): Chapter[] {
+  for (const c of list) {
+    const words = () => t[c.id as ChapterId] as Texts;
+    Object.defineProperties(c, { title: { get: () => words().title }, kicker: { get: () => words().kicker } });
+  }
+  return list as Chapter[];
+}
+
+/** A legend whose words follow the language. */
+export const legend = (stops: Stop[], key: keyof typeof t.legends): Legend => ({
+  stops,
+  get left() { return t.legends[key].left; }, get right() { return t.legends[key].right; }, get title() { return t.legends[key].title; },
+});
+
+/** "today", "yesterday" or "on 22 October", from the day a layer actually shows. */
+function when(iso: string | undefined): { text: string; today: boolean } {
+  if (!iso) return { text: t.when.recent, today: false };
   const day = (d: Date) => Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
   const diff = Math.round((day(new Date()) - Date.parse(iso.slice(0, 10) + 'T00:00:00Z')) / 86400e3);
-  return diff <= 0 ? 'oggi' : diff === 1 ? 'ieri' : `il ${dateIt(iso)}`;
+  return { text: diff <= 0 ? t.when.today : diff === 1 ? t.when.yesterday : t.when.on(dayMonth(iso.slice(0, 10))), today: diff <= 0 };
 }
-const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 /** The NASA anomaly colormap stops at ±3 °C. */
-const anomalyText = (v: number) => (v >= 2.95 ? 'oltre +3' : `+${it(v, 1)}`);
+const anomalyText = (v: number) => (v >= 2.95 ? t.febbre.over3 : `+${num(v, 1)}`);
+const facts = (list: [string, string][]) => list.map(([value, label]) => ({ value, label }));
 
 async function meta(g: Globe, id: Parameters<Globe['layers']['get']>[0]) {
   return (await g.layers.get(id)).meta;
@@ -83,45 +102,37 @@ function nightSide(g: Globe): Shot {
   return { lon: best[0], lat: best[1] - 4, dist: 1.05, tilt: 28 };
 }
 
-export const CHAPTERS: Chapter[] = [
+export const CHAPTERS: Chapter[] = titled([
   {
-    id: 'pianeta', title: 'Il pianeta', kicker: 'Adesso',
+    id: 'pianeta',
     mood: 'calm', sound: 'sky',
     look: { sun: 'real', clouds: 1, night: 1 },
     duration: 22,
-    narrate: async () => 'Questa è la Terra, in questo istante. Metà nel giorno, metà nella notte. La linea d’ombra scivola sull’equatore a 1.670 chilometri all’ora.',
+    narrate: async () => t.pianeta.narrate,
     detail: async (g) => ({
-      facts: [
-        { value: '1.670 km/h', label: 'velocità della rotazione all’equatore' },
-        { value: '8′ 20″', label: 'il tempo che la luce del Sole impiega ad arrivare qui' },
-        { value: g.now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }), label: 'l’ora del globo che vedi: la luce è quella vera' },
-      ],
-      text: 'Giorno, notte e crepuscolo sono calcolati per l’istante presente. Le nuvole si spostano seguendo i venti di oggi; le montagne proiettano ombra quando il Sole è basso.',
-      source: 'NASA Blue Marble · NASA Black Marble · modello del terreno Mapzen/AWS · venti NOAA GFS',
+      facts: [...facts(t.pianeta.facts), { value: timeLocal(g.now), label: t.pianeta.hour }],
+      text: t.pianeta.text,
+      source: t.pianeta.source,
     }),
     beats: async (g) => [{ shot: terminatorShot(g, 3.6), drift: 1.2 }],
   },
   {
-    id: 'respiro', title: 'Il respiro', kicker: 'I venti di oggi',
+    id: 'respiro',
     mood: 'curious', sound: 'wind',
     look: { sun: 'studio', clouds: 0.12, cloudFlow: 1, dim: 0.62, desat: 0.5, night: 0, flow: 'wind', atmo: 0.8 },
     duration: 24,
-    legend: { stops: [[0, '#3a5a9a'], [0.25, '#9cc7ff'], [0.5, '#ffffff'], [0.75, '#ffd37a'], [1, '#ff7a4a']], left: 'calma', right: '80 km/h', title: 'velocità del vento' },
+    legend: legend([[0, '#3a5a9a'], [0.25, '#9cc7ff'], [0.5, '#ffffff'], [0.75, '#ffd37a'], [1, '#ff7a4a']], 'wind'),
     narrate: async (g) => {
       const w = await stats.windiest(g);
-      return `L’aria non sta mai ferma. Questi sono i venti di oggi: fiumi invisibili che portano il calore dei tropici verso i poli. Il più forte, adesso, soffia ${seaName(w.lon, w.lat)} a ${it(w.value)} km/h.`;
+      return t.respiro.narrate({ where: seaName(w.lon, w.lat), kmh: num(w.value) });
     },
     detail: async (g) => {
       const w = await stats.windiest(g);
       const m = await (await fetch('fields/wind.json')).json();
       return {
-        facts: [
-          { value: `${it(w.value)} km/h`, label: `il vento più forte del momento, ${formatLonLat(w.lon, w.lat)}` },
-          { value: '10 m', label: 'l’altezza dal suolo a cui è misurato' },
-          { value: '× 22.000', label: 'l’accelerazione delle scie, per vederle muovere' },
-        ],
-        text: 'Le alte e basse pressioni girano in direzioni opposte nei due emisferi: è la rotazione terrestre a curvare i venti. Tocca un punto per leggere velocità e direzione.',
-        source: `Modello NOAA GFS 0,5° · analisi del ${new Date(m.time).toLocaleString('it-IT', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} UTC`,
+        facts: [{ value: `${num(w.value)} ${t.units.kmh}`, label: t.respiro.strongest(formatLonLat(w.lon, w.lat)) }, ...facts(t.respiro.facts)],
+        text: t.respiro.text,
+        source: t.respiro.source(dayMonthTime(m.time)),
       };
     },
     beats: async (g) => {
@@ -130,49 +141,40 @@ export const CHAPTERS: Chapter[] = [
     },
     pin: async (g) => {
       const w = await stats.windiest(g);
-      return { lon: w.lon, lat: w.lat, label: `${it(w.value)} km/h`, sub: 'il vento più forte, ora' };
+      return { lon: w.lon, lat: w.lat, label: `${num(w.value)} ${t.units.kmh}`, sub: t.respiro.pin };
     },
   },
   {
-    id: 'correnti', title: 'Le correnti', kicker: 'Fiumi nel mare',
+    id: 'correnti',
     mood: 'curious', sound: 'ocean',
     look: { sun: 'studio', clouds: 0, dim: 0.62, desat: 0.5, night: 0, flow: 'currents', atmo: 0.75 },
     duration: 24,
-    legend: { stops: [[0, '#1f5f7a'], [0.3, '#4ad1d1'], [0.6, '#b8fff0'], [1, '#ffffff']], left: 'lenta', right: '4 km/h', title: 'velocità della corrente' },
-    narrate: async () => 'Sotto le onde, il mare ha i suoi fiumi. La Corrente del Golfo trasporta decine di volte l’acqua di tutti i fiumi della Terra insieme, e porta un po’ di tropico fino in Europa.',
-    detail: async () => ({
-      facts: [
-        { value: '30 milioni', label: 'metri cubi al secondo nella Corrente del Golfo, al largo della Florida' },
-        { value: '1,2 milioni', label: 'metri cubi al secondo: tutti i fiumi del mondo messi insieme' },
-        { value: '15 m', label: 'lo strato d’acqua di superficie rappresentato' },
-      ],
-      text: 'Le correnti mostrate sono una giornata di settembre: le grandi correnti cambiano lentamente da un anno all’altro, mentre i vortici al loro bordo nascono e muoiono in poche settimane.',
-      source: 'OSCAR · NOAA CoastWatch ERDDAP · 26 settembre 2014, risoluzione 1/3°',
-    }),
+    legend: legend([[0, '#1f5f7a'], [0.3, '#4ad1d1'], [0.6, '#b8fff0'], [1, '#ffffff']], 'currents'),
+    narrate: async () => t.correnti.narrate,
+    detail: async () => ({ facts: facts(t.correnti.facts), text: t.correnti.text, source: t.correnti.source }),
     beats: async () => [
       { shot: { lon: -58, lat: 30, dist: 1.9 }, drift: 0.8 },
     ],
   },
   {
-    id: 'calore', title: 'Il calore del mare', kicker: 'Un anno di temperatura del mare',
+    id: 'calore',
     mood: 'calm', sound: 'waves',
     look: { sun: 'studio', data: 'sst', clouds: 0.06, dim: 0.3, desat: 0.4, night: 0, atmo: 0.85 },
     duration: 24, clock: 'data',
-    legend: { stops: PALETTES.sst, left: '−2 °C', right: '34 °C', title: 'temperatura dell’acqua' },
+    legend: legend(PALETTES.sst, 'sst'),
     narrate: async (g) => {
       const h = await stats.hottestSea(g), day = when((await meta(g, 'sst')).dates?.[0]);
-      return `Il mare è il grande termosifone del pianeta. Il punto più caldo, ${day}, ${day === 'oggi' ? 'è' : 'era'} ${seaName(h.lon, h.lat)}: ${h.value >= 31.9 ? 'oltre 32' : it(h.value, 1)} gradi. Guarda l’acqua calda salire verso nord d’estate e tornare a sud d’inverno: un anno in pochi secondi.`;
+      return t.calore.narrate({ when: day.text, today: day.today, where: seaName(h.lon, h.lat), temp: h.value >= 31.9 ? null : num(h.value, 1) });
     },
     detail: async (g) => {
       const h = await stats.hottestSea(g), m = await meta(g, 'sst');
       return {
         facts: [
-          { value: `${h.value >= 31.9 ? '> 32' : it(h.value, 1)} °C`, label: `il mare più caldo ${when(m.dates?.[0])}, ${formatLonLat(h.lon, h.lat)}` },
-          { value: '−1,8 °C', label: 'la temperatura a cui gela l’acqua di mare' },
-          { value: '1 km', label: 'la risoluzione della mappa originale' },
+          { value: `${h.value >= 31.9 ? '> 32' : num(h.value, 1)} °C`, label: t.calore.hottest(when(m.dates?.[0]).text, formatLonLat(h.lon, h.lat)) },
+          ...facts(t.calore.facts),
         ],
-        text: 'L’oceano assorbe più del 90% del calore in eccesso dovuto ai gas serra. Le correnti calde si riconoscono come lingue arancioni che risalgono verso i poli.',
-        source: `GHRSST MUR, NASA JPL · ${dateIt(m.dates![0])}`,
+        text: t.calore.text,
+        source: `GHRSST MUR, NASA JPL · ${dayMonth(m.dates![0])}`,
       };
     },
     beats: async (g) => {
@@ -181,31 +183,30 @@ export const CHAPTERS: Chapter[] = [
     },
     pin: async (g) => {
       const h = await stats.hottestSea(g);
-      return { lon: h.lon, lat: h.lat, label: `${h.value >= 31.9 ? '> 32' : it(h.value, 1)} °C`, sub: 'il mare più caldo' };
+      return { lon: h.lon, lat: h.lat, label: `${h.value >= 31.9 ? '> 32' : num(h.value, 1)} °C`, sub: t.calore.pin };
     },
   },
   {
-    id: 'febbre', title: 'La febbre', kicker: 'Un anno, rispetto al normale',
+    id: 'febbre',
     mood: 'grave', sound: 'waves',
     look: { sun: 'studio', data: 'anomaly', clouds: 0.06, dim: 0.55, desat: 0.75, night: 0, atmo: 0.85 },
     duration: 24, clock: 'data',
-    legend: { stops: PALETTES.anomaly, left: '−3 °C', right: '+3 °C', title: 'differenza dalla media' },
+    legend: legend(PALETTES.anomaly, 'anomaly'),
     narrate: async (g) => {
       const { share } = await stats.warmShare(g);
-      const pct = Math.round(share * 100);
       const day = when((await meta(g, 'anomaly')).dates?.[0]);
-      return `In rosso il mare più caldo del solito, in blu quello più freddo, mese dopo mese per un anno. ${cap(day)} ${day === 'oggi' ? 'è' : 'era'} più caldo della media il ${pct}% degli oceani.`;
+      return t.febbre.narrate({ when: day.text, today: day.today, pct: num(Math.round(share * 100)) });
     },
     detail: async (g) => {
       const { share, hottest } = await stats.warmShare(g), m = await meta(g, 'anomaly');
       return {
         facts: [
-          { value: `${Math.round(share * 100)}%`, label: 'della superficie del mare oltre la media' },
-          { value: `${anomalyText(hottest.value)} °C`, label: `l’anomalia più forte, ${seaName(hottest.lon, hottest.lat)}` },
-          { value: '2003–2014', label: 'il periodo che fa da “normale”' },
+          { value: `${num(Math.round(share * 100))}%`, label: t.febbre.share },
+          { value: `${anomalyText(hottest.value)} °C`, label: t.febbre.strongest(seaName(hottest.lon, hottest.lat)) },
+          ...facts([t.febbre.normal]),
         ],
-        text: 'Un’anomalia confronta la temperatura di un giorno con la media dello stesso giorno negli anni di riferimento. Le ondate di calore marine durano settimane e mettono in difficoltà coralli, pesci e praterie sommerse.',
-        source: `GHRSST MUR anomalie, NASA JPL · ${dateIt(m.dates![0])}`,
+        text: t.febbre.text,
+        source: `${t.febbre.source} · ${dayMonth(m.dates![0])}`,
       };
     },
     beats: async (g) => {
@@ -214,87 +215,83 @@ export const CHAPTERS: Chapter[] = [
     },
     pin: async (g) => {
       const { hottest } = await stats.warmShare(g);
-      return { lon: hottest.lon, lat: hottest.lat, label: `${anomalyText(hottest.value)} °C`, sub: 'l’anomalia più forte' };
+      return { lon: hottest.lon, lat: hottest.lat, label: `${anomalyText(hottest.value)} °C`, sub: t.febbre.pin };
     },
   },
   {
-    id: 'fioritura', title: 'Il mare che fiorisce', kicker: 'Un anno di fitoplancton',
+    id: 'fioritura',
     mood: 'open', sound: 'reef',
     look: { sun: 'studio', data: 'chlorophyll', clouds: 0.04, dim: 0.66, desat: 0.5, night: 0, atmo: 0.8, bloom: 1.3 },
     duration: 26, clock: 'data',
-    legend: { stops: PALETTES.chlorophyll, left: 'acqua limpida', right: 'fioritura', title: 'clorofilla in superficie' },
-    narrate: async () => 'Ogni bagliore verde è una prateria invisibile: miliardi di alghe microscopiche, il fitoplancton. Producono circa metà dell’ossigeno che respiriamo, e fioriscono dove arriva la primavera, prima in un emisfero, poi nell’altro.',
+    legend: legend(PALETTES.chlorophyll, 'chlorophyll'),
+    narrate: async () => t.fioritura.narrate,
     detail: async (g) => {
       const m = await meta(g, 'chlorophyll');
       return {
         facts: [
-          { value: '≈ 50%', label: 'dell’ossigeno del pianeta viene dal mare' },
-          { value: `${m.dates!.length} giorni`, label: 'di osservazioni fusi per togliere le nuvole' },
-          { value: '0,01 → 20', label: 'milligrammi di clorofilla per metro cubo, dal blu al verde' },
+          ...facts([t.fioritura.oxygen]),
+          { value: t.fioritura.days(m.dates!.length), label: t.fioritura.daysLabel },
+          { value: `${num(0.01, 2)} → 20`, label: t.fioritura.range },
         ],
-        text: 'Le fioriture seguono le stagioni e le acque ricche di nutrienti: lungo le coste, dove l’acqua profonda risale, e in primavera alle alte latitudini. A ottobre è primavera nell’emisfero sud.',
-        source: `NASA PACE OCI · ${dateIt(m.dates!.at(-1)!)} – ${dateIt(m.dates![0])}`,
+        text: t.fioritura.text,
+        source: `NASA PACE OCI · ${dayMonth(m.dates!.at(-1)!)} – ${dayMonth(m.dates![0])}`,
       };
     },
     beats: async () => [{ shot: { lon: -42, lat: -34, dist: 2.9 }, drift: 1.0 }],
   },
   {
-    id: 'pioggia', title: 'La pioggia', kicker: 'Ventiquattro ore',
+    id: 'pioggia',
     mood: 'calm', sound: 'rain',
     look: { sun: 'studio', data: 'rain', clouds: 0.18, dim: 0.62, desat: 0.55, night: 0, atmo: 0.8, bloom: 0.8 },
     duration: 24,
     clock: 'data',
-    legend: { stops: PALETTES.rain, left: 'pioviggine', right: 'nubifragio', title: 'intensità della pioggia' },
-    narrate: async () => 'Un giorno intero di pioggia, in pochi secondi. Lungo l’equatore l’aria calda sale, si raffredda, e restituisce al mare l’acqua che il Sole gli aveva preso.',
+    legend: legend(PALETTES.rain, 'rain'),
+    narrate: async () => t.pioggia.narrate,
     detail: async (g) => {
       const m = await meta(g, 'rain');
       const first = m.frames![0].time, last = m.frames!.at(-1)!.time;
       return {
         facts: [
-          { value: '30 min', label: 'tra un’immagine e l’altra della costellazione GPM' },
-          { value: '24 ore', label: `dal ${new Date(first).toLocaleString('it-IT', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} UTC` },
-          { value: '≈ 1 m', label: 'la pioggia che cade in media in un anno su tutto il pianeta' },
+          ...facts([t.pioggia.interval]),
+          { value: t.pioggia.hours, label: t.pioggia.since(dayMonthTime(first)) },
+          ...facts([t.pioggia.yearly]),
         ],
-        text: `Ogni fotogramma è una stima satellitare della pioggia; fra un’immagine e l’altra le transizioni sono interpolate. Ultimo fotogramma: ${new Date(last).toLocaleString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} UTC.`,
+        text: t.pioggia.text(timeUtc(last)),
         source: 'NASA GPM IMERG · Early Run',
       };
     },
     beats: async () => [{ shot: { lon: 120, lat: 6, dist: 3.4 }, drift: 1.6 }],
   },
   {
-    id: 'fuoco', title: 'Il fuoco', kicker: 'Ultimi sette giorni',
+    id: 'fuoco',
     mood: 'grave', sound: 'fire',
     look: { sun: 'studio', clouds: 0, dim: 0.78, desat: 0.75, night: 0.35, fires: 1, atmo: 0.6, bloom: 1.4 },
     duration: 22,
     narrate: async () => {
       const f = await (await fetch('layers/fires.json')).json();
       const k = Math.round(f.detections / 1000);
-      return `Ogni scintilla è un incendio visto dallo spazio. In sette giorni i satelliti ne hanno contati più di ${it(k)} mila. Quasi tutti li accendiamo noi: per pulire i campi, per fare spazio al pascolo.`;
+      return t.fuoco.narrate({ thousands: num(k), approx: num(k * 1000) });
     },
     detail: async () => {
       const f = await (await fetch('layers/fires.json')).json();
       return {
-        facts: [
-          { value: it(f.detections), label: 'punti di calore rilevati in 7 giorni' },
-          { value: '375 m', label: 'la grandezza del pixel che vede il fuoco' },
-          { value: '2 volte', label: 'al giorno, di giorno e di notte, NOAA‑20 passa su ogni punto' },
-        ],
-        text: 'La luminosità di ogni punto è proporzionale alla potenza del fuoco; i più recenti brillano di più. In Africa australe e in Sud America è la stagione degli incendi agricoli.',
-        source: `NASA FIRMS · VIIRS NOAA-20 · aggiornato al ${dateIt(f.newest)}`,
+        facts: [{ value: num(f.detections), label: t.fuoco.count }, ...facts(t.fuoco.facts)],
+        text: t.fuoco.text,
+        source: t.fuoco.source(dayMonth(f.newest)),
       };
     },
     beats: async () => [{ shot: { lon: 14, lat: -6, dist: 3.2 }, drift: 1.2 }],
   },
   {
-    id: 'terremoti', title: 'La Terra trema', kicker: 'Ultimi sette giorni',
+    id: 'terremoti',
     mood: 'grave', sound: 'quake',
     look: { sun: 'studio', clouds: 0, dim: 0.74, desat: 0.75, night: 0, atmo: 0.65, quakes: 1, quakeReplay: 14, bloom: 1.3 },
     duration: 24,
-    legend: { stops: [[0, '#ffc76b'], [0.25, '#ff6b8c'], [1, '#8c73ff']], left: 'in superficie', right: '700 km', title: 'profondità del terremoto' },
+    legend: legend([[0, '#ffc76b'], [0.25, '#ff6b8c'], [1, '#8c73ff']], 'quakes'),
     narrate: async (g) => {
       await g.loadQuakes();
       const top = g.strongestQuake!;
-      return `In sette giorni la Terra ha tremato ${it(g.quakeCount)} volte con magnitudo 2,5 o più: la settimana scorre in pochi secondi. Il più forte, di magnitudo ${it(top[3], 1)}, ${placeIt(top[5])}. Insieme disegnano i confini delle placche.`;
+      return t.terremoti.narrate({ count: num(g.quakeCount), mag: num(top[3], 1), where: placeIt(top[5]) });
     },
     detail: async (g) => {
       await g.loadQuakes();
@@ -303,12 +300,12 @@ export const CHAPTERS: Chapter[] = [
       const deepest = list.reduce((a, b) => (b[2] > a[2] ? b : a));
       return {
         facts: [
-          { value: it(list.length), label: 'terremoti di magnitudo 2,5 o più negli ultimi 7 giorni' },
-          { value: it(list.filter((e) => e[3] >= 5).length), label: 'di magnitudo 5 o più' },
-          { value: `${it(deepest[2])} km`, label: `il più profondo, ${placeIt(deepest[5])}` },
+          { value: num(list.length), label: t.terremoti.count },
+          { value: num(list.filter((e) => e[3] >= 5).length), label: t.terremoti.strong },
+          { value: `${num(deepest[2])} ${t.units.km}`, label: t.terremoti.deepest(placeIt(deepest[5])) },
         ],
-        text: 'Ogni punto è un terremoto, grande quanto la sua magnitudo e colorato secondo la profondità: ambra in superficie, rosa a media profondità, viola fin sotto i 300 km, dove una placca scende sotto l’altra. Fuori dagli Stati Uniti la rete USGS registra soprattutto i terremoti dalla magnitudo 4 in su.',
-        source: `USGS Earthquake Hazards Program · aggiornato al ${dateIt(q.newest.slice(0, 10))}`,
+        text: t.terremoti.text,
+        source: t.terremoti.source(dayMonth(q.newest.slice(0, 10))),
       };
     },
     beats: async (g) => {
@@ -323,52 +320,44 @@ export const CHAPTERS: Chapter[] = [
     pin: async (g) => {
       await g.loadQuakes();
       const top = g.strongestQuake!;
-      return { lon: top[0], lat: top[1], label: `magnitudo ${it(top[3], 1)}`, sub: 'il più forte della settimana' };
+      return { lon: top[0], lat: top[1], label: t.terremoti.pin(num(top[3], 1)), sub: t.terremoti.pinSub };
     },
   },
   {
-    id: 'ghiaccio', title: 'Il ghiaccio', kicker: 'Un anno ai poli',
+    id: 'ghiaccio',
     mood: 'curious', sound: 'ice',
     look: { sun: 'studio', data: 'ice', clouds: 0.08, dim: 0.5, desat: 0.5, night: 0, atmo: 0.9 },
     duration: 24, clock: 'data',
-    legend: { stops: PALETTES.ice, left: '15%', right: '100%', title: 'mare ghiacciato' },
+    legend: legend(PALETTES.ice, 'ice'),
     narrate: async (g) => {
       const { north } = await stats.arcticIce(g), day = when((await meta(g, 'ice')).dates?.[0]);
-      return `In cima al mondo il mare gela. ${cap(day)} il ghiaccio artico ${day === 'oggi' ? 'copre' : 'copriva'} ${it(north / 1e6, 1)} milioni di chilometri quadrati, e ogni inverno si allarga di un’area più grande dell’Europa. Qui scorre un anno: l’Artico si scioglie mentre l’Antartide gela.`;
+      return t.ghiaccio.narrate({ when: day.text, today: day.today, area: num(north / 1e6, 1) });
     },
     detail: async (g) => {
       const { north, south } = await stats.arcticIce(g), m = await meta(g, 'ice');
       return {
         facts: [
-          { value: `${it(north / 1e6, 1)} mln km²`, label: `ghiaccio marino artico, ${when(m.dates?.[0])}` },
-          { value: `${it(south / 1e6, 1)} mln km²`, label: 'ghiaccio attorno all’Antartide' },
-          { value: '−12%', label: 'per decennio: il calo del minimo estivo artico dal 1979' },
+          { value: t.ghiaccio.area(num(north / 1e6, 1)), label: t.ghiaccio.arctic(when(m.dates?.[0]).text) },
+          { value: t.ghiaccio.area(num(south / 1e6, 1)), label: t.ghiaccio.antarctic },
+          ...facts([t.ghiaccio.decline]),
         ],
-        text: 'La superficie è la somma delle aree con almeno il 15% di ghiaccio, pesata per la concentrazione. Il ghiaccio riflette la luce del Sole: quando si ritira, il mare scuro assorbe più calore.',
-        source: `GHRSST GAMSSA, Bureau of Meteorology · concentrazione del ghiaccio · ${dateIt(m.dates![0])}`,
+        text: t.ghiaccio.text,
+        source: `${t.ghiaccio.source} · ${dayMonth(m.dates![0])}`,
       };
     },
     beats: async () => [{ shot: { lon: -20, lat: 68, dist: 3.2 }, drift: 2 }],
   },
   {
-    id: 'luci', title: 'Le luci', kicker: 'La notte, adesso',
+    id: 'luci',
     mood: 'open', sound: 'night',
     look: { sun: 'real', clouds: 0.45, night: 0.85, atmo: 1, bloom: 0.9 },
     duration: 22,
-    narrate: async () => 'Quando cala la notte, il pianeta si accende. Queste luci sono il ritratto più fedele di dove viviamo: lungo le coste, i fiumi, le strade.',
-    detail: async () => ({
-      facts: [
-        { value: '≈ 57%', label: 'dell’umanità vive in città' },
-        { value: '742 m', label: 'il pixel con cui un satellite fotografa le luci' },
-        { value: '2016', label: 'l’anno del mosaico notturno, senza nuvole né Luna' },
-      ],
-      text: 'Il fiume di luce del Nilo, la ragnatela dell’Europa, le coste del Giappone: le luci raccontano anche ciò che manca, come le grandi foreste e i deserti, quasi bui.',
-      source: 'NASA Black Marble · VIIRS 2016',
-    }),
+    narrate: async () => t.luci.narrate,
+    detail: async () => ({ facts: facts(t.luci.facts), text: t.luci.text, source: t.luci.source }),
     beats: async (g) => [{ shot: nightSide(g), drift: 0.5 }],
   },
   {
-    id: 'lassu', title: 'Lassù', kicker: 'La Stazione Spaziale, ora',
+    id: 'lassu',
     mood: 'open', sound: 'station',
     look: { sun: 'real', clouds: 1, night: 1.1, iss: 1, atmo: 1 },
     duration: 62,
@@ -378,25 +367,23 @@ export const CHAPTERS: Chapter[] = [
     narrate: async (g) => {
       const s = g.station;
       const alt = s.altKm > 300 ? Math.round(s.altKm) : 415;
-      return `E lassù, a ${it(alt)} chilometri, la Stazione Spaziale gira intorno a tutto questo a ${it(Math.round(s.speedKmh / 100) * 100 || 27600)} km/h. Un giro completo ogni 92 minuti: sedici albe al giorno.`;
+      return t.lassu.narrate({ alt: num(alt), speed: num(Math.round(s.speedKmh / 100) * 100 || 27600) });
     },
     arrive: async (g) => {
       const s = g.station;
       const below = placeBelow(await loadCountries().catch(() => null), s.lon, s.lat);
       const light = s.daylight(g.now, (d) => sunDirection(d));
-      const next = light && Number.isFinite(light.minutes)
-        ? (light.day ? ` A bordo è giorno: il prossimo tramonto tra ${it(Math.round(light.minutes))} minuti.` : ` A bordo è notte: la prossima alba tra ${it(Math.round(light.minutes))} minuti.`)
-        : '';
-      return `Questo è ciò che l’equipaggio vede adesso dal finestrino: sotto di loro, ${below}.${next}`;
+      const known = light && Number.isFinite(light.minutes);
+      return t.lassu.arrive({ below, day: known ? light.day : null, minutes: known ? num(Math.round(light.minutes)) : '' });
     },
     detail: async (g) => ({
       facts: [
-        { value: `${it(Math.round(g.station.altKm || 415))} km`, label: 'di quota, in questo momento' },
-        { value: `${it(Math.round(g.station.speedKmh || 27600))} km/h`, label: 'circa 7,7 km ogni secondo' },
-        { value: '16', label: 'albe e tramonti al giorno per l’equipaggio' },
+        { value: `${num(Math.round(g.station.altKm || 415))} ${t.units.km}`, label: t.lassu.alt },
+        { value: `${num(Math.round(g.station.speedKmh || 27600))} ${t.units.kmh}`, label: t.lassu.speed },
+        ...facts([t.lassu.dawns]),
       ],
-      text: 'La posizione è calcolata ora dagli elementi orbitali pubblicati da CelesTrak. La linea mostra un’orbita completa: mezz’ora nel passato e un’ora nel futuro. Da vicino la stazione vola con il suo vero assetto: i moduli nel senso del moto, la trave perpendicolare all’orbita.',
-      source: 'Elementi orbitali NORAD 25544 · CelesTrak · propagazione SGP4 · modello 3D NASA',
+      text: t.lassu.text,
+      source: t.lassu.source,
     }),
     beats: async (g) => {
       const s = g.station;
@@ -408,4 +395,4 @@ export const CHAPTERS: Chapter[] = [
       ];
     },
   },
-];
+]);

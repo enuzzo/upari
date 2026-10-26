@@ -5,6 +5,8 @@ import {
 import { lonLatToVec } from './astro';
 import { paletteTexture, type Stop } from './palettes';
 import { countryAt, loadCountries, type Country } from '../story/geo';
+import { t } from '../i18n';
+import { countryName } from '../i18n/regions';
 
 // The people of the planet, from verified snapshots: World Bank WDI (CC BY 4.0, which
 // distributes UN WPP, UN IGME and ILO series), UNHCR asylum applications (CC BY 4.0) and
@@ -14,8 +16,6 @@ import { countryAt, loadCountries, type Country } from '../story/geo';
 export type AtlasId = 'population' | 'birth' | 'death' | 'balance' | 'life' | 'under5' | 'electricity' | 'unemployment';
 
 export interface AtlasDef {
-  title: string;
-  unit: string;
   /** Fixed scale for every year and country, so a colour always means the same value. */
   min: number;
   max: number;
@@ -24,64 +24,49 @@ export interface AtlasDef {
   palette: Stop[];
   /** Drawn as coloured countries (population is drawn as dust instead). */
   fill: boolean;
-  left: string;
-  right: string;
-  format: (v: number) => string;
-  source: string;
   file: 'world' | 'health' | 'electricity';
 }
 
-const nf = (d: number) => new Intl.NumberFormat('it-IT', { maximumFractionDigits: d, minimumFractionDigits: d });
-const WDI = 'World Bank, World Development Indicators';
+/** The words of an indicator (legend, value under the cursor, source), in the language of the page. */
+export const atlasText = (id: AtlasId) => t.atlas[id];
 
 export const ATLAS: Record<AtlasId, AtlasDef> = {
-  population: {
-    title: 'persone', unit: 'abitanti', min: 0, max: 1, curve: 1, palette: [[0, '#ffd9a0'], [1, '#ffd9a0']], fill: false, left: '', right: '',
-    format: (v) => (v >= 1e9 ? `${nf(2).format(v / 1e9)} miliardi` : v >= 1e6 ? `${nf(1).format(v / 1e6)} milioni` : `${nf(0).format(v)} persone`),
-    source: `${WDI} · SP.POP.TOTL (ONU, uffici nazionali, Eurostat)`, file: 'world',
-  },
+  population: { min: 0, max: 1, curve: 1, palette: [[0, '#ffd9a0'], [1, '#ffd9a0']], fill: false, file: 'world' },
   birth: {
-    title: 'nascite ogni 1.000 abitanti', unit: 'nascite / 1.000', min: 5, max: 50, curve: 1, fill: true, left: '5', right: '50',
+    min: 5, max: 50, curve: 1, fill: true, file: 'world',
     palette: [[0, '#16213f'], [0.2, '#1f4f7a'], [0.42, '#2f9aa0'], [0.62, '#e8c66a'], [0.82, '#f08a4b'], [1, '#ff5d73']],
-    format: (v) => `${nf(1).format(v)} nascite ogni 1.000`, source: `${WDI} · SP.DYN.CBRT.IN`, file: 'world',
   },
   death: {
-    title: 'decessi ogni 1.000 abitanti', unit: 'decessi / 1.000', min: 2, max: 30, curve: 0.75, fill: true, left: '2', right: '30',
+    min: 2, max: 30, curve: 0.75, fill: true, file: 'world',
     palette: [[0, '#14213a'], [0.3, '#3b3f7a'], [0.6, '#9a4f9e'], [0.85, '#ef7aa4'], [1, '#ffd1dc']],
-    format: (v) => `${nf(1).format(v)} decessi ogni 1.000`, source: `${WDI} · SP.DYN.CDRT.IN`, file: 'world',
   },
   balance: {
-    title: 'nascite meno decessi, ogni 1.000', unit: 'saldo / 1.000', min: -10, max: 40, curve: 1, fill: true, left: '−10', right: '+40',
+    min: -10, max: 40, curve: 1, fill: true, file: 'world',
     palette: [[0, '#5aa8ff'], [0.16, '#2a5c9e'], [0.2, '#1b2233'], [0.24, '#4a3a22'], [0.55, '#d99a3e'], [1, '#ffd27a']],
-    format: (v) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${nf(1).format(Math.abs(v))} ogni 1.000`, source: `${WDI} · natalità meno mortalità (calcolo Upari)`, file: 'world',
   },
   life: {
-    title: 'speranza di vita alla nascita', unit: 'anni', min: 35, max: 85, curve: 1, fill: true, left: '35 anni', right: '85',
+    min: 35, max: 85, curve: 1, fill: true, file: 'world',
     palette: [[0, '#5a1a2a'], [0.25, '#b0452f'], [0.5, '#e0a13f'], [0.72, '#8fd17a'], [0.9, '#5fe0d0'], [1, '#e8fff8']],
-    format: (v) => `${nf(1).format(v)} anni`, source: `${WDI} · SP.DYN.LE00.IN`, file: 'world',
   },
   under5: {
-    title: 'bambini che muoiono prima dei 5 anni, su 1.000', unit: 'su 1.000 nati', min: 0, max: 300, curve: 0.5, fill: true, left: '0', right: '300',
+    min: 0, max: 300, curve: 0.5, fill: true, file: 'health',
     palette: [[0, '#16283a'], [0.25, '#2f5f6f'], [0.5, '#c79a5a'], [0.75, '#f0704f'], [1, '#ff3d6e']],
-    format: (v) => `${nf(0).format(v)} su 1.000 nati vivi`, source: 'UN IGME tramite World Bank WDI · SH.DYN.MORT', file: 'health',
   },
   electricity: {
-    title: 'persone con l’elettricità', unit: '%', min: 0, max: 100, curve: 1, fill: true, left: '0%', right: '100%',
+    min: 0, max: 100, curve: 1, fill: true, file: 'electricity',
     palette: [[0, '#0b0d14'], [0.35, '#3a2a16'], [0.7, '#c98a3a'], [1, '#ffe3a8']],
-    format: (v) => `${nf(0).format(v)}% della popolazione`, source: 'World Bank, SDG 7.1.1 · EG.ELC.ACCS.ZS', file: 'electricity',
   },
   unemployment: {
-    title: 'disoccupazione, stime modellate ILO', unit: '% forza lavoro', min: 0, max: 30, curve: 0.8, fill: true, left: '0%', right: '30%',
+    min: 0, max: 30, curve: 0.8, fill: true, file: 'world',
     palette: [[0, '#12202e'], [0.3, '#2c5a6a'], [0.6, '#b98f4a'], [1, '#ff7a5a']],
-    format: (v) => `${nf(1).format(v)}% della forza lavoro`, source: 'ILO, stime modellate, tramite World Bank WDI · SL.UEM.TOTL.ZS', file: 'world',
   },
 };
 
 /** Asylum applications from three origins (UNHCR), as streams of light. */
-export const ORIGINS: Record<string, { name: string; color: [number, number, number] }> = {
-  SYR: { name: 'Siria', color: [0.35, 0.95, 0.9] },
-  UKR: { name: 'Ucraina', color: [1.0, 0.55, 0.8] },
-  AFG: { name: 'Afghanistan', color: [1.0, 0.75, 0.35] },
+export const ORIGINS: Record<string, { readonly name: string; color: [number, number, number] }> = {
+  SYR: { get name() { return countryName('SYR', 'Siria'); }, color: [0.35, 0.95, 0.9] },
+  UKR: { get name() { return countryName('UKR', 'Ucraina'); }, color: [1.0, 0.55, 0.8] },
+  AFG: { get name() { return countryName('AFG', 'Afghanistan'); }, color: [1.0, 0.75, 0.35] },
 };
 
 type Series = Record<string, (number | null)[]>;
@@ -92,8 +77,8 @@ const PEOPLE_PER_DOT = 250000;
 
 export class Atlas {
   years: number[] = [];
-  /** Statistic code → name, capital coordinates. */
-  places = new Map<string, { name: string; lon: number; lat: number }>();
+  /** Statistic code → name (in the language of the page), capital coordinates. */
+  places = new Map<string, { readonly name: string; lon: number; lat: number }>();
   countries: Country[] = [];
   /** Border outline slot (1..) for each statistic code. */
   slots = new Map<string, number>();
@@ -124,8 +109,12 @@ export class Atlas {
       fetch('statistics/dust.bin').then((r) => r.arrayBuffer()),
     ]);
     this.years = world.years;
+    // Natural Earth names are Italian; prefer them for the places the borders know.
+    const italian = new Map<string, string>();
+    for (const c of countries as Country[]) if (c.stat) italian.set(c.stat, c.italian);
     for (const c of world.countries as { id: string; name: string; longitude: number; latitude: number }[]) {
-      this.places.set(c.id, { name: c.name, lon: c.longitude, lat: c.latitude });
+      const fallback = italian.get(c.id) ?? c.name;
+      this.places.set(c.id, { get name() { return countryName(c.id, fallback); }, lon: c.longitude, lat: c.latitude });
     }
     for (const id of ['population', 'birth', 'death', 'balance', 'life', 'unemployment'] as const) this.series.set(id, world.values[id]);
     this.series.set('under5', health.values);
@@ -133,8 +122,7 @@ export class Atlas {
     this.relations = asylum.relations;
     this.asylumByCountry = asylum.values;
     this.countries = countries;
-    // Natural Earth names are Italian; prefer them for the places the borders know.
-    countries.forEach((c, i) => { if (c.stat) { this.slots.set(c.stat, i + 1); const p = this.places.get(c.stat); if (p) p.name = c.name; } });
+    countries.forEach((c, i) => { if (c.stat) this.slots.set(c.stat, i + 1); });
     this.idMap = this.drawIdMap();
     this.dust = this.makeDust(dust);
     this.flows = this.makeFlows();

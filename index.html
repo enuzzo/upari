@@ -1,18 +1,18 @@
 <!doctype html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#030407" />
-  <meta name="description" content="Upari: il pianeta Terra raccontato dai dati satellitari di oggi. Venti, correnti, mari, pioggia, fuochi, ghiaccio, luci e la Stazione Spaziale." />
+  <meta name="description" content="Upari: planet Earth told by today’s satellite data. Winds, currents, seas, rain, fires, ice, lights and the Space Station." />
   <link rel="icon" type="image/svg+xml" href="icon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet" />
-  <title>Upari · Il pianeta, adesso</title>
+  <title>Upari · The planet, right now</title>
 </head>
 <body>
-  <canvas id="scene" aria-label="Il globo terrestre"></canvas>
+  <canvas id="scene" data-t-aria="page.globe"></canvas>
 
   <div class="anchors" id="anchors"></div>
 
@@ -23,33 +23,33 @@
 
   <header class="top">
     <div class="top-left">
-      <button class="brand" id="brand" aria-label="Torna all’inizio">Upari</button>
-      <nav class="stories" id="stories" aria-label="Racconti"></nav>
+      <button class="brand" id="brand" data-t-aria="page.home">Upari</button>
+      <nav class="stories" id="stories" data-t-aria="page.stories"></nav>
     </div>
     <div class="top-actions">
       <form class="search" id="search" role="search" autocomplete="off">
-        <input id="search-input" type="search" placeholder="Cerca un luogo" aria-label="Cerca un luogo" enterkeyhint="search" spellcheck="false" />
+        <input id="search-input" type="search" data-t-placeholder="page.search" data-t-aria="page.search" enterkeyhint="search" spellcheck="false" />
         <div class="search-panel">
           <p class="search-note" id="search-note" aria-live="polite"></p>
           <ol class="search-results" id="search-results"></ol>
-          <p class="search-credit">Ricerca <a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a> · dati © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></p>
+          <p class="search-credit" data-t-html="page.searchCredit"></p>
         </div>
       </form>
-      <button class="icon-btn" id="search-btn" aria-label="Cerca un luogo" title="Cerca un luogo (/)">
+      <button class="icon-btn" id="search-btn" data-t-aria="page.search" data-t-title="page.searchKey">
         <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></svg>
       </button>
       <span class="clock" id="clock"></span>
-      <button class="icon-btn" id="layers-btn" aria-label="Esplora: strati e controlli" title="Esplora (L)">
+      <button class="icon-btn" id="layers-btn" data-t-aria="page.explore" data-t-title="page.exploreKey">
         <svg viewBox="0 0 24 24"><path d="M12 4l8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4M4 16l8 4 8-4"/></svg>
       </button>
-      <button class="icon-btn sound-btn" id="sound-btn" aria-label="Audio" aria-pressed="true" title="Audio (M)">
+      <button class="icon-btn sound-btn" id="sound-btn" aria-pressed="true" data-t-aria="page.audio" data-t-title="page.audioKey">
         <svg class="i-on" viewBox="0 0 24 24"><path d="M4 10v4h3.5L12 18V6L7.5 10z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></svg>
         <svg class="i-off" viewBox="0 0 24 24"><path d="M4 10v4h3.5L12 18V6L7.5 10z"/><path d="M16 10l4 4M20 10l-4 4"/></svg>
       </button>
-      <button class="icon-btn" id="credits-btn" aria-label="Fonti e crediti" title="Fonti e crediti">
+      <button class="icon-btn" id="credits-btn" data-t-aria="page.credits" data-t-title="page.credits">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>
       </button>
-      <button class="icon-btn" id="fs-btn" aria-label="Schermo intero" title="Schermo intero (F)">
+      <button class="icon-btn" id="fs-btn" data-t-aria="page.fullscreen" data-t-title="page.fullscreenKey">
         <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
       </button>
     </div>
@@ -60,21 +60,21 @@
     <h1 class="title" id="cap-title"></h1>
     <p class="line" id="cap-line"></p>
     <div class="cap-actions">
-      <button class="more" id="more-btn"><span>Scopri di più</span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <button class="more" id="more-btn"><span data-t="page.more"></span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
       <button class="more next-story" id="next-story"><span></span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
       <span class="data-clock" id="data-clock"><span id="data-time"></span><span class="data-track" aria-hidden="true"><i id="data-dot"></i></span></span>
     </div>
   </section>
 
-  <aside class="telemetry" id="telemetry" aria-label="La Stazione Spaziale, adesso">
-    <div class="tm-title">Stazione Spaziale · ora</div>
+  <aside class="telemetry" id="telemetry" data-t-aria="station.panel">
+    <div class="tm-title" data-t="station.title"></div>
     <dl>
-      <dt>Quota</dt><dd id="tm-alt"></dd>
-      <dt>Velocità</dt><dd id="tm-speed"></dd>
-      <dt>Sotto</dt><dd id="tm-below"></dd>
-      <dt>A bordo</dt><dd id="tm-light"></dd>
-      <dt>Posizione</dt><dd id="tm-pos"></dd>
-      <dt>Orbita</dt><dd id="tm-orbit"></dd>
+      <dt data-t="station.alt"></dt><dd id="tm-alt"></dd>
+      <dt data-t="station.speed"></dt><dd id="tm-speed"></dd>
+      <dt data-t="station.below"></dt><dd id="tm-below"></dd>
+      <dt data-t="station.light"></dt><dd id="tm-light"></dd>
+      <dt data-t="station.pos"></dt><dd id="tm-pos"></dd>
+      <dt data-t="station.orbit"></dt><dd id="tm-orbit"></dd>
     </dl>
   </aside>
 
@@ -84,20 +84,20 @@
     <div class="legend-ends"><span id="legend-left"></span><span id="legend-right"></span></div>
   </aside>
 
-  <nav class="rail" id="rail" aria-label="Capitoli">
-    <button class="play" id="play-btn" aria-label="Pausa">
+  <nav class="rail" id="rail" data-t-aria="page.chapters">
+    <button class="play" id="play-btn" data-t-aria="page.pause">
       <svg class="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>
       <svg class="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></svg>
     </button>
     <ol class="chapters" id="chapters"></ol>
     <div class="zoom">
-      <button class="icon-btn" id="zoom-in" aria-label="Avvicina"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
-      <button class="icon-btn" id="zoom-out" aria-label="Allontana"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+      <button class="icon-btn" id="zoom-in" data-t-aria="page.zoomIn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button class="icon-btn" id="zoom-out" data-t-aria="page.zoomOut"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
     </div>
   </nav>
 
   <aside class="drawer" id="drawer" aria-hidden="true">
-    <button class="icon-btn drawer-close" id="drawer-close" aria-label="Chiudi"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button class="icon-btn drawer-close" id="drawer-close" data-t-aria="page.close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div class="drawer-kicker" id="drawer-kicker"></div>
     <h2 id="drawer-title"></h2>
     <div class="facts" id="drawer-facts"></div>
@@ -105,15 +105,15 @@
     <p class="drawer-source" id="drawer-source"></p>
   </aside>
 
-  <aside class="explore" id="explore" aria-hidden="true" aria-label="Esplora">
-    <button class="icon-btn drawer-close ex-close" id="explore-close" aria-label="Chiudi"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-    <div class="ex-head">Esplora</div>
+  <aside class="explore" id="explore" aria-hidden="true" data-t-aria="explore.title">
+    <button class="icon-btn drawer-close ex-close" id="explore-close" data-t-aria="page.close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="ex-head" data-t="explore.title"></div>
     <div id="ex-layers"></div>
     <div class="ex-block ex-years" id="ex-years">
-      <div class="ex-title">Anno <b id="ex-year-label">2024</b></div>
+      <div class="ex-title"><span data-t="explore.year"></span> <b id="ex-year-label">2024</b></div>
       <div class="ex-row">
-        <button class="ex-play" id="ex-play" aria-label="Fai scorrere gli anni"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></svg></button>
-        <input type="range" id="ex-year" min="1960" max="2025" step="1" value="2024" aria-label="Anno" />
+        <button class="ex-play" id="ex-play" data-t-aria="explore.playYears"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></svg></button>
+        <input type="range" id="ex-year" min="1960" max="2025" step="1" value="2024" data-t-aria="explore.year" />
       </div>
     </div>
     <div class="ex-block ex-legend" id="ex-legend">
@@ -121,67 +121,73 @@
       <div class="legend-bar" id="ex-legend-bar"></div>
       <div class="legend-ends"><span id="ex-legend-left"></span><span id="ex-legend-right"></span></div>
     </div>
-    <button class="more ex-iss" id="ex-iss"><span>Raggiungi la Stazione</span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    <button class="more ex-iss" id="ex-iss"><span data-t="explore.reach"></span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
     <div class="ex-block">
-      <div class="ex-title">Ora <b id="ex-hours-label">adesso</b> <button class="ex-now" id="ex-now">torna ad adesso</button></div>
-      <input type="range" id="ex-hours" min="-24" max="24" step="0.25" value="0" aria-label="Ore da adesso" />
+      <div class="ex-title"><span data-t="explore.hour"></span> <b id="ex-hours-label"></b> <button class="ex-now" id="ex-now" data-t="explore.backToNow"></button></div>
+      <input type="range" id="ex-hours" min="-24" max="24" step="0.25" value="0" data-t-aria="explore.hoursFromNow" />
     </div>
     <div class="ex-block ex-switches">
-      <label><input type="checkbox" id="ex-real" /> Luce vera del Sole</label>
-      <label><input type="checkbox" id="ex-clouds" /> Nuvole</label>
-      <label><input type="checkbox" id="ex-spin" /> Rotazione lenta</label>
+      <label><input type="checkbox" id="ex-real" /> <span data-t="explore.realLight"></span></label>
+      <label><input type="checkbox" id="ex-clouds" /> <span data-t="explore.clouds"></span></label>
+      <label><input type="checkbox" id="ex-spin" /> <span data-t="explore.spin"></span></label>
     </div>
   </aside>
 
-  <div class="tile-credit" id="tile-credit"><a href="https://cloudless.eox.at" target="_blank" rel="noopener">EOxCloudless 2016</a> di EOX IT Services GmbH · contiene dati Copernicus Sentinel 2016 e 2017 modificati · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></div>
+  <div class="tile-credit" id="tile-credit" data-t-html="page.tileCredit"></div>
 
-  <div class="hint" id="hint">Trascina per ruotare · rotella per avvicinarti · tocca un punto per leggerlo · L per gli strati · / per cercare · M per l’audio</div>
+  <div class="hint" id="hint" data-t="page.hint"></div>
 
   <div class="veil" id="veil">
     <div class="intro" id="intro">
       <div class="intro-mark">Upari</div>
-      <p class="intro-line">Il pianeta, raccontato dai suoi dati di oggi.</p>
+      <p class="intro-line" data-t="page.intro"></p>
       <div class="intro-actions">
-        <button class="cta" id="start-btn">Il pianeta, adesso</button>
-        <button class="cta cta-line" id="nature-btn">La natura</button>
-        <button class="cta cta-line" id="people-btn">Le persone</button>
-        <button class="ghost" id="explore-btn">Esplora da solo</button>
+        <button class="cta" id="start-btn"><span data-t="stories.pianeta"></span></button>
+        <span class="break" aria-hidden="true"></span>
+        <button class="cta cta-line" id="nature-btn"><span data-t="stories.natura"></span></button>
+        <button class="cta cta-line" id="people-btn"><span data-t="stories.persone"></span></button>
+        <button class="ghost" id="explore-btn" data-t="page.exploreAlone"></button>
       </div>
       <div class="loader" id="loader"><span id="loader-bar"></span></div>
     </div>
-    <a class="signature" href="https://netmilk.ch" target="_blank" rel="noopener">Upari · by <b>Netmilk Studio</b></a>
   </div>
+
+  <div class="lang" id="lang">
+    <button class="lang-btn" id="lang-btn" aria-haspopup="listbox" aria-expanded="false" data-t-aria="page.language" data-t-title="page.language"><span id="lang-code"></span></button>
+    <ul class="lang-list" id="lang-list" role="listbox" data-t-aria="page.language"></ul>
+  </div>
+
+  <button class="footer" id="footer" data-t-title="page.about"></button>
 
   <div class="credits" id="credits" aria-hidden="true">
     <div class="credits-inner">
-      <button class="icon-btn drawer-close" id="credits-close" aria-label="Chiudi"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-      <h2>Da dove vengono queste immagini</h2>
-      <p>Tutto quello che vedi è un dato vero. Nessuna immagine è inventata: dove i satelliti non vedono, la mappa sfuma.</p>
-      <ul>
-        <li><b>Terra di giorno</b> NASA Blue Marble Next Generation, via NASA GIBS</li>
-        <li><b>Terra di notte</b> NASA Black Marble, VIIRS 2016, via NASA GIBS</li>
-        <li><b>Nuvole</b> NASA Visible Earth, composito delle nuvole</li>
-        <li><b>Rilievo</b> Mapzen Terrain Tiles su AWS: USGS SRTM e GMTED2010, NOAA ETOPO1, EU-DEM Copernicus e altri modelli nazionali</li>
-        <li><b>Da vicino</b> <a href="https://cloudless.eox.at" target="_blank" rel="noopener">EOxCloudless 2016</a> di EOX IT Services GmbH (contiene dati Copernicus Sentinel 2016 e 2017 modificati), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></li>
-        <li><b>Venti</b> NOAA GFS 0,5°, via PacIOOS ERDDAP</li>
-        <li><b>Correnti</b> OSCAR, ESR / NASA, via NOAA CoastWatch ERDDAP</li>
-        <li><b>Mare e anomalie</b> GHRSST MUR, NASA JPL, via NASA GIBS</li>
-        <li><b>Ghiaccio</b> GHRSST GAMSSA, Bureau of Meteorology australiano, via NASA GIBS</li>
-        <li><b>Fitoplancton</b> NASA PACE OCI, via NASA GIBS</li>
-        <li><b>Pioggia</b> NASA GPM IMERG, via NASA GIBS</li>
-        <li><b>Vegetazione</b> NASA VIIRS (Suomi NPP), NDVI mensile, via NASA GIBS</li>
-        <li><b>Polveri e fumo</b> NASA GMAO MERRA-2, spessore ottico degli aerosol, via NASA GIBS</li>
-        <li><b>Foreste perdute</b> Hansen et al. 2013, University of Maryland, via Global Forest Watch, CC BY 4.0</li>
-        <li><b>Barriere coralline</b> NOAA Coral Reef Watch, Degree Heating Week 5 km, via PacIOOS ERDDAP</li>
-        <li><b>Terremoti</b> USGS Earthquake Hazards Program, feed degli ultimi 7 giorni</li>
-        <li><b>Fuochi</b> NASA FIRMS, VIIRS NOAA-20</li>
-        <li><b>Stazione Spaziale</b> elementi orbitali CelesTrak, propagazione SGP4 con satellite.js; modello 3D NASA 3D Resources, ISS (B), di Michael D. Carbajal</li>
-        <li><b>Stelle</b> Yale Bright Star Catalogue</li>
-        <li><b>Le persone</b> World Bank, World Development Indicators (con dati ONU World Population Prospects, UN IGME e ILO), CC BY 4.0; domande di asilo UNHCR Refugee Data Portal, CC BY 4.0; confini Natural Earth, pubblico dominio</li>
-        <li><b>Musica e suoni</b> composti per Upari con Magnific (Google Lyria, ElevenLabs)</li>
-        <li><b>Ricerca dei luoghi</b> <a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, dati © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, ODbL</li>
-      </ul>
-      <p class="credits-foot">I dati del giorno si aggiornano ogni mattina. Immagini fornite dai servizi NASA GIBS, parte di NASA ESDIS. Attribuzioni e licenze complete in <a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener">THIRD_PARTY_NOTICES</a>. Upari è un progetto di <a href="https://netmilk.ch" target="_blank" rel="noopener">Netmilk Studio</a>, software libero con licenza Apache 2.0: <a href="https://github.com/enuzzo/upari" target="_blank" rel="noopener">codice sorgente</a>.</p>
+      <button class="icon-btn drawer-close" id="credits-close" data-t-aria="page.close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <h2 data-t="credits.title"></h2>
+      <p data-t="credits.intro"></p>
+      <ul id="credits-list"></ul>
+      <p class="credits-foot" data-t-html="credits.foot"></p>
+    </div>
+  </div>
+
+  <div class="credits about" id="about" aria-hidden="true" role="dialog" aria-labelledby="about-title">
+    <div class="credits-inner about-inner">
+      <button class="icon-btn drawer-close" id="about-close" data-t-aria="page.close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <div class="about-kicker" data-t="about.kicker"></div>
+      <h2 id="about-title" data-t="about.title"></h2>
+      <p class="about-lead" data-t="about.lead"></p>
+      <p data-t="about.aims"></p>
+      <h3 data-t="about.costTitle"></h3>
+      <p data-t="about.cost"></p>
+      <p data-t="about.price"></p>
+      <p class="about-oath"><b data-t="about.child"></b><b data-t="about.warrior"></b></p>
+      <p data-t="about.both"></p>
+      <h3 data-t="about.whoTitle"></h3>
+      <p data-t="about.who"></p>
+      <div class="about-actions">
+        <a class="cta" href="https://netmilk.ch" target="_blank" rel="noopener" data-t="about.visit"></a>
+        <a class="about-link" href="https://github.com/enuzzo/upari" target="_blank" rel="noopener"><span data-t="about.source"></span> →</a>
+      </div>
+      <p class="about-signoff" data-t="about.signoff"></p>
     </div>
   </div>
 

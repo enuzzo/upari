@@ -4,6 +4,8 @@ import { loadCountries, placeBelow, type Country } from './geo';
 import { cssGradient } from '../engine/palettes';
 import type { Chapter } from './chapters';
 import { STORIES, type Story } from './stories';
+import { t, lang } from '../i18n';
+import { dayMonthShort, dayShort, monthYear, num, timeUtc } from '../i18n/format';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
@@ -59,6 +61,7 @@ export class Director {
 
   private buildStories() {
     const nav = $('stories');
+    nav.innerHTML = '';
     for (const s of STORIES) {
       const b = document.createElement('button');
       b.dataset.story = s.id;
@@ -75,17 +78,47 @@ export class Director {
     this.chapterEls = [];
     this.chapters.forEach((c, i) => {
       const li = document.createElement('li');
-      li.innerHTML = `<button aria-label="${c.title}"><span class="bar"><span class="fill"></span></span><span class="label">${c.title}</span></button>`;
+      li.innerHTML = '<button><span class="bar"><span class="fill"></span></span><span class="label"></span></button>';
+      li.querySelector('button')!.setAttribute('aria-label', c.title);
+      li.querySelector('.label')!.textContent = c.title;
       li.querySelector('button')!.addEventListener('click', () => { this.go(i); });
       ol.appendChild(li);
       this.chapterEls.push(li);
     });
   }
 
+  /** The language changed: the same moment, in the new words. */
+  relabel() {
+    this.buildStories();
+    const index = this.index;
+    this.buildRail();
+    $('play-btn').setAttribute('aria-label', this.playing ? t.page.pause : t.page.resume);
+    const c = this.chapter;
+    if (!c || index < 0) return;
+    this.chapterEls.forEach((li, k) => {
+      li.classList.toggle('current', k === index);
+      li.classList.toggle('done', k < index);
+      (li.querySelector('.fill') as HTMLElement).style.transform = k < index ? 'scaleX(1)' : k === index ? `scaleX(${Math.min(1, this.elapsed / c.duration)})` : 'scaleX(0)';
+    });
+    $('cap-kicker').textContent = c.kicker;
+    $('cap-title').textContent = c.title;
+    this.legend(c);
+    const token = this.token;
+    if (this.lineReady) void c.narrate(this.globe).catch(() => '').then((text) => { if (token === this.token && text) this.speak(text); });
+    if (!this.detour) {
+      this.clearAnchors();
+      if (c.follow === 'iss' && this.lineReady) this.anchorStation();
+      void this.pin(c, token);
+    }
+    if (this.drawerOpen) void this.openDrawer();
+    const next = $('next-story');
+    if (next.classList.contains('on')) next.querySelector('span')!.textContent = t.page.next(STORIES[(STORIES.indexOf(this.story) + 1) % STORIES.length].title);
+  }
+
   setPlaying(v: boolean) {
     this.playing = v;
     $('play-btn').classList.toggle('paused', !v);
-    $('play-btn').setAttribute('aria-label', v ? 'Pausa' : 'Riprendi il racconto');
+    $('play-btn').setAttribute('aria-label', v ? t.page.pause : t.page.resume);
     if (v && this.chapter) {
       // Resuming: go back to the chapter's framing.
       if (this.detour) this.go(this.index);
@@ -172,7 +205,10 @@ export class Director {
   private speak(text: string) {
     const el = $('cap-line');
     el.innerHTML = '';
-    const words = text.split(/(\s+)/);
+    // Chinese and Japanese have no spaces: the words come from the segmenter.
+    const words = /^(zh|ja)$/.test(lang) && 'Segmenter' in Intl
+      ? Array.from(new Intl.Segmenter(t.lang.locale, { granularity: 'word' }).segment(text), (s) => s.segment)
+      : text.split(/(\s+)/);
     let k = 0;
     for (const w of words) {
       if (/^\s+$/.test(w)) { el.appendChild(document.createTextNode(' ')); continue; }
@@ -202,7 +238,11 @@ export class Director {
     this.globe.setLook({ ...c.look, pin: { lon: p.lon, lat: p.lat } });
     setTimeout(() => {
       if (token !== this.token) return;
-      this.addAnchor(p.lon, p.lat, 0, `<b>${p.label}</b><small>${p.sub}</small>`);
+      const el = document.createElement('div');
+      el.innerHTML = '<b></b><small></small>';
+      el.querySelector('b')!.textContent = p.label;
+      el.querySelector('small')!.textContent = p.sub;
+      this.addAnchor(p.lon, p.lat, 0, el.innerHTML);
     }, 1400);
   }
 
@@ -236,7 +276,10 @@ export class Director {
 
   private anchorStation() {
     const s = this.globe.station;
-    this.addAnchor(s.lon, s.lat, s.altKm, '<b>Stazione Spaziale</b><small></small>', 'iss');
+    const el = document.createElement('div');
+    el.innerHTML = '<b></b><small></small>';
+    el.querySelector('b')!.textContent = t.station.name;
+    this.addAnchor(s.lon, s.lat, s.altKm, el.innerHTML, 'iss');
   }
 
   private addAnchor(lon: number, lat: number, alt: number, html: string, follow?: 'iss') {
@@ -264,7 +307,15 @@ export class Director {
     if (!d) return;
     $('drawer-kicker').textContent = `${roman[this.index]} · ${c.kicker}`;
     $('drawer-title').textContent = c.title;
-    $('drawer-facts').innerHTML = d.facts.map((f) => `<div class="fact"><b>${f.value}</b><span>${f.label}</span></div>`).join('');
+    $('drawer-facts').innerHTML = '';
+    for (const f of d.facts) {
+      const el = document.createElement('div');
+      el.className = 'fact';
+      el.innerHTML = '<b></b><span></span>';
+      el.querySelector('b')!.textContent = f.value;
+      el.querySelector('span')!.textContent = f.label;
+      $('drawer-facts').appendChild(el);
+    }
     $('drawer-text').textContent = d.text;
     $('drawer-source').textContent = d.source;
     $('drawer').classList.add('on');
@@ -295,15 +346,16 @@ export class Director {
     this.telemetryAt = 0.5;
     if (!this.countries) void loadCountries().then((c) => { this.countries = c; }).catch(() => {});
     const s = this.globe.station, now = this.globe.now;
-    const it = (n: number, d = 0) => n.toLocaleString('it-IT', { maximumFractionDigits: d, minimumFractionDigits: d });
     const light = s.daylight(now, (d) => sunDirection(d));
     const set = (id: string, v: string) => { const el = $(id); if (el.textContent !== v) el.textContent = v; };
-    set('tm-alt', `${it(s.altKm)} km`);
-    set('tm-speed', `${it(s.speedKmh)} km/h`);
+    const w = t.station, k = t.compass;
+    set('tm-alt', `${num(s.altKm)} ${t.units.km}`);
+    set('tm-speed', `${num(s.speedKmh)} ${t.units.kmh}`);
     set('tm-below', placeBelow(this.countries, s.lon, s.lat));
-    set('tm-light', !light ? '' : `${light.day ? 'giorno' : 'notte'}${Number.isFinite(light.minutes) ? ` · ${light.day ? 'tramonto' : 'alba'} tra ${it(Math.round(light.minutes))} min` : ''}`);
-    set('tm-pos', `${it(Math.abs(s.lat), 1)}° ${s.lat >= 0 ? 'N' : 'S'} · ${it(Math.abs(s.lon), 1)}° ${s.lon >= 0 ? 'E' : 'O'}`);
-    set('tm-orbit', `${Math.floor(s.orbitsToday(now)) + 1}ª di oggi`);
+    const min = light && Number.isFinite(light.minutes) ? num(Math.round(light.minutes)) : null;
+    set('tm-light', !light ? '' : `${light.day ? w.day : w.night}${min ? ` · ${light.day ? w.sunsetIn(min) : w.sunriseIn(min)}` : ''}`);
+    set('tm-pos', `${num(Math.abs(s.lat), 1)}° ${s.lat >= 0 ? k.N : k.S} · ${num(Math.abs(s.lon), 1)}° ${s.lon >= 0 ? k.E : k.W}`);
+    set('tm-orbit', w.orbitOfDay(Math.floor(s.orbitsToday(now)) + 1));
   }
 
   tick(dt: number) {
@@ -318,7 +370,7 @@ export class Director {
           this.setPlaying(false);
           const next = STORIES[(STORIES.indexOf(this.story) + 1) % STORIES.length];
           if (next !== this.story) {
-            $('next-story').querySelector('span')!.textContent = `Continua: ${next.title}`;
+            $('next-story').querySelector('span')!.textContent = t.page.next(next.title);
             $('next-story').classList.add('on');
           }
           document.getElementById('hint')!.classList.add('on');
@@ -345,7 +397,7 @@ export class Director {
       if (a.follow === 'iss') {
         a.lon = s.lon; a.lat = s.lat; a.alt = s.altKm;
         const small = a.el.querySelector('small');
-        if (small && s.altKm > 0) small.textContent = `${Math.round(s.altKm)} km · ${Math.round(s.speedKmh).toLocaleString('it-IT')} km/h`;
+        if (small && s.altKm > 0) small.textContent = `${num(s.altKm)} ${t.units.km} · ${num(s.speedKmh)} ${t.units.kmh}`;
       }
       const v = lonLatToVec(a.lon, a.lat, 1 + a.alt / 6371);
       const p = this.globe.screenOf(v);
@@ -357,19 +409,18 @@ export class Director {
 
     this.telemetry(c, dt);
 
-    const t = c?.clock === 'data' ? this.globe.dataFrameTime() : null;
+    const frame = c?.clock === 'data' ? this.globe.dataFrameTime() : null;
     const dc = $('data-clock');
     const run = c?.clock === 'year' ? this.globe.yearRunning : null;
     if (run) {
       $('data-time').textContent = String(Math.round(this.globe.year));
       $('data-dot').style.left = `${(((this.globe.year - run.from) / Math.max(1, run.to - run.from)) * 100).toFixed(2)}%`;
       dc.classList.add('on');
-    } else if (t) {
-      const d = new Date(t.time.length === 10 ? `${t.time}T12:00:00Z` : t.time);
-      const opt = (o: Intl.DateTimeFormatOptions) => d.toLocaleDateString('it-IT', { ...o, timeZone: 'UTC' });
-      $('data-time').textContent = t.cadence === 'month' ? opt({ month: 'long', year: 'numeric' })
-        : t.cadence === 'day' ? opt({ day: 'numeric', month: 'short', year: 'numeric' })
-        : `${opt({ day: 'numeric', month: 'short' })} · ${d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} UTC`;
+    } else if (frame) {
+      const time = frame.time;
+      $('data-time').textContent = frame.cadence === 'month' ? monthYear(time)
+        : frame.cadence === 'day' ? dayShort(time)
+        : `${dayMonthShort(time)} · ${timeUtc(time)} UTC`;
       $('data-dot').style.left = `${(this.globe.dataFrameProgress() * 100).toFixed(2)}%`;
       dc.classList.add('on');
     } else dc.classList.remove('on');

@@ -1,6 +1,8 @@
-import { seaName } from './places';
+import { seaId } from './places';
+import { t } from '../i18n';
+import { countryName } from '../i18n/regions';
 
-// Countries from Natural Earth 1:110m (public domain), with Italian names. Contemporary,
+// Countries from Natural Earth 1:110m (public domain), named in the language of the page. Contemporary,
 // generalised borders: good to say what lies below, not to settle a frontier.
 
 type Ring = [number, number][];
@@ -8,7 +10,10 @@ export interface Country {
   id: string;
   /** World Bank code used by the statistics (null for the few outlines with no WDI match). */
   stat: string | null;
-  name: string;
+  /** In the language of the page. */
+  readonly name: string;
+  /** The Natural Earth name, in Italian. */
+  italian: string;
   lon: number;
   lat: number;
   polygons: Ring[][];
@@ -28,7 +33,8 @@ export function loadCountries(): Promise<Country[]> {
           bbox[0] = Math.min(bbox[0], x); bbox[1] = Math.min(bbox[1], y);
           bbox[2] = Math.max(bbox[2], x); bbox[3] = Math.max(bbox[3], y);
         }
-        return { id: f.properties.id, stat: f.properties.statCode ?? null, name: f.properties.name, lon: f.properties.longitude, lat: f.properties.latitude, polygons, bbox };
+        const { id, name } = f.properties;
+        return { id, stat: f.properties.statCode ?? null, get name() { return countryName(id, name); }, italian: name, lon: f.properties.longitude, lat: f.properties.latitude, polygons, bbox };
       });
   })();
   loading.catch(() => { loading = null; });
@@ -61,6 +67,5 @@ export function countryAt(countries: Country[], lon: number, lat: number): Count
 /** What lies below a point, as a bare name: «Italia», «Atlantico del Nord». */
 export function placeBelow(countries: Country[] | null, lon: number, lat: number): string {
   const c = countries ? countryAt(countries, lon, lat) : null;
-  if (c) return c.name;
-  return seaName(lon, lat).replace(/^(nel|nell’|nello|nella|nei|negli|tra le isole dell’)\s?/, '');
+  return c ? c.name : t.sea[seaId(lon, lat)].name;
 }

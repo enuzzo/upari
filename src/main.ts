@@ -5,8 +5,14 @@ import { sunDirection, vecToLonLat } from './engine/astro';
 import { framing, initSearch, type Place } from './story/search';
 import { Sound, type Ambience, type Mood } from './engine/audio';
 import { Explorer } from './story/explore';
+import { enchant } from './intro';
+import { LANGS, NATIVE, detect, lang, onLang, setLang, t, type Lang } from './i18n';
+import { dayMonth, timeUtc } from './i18n/format';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
+
+// The words first: everything below is built in the language of the page.
+await setLang(detect()).catch(() => setLang('en'));
 
 const canvas = $<HTMLCanvasElement>('scene');
 const globe = new Globe(canvas);
@@ -23,7 +29,7 @@ const soundBtn = $('sound-btn');
 const showSound = (on: boolean) => {
   soundBtn.classList.toggle('muted', !on);
   soundBtn.setAttribute('aria-pressed', String(on));
-  soundBtn.setAttribute('aria-label', on ? 'Disattiva l’audio' : 'Attiva l’audio');
+  soundBtn.setAttribute('aria-label', on ? t.page.audioOff : t.page.audioOn);
 };
 sound.onChange = showSound;
 showSound(sound.enabled);
@@ -105,6 +111,30 @@ $('fs-btn').addEventListener('click', () => toggleFullscreen());
 $('credits-btn').addEventListener('click', () => $('credits').classList.add('on'));
 $('credits-close').addEventListener('click', () => $('credits').classList.remove('on'));
 $('credits').addEventListener('click', (e) => { if (e.target === $('credits')) $('credits').classList.remove('on'); });
+$('footer').addEventListener('click', () => { $('about').classList.add('on'); $('about').setAttribute('aria-hidden', 'false'); });
+const closeAbout = () => { $('about').classList.remove('on'); $('about').setAttribute('aria-hidden', 'true'); };
+$('about-close').addEventListener('click', closeAbout);
+$('about').addEventListener('click', (e) => { if (e.target === $('about')) closeAbout(); });
+
+// The language menu, top right: native names, the choice is remembered.
+const langMenu = $('lang'), langList = $('lang-list'), langBtn = $('lang-btn');
+const showMenu = (on: boolean) => { langMenu.classList.toggle('open', on); langBtn.setAttribute('aria-expanded', String(on)); };
+for (const code of LANGS) {
+  const li = document.createElement('li');
+  const b = document.createElement('button');
+  b.dataset.lang = code;
+  b.lang = code;
+  b.setAttribute('role', 'option');
+  b.textContent = NATIVE[code];
+  b.addEventListener('click', () => { showMenu(false); if (code !== lang) void setLang(code as Lang, true); });
+  li.appendChild(b);
+  langList.appendChild(li);
+}
+// Level with the icons of the top bar, whatever the height of its row.
+const levelLang = () => { langMenu.style.top = `${$('fs-btn').getBoundingClientRect().top}px`; };
+new ResizeObserver(levelLang).observe(document.querySelector('.top')!);
+langBtn.addEventListener('click', (e) => { e.stopPropagation(); showMenu(!langMenu.classList.contains('open')); });
+addEventListener('click', (e) => { if (!langMenu.contains(e.target as Node)) showMenu(false); });
 
 const search = initSearch((p: Place) => {
   if (!started) begin(null);
@@ -122,7 +152,7 @@ function toggleFullscreen() {
 addEventListener('keydown', (e) => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.target instanceof HTMLInputElement) return;
-  if (e.key === 'Escape') { $('credits').classList.remove('on'); director.closeDrawer(); search.close(); explorer.toggle(false); return; }
+  if (e.key === 'Escape') { $('credits').classList.remove('on'); closeAbout(); showMenu(false); director.closeDrawer(); search.close(); explorer.toggle(false); return; }
   if (e.key === '/') { e.preventDefault(); search.open(); return; }
   if (!started) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); begin('pianeta'); } return; }
   if (e.key === ' ') { e.preventDefault(); director.setPlaying(!director.playing); if (director.playing) explorer.toggle(false); }
@@ -169,15 +199,65 @@ globe.onFrame = (dt) => {
   if (clockT > 0.25) $('tile-credit').classList.toggle('on', globe.closeUp);
   if (clockT > 1) {
     clockT = 0;
-    const n = globe.now;
-    $('clock').textContent = `${n.toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })} · ${n.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} UTC`;
+    showClock();
   }
 };
+
+function showClock() {
+  const n = globe.now;
+  $('clock').textContent = t.page.clock(dayMonth(n), timeUtc(n));
+}
+
+/** Text blocks that read right to left in Arabic. The legends keep their left-to-right scale. */
+const BLOCKS = ['caption', 'drawer', 'explore', 'credits', 'about', 'intro', 'search', 'telemetry', 'hint', 'anchors', 'probe', 'clock', 'data-clock'];
+
+/** Every word of the page in the language of the moment. */
+function applyPage() {
+  const get = (path: string) => {
+    const v = path.split('.').reduce<unknown>((o, k) => (o as Record<string, unknown> | undefined)?.[k], t);
+    if (typeof v === 'string') return v;
+    if (import.meta.env.DEV) console.warn('i18n: no text for', path);
+    return '';
+  };
+  const each = (attr: string, put: (el: HTMLElement, v: string) => void) =>
+    document.querySelectorAll<HTMLElement>(`[data-${attr}]`).forEach((el) => put(el, get(el.getAttribute(`data-${attr}`)!)));
+  each('t', (el, v) => { el.textContent = v; });
+  each('t-html', (el, v) => { el.innerHTML = v; });
+  each('t-aria', (el, v) => el.setAttribute('aria-label', v));
+  each('t-title', (el, v) => el.setAttribute('title', v));
+  each('t-placeholder', (el, v) => el.setAttribute('placeholder', v));
+  document.title = t.page.title;
+  document.querySelector('meta[name="description"]')!.setAttribute('content', t.page.description);
+  const list = $('credits-list');
+  list.innerHTML = '';
+  for (const [label, source] of t.credits.items) {
+    const li = document.createElement('li');
+    li.innerHTML = `<b></b><span>${source}</span>`;
+    li.querySelector('b')!.textContent = label;
+    list.appendChild(li);
+  }
+  $('footer').textContent = `© ${new Date().getFullYear()} Netmilk Studio · v${__APP_VERSION__}`;
+  $('lang-code').textContent = lang.toUpperCase();
+  langList.querySelectorAll<HTMLButtonElement>('button').forEach((b) => {
+    b.classList.toggle('current', b.dataset.lang === lang);
+    b.setAttribute('aria-selected', String(b.dataset.lang === lang));
+  });
+  for (const id of BLOCKS) $(id).dir = t.lang.dir;
+  showSound(sound.enabled);
+  showClock();
+}
+applyPage();
+enchant($('intro'));
+onLang(() => {
+  applyPage();
+  director.relabel();
+  explorer.relabel();
+});
 
 boot().catch((err) => {
   console.error(err);
   $('loader-bar').style.width = '100%';
-  document.querySelector('.intro-line')!.textContent = 'Serve un browser con WebGL 2 per vedere il pianeta.';
+  document.querySelector('.intro-line')!.textContent = t.page.noWebgl;
   $('veil').classList.add('shown');
 });
 

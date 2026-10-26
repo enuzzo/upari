@@ -3,6 +3,8 @@
 // we search only on Enter, space requests a second apart and keep answers in memory.
 // https://operations.osmfoundation.org/policies/nominatim/
 
+import { t, lang } from '../i18n';
+
 export interface Place {
   name: string;
   context: string;
@@ -42,14 +44,14 @@ function toPlace(r: NominatimResult): Place {
 
 export async function geocode(query: string, signal?: AbortSignal): Promise<Place[]> {
   const q = query.trim().replace(/\s+/g, ' ');
-  const key = q.toLowerCase();
+  const key = `${lang}:${q.toLowerCase()}`;
   const hit = cache.get(key);
   if (hit) return hit;
   const wait = lastRequest + 1100 - Date.now();
   if (wait > 0) await new Promise((r) => setTimeout(r, wait));
   if (signal?.aborted) throw new DOMException('aborted', 'AbortError');
   lastRequest = Date.now();
-  const url = `${ENDPOINT}?${new URLSearchParams({ q, format: 'jsonv2', limit: '5', 'accept-language': 'it' })}`;
+  const url = `${ENDPOINT}?${new URLSearchParams({ q, format: 'jsonv2', limit: '5', 'accept-language': lang })}`;
   const res = await fetch(url, { signal, headers: { Accept: 'application/json' } });
   if (!res.ok) throw new Error(`Nominatim ${res.status}`);
   const places = ((await res.json()) as NominatimResult[]).map(toPlace);
@@ -105,15 +107,15 @@ export function initSearch(onPick: (p: Place) => void) {
     controller?.abort();
     controller = new AbortController();
     box.classList.add('busy', 'has-results');
-    note.textContent = 'Cerco…';
+    note.textContent = t.page.searching;
     list.innerHTML = '';
     try {
       results = await geocode(q, controller.signal);
-      note.textContent = results.length ? '' : 'Nessun luogo con questo nome.';
+      note.textContent = results.length ? '' : t.page.noPlace;
       render(0);
       if (results[0]) onPick(results[0]);
     } catch (err) {
-      if ((err as Error).name !== 'AbortError') note.textContent = 'La ricerca non risponde, riprova tra poco.';
+      if ((err as Error).name !== 'AbortError') note.textContent = t.page.searchDown;
     } finally {
       box.classList.remove('busy');
     }

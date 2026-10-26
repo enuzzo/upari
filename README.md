@@ -1,4 +1,4 @@
-# Upari 1.0
+# Upari
 
 Il pianeta Terra raccontato dai suoi dati di oggi. Un documentario interattivo per desktop: undici capitoli brevi, una voce narrante scritta, un globo che si può trascinare, avvicinare fino a 10 m per pixel e interrogare punto per punto.
 
@@ -7,6 +7,18 @@ Il pianeta Terra raccontato dai suoi dati di oggi. Un documentario interattivo p
 Il pianeta · Il respiro (venti GFS) · Le correnti (OSCAR) · Il calore del mare (GHRSST MUR) · La febbre (anomalie) · Il mare che fiorisce (PACE) · La pioggia (GPM IMERG, 24 ore) · Il fuoco (FIRMS) · Il ghiaccio (GAMSSA) · Le luci (Black Marble) · Lassù (ISS in tempo reale).
 
 Le frasi con numeri (il vento più forte, il mare più caldo, la quota della Stazione Spaziale, la percentuale di oceani oltre la media) sono calcolate dai dati all'apertura.
+
+## Lingue
+
+Dodici lingue: italiano, inglese, spagnolo, francese, tedesco, portoghese, russo, cinese, giapponese, coreano, arabo e hindi. All'apertura Upari sceglie la lingua del browser (altrimenti l'inglese); il menu in alto a destra la cambia al volo e la ricorda. `?lang=xx` nell'indirizzo forza una lingua.
+
+I testi stanno in [`src/i18n`](src/i18n): l'italiano ([`it.ts`](src/i18n/it.ts)) è l'originale e definisce la forma di tutti i dizionari, che TypeScript controlla. Le frasi con dati sono funzioni che ricevono numeri e date già formattati nella lingua della pagina. I nomi dei paesi vengono da `Intl.DisplayNames`, con poche eccezioni per lingua; per cinese, giapponese, coreano, arabo, hindi e russo si caricano i Noto (o Cormorant) di Google Fonts solo quando servono, e l'arabo si legge da destra a sinistra.
+
+Il testo di «Perché Upari», che si apre dal copyright in basso a destra, è in [`docs/ABOUT.md`](docs/ABOUT.md).
+
+## Versione
+
+La versione è quella di `package.json` e compare in basso a destra accanto al copyright di Netmilk Studio (l'anno è quello corrente). Sale di una patch per le correzioni (1.1.1) e di una minor per le novità (1.2.0).
 
 ## Motore
 

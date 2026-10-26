@@ -4,6 +4,8 @@ import {
 } from 'three';
 import { json2satrec, propagate, gstime, eciToGeodetic, type SatRec } from 'satellite.js';
 import { lonLatToVec } from './astro';
+import { t } from '../i18n';
+import { regionName } from '../i18n/regions';
 
 /** Seven days of active fires as glowing embers. */
 export function createFires(data: Float32Array) {
@@ -131,30 +133,14 @@ export function createQuakes(list: Quake[], newest: number) {
   return { points, material, list, week };
 }
 
-const REGIONS: Record<string, string> = {
-  China: 'Cina', Japan: 'Giappone', Philippines: 'Filippine', Peru: 'Perù', Mexico: 'Messico', Turkey: 'Turchia', Türkiye: 'Turchia',
-  Greece: 'Grecia', Italy: 'Italia', 'Papua New Guinea': 'Papua Nuova Guinea', 'New Zealand': 'Nuova Zelanda', Fiji: 'Figi',
-  'Solomon Islands': 'Isole Salomone', Taiwan: 'Taiwan', Chile: 'Cile', Ecuador: 'Ecuador', Colombia: 'Colombia', Guatemala: 'Guatemala',
-  'Timor Leste': 'Timor Est', 'East Timor': 'Timor Est', Russia: 'Russia', Iran: 'Iran', Afghanistan: 'Afghanistan', Pakistan: 'Pakistan',
-  India: 'India', Nepal: 'Nepal', Myanmar: 'Myanmar', 'Northern Mariana Islands': 'Isole Marianne Settentrionali', 'Puerto Rico': 'Porto Rico',
-  'Dominican Republic': 'Repubblica Dominicana', 'El Salvador': 'El Salvador', Nicaragua: 'Nicaragua', 'Costa Rica': 'Costa Rica',
-  Panama: 'Panamá', Argentina: 'Argentina', Bolivia: 'Bolivia', Vanuatu: 'Vanuatu', Tonga: 'Tonga', Samoa: 'Samoa', Iceland: 'Islanda',
-  Portugal: 'Portogallo', Spain: 'Spagna', Albania: 'Albania', Croatia: 'Croazia', Cyprus: 'Cipro', Algeria: 'Algeria', Morocco: 'Marocco',
-  Ethiopia: 'Etiopia', Kenya: 'Kenya', Tanzania: 'Tanzania', Tajikistan: 'Tagikistan', Kyrgyzstan: 'Kirghizistan', Kazakhstan: 'Kazakistan',
-  Indonesia: 'Indonesia', 'South Sandwich Islands region': 'Isole Sandwich Australi', 'Kermadec Islands region': 'Isole Kermadec',
-  'Mid-Atlantic Ridge': 'Dorsale medio-atlantica', 'Fiji region': 'Figi', 'Tonga region': 'Tonga', 'Vanuatu region': 'Vanuatu',
-};
-
-/** "147 km ENE of Lospalos, Timor Leste" → "a 147 km da Lospalos, Timor Est". */
+/** "147 km ENE of Lospalos, Timor Leste" → «a 147 km da Lospalos, Timor Est». */
 export function placeIt(place: string): string {
-  const it = (name: string) => {
+  const named = (name: string) => {
     const k = name.lastIndexOf(', ');
-    const region = k >= 0 ? name.slice(k + 2) : name;
-    const tr = REGIONS[region];
-    return tr ? (k >= 0 ? `${name.slice(0, k)}, ${tr}` : tr) : name;
+    return k >= 0 ? `${name.slice(0, k)}, ${regionName(name.slice(k + 2))}` : regionName(name);
   };
   const m = /^(\d+) km [NSEW]{1,3} of (.+)$/.exec(place);
-  return m ? `a ${m[1]} km da ${it(m[2])}` : place.startsWith('near ') ? `vicino a ${it(place.slice(5))}` : `nella regione ${it(place)}`;
+  return m ? t.quake.distance(m[1], named(m[2])) : place.startsWith('near ') ? t.quake.near(named(place.slice(5))) : t.quake.region(named(place));
 }
 
 /** Sunlight at a point above the Earth (planet radii), 0 in the shadow, soft at its edge. */

@@ -107,13 +107,18 @@ jobs:
       - name: Controlla upari.earth
         # The SiteGround CDN sits in front of the server: say so if it still serves an old page or old data.
         continue-on-error: true
+        # The CDN takes a minute or two to let go of the old files: ask again before saying so.
         run: |
-          sleep 20
           stale=0
           for f in index.html layers/rain.json fields/wind.json; do
-            live=$(curl -fsS --max-time 30 "https://upari.earth/${f/index.html/}" | sha256sum | cut -c1-64)
             built=$(sha256sum "dist/$f" | cut -c1-64)
-            if [ "$live" = "$built" ]; then echo "$f: aggiornato"; else echo "$f: upari.earth serve ancora una versione precedente"; stale=1; fi
+            fresh=0
+            for try in 1 2 3 4 5 6 7 8; do
+              sleep 20
+              live=$(curl -fsS --max-time 30 "https://upari.earth/${f/index.html/}" | sha256sum | cut -c1-64)
+              if [ "$live" = "$built" ]; then fresh=1; break; fi
+            done
+            if [ $fresh = 1 ]; then echo "$f: aggiornato"; else echo "$f: upari.earth serve ancora una versione precedente"; stale=1; fi
           done
           if [ $stale = 1 ]; then echo '> upari.earth non serve ancora tutti i file nuovi: probabilmente la cache del CDN SiteGround.' >> "$GITHUB_STEP_SUMMARY"; exit 1; fi
 

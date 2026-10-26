@@ -9,6 +9,9 @@
   --sans: 'Inter Tight', 'Helvetica Neue', Arial, sans-serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --gutter: clamp(28px, 3.4vw, 64px);
+  /* Text over the planet: a tight edge plus a wide halo, as on the opening title. */
+  --halo: 0 1px 2px rgba(0, 0, 0, 0.8), 0 0 18px rgba(0, 0, 0, 0.85);
+  --halo-soft: 0 1px 2px rgba(0, 0, 0, 0.7), 0 0 12px rgba(0, 0, 0, 0.75);
   color-scheme: dark;
 }
 
@@ -36,9 +39,9 @@ body.ready .top { opacity: 1; }
 /* The title already says Upari: the small mark appears once the planet takes the stage. */
 body.started .brand { opacity: 1; visibility: visible; transition-delay: 0.6s, 0s; }
 .top-actions { display: flex; align-items: center; gap: 6px; }
-.clock { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); margin-right: 14px; font-variant-numeric: tabular-nums; }
+.clock { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); text-shadow: var(--halo-soft); margin-right: 14px; font-variant-numeric: tabular-nums; }
 .icon-btn {
-  width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: var(--ink-2);
+  width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: var(--ink-2); filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.8));
   transition: color 0.3s, background 0.3s;
 }
 .icon-btn:hover { color: var(--ink); background: rgba(255, 255, 255, 0.06); }
@@ -80,13 +83,16 @@ body.started .brand { opacity: 1; visibility: visible; transition-delay: 0.6s, 0
 }
 .caption::before {
   content: ''; position: absolute; z-index: -1; left: -30vw; right: -22vw; top: -22vh; bottom: -30vh;
-  background: radial-gradient(ellipse at 30% 62%, rgba(2, 3, 6, 0.78) 0%, rgba(2, 3, 6, 0.42) 38%, transparent 70%);
+  background:
+    radial-gradient(ellipse at 30% 62%, rgba(2, 3, 6, 0.82) 0%, rgba(2, 3, 6, 0.55) 38%, transparent 72%),
+    linear-gradient(90deg, rgba(2, 3, 6, 0.55) 25%, transparent 62%);
   pointer-events: none;
 }
+.caption { text-shadow: var(--halo); }
 .caption > * { pointer-events: auto; }
 .kicker {
   display: flex; gap: 14px; align-items: baseline;
-  font-size: 11.5px; font-weight: 500; letter-spacing: 0.24em; text-transform: uppercase; color: var(--ink-3);
+  font-size: 11.5px; font-weight: 500; letter-spacing: 0.24em; text-transform: uppercase; color: var(--ink-2);
   margin-bottom: 18px;
 }
 .kicker .num { color: var(--warm); font-variant-numeric: tabular-nums; }
@@ -132,9 +138,14 @@ body.started .brand { opacity: 1; visibility: visible; transition-delay: 0.6s, 0
   pointer-events: none;
 }
 .legend.on { opacity: 1; transform: none; }
-.legend-title { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 10px; }
+.legend::before {
+  content: ''; position: absolute; z-index: -1; inset: -70px -60px -60px -80px;
+  background: radial-gradient(closest-side, rgba(2, 3, 6, 0.7), rgba(2, 3, 6, 0.35) 60%, transparent);
+}
+.legend { text-shadow: var(--halo-soft); }
+.legend-title { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 10px; }
 .legend-bar { height: 6px; border-radius: 3px; box-shadow: 0 0 24px rgba(255, 255, 255, 0.06); }
-.legend-ends { display: flex; justify-content: space-between; margin-top: 8px; font-family: var(--serif); font-size: 17px; color: var(--ink-2); }
+.legend-ends { display: flex; justify-content: space-between; margin-top: 8px; font-family: var(--serif); font-size: 17px; color: var(--ink); }
 
 /* ——— Rail ——— */
 .rail {
@@ -143,6 +154,12 @@ body.started .brand { opacity: 1; visibility: visible; transition-delay: 0.6s, 0
   opacity: 0; transform: translateY(10px); transition: opacity 1.4s var(--ease), transform 1.4s var(--ease);
 }
 body.ready.started .rail { opacity: 1; transform: none; }
+/* The chapter names sit on whatever the planet shows: a low shade keeps them readable. */
+.rail::before {
+  content: ''; position: absolute; z-index: -1; pointer-events: none;
+  left: calc(var(--gutter) * -1); right: calc(var(--gutter) * -1); top: -70px; bottom: calc(var(--gutter) * -0.7);
+  background: linear-gradient(rgba(2, 3, 6, 0), rgba(2, 3, 6, 0.6));
+}
 .play { width: 42px; height: 42px; flex: none; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--ink-4); transition: border-color 0.3s, background 0.3s; }
 .play:hover { border-color: var(--ink-2); background: rgba(255, 255, 255, 0.05); }
 .play .i-play { display: none; }
@@ -156,7 +173,7 @@ body.ready.started .rail { opacity: 1; transform: none; }
 .chapters .fill { position: absolute; inset: 0; transform-origin: left; transform: scaleX(0); background: var(--ink); }
 .chapters li.done .fill { transform: scaleX(1); background: var(--ink-3); }
 .chapters .label {
-  display: block; margin-top: 10px; font-size: 11px; letter-spacing: 0.08em; color: var(--ink-3);
+  display: block; margin-top: 10px; font-size: 11px; letter-spacing: 0.08em; color: var(--ink-2); text-shadow: var(--halo-soft);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color 0.3s;
 }
 .chapters button:hover .label, .chapters li.current .label { color: var(--ink); }
@@ -168,16 +185,21 @@ body.ready.started .rail { opacity: 1; transform: none; }
 .probe.on { opacity: 1; }
 .probe-ring { position: absolute; left: -9px; top: -9px; width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.85); box-shadow: 0 0 12px rgba(0, 0, 0, 0.5); }
 .probe-ring::after { content: ''; position: absolute; left: 7px; top: 7px; width: 2px; height: 2px; border-radius: 50%; background: #fff; }
-.probe-text { position: absolute; left: 20px; top: -20px; white-space: nowrap; text-shadow: 0 1px 12px rgba(0, 0, 0, 0.85), 0 0 2px rgba(0, 0, 0, 0.6); }
+.probe-text { position: absolute; left: 20px; top: -20px; white-space: nowrap; text-shadow: var(--halo); }
+/* A soft dark pool behind labels on the map, so they read over bright trails and clouds. */
+.probe-text::before, .anchor .a-in::before {
+  content: ''; position: absolute; z-index: -1; inset: -16px -26px -16px -14px; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(2, 3, 6, 0.62), rgba(2, 3, 6, 0.3) 65%, transparent);
+}
 .probe-text b { display: block; font-family: var(--serif); font-weight: 400; font-size: 26px; line-height: 1; }
-.probe-text small { display: block; margin-top: 5px; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); }
+.probe-text small { display: block; margin-top: 5px; font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink); }
 
 /* ——— Anchored labels (pins, the station) ——— */
 .anchors { position: fixed; inset: 0; pointer-events: none; z-index: 3; }
 .anchor { position: absolute; left: 0; top: 0; will-change: transform; transition: opacity 0.8s var(--ease); white-space: nowrap; }
-.anchor .a-in { position: absolute; left: 44px; top: -14px; padding-left: 14px; border-left: 1px solid rgba(255, 255, 255, 0.5); text-shadow: 0 1px 14px rgba(0, 0, 0, 0.9); }
+.anchor .a-in { position: absolute; left: 44px; top: -14px; padding-left: 14px; border-left: 1px solid rgba(255, 255, 255, 0.6); text-shadow: var(--halo); }
 .anchor b { display: block; font-family: var(--serif); font-weight: 400; font-size: 24px; line-height: 1.05; }
-.anchor small { display: block; font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-2); margin-top: 3px; }
+.anchor small { display: block; font-size: 10.5px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink); margin-top: 3px; }
 
 /* ——— Drawer ——— */
 .drawer {
@@ -202,7 +224,7 @@ body.ready.started .rail { opacity: 1; transform: none; }
 /* ——— Hint ——— */
 .hint {
   position: fixed; left: 50%; top: calc(var(--gutter) * 0.7); transform: translateX(-50%); z-index: 4;
-  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-3);
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-2); text-shadow: var(--halo-soft);
   opacity: 0; transition: opacity 1.2s var(--ease); pointer-events: none;
 }
 .hint.on { opacity: 1; }
@@ -253,6 +275,15 @@ body.ready.started .rail { opacity: 1; transform: none; }
 .ghost { font-size: 13px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-2); text-shadow: 0 0 16px rgba(0, 0, 0, 0.9); padding: 18px 0; border-bottom: 1px solid transparent; transition: color 0.3s, border-color 0.3s; }
 .ghost:hover { color: var(--ink); border-color: var(--ink-3); }
 .intro-actions button:disabled { opacity: 0.35; cursor: progress; }
+.signature {
+  position: absolute; right: calc(var(--gutter) * 1.6); bottom: calc(var(--gutter) * 0.9);
+  font-size: 11px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-3); text-decoration: none;
+  text-shadow: var(--halo-soft); opacity: 0; transition: opacity 1.6s var(--ease) 2.2s, color 0.3s;
+}
+.signature b { font-weight: 600; color: var(--ink-2); transition: color 0.3s; }
+.signature:hover, .signature:hover b { color: var(--ink); }
+.veil.shown .signature { opacity: 1; }
+.veil.gone .signature { opacity: 0; transition-delay: 0s; }
 .loader { position: fixed; left: 0; right: 0; bottom: 0; height: 1px; background: transparent; }
 .loader span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, transparent, var(--warm)); transition: width 0.6s var(--ease), opacity 1s; }
 .loader.done span { opacity: 0; }
@@ -284,7 +315,7 @@ body.reading .anchors { opacity: 0; }
 /* ——— Close-up imagery credit (CC BY 4.0) ——— */
 .tile-credit {
   position: fixed; right: var(--gutter); bottom: calc(var(--gutter) * 0.7 + 52px); z-index: 6;
-  font-size: 10.5px; letter-spacing: 0.04em; color: var(--ink-3); text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+  font-size: 10.5px; letter-spacing: 0.04em; color: var(--ink-2); text-shadow: var(--halo-soft);
   opacity: 0; pointer-events: none; transition: opacity 0.8s var(--ease);
 }
 .tile-credit a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--ink-4); }

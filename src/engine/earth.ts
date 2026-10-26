@@ -42,6 +42,7 @@ uniform float uGlintWaves;
 uniform float uTime;
 uniform float uCloudOpacity;
 uniform float uCloudFlow;
+uniform float uCloudDetail; // 0 from afar, 1 close to the ground
 uniform float uNightGain;
 uniform float uReliefGain;
 uniform float uBaseDim;
@@ -101,6 +102,14 @@ float rainDashes(vec2 km, float t) {
   return s;
 }
 
+// Value noise with each octave rotated, so no grid shows through in cloud edges.
+float cloudFbm(vec3 p) {
+  const mat3 R = mat3(0.00, 0.80, 0.60, -0.80, 0.36, -0.48, -0.60, -0.48, 0.64);
+  float a = 0.5, s = 0.0;
+  for (int i = 0; i < 4; i++) { s += a * vnoise(p); p = R * p * 2.07; a *= 0.5; }
+  return s / 0.9375;
+}
+
 vec3 desaturate(vec3 c, float k) {
   float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
   return mix(c, vec3(l), k);
@@ -158,12 +167,31 @@ void main() {
   float period = 24.0;
   float ph0 = fract(uTime / period), ph1 = fract(uTime / period + 0.5);
   float wgt = 1.0 - abs(1.0 - 2.0 * ph0);
-  float c0 = texture(uClouds, uv - flow * ph0 * period).r;
-  float c1 = texture(uClouds, uv - flow * ph1 * period).r;
-  float cloud = mix(c1, c0, wgt);
-  cloud = smoothstep(0.08, 0.95, cloud) * uCloudOpacity;
+  vec2 uv0 = uv - flow * ph0 * period, uv1 = uv - flow * ph1 * period;
+  float c0 = texture(uClouds, uv0).r;
+  float c1 = texture(uClouds, uv1).r;
+  float cloudBase = mix(c1, c0, wgt);
+  float cloud = cloudBase;
   vec2 shadowShift = vec2(dot(L, east) / (2.0 * PI * cosLat), dot(L, north) / PI) * 0.0035;
-  float cloudShadow = smoothstep(0.08, 0.95, texture(uClouds, uv - flow * ph0 * period + shadowShift).r) * uCloudOpacity;
+  float cloudShade = 1.0;
+  if (uCloudDetail > 0.001 && uCloudOpacity > 0.001 && cloudBase > 0.02) {
+    // The cloud map has 5 km pixels. Close up, break the edges into cumulus-like texture
+    // (moving with the clouds) where there already is cloud, without adding any.
+    // Noise on the sphere itself (features of about 5 km), carried along by the cloud drift.
+    vec2 a0 = vec2((uv0.x - 0.5) * 2.0 * PI, (uv0.y - 0.5) * PI), a1 = vec2((uv1.x - 0.5) * 2.0 * PI, (uv1.y - 0.5) * PI);
+    vec3 p0 = vec3(cos(a0.y) * cos(a0.x), sin(a0.y), -cos(a0.y) * sin(a0.x)) * 1274.0;
+    vec3 p1 = vec3(cos(a1.y) * cos(a1.x), sin(a1.y), -cos(a1.y) * sin(a1.x)) * 1274.0;
+    float d = wgt > 0.97 ? cloudFbm(p0) : wgt < 0.03 ? cloudFbm(p1 + 17.0) : mix(cloudFbm(p1 + 17.0), cloudFbm(p0), wgt);
+    // Erode only: gaps open inside thin and broken cloud, solid decks stay solid, clear sky stays clear.
+    float body = smoothstep(0.12, 0.45, cloudBase) * (1.0 - smoothstep(0.7, 0.98, cloudBase));
+    cloud = cloudBase * (1.0 - smoothstep(0.36, 0.72, 1.0 - d) * 0.55 * body * uCloudDetail);
+    // Sides turned away from the Sun fall into their own shadow.
+    float toSun = mix(texture(uClouds, uv1 + shadowShift * 0.35).r, texture(uClouds, uv0 + shadowShift * 0.35).r, wgt);
+    cloudShade = 1.0 - 0.45 * clamp((toSun - cloudBase) * 4.0, 0.0, 1.0) * uCloudDetail;
+  }
+  // Thin haze in a 5 km map reads as fog from close by: let it clear as the camera comes down.
+  cloud = smoothstep(0.08 + 0.2 * uCloudDetail, 0.95, cloud) * uCloudOpacity;
+  float cloudShadow = smoothstep(0.08, 0.95, texture(uClouds, uv0 + shadowShift).r) * uCloudOpacity;
 
   // ---- Sunlight at the ground, reddened near the terminator by the atmosphere.
   vec3 sunT = sunTransmittance(N * 1.0005, L);
@@ -215,7 +243,7 @@ void main() {
 
   // ---- Cloud layer.
   vec3 cloudLight = sunT * (smoothstep(-0.12, 0.6, NL) * 0.92 + 0.04) * uSunPower + sky * 0.6 + moonC * (smoothstep(-0.2, 0.6, dot(N, uMoon.xyz)) * 0.9 + 0.1);
-  vec3 col = mix(surface, vec3(0.58) * cloudLight * (1.0 - uBaseDim * 0.6), cloud);
+  vec3 col = mix(surface, vec3(0.58) * cloudLight * cloudShade * (1.0 - uBaseDim * 0.6), cloud);
 
   if (uDataMix > 0.001 && uDataStyle.w > 0.5) {
     col = mix(col, dataColor.rgb, dataColor.a);
@@ -280,6 +308,7 @@ export function earthUniforms(t: EarthTextures) {
     uTime: { value: 0 },
     uCloudOpacity: { value: 1 },
     uCloudFlow: { value: 1 },
+    uCloudDetail: { value: 0 },
     uNightGain: { value: 3.2 },
     uReliefGain: { value: 9 },
     uBaseDim: { value: 0 },

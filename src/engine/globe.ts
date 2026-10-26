@@ -285,7 +285,11 @@ export class Globe {
     const low = Math.min(1, Math.max(0, (alt - 0.008) / 0.07));
     const lowS = low * low * (3 - 2 * low);
     u.uCloudOpacity.value = c.clouds * lowS;
-    u.uCloudFlow.value = c.cloudFlow;
+    // From afar the clouds drift with today's winds as a time-lapse; close up that speed tears
+    // the 5 km cloud map apart, so the drift slows down and fine texture takes over.
+    const close = Math.min(1, Math.max(0, (0.5 - alt) / 0.42));
+    u.uCloudFlow.value = c.cloudFlow * (0.55 - 0.54 * close);
+    u.uCloudDetail.value = close * close * (3 - 2 * close);
     u.uNightGain.value = this.tune.night * c.night;
     u.uBaseDim.value = c.dim;
     u.uBaseDesat.value = c.desat;

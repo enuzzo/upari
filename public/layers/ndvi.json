@@ -1,0 +1,82 @@
+{
+ "id": "ndvi",
+ "width": 2048,
+ "height": 1024,
+ "cadence": "month",
+ "unit": "NDVI",
+ "scale": "linear",
+ "min": -0.1,
+ "max": 1,
+ "source": "NASA VIIRS SNPP · NDVI mensile · GIBS",
+ "layer": "VIIRS_SNPP_L3_NDVI_Monthly",
+ "dates": [
+  "2026-09-01"
+ ],
+ "frames": [
+  {
+   "file": "ndvi-2025-09.jpg",
+   "conf": "ndvi-2025-09-c.png",
+   "time": "2025-09-01"
+  },
+  {
+   "file": "ndvi-2025-10.jpg",
+   "conf": "ndvi-2025-10-c.png",
+   "time": "2025-10-01"
+  },
+  {
+   "file": "ndvi-2025-11.jpg",
+   "conf": "ndvi-2025-11-c.png",
+   "time": "2025-11-01"
+  },
+  {
+   "file": "ndvi-2025-12.jpg",
+   "conf": "ndvi-2025-12-c.png",
+   "time": "2025-12-01"
+  },
+  {
+   "file": "ndvi-2026-01.jpg",
+   "conf": "ndvi-2026-01-c.png",
+   "time": "2026-01-01"
+  },
+  {
+   "file": "ndvi-2026-02.jpg",
+   "conf": "ndvi-2026-02-c.png",
+   "time": "2026-02-01"
+  },
+  {
+   "file": "ndvi-2026-03.jpg",
+   "conf": "ndvi-2026-03-c.png",
+   "time": "2026-03-01"
+  },
+  {
+   "file": "ndvi-2026-04.jpg",
+   "conf": "ndvi-2026-04-c.png",
+   "time": "2026-04-01"
+  },
+  {
+   "file": "ndvi-2026-05.jpg",
+   "conf": "ndvi-2026-05-c.png",
+   "time": "2026-05-01"
+  },
+  {
+   "file": "ndvi-2026-06.jpg",
+   "conf": "ndvi-2026-06-c.png",
+   "time": "2026-06-01"
+  },
+  {
+   "file": "ndvi-2026-07.jpg",
+   "conf": "ndvi-2026-07-c.png",
+   "time": "2026-07-01"
+  },
+  {
+   "file": "ndvi-2026-08.jpg",
+   "conf": "ndvi-2026-08-c.png",
+   "time": "2026-08-01"
+  },
+  {
+   "file": "ndvi-2026-09.jpg",
+   "conf": "ndvi-2026-09-c.png",
+   "time": "2026-09-01"
+  }
+ ]
+}

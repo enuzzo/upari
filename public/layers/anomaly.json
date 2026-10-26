@@ -1,15 +1,82 @@
 {
  "id": "anomaly",
- "width": 4096,
- "height": 2048,
- "coverage": 0.68705,
- "dates": [
-  "2026-10-23"
- ],
+ "width": 2048,
+ "height": 1024,
+ "cadence": "day",
  "unit": "°C",
  "scale": "linear",
  "min": -3,
  "max": 3,
  "source": "GHRSST MUR · JPL · GIBS",
- "layer": "GHRSST_L4_MUR_Sea_Surface_Temperature_Anomalies"
+ "layer": "GHRSST_L4_MUR_Sea_Surface_Temperature_Anomalies",
+ "dates": [
+  "2026-10-25"
+ ],
+ "frames": [
+  {
+   "file": "anomaly-2025-10.jpg",
+   "conf": "anomaly-2025-10-c.png",
+   "time": "2025-10-15"
+  },
+  {
+   "file": "anomaly-2025-11.jpg",
+   "conf": "anomaly-2025-11-c.png",
+   "time": "2025-11-15"
+  },
+  {
+   "file": "anomaly-2025-12.jpg",
+   "conf": "anomaly-2025-12-c.png",
+   "time": "2025-12-15"
+  },
+  {
+   "file": "anomaly-2026-01.jpg",
+   "conf": "anomaly-2026-01-c.png",
+   "time": "2026-01-15"
+  },
+  {
+   "file": "anomaly-2026-02.jpg",
+   "conf": "anomaly-2026-02-c.png",
+   "time": "2026-02-15"
+  },
+  {
+   "file": "anomaly-2026-03.jpg",
+   "conf": "anomaly-2026-03-c.png",
+   "time": "2026-03-15"
+  },
+  {
+   "file": "anomaly-2026-04.jpg",
+   "conf": "anomaly-2026-04-c.png",
+   "time": "2026-04-15"
+  },
+  {
+   "file": "anomaly-2026-05.jpg",
+   "conf": "anomaly-2026-05-c.png",
+   "time": "2026-05-15"
+  },
+  {
+   "file": "anomaly-2026-06.jpg",
+   "conf": "anomaly-2026-06-c.png",
+   "time": "2026-06-15"
+  },
+  {
+   "file": "anomaly-2026-07.jpg",
+   "conf": "anomaly-2026-07-c.png",
+   "time": "2026-07-15"
+  },
+  {
+   "file": "anomaly-2026-08.jpg",
+   "conf": "anomaly-2026-08-c.png",
+   "time": "2026-08-15"
+  },
+  {
+   "file": "anomaly-2026-09.jpg",
+   "conf": "anomaly-2026-09-c.png",
+   "time": "2026-09-15"
+  },
+  {
+   "file": "anomaly-latest.jpg",
+   "conf": "anomaly-latest-c.png",
+   "time": "2026-10-25"
+  }
+ ]
 }

@@ -1,7 +1,7 @@
 import { LinearFilter, LinearMipmapLinearFilter, RepeatWrapping, Texture, TextureLoader, ClampToEdgeWrapping } from 'three';
 import { PALETTES, paletteTexture, type Stop } from './palettes';
 
-export type DataId = 'chlorophyll' | 'sst' | 'anomaly' | 'rain' | 'ice';
+export type DataId = 'chlorophyll' | 'sst' | 'anomaly' | 'rain' | 'ice' | 'ndvi' | 'aerosol' | 'coral' | 'forest';
 
 export interface LayerMeta {
   id: string;
@@ -13,7 +13,9 @@ export interface LayerMeta {
   max: number;
   dates?: string[];
   source?: string;
-  frames?: { file: string; time: string }[];
+  /** A time series: each frame is a value image, with its coverage apart when `conf` is set. */
+  frames?: { file: string; time: string; conf?: string }[];
+  cadence?: 'hour' | 'day' | 'month';
 }
 
 export interface DataDef {
@@ -22,6 +24,9 @@ export interface DataDef {
   style: [number, number, number, number];
   /** Surface effect: 1 draws rain as falling streaks. */
   fx?: number;
+  /** Frames per second of a series, and seconds to rest on the last frame. */
+  fps?: number;
+  hold?: number;
   decode: (v: number, m: LayerMeta) => number;
   format: (x: number) => string;
 }
@@ -31,16 +36,16 @@ const nf = (d: number) => new Intl.NumberFormat('it-IT', { maximumFractionDigits
 
 export const DATA: Record<DataId, DataDef> = {
   chlorophyll: {
-    palette: PALETTES.chlorophyll, style: [0.35, 0.9, 1, 0],
+    palette: PALETTES.chlorophyll, style: [0.35, 0.9, 1, 0], fps: 0.9, hold: 2.5,
     decode: (v, m) => Math.pow(10, lin(v, m)),
     format: (x) => `${nf(x < 1 ? 2 : 1).format(x)} mg/m³`,
   },
   sst: {
-    palette: PALETTES.sst, style: [0.55, 0.12, 1, 0],
+    palette: PALETTES.sst, style: [0.55, 0.12, 1, 0], fps: 0.9, hold: 2.5,
     decode: lin, format: (x) => `${nf(1).format(x)} °C`,
   },
   anomaly: {
-    palette: PALETTES.anomaly, style: [0.25, 0.6, 1, 0],
+    palette: PALETTES.anomaly, style: [0.25, 0.6, 1, 0], fps: 0.9, hold: 2.5,
     decode: lin, format: (x) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${nf(1).format(Math.abs(x))} °C rispetto al normale`,
   },
   rain: {
@@ -49,8 +54,24 @@ export const DATA: Record<DataId, DataDef> = {
     format: (x) => (x < 0.1 ? 'pioggia appena percettibile' : `${nf(1).format(x)} mm di pioggia all’ora`),
   },
   ice: {
-    palette: PALETTES.ice, style: [0.8, 0.05, 1, 0],
+    palette: PALETTES.ice, style: [0.8, 0.05, 1, 0], fps: 1.8, hold: 2.5,
     decode: lin, format: (x) => `ghiaccio al ${Math.round(x)}%`,
+  },
+  ndvi: {
+    palette: PALETTES.ndvi, style: [0.6, 0.15, 2, 0], fps: 0.9, hold: 2.5,
+    decode: lin, format: (x) => (x < 0.15 ? 'suolo quasi nudo' : `verde ${nf(2).format(x)} (NDVI)`),
+  },
+  coral: {
+    palette: PALETTES.coral, style: [0.35, 0.5, 1, 0], fps: 0.9, hold: 2.5,
+    decode: lin, format: (x) => (x < 1 ? 'nessuno stress termico' : `${nf(1).format(x)} settimane di calore (°C)`),
+  },
+  forest: {
+    palette: PALETTES.forest, style: [0.5, 0.35, 2, 0], fx: 2,
+    decode: (v) => 2000 + Math.round(v * 25.5), format: (x) => `foresta perduta nel ${x}`,
+  },
+  aerosol: {
+    palette: PALETTES.aerosol, style: [0.2, 0.08, 0, 1], fps: 0.9, hold: 2.5,
+    decode: lin, format: (x) => `aria velata ${nf(2).format(x)} (AOD)`,
   },
 };
 
@@ -72,6 +93,14 @@ export function loadTexture(url: string, opts: { mipmaps?: boolean; repeat?: boo
 }
 
 /** CPU copy of a layer at reduced resolution, for the probe under the cursor. */
+/** A value image and its coverage image read together, like a two-channel layer. */
+export class SplitSampler {
+  constructor(private value: Sampler, private conf: Sampler) {}
+  read(lon: number, lat: number): [number, number, number] {
+    return [this.value.read(lon, lat)[0], this.conf.read(lon, lat)[0], 0];
+  }
+}
+
 export class Sampler {
   constructor(private data: Uint8ClampedArray, private w: number, private h: number) {}
 
@@ -98,7 +127,7 @@ export class Sampler {
 }
 
 export class LayerStore {
-  private cache = new Map<string, Promise<{ tex: Texture[]; meta: LayerMeta; sampler: Sampler[] }>>();
+  private cache = new Map<string, Promise<{ tex: Texture[]; conf: Texture[] | null; meta: LayerMeta; sampler: (Sampler | SplitSampler)[] }>>();
   readonly palettes = new Map<DataId, Texture>();
 
   palette(id: DataId): Texture {
@@ -113,13 +142,21 @@ export class LayerStore {
       p = (async () => {
         const meta: LayerMeta = await (await fetch(`layers/${id}.json`)).json();
         const files = meta.frames ? meta.frames.map((f) => f.file) : [`${id}.png`];
-        const tex = await Promise.all(files.map((f) => loadTexture(`layers/${f}`)));
-        const sampler = tex.map((t) => Sampler.fromImage(t.image as HTMLImageElement, meta.frames ? 720 : 1440));
-        if (meta.frames) {
+        const split = !!meta.frames?.[0]?.conf;
+        const [tex, conf] = await Promise.all([
+          Promise.all(files.map((f) => loadTexture(`layers/${f}`))),
+          split ? Promise.all(meta.frames!.map((f) => loadTexture(`layers/${f.conf}`, { mipmaps: false }))) : Promise.resolve(null),
+        ]);
+        const w = meta.frames ? 720 : 1440;
+        const sampler = tex.map((t, i) => {
+          const s = Sampler.fromImage(t.image as HTMLImageElement, w);
+          return conf ? new SplitSampler(s, Sampler.fromImage(conf[i].image as HTMLImageElement, w)) : s;
+        });
+        if (meta.frames && !meta.width) {
           const first = await (await fetch(`layers/${files[0].replace('.png', '.json')}`)).json().catch(() => null);
           if (first) { meta.width = first.width; meta.height = first.height; }
         }
-        return { tex, meta, sampler };
+        return { tex, conf, meta, sampler };
       })();
       // A failed download must not poison the cache: the next request retries.
       p.catch(() => { if (this.cache.get(id) === p) this.cache.delete(id); });

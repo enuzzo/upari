@@ -1,15 +1,82 @@
 {
  "id": "sst",
- "width": 4096,
- "height": 2048,
- "coverage": 0.68705,
- "dates": [
-  "2026-10-23"
- ],
+ "width": 2048,
+ "height": 1024,
+ "cadence": "day",
  "unit": "°C",
  "scale": "linear",
  "min": -2,
  "max": 34,
  "source": "GHRSST MUR · JPL · GIBS",
- "layer": "GHRSST_L4_MUR_Sea_Surface_Temperature"
+ "layer": "GHRSST_L4_MUR_Sea_Surface_Temperature",
+ "dates": [
+  "2026-10-25"
+ ],
+ "frames": [
+  {
+   "file": "sst-2025-10.jpg",
+   "conf": "sst-2025-10-c.png",
+   "time": "2025-10-15"
+  },
+  {
+   "file": "sst-2025-11.jpg",
+   "conf": "sst-2025-11-c.png",
+   "time": "2025-11-15"
+  },
+  {
+   "file": "sst-2025-12.jpg",
+   "conf": "sst-2025-12-c.png",
+   "time": "2025-12-15"
+  },
+  {
+   "file": "sst-2026-01.jpg",
+   "conf": "sst-2026-01-c.png",
+   "time": "2026-01-15"
+  },
+  {
+   "file": "sst-2026-02.jpg",
+   "conf": "sst-2026-02-c.png",
+   "time": "2026-02-15"
+  },
+  {
+   "file": "sst-2026-03.jpg",
+   "conf": "sst-2026-03-c.png",
+   "time": "2026-03-15"
+  },
+  {
+   "file": "sst-2026-04.jpg",
+   "conf": "sst-2026-04-c.png",
+   "time": "2026-04-15"
+  },
+  {
+   "file": "sst-2026-05.jpg",
+   "conf": "sst-2026-05-c.png",
+   "time": "2026-05-15"
+  },
+  {
+   "file": "sst-2026-06.jpg",
+   "conf": "sst-2026-06-c.png",
+   "time": "2026-06-15"
+  },
+  {
+   "file": "sst-2026-07.jpg",
+   "conf": "sst-2026-07-c.png",
+   "time": "2026-07-15"
+  },
+  {
+   "file": "sst-2026-08.jpg",
+   "conf": "sst-2026-08-c.png",
+   "time": "2026-08-15"
+  },
+  {
+   "file": "sst-2026-09.jpg",
+   "conf": "sst-2026-09-c.png",
+   "time": "2026-09-15"
+  },
+  {
+   "file": "sst-latest.jpg",
+   "conf": "sst-latest-c.png",
+   "time": "2026-10-25"
+  }
+ ]
 }

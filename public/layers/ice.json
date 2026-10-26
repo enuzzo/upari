@@ -2,14 +2,136 @@
  "id": "ice",
  "width": 2048,
  "height": 1024,
- "coverage": 0.0487,
- "dates": [
-  "2026-10-23"
- ],
+ "cadence": "day",
  "unit": "%",
  "scale": "linear",
  "min": 0,
  "max": 100,
  "source": "GHRSST GAMSSA · Bureau of Meteorology · GIBS",
- "layer": "GHRSST_L4_GAMSSA_GDS2_Sea_Ice_Concentration"
+ "layer": "GHRSST_L4_GAMSSA_GDS2_Sea_Ice_Concentration",
+ "dates": [
+  "2026-10-25"
+ ],
+ "frames": [
+  {
+   "file": "ice-2025-10-01.jpg",
+   "conf": "ice-2025-10-01-c.png",
+   "time": "2025-10-01"
+  },
+  {
+   "file": "ice-2025-10-16.jpg",
+   "conf": "ice-2025-10-16-c.png",
+   "time": "2025-10-16"
+  },
+  {
+   "file": "ice-2025-11-01.jpg",
+   "conf": "ice-2025-11-01-c.png",
+   "time": "2025-11-01"
+  },
+  {
+   "file": "ice-2025-11-16.jpg",
+   "conf": "ice-2025-11-16-c.png",
+   "time": "2025-11-16"
+  },
+  {
+   "file": "ice-2025-12-01.jpg",
+   "conf": "ice-2025-12-01-c.png",
+   "time": "2025-12-01"
+  },
+  {
+   "file": "ice-2025-12-16.jpg",
+   "conf": "ice-2025-12-16-c.png",
+   "time": "2025-12-16"
+  },
+  {
+   "file": "ice-2026-01-01.jpg",
+   "conf": "ice-2026-01-01-c.png",
+   "time": "2026-01-01"
+  },
+  {
+   "file": "ice-2026-01-16.jpg",
+   "conf": "ice-2026-01-16-c.png",
+   "time": "2026-01-16"
+  },
+  {
+   "file": "ice-2026-02-01.jpg",
+   "conf": "ice-2026-02-01-c.png",
+   "time": "2026-02-01"
+  },
+  {
+   "file": "ice-2026-02-16.jpg",
+   "conf": "ice-2026-02-16-c.png",
+   "time": "2026-02-16"
+  },
+  {
+   "file": "ice-2026-03-16.jpg",
+   "conf": "ice-2026-03-16-c.png",
+   "time": "2026-03-16"
+  },
+  {
+   "file": "ice-2026-04-01.jpg",
+   "conf": "ice-2026-04-01-c.png",
+   "time": "2026-03-31"
+  },
+  {
+   "file": "ice-2026-04-16.jpg",
+   "conf": "ice-2026-04-16-c.png",
+   "time": "2026-04-16"
+  },
+  {
+   "file": "ice-2026-05-01.jpg",
+   "conf": "ice-2026-05-01-c.png",
+   "time": "2026-05-01"
+  },
+  {
+   "file": "ice-2026-05-16.jpg",
+   "conf": "ice-2026-05-16-c.png",
+   "time": "2026-05-16"
+  },
+  {
+   "file": "ice-2026-06-01.jpg",
+   "conf": "ice-2026-06-01-c.png",
+   "time": "2026-06-01"
+  },
+  {
+   "file": "ice-2026-06-16.jpg",
+   "conf": "ice-2026-06-16-c.png",
+   "time": "2026-06-16"
+  },
+  {
+   "file": "ice-2026-07-01.jpg",
+   "conf": "ice-2026-07-01-c.png",
+   "time": "2026-07-01"
+  },
+  {
+   "file": "ice-2026-07-16.jpg",
+   "conf": "ice-2026-07-16-c.png",
+   "time": "2026-07-16"
+  },
+  {
+   "file": "ice-2026-08-01.jpg",
+   "conf": "ice-2026-08-01-c.png",
+   "time": "2026-08-01"
+  },
+  {
+   "file": "ice-2026-08-16.jpg",
+   "conf": "ice-2026-08-16-c.png",
+   "time": "2026-08-16"
+  },
+  {
+   "file": "ice-2026-09-01.jpg",
+   "conf": "ice-2026-09-01-c.png",
+   "time": "2026-09-01"
+  },
+  {
+   "file": "ice-2026-09-16.jpg",
+   "conf": "ice-2026-09-16-c.png",
+   "time": "2026-09-16"
+  },
+  {
+   "file": "ice-latest.jpg",
+   "conf": "ice-latest-c.png",
+   "time": "2026-10-25"
+  }
+ ]
 }

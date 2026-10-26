@@ -85,6 +85,35 @@ export const PALETTES: Record<string, Stop[]> = {
     [0.8, '#ff8a3d', 1],
     [1.0, '#ff3f7f', 1],
   ],
+  // Vegetation: bare ground stays dark, green deepens with the leaves.
+  ndvi: [
+    [0.0, '#2a2216', 0.0],
+    [0.18, '#5a4a2c', 0.5],
+    [0.32, '#8a8a3a', 0.85],
+    [0.5, '#6fae3c', 1],
+    [0.7, '#2f9e44', 1],
+    [0.88, '#127a3a', 1],
+    [1.0, '#0b5a2e', 1],
+  ],
+  // Aerosols: clear air invisible, dust and smoke as a warm veil.
+  aerosol: [
+    [0.0, '#e8d5b0', 0.0],
+    [0.16, '#e8d5b0', 0.0],
+    [0.3, '#f0c27a', 0.42],
+    [0.5, '#e8904a', 0.72],
+    [0.75, '#c8553a', 0.9],
+    [1.0, '#8a2a2a', 1],
+  ],
+  // Coral heat stress (Degree Heating Weeks): from 4 bleaching is likely, from 8 corals die.
+  coral: [
+    [0.0, '#20304a', 0.0],
+    [0.05, '#3a4f6e', 0.35],
+    [0.2, '#f2c46b', 0.9],
+    [0.4, '#f07a3a', 1],
+    [0.6, '#d8343f', 1],
+    [1.0, '#ff4fa8', 1],
+  ],
+  forest: [[0, '#521210'], [0.5, '#a2321c'], [1, '#ff6a2a']],
   ice: [
     [0.0, '#cfe8ff', 0.0],
     [0.15, '#d8eeff', 0.35],

@@ -12,7 +12,8 @@ function once<T>(key: string, fn: () => Promise<T>): Promise<T> {
 
 async function samplerFor(globe: Globe, id: DataId) {
   const { sampler, meta } = await globe.layers.get(id);
-  return { s: sampler[0], meta };
+  // The latest frame of a series is today's.
+  return { s: sampler[sampler.length - 1], meta };
 }
 
 /** Scan a layer on a coarse grid, weighting by cell area. */

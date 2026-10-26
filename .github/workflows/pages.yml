@@ -58,7 +58,8 @@ jobs:
         run: |
           status=0
           node scripts/prepare-fields.mjs wind || status=1
-          node scripts/prepare-layers.mjs sst anomaly ice chlorophyll rain fires quakes || status=1
+          # Series keep their past months in the repository: only new months and the latest day are fetched.
+          node scripts/prepare-layers.mjs sst anomaly ice chlorophyll ndvi aerosol coral rain fires quakes || status=1
           exit $status
 
       - name: Orbita della ISS
@@ -78,8 +79,8 @@ jobs:
             echo
             echo '| Strato | Date | Copertura |'
             echo '|---|---|---|'
-            for f in public/layers/sst.json public/layers/anomaly.json public/layers/ice.json public/layers/chlorophyll.json; do
-              node -e 'const m=require("./"+process.argv[1]); console.log(`| ${m.id} | ${(m.dates||[]).at(-1)} → ${(m.dates||[])[0]} | ${m.coverage ?? "n/d"} |`)' "$f"
+            for f in sst anomaly ice chlorophyll ndvi aerosol coral; do
+              node -e 'const m=require("./public/layers/"+process.argv[1]+".json"); console.log(`| ${m.id} | ${m.frames ? `${m.frames[0].time} → ${m.frames.at(-1).time}` : (m.dates||[])[0]} | ${m.frames ? `${m.frames.length} fotogrammi` : m.coverage} |`)' "$f"
             done
             node -e 'const m=require("./public/layers/rain.json"); console.log(`| pioggia | ${m.frames[0].time} → ${m.frames.at(-1).time} | ${m.frames.length} fotogrammi |`)'
             node -e 'const m=require("./public/layers/fires.json"); console.log(`| fuochi | fino al ${m.newest} | ${m.detections} rilevamenti |`)'

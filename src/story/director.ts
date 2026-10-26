@@ -357,7 +357,7 @@ export class Director {
 
     this.telemetry(c, dt);
 
-    const t = c?.clock === 'rain' ? this.globe.dataFrameTime() : null;
+    const t = c?.clock === 'data' ? this.globe.dataFrameTime() : null;
     const dc = $('data-clock');
     const run = c?.clock === 'year' ? this.globe.yearRunning : null;
     if (run) {
@@ -365,8 +365,11 @@ export class Director {
       $('data-dot').style.left = `${(((this.globe.year - run.from) / Math.max(1, run.to - run.from)) * 100).toFixed(2)}%`;
       dc.classList.add('on');
     } else if (t) {
-      const d = new Date(t);
-      $('data-time').textContent = `${d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', timeZone: 'UTC' })} · ${d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} UTC`;
+      const d = new Date(t.time.length === 10 ? `${t.time}T12:00:00Z` : t.time);
+      const opt = (o: Intl.DateTimeFormatOptions) => d.toLocaleDateString('it-IT', { ...o, timeZone: 'UTC' });
+      $('data-time').textContent = t.cadence === 'month' ? opt({ month: 'long', year: 'numeric' })
+        : t.cadence === 'day' ? opt({ day: 'numeric', month: 'short', year: 'numeric' })
+        : `${opt({ day: 'numeric', month: 'short' })} · ${d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} UTC`;
       $('data-dot').style.left = `${(this.globe.dataFrameProgress() * 100).toFixed(2)}%`;
       dc.classList.add('on');
     } else dc.classList.remove('on');

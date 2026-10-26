@@ -1,0 +1,77 @@
+{
+ "id": "aerosol",
+ "width": 2048,
+ "height": 1024,
+ "cadence": "month",
+ "unit": "AOD 550 nm",
+ "scale": "linear",
+ "min": 0,
+ "max": 1,
+ "source": "NASA GMAO MERRA-2 · GIBS",
+ "layer": "MERRA2_Total_Aerosol_Optical_Thickness_550nm_Extinction_Monthly",
+ "dates": [
+  "2026-08-01"
+ ],
+ "frames": [
+  {
+   "file": "aerosol-2025-09.jpg",
+   "conf": "aerosol-2025-09-c.png",
+   "time": "2025-09-01"
+  },
+  {
+   "file": "aerosol-2025-10.jpg",
+   "conf": "aerosol-2025-10-c.png",
+   "time": "2025-10-01"
+  },
+  {
+   "file": "aerosol-2025-11.jpg",
+   "conf": "aerosol-2025-11-c.png",
+   "time": "2025-11-01"
+  },
+  {
+   "file": "aerosol-2025-12.jpg",
+   "conf": "aerosol-2025-12-c.png",
+   "time": "2025-12-01"
+  },
+  {
+   "file": "aerosol-2026-01.jpg",
+   "conf": "aerosol-2026-01-c.png",
+   "time": "2026-01-01"
+  },
+  {
+   "file": "aerosol-2026-02.jpg",
+   "conf": "aerosol-2026-02-c.png",
+   "time": "2026-02-01"
+  },
+  {
+   "file": "aerosol-2026-03.jpg",
+   "conf": "aerosol-2026-03-c.png",
+   "time": "2026-03-01"
+  },
+  {
+   "file": "aerosol-2026-04.jpg",
+   "conf": "aerosol-2026-04-c.png",
+   "time": "2026-04-01"
+  },
+  {
+   "file": "aerosol-2026-05.jpg",
+   "conf": "aerosol-2026-05-c.png",
+   "time": "2026-05-01"
+  },
+  {
+   "file": "aerosol-2026-06.jpg",
+   "conf": "aerosol-2026-06-c.png",
+   "time": "2026-06-01"
+  },
+  {
+   "file": "aerosol-2026-07.jpg",
+   "conf": "aerosol-2026-07-c.png",
+   "time": "2026-07-01"
+  },
+  {
+   "file": "aerosol-2026-08.jpg",
+   "conf": "aerosol-2026-08-c.png",
+   "time": "2026-08-01"
+  }
+ ]
+}

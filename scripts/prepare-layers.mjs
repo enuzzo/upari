@@ -234,12 +234,13 @@ async function wmsQuadrants(layer, time, W, H) {
   return file;
 }
 
-async function availableDays(layer, cmap, n, W, H, maxTries = n + 6, quadrants = false) {
+async function availableDays(layer, cmap, n, W, H, maxTries = n + 6, quadrants = false, tiles = false) {
   const frames = [], dates = [];
   for (const day of daysBack(maxTries, new Date(Date.now() - 86400e3))) {
     if (frames.length >= n) break;
     try {
-      const file = quadrants ? await wmsQuadrants(layer, day, W, H) : await wmsChecked(layer, day, WORLD, W, H, `${layer}_${day}_${W}.png`);
+      const file = tiles ? await wmtsWorld(layer, day, W, H).catch(() => wmsChecked(layer, day, WORLD, W, H, `${layer}_${day}_${W}.png`))
+        : quadrants ? await wmsQuadrants(layer, day, W, H) : await wmsChecked(layer, day, WORLD, W, H, `${layer}_${day}_${W}.png`);
       const buf = rgba(file);
       let filled = 0;
       for (let i = 3; i < buf.length; i += 64) if (buf[i] > 128) filled++;
@@ -250,49 +251,236 @@ async function availableDays(layer, cmap, n, W, H, maxTries = n + 6, quadrants =
   return { frames, dates };
 }
 
+// ---- Time series: the last twelve months and the latest day, as frames the app plays.
+// Each frame is a grey JPEG (the value) and a smaller PNG (where there is data). Frames of
+// past months never change, so they are kept and reused; only the latest frame is fetched
+// every day. A series is promoted only when enough frames are present.
+
+const pad = (n) => String(n).padStart(2, '0');
+/** The 15th (or another day) of each of the last `n` complete months, oldest first. */
+function pastMonths(n, day = 15, from = new Date()) {
+  const out = [];
+  for (let k = n; k >= 1; k--) {
+    const d = new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth() - k, day));
+    out.push(`${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(day)}`);
+  }
+  return out;
+}
+
+function encodeFrame(name, val, conf, W, H, confScale = 4) {
+  const v = Buffer.alloc(W * H);
+  for (let i = 0; i < W * H; i++) v[i] = Math.round(Math.max(0, Math.min(1, val[i])) * 255);
+  const raw = join(TMP, `${name}.gray`);
+  writeFileSync(raw, v);
+  magick(['-size', `${W}x${H}`, '-depth', '8', `gray:${raw}`, '-quality', '92', '-strip', join(STAGE, `${name}.jpg`)]);
+  const c = Buffer.alloc(W * H);
+  for (let i = 0; i < W * H; i++) c[i] = Math.round(Math.max(0, Math.min(1, conf[i])) * 255);
+  writeFileSync(raw, c);
+  magick(['-size', `${W}x${H}`, '-depth', '8', `gray:${raw}`, '-filter', 'Box', '-resize', `${W / confScale}x${H / confScale}!`, '-define', 'png:compression-level=9', '-strip', join(STAGE, `${name}-c.png`)]);
+  rmSync(raw, { force: true });
+  return coverageOf(conf, W, H);
+}
+
+/**
+ * steps: [{ key, time, live }] oldest first; `live` frames are fetched every run, the others
+ * only when missing. build(step) returns { val, conf, dates } or null when the source has
+ * nothing for that step.
+ */
+async function series(id, steps, build, meta, { W, H, minFrames, confScale = 4, cadence = 'month' }) {
+  const frames = [];
+  let last = null;
+  for (const step of steps) {
+    const name = `${id}-${step.key}`;
+    const cached = !step.live && existsSync(join(OUT, `${name}.jpg`)) && existsSync(join(OUT, `${name}-c.png`));
+    if (cached) { frames.push({ file: `${name}.jpg`, conf: `${name}-c.png`, time: step.time, kept: true }); continue; }
+    try {
+      checkDeadline(name);
+      const r = await build(step);
+      if (!r) console.warn(`${id}: nothing for ${step.time}`);
+      else {
+        encodeFrame(name, r.val, r.conf, W, H, confScale);
+        frames.push({ file: `${name}.jpg`, conf: `${name}-c.png`, time: r.time ?? step.time });
+        if (step.live) last = r;
+      }
+    } catch (err) { console.warn(`${id}: ${step.time} skipped (${err.message})`); }
+    // Nothing new for this step: keep the frame already published, if there is one.
+    if (frames.at(-1)?.file !== `${name}.jpg` && existsSync(join(OUT, `${name}.jpg`)) && existsSync(join(OUT, `${name}-c.png`))) {
+      const old = readMeta(OUT, id)?.frames?.find((f) => f.file === `${name}.jpg`);
+      frames.push({ file: `${name}.jpg`, conf: `${name}-c.png`, time: old?.time ?? step.time, kept: true });
+      console.warn(`${id}: keeping the published frame for ${step.time}`);
+    }
+  }
+  if (frames.length < minFrames) throw new Error(`${id}: only ${frames.length}/${steps.length} frames; keeping the published series`);
+  for (const f of frames) if (!f.kept) for (const file of [f.file, f.conf]) move(join(STAGE, file), join(OUT, file));
+  const previous = readMeta(OUT, id);
+  writeAtomic(join(OUT, `${id}.json`), JSON.stringify({
+    id, width: W, height: H, cadence, ...meta,
+    dates: last?.dates ?? previous?.dates ?? [frames.at(-1).time],
+    frames: frames.map(({ file, conf, time }) => ({ file, conf, time })),
+  }, null, 1));
+  const keep = new Set(frames.flatMap((f) => [f.file, f.conf]));
+  const own = new RegExp(`^${id}-[\\d-]+(-c)?\\.(jpg|png)$`);
+  for (const old of readdirSync(OUT)) if (own.test(old) && !keep.has(old)) rmSync(join(OUT, old));
+  for (const old of [`${id}.png`]) rmSync(join(OUT, old), { force: true });
+  console.log(`${id}: ${frames.length} frames, ${frames[0].time} → ${frames.at(-1).time}`);
+}
+
+/**
+ * The whole world from GIBS WMTS tiles (pre-rendered and cached on their side, so they do
+ * not come back half drawn like large WMS renders sometimes do). In EPSG:4326, level 2 has
+ * 5 × 3 tiles of 72°, 512 px each: 2560 × 1280 px for the world, resized to W × H.
+ */
+async function wmtsWorld(layer, time, W, H, matrix = '1km') {
+  const file = join(TMP, `${layer}_${time}_wmts_${W}.png`);
+  if (existsSync(file)) return file;
+  const tiles = [];
+  for (let y = 0; y < 3; y++) for (let x = 0; x < 5; x++) {
+    const t = join(TMP, `${layer}_${time}_wmts_${x}_${y}.png`);
+    writeFileSync(t, await fetchBuffer(`${GIBS}/wmts/epsg4326/best/${layer}/default/${time}/${matrix}/2/${y}/${x}.png`));
+    tiles.push(t);
+  }
+  const rows = [0, 1, 2].map((y) => ['(', ...tiles.slice(y * 5, y * 5 + 5), '+append', ')']).flat();
+  magick([...rows, '-append', '-crop', '2560x1280+0+0', '+repage', '-filter', 'Box', '-resize', `${W}x${H}!`, file]);
+  for (const t of tiles) rmSync(t, { force: true });
+  return file;
+}
+
+/** One day of a daily GIBS product, with the nearest earlier day as fallback. */
+async function dayNear(layer, cmap, day, W, H, quadrants = false, tries = 5, tiles = false) {
+  const start = new Date(`${day}T00:00:00Z`);
+  for (const d of daysBack(tries, start)) {
+    try {
+      const file = tiles ? await wmtsWorld(layer, d, W, H).catch(() => wmsChecked(layer, d, WORLD, W, H, `${layer}_${d}_${W}.png`))
+        : quadrants ? await wmsQuadrants(layer, d, W, H) : await wmsChecked(layer, d, WORLD, W, H, `${layer}_${d}_${W}.png`);
+      const buf = rgba(file);
+      let filled = 0;
+      for (let i = 3; i < buf.length; i += 64) if (buf[i] > 128) filled++;
+      if (filled >= 200) return { buf, day: d };
+      rmSync(file, { force: true });
+    } catch { /* try the day before */ }
+  }
+  return null;
+}
+
+/** A monthly GIBS product (TIME is the first day of the month). */
+async function monthOf(layer, month, W, H) {
+  const file = await wmsChecked(layer, month, WORLD, W, H, `${layer}_${month}_${W}.png`);
+  const buf = rgba(file);
+  let filled = 0;
+  for (let i = 3; i < buf.length; i += 64) if (buf[i] > 128) filled++;
+  return filled >= 200 ? buf : null;
+}
+
+/** A daily product sampled on the 15th of each of the last twelve months, plus the latest day. */
+async function daySeries(id, layer, cmap, norm, W, H, meta) {
+  const steps = [...months(12, 15), { key: 'latest', time: iso(new Date()), live: true }];
+  await series(id, steps, async (step) => {
+    // WMTS tiles first: a whole-world WMS render of these products often comes back partial.
+    const r = await dayNear(layer, cmap, step.live ? iso(new Date(Date.now() - 86400e3)) : step.time, W, H, false, step.live ? 7 : 4, true);
+    if (!r) return null;
+    const { val, w } = composite([r.buf], cmap, norm, W, H);
+    return { val: pushPull(val, w, W, H), conf: blurCoverage(w, W, H, 2), dates: [r.day], time: r.day };
+  }, meta, { W, H, minFrames: 12, cadence: 'day' });
+}
+
+const months = (n, day) => pastMonths(n, day).map((t) => ({ key: t.slice(0, 7), time: t }));
+
 const layers = {
   async chlorophyll() {
-    const W = 4096, H = 2048, cmap = await colormap('MODIS_Chlorophyll');
-    const { frames, dates } = await availableDays('OCI_PACE_Chlorophyll_a', cmap, 12, W, H);
+    // Phytoplankton through the year: each month is a composite of six days (clouds hide the
+    // sea most days); the latest frame fuses the last twelve days.
+    const W = 2048, H = 1024, cmap = await colormap('MODIS_Chlorophyll');
     const lo = -2, hi = 1.3; // log10 mg/m³
-    const { val, w } = composite(frames, cmap, (v) => (Math.log10(Math.max(v, 0.005)) - lo) / (hi - lo), W, H);
-    const filled = pushPull(val, w, W, H);
-    writeLayer('chlorophyll', filled, blurCoverage(w, W, H, 10).map((c) => Math.min(1, c * 2.2)), W, H, {
-      dates, unit: 'mg/m³', scale: 'log10', min: lo, max: hi, source: 'NASA PACE OCI · GIBS', layer: 'OCI_PACE_Chlorophyll_a',
-    });
+    const norm = (v) => (Math.log10(Math.max(v, 0.005)) - lo) / (hi - lo);
+    const fuse = (frames) => {
+      const { val, w } = composite(frames, cmap, norm, W, H);
+      return { val: pushPull(val, w, W, H), conf: blurCoverage(w, W, H, 6).map((c) => Math.min(1, c * 2.2)) };
+    };
+    const steps = [...months(12, 15), { key: 'latest', time: iso(new Date()), live: true }];
+    await series('chlorophyll', steps, async (step) => {
+      if (step.live) {
+        const { frames, dates } = await availableDays('OCI_PACE_Chlorophyll_a', cmap, 12, W, H, 18, false, true);
+        return frames.length >= 6 ? { ...fuse(frames), dates, time: dates[0] } : null;
+      }
+      const bufs = [];
+      for (const day of [3, 8, 13, 18, 23, 28]) {
+        const r = await dayNear('OCI_PACE_Chlorophyll_a', cmap, `${step.key}-${pad(day)}`, W, H, false, 2, true);
+        if (r) bufs.push(r.buf);
+      }
+      return bufs.length >= 3 ? fuse(bufs) : null;
+    }, { unit: 'mg/m³', scale: 'log10', min: lo, max: hi, source: 'NASA PACE OCI · GIBS', layer: 'OCI_PACE_Chlorophyll_a' }, { W, H, minFrames: 9 });
   },
   async sst() {
-    const W = 4096, H = 2048, cmap = await colormap('GHRSST_Sea_Surface_Temperature');
-    const { frames, dates } = await availableDays('GHRSST_L4_MUR_Sea_Surface_Temperature', cmap, 1, W, H);
+    const W = 2048, H = 1024, cmap = await colormap('GHRSST_Sea_Surface_Temperature');
     const lo = -2, hi = 34;
-    const { val, w } = composite(frames, cmap, (v) => (v - lo) / (hi - lo), W, H);
-    writeLayer('sst', pushPull(val, w, W, H), blurCoverage(w, W, H, 2), W, H, {
-      dates, unit: '°C', scale: 'linear', min: lo, max: hi, source: 'GHRSST MUR · JPL · GIBS', layer: 'GHRSST_L4_MUR_Sea_Surface_Temperature',
-    });
+    await daySeries('sst', 'GHRSST_L4_MUR_Sea_Surface_Temperature', cmap, (v) => (v - lo) / (hi - lo), W, H,
+      { unit: '°C', scale: 'linear', min: lo, max: hi, source: 'GHRSST MUR · JPL · GIBS', layer: 'GHRSST_L4_MUR_Sea_Surface_Temperature' });
   },
   async anomaly() {
-    const W = 4096, H = 2048, cmap = await colormap('GHRSST_Sea_Surface_Temperature_Anomalies');
-    const { frames, dates } = await availableDays('GHRSST_L4_MUR_Sea_Surface_Temperature_Anomalies', cmap, 1, W, H);
+    const W = 2048, H = 1024, cmap = await colormap('GHRSST_Sea_Surface_Temperature_Anomalies');
     const lo = -3, hi = 3; // the NASA colormap saturates at ±3 °C
-    const { val, w } = composite(frames, cmap, (v) => (v - lo) / (hi - lo), W, H);
-    writeLayer('anomaly', pushPull(val, w, W, H), blurCoverage(w, W, H, 2), W, H, {
-      dates, unit: '°C', scale: 'linear', min: lo, max: hi, source: 'GHRSST MUR · JPL · GIBS', layer: 'GHRSST_L4_MUR_Sea_Surface_Temperature_Anomalies',
-    });
+    await daySeries('anomaly', 'GHRSST_L4_MUR_Sea_Surface_Temperature_Anomalies', cmap, (v) => (v - lo) / (hi - lo), W, H,
+      { unit: '°C', scale: 'linear', min: lo, max: hi, source: 'GHRSST MUR · JPL · GIBS', layer: 'GHRSST_L4_MUR_Sea_Surface_Temperature_Anomalies' });
   },
   async ice() {
+    // The sea ice through the year, twice a month: the Arctic melts while the Antarctic grows.
     const W = 2048, H = 1024, cmap = await colormap('GHRSST_Sea_Ice_Concentration');
-    const { frames, dates } = await availableDays('GHRSST_L4_GAMSSA_GDS2_Sea_Ice_Concentration', cmap, 1, W, H, 7, true);
-    const { val, w } = composite(frames, cmap, (v) => v / 100, W, H);
-    // Coverage here is the sea-ice area itself, which swings with the seasons:
-    // tolerate that, but require ice around both poles.
-    const half = (y0, y1) => coverageOf(w.subarray(y0 * W, y1 * W), W, y1 - y0);
-    const bothPoles = () => {
-      const north = half(0, H / 2), south = half(H / 2, H);
-      if (north < 0.005 || south < 0.005) throw new Error(`ice: polar coverage ${north.toFixed(4)} / ${south.toFixed(4)} looks incomplete`);
-    };
-    writeLayer('ice', val, w, W, H, {
-      dates, unit: '%', scale: 'linear', min: 0, max: 100, source: 'GHRSST GAMSSA · Bureau of Meteorology · GIBS', layer: 'GHRSST_L4_GAMSSA_GDS2_Sea_Ice_Concentration',
-    }, 0.5, bothPoles);
+    const steps = [];
+    for (const m of pastMonths(12, 1)) for (const day of [1, 16]) steps.push({ key: `${m.slice(0, 7)}-${pad(day)}`, time: `${m.slice(0, 7)}-${pad(day)}` });
+    steps.push({ key: 'latest', time: iso(new Date()), live: true });
+    await series('ice', steps, async (step) => {
+      const r = step.live
+        ? await dayNear('GHRSST_L4_GAMSSA_GDS2_Sea_Ice_Concentration', cmap, iso(new Date(Date.now() - 86400e3)), W, H, true, 7)
+        : await dayNear('GHRSST_L4_GAMSSA_GDS2_Sea_Ice_Concentration', cmap, step.time, W, H, true, 4);
+      if (!r) return null;
+      const { val, w } = composite([r.buf], cmap, (v) => v / 100, W, H);
+      const half = (y0, y1) => coverageOf(w.subarray(y0 * W, y1 * W), W, y1 - y0);
+      if (half(0, H / 2) < 0.005 || half(H / 2, H) < 0.005) throw new Error('polar coverage looks incomplete');
+      return { val, conf: w, dates: [r.day], time: r.day };
+    }, { unit: '%', scale: 'linear', min: 0, max: 100, source: 'GHRSST GAMSSA · Bureau of Meteorology · GIBS', layer: 'GHRSST_L4_GAMSSA_GDS2_Sea_Ice_Concentration' },
+    { W, H, minFrames: 18, confScale: 1, cadence: 'day' });
+  },
+  async ndvi() {
+    // How green the land is, month by month (VIIRS NDVI, monthly composites).
+    const W = 2048, H = 1024, cmap = await colormap('MODIS_L3_NDVI');
+    const steps = months(13, 1);
+    await series('ndvi', steps, async (step) => {
+      const buf = await monthOf('VIIRS_SNPP_L3_NDVI_Monthly', step.time, W, H);
+      if (!buf) return null;
+      const { val, w } = composite([buf], cmap, (v) => (v + 0.1) / 1.1, W, H);
+      return { val: pushPull(val, w, W, H), conf: blurCoverage(w, W, H, 1), dates: [step.time] };
+    }, { unit: 'NDVI', scale: 'linear', min: -0.1, max: 1, source: 'NASA VIIRS SNPP · NDVI mensile · GIBS', layer: 'VIIRS_SNPP_L3_NDVI_Monthly' }, { W, H, minFrames: 10 });
+  },
+  async aerosol() {
+    // What the air carries, month by month: dust, smoke, haze (MERRA-2 reanalysis, AOD at 550 nm).
+    const W = 2048, H = 1024, cmap = await colormap('MERRA2_Total_Aerosol_Optical_Thickness_550nm_Extinction_Monthly');
+    const steps = months(13, 1);
+    await series('aerosol', steps, async (step) => {
+      const buf = await monthOf('MERRA2_Total_Aerosol_Optical_Thickness_550nm_Extinction_Monthly', step.time, W, H);
+      if (!buf) return null;
+      const { val, w } = composite([buf], cmap, (v) => Math.min(1, Math.max(0, v) / 1.0), W, H);
+      // MERRA-2 cells are half a degree: soften their edges rather than show the grid.
+      return { val: blurCoverage(pushPull(val, w, W, H), W, H, 4), conf: blurCoverage(w, W, H, 3), dates: [step.time] };
+    }, { unit: 'AOD 550 nm', scale: 'linear', min: 0, max: 1, source: 'NASA GMAO MERRA-2 · GIBS', layer: 'MERRA2_Total_Aerosol_Optical_Thickness_550nm_Extinction_Monthly' }, { W, H, minFrames: 10 });
+  },
+  async coral() {
+    // Heat stress on coral reefs, month by month: NOAA Coral Reef Watch Degree Heating Weeks
+    // (5 km, via PacIOOS ERDDAP), read as a grey image whose level is the value.
+    const W = 1800, H = 900, MAX = 20; // °C-weeks; bleaching is likely from 4, mortality from 8
+    const steps = [...months(12, 15), { key: 'latest', time: iso(new Date(Date.now() - 2 * 86400e3)), live: true }];
+    await series('coral', steps, async (step) => {
+      const url = 'https://pae-paha.pacioos.hawaii.edu/erddap/griddap/dhw_5km.transparentPng?'
+        + `CRW_DHW%5B(${step.time}T12:00:00Z)%5D%5B(89.975):4:(-89.975)%5D%5B(-179.975):4:(179.975)%5D`
+        + `&.colorBar=BlackWhite%7CC%7CLinear%7C0%7C${MAX}%7C&.draw=surface`;
+      const file = join(TMP, `coral_${step.time}.png`);
+      writeFileSync(file, await fetchBuffer(url));
+      const buf = rgba(file);
+      if (buf.length !== W * H * 4) throw new Error(`unexpected size ${buf.length / 4} px`);
+      const val = new Float32Array(W * H), w = new Float32Array(W * H);
+      for (let i = 0; i < W * H; i++) if (buf[i * 4 + 3] > 128) { val[i] = buf[i * 4 + 1] / 255; w[i] = 1; }
+      return { val: pushPull(val, w, W, H), conf: blurCoverage(w, W, H, 1), dates: [step.time], time: step.time };
+    }, { unit: '°C-settimane', scale: 'linear', min: 0, max: MAX, source: 'NOAA Coral Reef Watch · Degree Heating Week · PacIOOS ERDDAP', layer: 'CRW_DHW' },
+    { W, H, minFrames: 10, cadence: 'day' });
   },
   async rain() {
     // Last 24 hours of global rain, one frame per hour, promoted only as a complete set.

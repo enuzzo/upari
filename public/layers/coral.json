@@ -1,0 +1,82 @@
+{
+ "id": "coral",
+ "width": 1800,
+ "height": 900,
+ "cadence": "day",
+ "unit": "°C-settimane",
+ "scale": "linear",
+ "min": 0,
+ "max": 20,
+ "source": "NOAA Coral Reef Watch · Degree Heating Week · PacIOOS ERDDAP",
+ "layer": "CRW_DHW",
+ "dates": [
+  "2026-10-24"
+ ],
+ "frames": [
+  {
+   "file": "coral-2025-10.jpg",
+   "conf": "coral-2025-10-c.png",
+   "time": "2025-10-15"
+  },
+  {
+   "file": "coral-2025-11.jpg",
+   "conf": "coral-2025-11-c.png",
+   "time": "2025-11-15"
+  },
+  {
+   "file": "coral-2025-12.jpg",
+   "conf": "coral-2025-12-c.png",
+   "time": "2025-12-15"
+  },
+  {
+   "file": "coral-2026-01.jpg",
+   "conf": "coral-2026-01-c.png",
+   "time": "2026-01-15"
+  },
+  {
+   "file": "coral-2026-02.jpg",
+   "conf": "coral-2026-02-c.png",
+   "time": "2026-02-15"
+  },
+  {
+   "file": "coral-2026-03.jpg",
+   "conf": "coral-2026-03-c.png",
+   "time": "2026-03-15"
+  },
+  {
+   "file": "coral-2026-04.jpg",
+   "conf": "coral-2026-04-c.png",
+   "time": "2026-04-15"
+  },
+  {
+   "file": "coral-2026-05.jpg",
+   "conf": "coral-2026-05-c.png",
+   "time": "2026-05-15"
+  },
+  {
+   "file": "coral-2026-06.jpg",
+   "conf": "coral-2026-06-c.png",
+   "time": "2026-06-15"
+  },
+  {
+   "file": "coral-2026-07.jpg",
+   "conf": "coral-2026-07-c.png",
+   "time": "2026-07-15"
+  },
+  {
+   "file": "coral-2026-08.jpg",
+   "conf": "coral-2026-08-c.png",
+   "time": "2026-08-15"
+  },
+  {
+   "file": "coral-2026-09.jpg",
+   "conf": "coral-2026-09-c.png",
+   "time": "2026-09-15"
+  },
+  {
+   "file": "coral-latest.jpg",
+   "conf": "coral-latest-c.png",
+   "time": "2026-10-24"
+  }
+ ]
+}

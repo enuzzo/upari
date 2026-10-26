@@ -35,6 +35,12 @@ svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width:
 }
 body.ready .top { opacity: 1; }
 .top > * { pointer-events: auto; }
+.top-left { display: flex; align-items: baseline; gap: 34px; }
+.stories { display: flex; gap: 22px; opacity: 0; visibility: hidden; transition: opacity 1.2s var(--ease) 0.6s, visibility 0s 1.8s; }
+body.started .stories { opacity: 1; visibility: visible; transition-delay: 0.6s, 0s; }
+.stories button { font-size: 11.5px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-3); padding: 6px 0; border-bottom: 1px solid transparent; text-shadow: var(--halo-soft); transition: color 0.3s, border-color 0.3s; }
+.stories button:hover { color: var(--ink); }
+.stories button.current { color: var(--ink); border-color: var(--warm); }
 .brand { font-family: var(--serif); font-size: 30px; letter-spacing: 0.01em; line-height: 1; opacity: 0; visibility: hidden; transition: opacity 1.2s var(--ease) 0.6s, visibility 0s 1.8s; }
 /* The title already says Upari: the small mark appears once the planet takes the stage. */
 body.started .brand { opacity: 1; visibility: visible; transition-delay: 0.6s, 0s; }
@@ -291,6 +297,10 @@ body.ready.started .rail { opacity: 1; transform: none; }
   transition: transform 0.5s var(--ease), box-shadow 0.5s var(--ease);
   box-shadow: 0 0 0 0 rgba(255, 224, 180, 0);
 }
+.cta-line { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink-3); }
+.cta-line:hover { box-shadow: inset 0 0 0 1px var(--ink), 0 0 40px 2px rgba(255, 224, 180, 0.18); }
+.next-story { display: none; color: var(--warm); border-color: rgba(255, 217, 160, 0.4); }
+.next-story.on { display: inline-flex; }
 .cta:hover { transform: translateY(-1px); box-shadow: 0 0 40px 2px rgba(255, 224, 180, 0.28); }
 .ghost { font-size: 13px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-2); text-shadow: 0 0 16px rgba(0, 0, 0, 0.9); padding: 18px 0; border-bottom: 1px solid transparent; transition: color 0.3s, border-color 0.3s; }
 .ghost:hover { color: var(--ink); border-color: var(--ink-3); }

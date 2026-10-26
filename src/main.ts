@@ -43,6 +43,7 @@ function openingShot() {
 async function boot() {
   const bar = $('loader-bar');
   $('start-btn').setAttribute('disabled', '');
+  $('people-btn').setAttribute('disabled', '');
   $('explore-btn').setAttribute('disabled', '');
   await globe.init((p) => (bar.style.width = `${Math.round(p * 100)}%`));
   const shot = openingShot();
@@ -58,13 +59,14 @@ async function boot() {
   });
   setTimeout(() => {
     $('start-btn').removeAttribute('disabled');
+    $('people-btn').removeAttribute('disabled');
     $('explore-btn').removeAttribute('disabled');
   }, 900);
   // Warm the first chapters while the title is on screen.
   void globe.prepare({ flow: 'wind' });
 }
 
-function begin(story: boolean) {
+function begin(story: string | null) {
   if (started) return;
   started = true;
   sound.start();
@@ -72,6 +74,7 @@ function begin(story: boolean) {
   document.body.classList.add('started');
   globe.rig.setFrameShift(0.14);
   if (story) {
+    director.setStory(story);
     director.go(0);
   } else {
     director.setPlaying(false);
@@ -83,8 +86,9 @@ function begin(story: boolean) {
   }
 }
 
-$('start-btn').addEventListener('click', () => begin(true));
-$('explore-btn').addEventListener('click', () => begin(false));
+$('start-btn').addEventListener('click', () => begin('pianeta'));
+$('people-btn').addEventListener('click', () => begin('persone'));
+$('explore-btn').addEventListener('click', () => begin(null));
 $('brand').addEventListener('click', () => { if (started) director.go(0); });
 $('zoom-in').addEventListener('click', () => globe.rig.zoomBy(0.5));
 $('zoom-out').addEventListener('click', () => globe.rig.zoomBy(2));
@@ -94,7 +98,7 @@ $('credits-close').addEventListener('click', () => $('credits').classList.remove
 $('credits').addEventListener('click', (e) => { if (e.target === $('credits')) $('credits').classList.remove('on'); });
 
 const search = initSearch((p: Place) => {
-  if (!started) begin(false);
+  if (!started) begin(null);
   director.showPlace(p.lon, p.lat, p.name, p.context);
   globe.rig.drift = 0;
   const { dist, tilt } = framing(p);
@@ -111,7 +115,7 @@ addEventListener('keydown', (e) => {
   if (e.target instanceof HTMLInputElement) return;
   if (e.key === 'Escape') { $('credits').classList.remove('on'); director.closeDrawer(); search.close(); return; }
   if (e.key === '/') { e.preventDefault(); search.open(); return; }
-  if (!started) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); begin(true); } return; }
+  if (!started) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); begin('pianeta'); } return; }
   if (e.key === ' ') { e.preventDefault(); director.setPlaying(!director.playing); }
   else if (e.key === 'ArrowRight') director.next();
   else if (e.key === 'ArrowLeft') director.prev();
@@ -162,4 +166,4 @@ boot().catch((err) => {
   $('veil').classList.add('shown');
 });
 
-if (import.meta.env.DEV) Object.assign(window, { upari: { globe, director, sound, probeEl: probe, jump: (i: number) => { begin(true); void director.go(i); }, advance: async (sec: number) => { for (let t = 0; t < sec; t += 1 / 30) { globe.tick(1 / 30); if (Math.round(t * 30) % 15 === 0) await new Promise((r) => setTimeout(r, 0)); } } } });
+if (import.meta.env.DEV) Object.assign(window, { upari: { globe, director, sound, probeEl: probe, jump: (i: number, story?: string) => { begin(story ?? director.story.id); if (story) director.setStory(story); void director.go(i); }, advance: async (sec: number) => { for (let t = 0; t < sec; t += 1 / 30) { globe.tick(1 / 30); if (Math.round(t * 30) % 15 === 0) await new Promise((r) => setTimeout(r, 0)); } } } });

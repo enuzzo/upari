@@ -58,6 +58,17 @@ uniform vec4 uDataStyle; // x: lit, y: glow, z: mask (0 any, 1 ocean, 2 land), w
 uniform vec2 uDataRange;
 uniform float uDataFx;   // 1: rain, drawn as falling streaks instead of a glowing veil
 
+// Atlas: countries coloured by a statistic, year by year.
+uniform sampler2D uAtlasId;      // red: country slot; green 0 on borders
+uniform sampler2D uAtlasValues;  // x: slot, y: year; red value, green 1 where there is one
+uniform sampler2D uAtlasPalette;
+uniform float uAtlasMix;
+uniform float uAtlasYear;        // years since the first, fractional between two years
+uniform float uAtlasYears;
+uniform vec3 uAtlasRange;        // min, max, curve
+uniform float uAtlasHover;
+uniform float uAtlasFill;
+
 uniform sampler2D uTrail;
 uniform float uTrailGain;
 
@@ -250,6 +261,31 @@ void main() {
     col += dataColor.rgb * dataColor.a * uDataStyle.y;
   }
 
+  // ---- Atlas: countries as light.
+  if (uAtlasMix > 0.001) {
+    vec4 idp = texelFetch(uAtlasId, ivec2(uv * vec2(textureSize(uAtlasId, 0))), 0);
+    float border = 1.0 - idp.g;
+    int slot = int(idp.r * 255.0 + 0.5);
+    float hover = slot > 0 && slot == int(uAtlasHover + 0.5) ? 1.0 : 0.0;
+    if (slot > 0 && uAtlasFill > 0.5) {
+      int y0 = int(floor(uAtlasYear)), y1 = min(y0 + 1, int(uAtlasYears) - 1);
+      vec2 v0 = texelFetch(uAtlasValues, ivec2(slot, y0), 0).rg, v1 = texelFetch(uAtlasValues, ivec2(slot, y1), 0).rg;
+      // Colours move between two years; the numbers are never interpolated.
+      vec4 c0 = vec4(0.5, 0.52, 0.56, 0.12), c1 = c0;
+      float span = max(uAtlasRange.y - uAtlasRange.x, 1e-4);
+      if (v0.g > 0.5) { vec4 p = texture(uAtlasPalette, vec2(pow(clamp((v0.r - uAtlasRange.x) / span, 0.0, 1.0), uAtlasRange.z), 0.5)); c0 = vec4(p.rgb * p.rgb, 1.0); }
+      if (v1.g > 0.5) { vec4 p = texture(uAtlasPalette, vec2(pow(clamp((v1.r - uAtlasRange.x) / span, 0.0, 1.0), uAtlasRange.z), 0.5)); c1 = vec4(p.rgb * p.rgb, 1.0); }
+      vec4 c = mix(c0, c1, fract(uAtlasYear));
+      c.rgb *= 1.0 + hover * 0.6;
+      col = mix(col, c.rgb * 0.9, c.a * 0.82 * uAtlasMix);
+      col += c.rgb * c.a * 0.22 * uAtlasMix;
+    } else if (slot > 0) {
+      col += vec3(1.0, 0.85, 0.62) * hover * 0.08 * uAtlasMix;
+    }
+    // Borders and coasts as fine threads of warm light.
+    col += vec3(1.0, 0.86, 0.66) * border * (0.16 + 0.3 * uAtlasFill) * uAtlasMix;
+  }
+
   // ---- City lights on the night side.
   float lights = max(texture(uNight, uv).r - 0.165, 0.0) / 0.835; // Black Marble keeps a faint land base
   float dark = smoothstep(0.08, -0.18, NL);
@@ -322,6 +358,15 @@ export function earthUniforms(t: EarthTextures) {
     uDataStyle: { value: new Vector4(0, 0, 1, 0) },
     uDataRange: { value: new Vector2(0, 1) },
     uDataFx: { value: 0 },
+    uAtlasId: { value: blank as Texture },
+    uAtlasValues: { value: blank as Texture },
+    uAtlasPalette: { value: blank as Texture },
+    uAtlasMix: { value: 0 },
+    uAtlasYear: { value: 0 },
+    uAtlasYears: { value: 1 },
+    uAtlasRange: { value: new Vector3(0, 1, 1) },
+    uAtlasHover: { value: -1 },
+    uAtlasFill: { value: 1 },
     uTrail: { value: blank as Texture },
     uTrailGain: { value: 0 },
     uMoon: { value: new Vector4(1, 0, 0, 0) },

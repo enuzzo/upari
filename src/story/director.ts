@@ -2,7 +2,8 @@ import type { Globe } from '../engine/globe';
 import { lonLatToVec, sunDirection } from '../engine/astro';
 import { loadCountries, placeBelow, type Country } from './geo';
 import { cssGradient } from '../engine/palettes';
-import { CHAPTERS, type Chapter } from './chapters';
+import type { Chapter } from './chapters';
+import { STORIES, type Story } from './stories';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
@@ -21,11 +22,18 @@ export class Director {
   /** The viewer left the chapter (a place search): resuming restarts it. */
   private detour = false;
   private countries: Country[] | null = null;
+  story: Story = STORIES[0];
   private telemetryAt = 0;
   private chapterEls: HTMLLIElement[] = [];
 
   constructor(private globe: Globe) {
     this.buildRail();
+    this.buildStories();
+    $('next-story').addEventListener('click', () => {
+      const next = STORIES[(STORIES.indexOf(this.story) + 1) % STORIES.length];
+      this.setStory(next.id);
+      void this.go(0);
+    });
     $('play-btn').addEventListener('click', () => this.setPlaying(!this.playing));
     $('more-btn').addEventListener('click', () => this.openDrawer());
     $('drawer-close').addEventListener('click', () => this.closeDrawer());
@@ -36,11 +44,36 @@ export class Director {
     };
   }
 
-  get chapter(): Chapter | null { return CHAPTERS[this.index] ?? null; }
+  get chapters(): Chapter[] { return this.story.chapters; }
+  get chapter(): Chapter | null { return this.chapters[this.index] ?? null; }
+
+  /** Switch documentary: the rail shows its chapters; call go() to start it. */
+  setStory(id: string) {
+    const story = STORIES.find((s) => s.id === id);
+    if (!story || story === this.story) return;
+    this.story = story;
+    this.index = -1;
+    this.buildRail();
+    document.querySelectorAll<HTMLButtonElement>('#stories button').forEach((b) => b.classList.toggle('current', b.dataset.story === id));
+  }
+
+  private buildStories() {
+    const nav = $('stories');
+    for (const s of STORIES) {
+      const b = document.createElement('button');
+      b.dataset.story = s.id;
+      b.textContent = s.title;
+      b.classList.toggle('current', s === this.story);
+      b.addEventListener('click', () => { this.setStory(s.id); void this.go(0); });
+      nav.appendChild(b);
+    }
+  }
 
   private buildRail() {
     const ol = $('chapters');
-    CHAPTERS.forEach((c, i) => {
+    ol.innerHTML = '';
+    this.chapterEls = [];
+    this.chapters.forEach((c, i) => {
       const li = document.createElement('li');
       li.innerHTML = `<button aria-label="${c.title}"><span class="bar"><span class="fill"></span></span><span class="label">${c.title}</span></button>`;
       li.querySelector('button')!.addEventListener('click', () => { this.go(i); });
@@ -61,11 +94,12 @@ export class Director {
     }
   }
 
-  next() { this.go((this.index + 1) % CHAPTERS.length); }
-  prev() { this.go((this.index - 1 + CHAPTERS.length) % CHAPTERS.length); }
+  next() { this.go((this.index + 1) % this.chapters.length); }
+  prev() { this.go((this.index - 1 + this.chapters.length) % this.chapters.length); }
 
   async go(i: number) {
-    const c = CHAPTERS[i];
+    const c = this.chapters[i];
+    $('next-story').classList.remove('on');
     const token = ++this.token;
     this.index = i;
     this.detour = false;
@@ -268,9 +302,14 @@ export class Director {
       const f = this.chapterEls[this.index].querySelector('.fill') as HTMLElement;
       f.style.transform = `scaleX(${Math.min(1, this.elapsed / c.duration)})`;
       if (this.elapsed >= c.duration) {
-        if (this.index === CHAPTERS.length - 1) {
-          // The end: leave the viewer free to explore.
+        if (this.index === this.chapters.length - 1) {
+          // The end: leave the viewer free to explore, and offer the next story.
           this.setPlaying(false);
+          const next = STORIES[(STORIES.indexOf(this.story) + 1) % STORIES.length];
+          if (next !== this.story) {
+            $('next-story').querySelector('span')!.textContent = `Continua: ${next.title}`;
+            $('next-story').classList.add('on');
+          }
           document.getElementById('hint')!.classList.add('on');
           setTimeout(() => document.getElementById('hint')!.classList.remove('on'), 7000);
         } else this.next();
@@ -309,7 +348,12 @@ export class Director {
 
     const t = c?.clock === 'rain' ? this.globe.dataFrameTime() : null;
     const dc = $('data-clock');
-    if (t) {
+    const run = c?.clock === 'year' ? this.globe.yearRunning : null;
+    if (run) {
+      $('data-time').textContent = String(Math.round(this.globe.year));
+      $('data-dot').style.left = `${(((this.globe.year - run.from) / Math.max(1, run.to - run.from)) * 100).toFixed(2)}%`;
+      dc.classList.add('on');
+    } else if (t) {
       const d = new Date(t);
       $('data-time').textContent = `${d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', timeZone: 'UTC' })} · ${d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} UTC`;
       $('data-dot').style.left = `${(this.globe.dataFrameProgress() * 100).toFixed(2)}%`;

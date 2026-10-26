@@ -22,7 +22,10 @@
   </div>
 
   <header class="top">
-    <button class="brand" id="brand" aria-label="Torna all’inizio">Upari</button>
+    <div class="top-left">
+      <button class="brand" id="brand" aria-label="Torna all’inizio">Upari</button>
+      <nav class="stories" id="stories" aria-label="Racconti"></nav>
+    </div>
     <div class="top-actions">
       <form class="search" id="search" role="search" autocomplete="off">
         <input id="search-input" type="search" placeholder="Cerca un luogo" aria-label="Cerca un luogo" enterkeyhint="search" spellcheck="false" />
@@ -55,6 +58,7 @@
     <p class="line" id="cap-line"></p>
     <div class="cap-actions">
       <button class="more" id="more-btn"><span>Scopri di più</span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <button class="more next-story" id="next-story"><span></span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
       <span class="data-clock" id="data-clock"><span id="data-time"></span><span class="data-track" aria-hidden="true"><i id="data-dot"></i></span></span>
     </div>
   </section>
@@ -107,7 +111,8 @@
       <div class="intro-mark">Upari</div>
       <p class="intro-line">Il pianeta, raccontato dai suoi dati di oggi.</p>
       <div class="intro-actions">
-        <button class="cta" id="start-btn">Inizia il racconto</button>
+        <button class="cta" id="start-btn">Il pianeta, adesso</button>
+        <button class="cta cta-line" id="people-btn">Le persone</button>
         <button class="ghost" id="explore-btn">Esplora da solo</button>
       </div>
       <div class="loader" id="loader"><span id="loader-bar"></span></div>
@@ -135,6 +140,7 @@
         <li><b>Fuochi</b> NASA FIRMS, VIIRS NOAA-20</li>
         <li><b>Stazione Spaziale</b> elementi orbitali CelesTrak, propagazione SGP4 con satellite.js; modello 3D NASA 3D Resources, ISS (B), di Michael D. Carbajal</li>
         <li><b>Stelle</b> Yale Bright Star Catalogue</li>
+        <li><b>Le persone</b> World Bank, World Development Indicators (con dati ONU World Population Prospects, UN IGME e ILO), CC BY 4.0; domande di asilo UNHCR Refugee Data Portal, CC BY 4.0; confini Natural Earth, pubblico dominio</li>
         <li><b>Musica e suoni</b> composti per Upari con Magnific (Google Lyria, ElevenLabs)</li>
         <li><b>Ricerca dei luoghi</b> <a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, dati © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, ODbL</li>
       </ul>

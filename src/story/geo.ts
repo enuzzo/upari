@@ -6,6 +6,8 @@ import { seaName } from './places';
 type Ring = [number, number][];
 export interface Country {
   id: string;
+  /** World Bank code used by the statistics (null for the few outlines with no WDI match). */
+  stat: string | null;
   name: string;
   lon: number;
   lat: number;
@@ -18,7 +20,7 @@ let loading: Promise<Country[]> | null = null;
 export function loadCountries(): Promise<Country[]> {
   loading ??= (async () => {
     const geo = await (await fetch('statistics/countries.geojson')).json();
-    return (geo.features as { properties: { id: string; name: string; longitude: number; latitude: number }; geometry: { type: string; coordinates: unknown } }[])
+    return (geo.features as { properties: { id: string; statCode: string | null; name: string; longitude: number; latitude: number }; geometry: { type: string; coordinates: unknown } }[])
       .map((f) => {
         const polygons = (f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates) as Ring[][];
         const bbox: [number, number, number, number] = [180, 90, -180, -90];
@@ -26,7 +28,7 @@ export function loadCountries(): Promise<Country[]> {
           bbox[0] = Math.min(bbox[0], x); bbox[1] = Math.min(bbox[1], y);
           bbox[2] = Math.max(bbox[2], x); bbox[3] = Math.max(bbox[3], y);
         }
-        return { id: f.properties.id, name: f.properties.name, lon: f.properties.longitude, lat: f.properties.latitude, polygons, bbox };
+        return { id: f.properties.id, stat: f.properties.statCode ?? null, name: f.properties.name, lon: f.properties.longitude, lat: f.properties.latitude, polygons, bbox };
       });
   })();
   loading.catch(() => { loading = null; });

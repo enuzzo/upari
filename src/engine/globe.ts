@@ -1,5 +1,5 @@
 import {
-  ACESFilmicToneMapping, Clock, HalfFloatType, Raycaster, Scene, Sphere, Texture, Vector2, Vector3, WebGLRenderer,
+  ACESFilmicToneMapping, Clock, HalfFloatType, Raycaster, Scene, ShaderMaterial, Sphere, Texture, Vector2, Vector3, WebGLRenderer,
 } from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
@@ -15,6 +15,7 @@ import { createFires, Station } from './markers';
 import { DATA, LayerStore, Sampler, loadTexture, type DataId, type LayerMeta } from './layers';
 import { gmst, lonLatToVec, moonBrightness, moonDirection, sunDirection, vecToLonLat } from './astro';
 import { Tiles } from './tiles';
+import { ATLAS, Atlas, type AtlasId } from './atlas';
 
 export type FlowId = 'wind' | 'currents';
 
@@ -35,11 +36,22 @@ export interface Look {
   relief: number;
   bloom: number;
   pin: { lon: number; lat: number } | null;
+  /** A statistic drawn on the countries (the atlas). */
+  atlas: AtlasId | null;
+  /** Population as dust of light, 0..1. */
+  dust: number;
+  /** Asylum applications as streams, 0..1. */
+  migration: number;
+  /** The year to show; with `years`, the years run from the first to the second. */
+  year: number | null;
+  years: [number, number] | null;
+  yearSeconds: number;
 }
 
 export const DEFAULT_LOOK: Look = {
   sun: 'real', clouds: 1, cloudFlow: 1, night: 1, dim: 0, desat: 0, data: null, flow: null,
   fires: 0, iss: 0, stars: 1, atmo: 1, exposure: 1, relief: 1, bloom: 1, pin: null,
+  atlas: null, dust: 0, migration: 0, year: null, years: null, yearSeconds: 18,
 };
 
 export interface Probe {
@@ -81,7 +93,15 @@ export class Globe {
   private clock = new Clock();
   private time = 0;
   private look: Look = { ...DEFAULT_LOOK };
-  cur = { clouds: 1, cloudFlow: 1, night: 1, dim: 0, desat: 0, fires: 0, iss: 0, stars: 1, atmo: 1, exposure: 1, relief: 1, bloom: 1, dataMix: 0, trail: 0, studio: 0, pin: 0 };
+  cur = { clouds: 1, cloudFlow: 1, night: 1, dim: 0, desat: 0, fires: 0, iss: 0, stars: 1, atmo: 1, exposure: 1, relief: 1, bloom: 1, dataMix: 0, trail: 0, studio: 0, pin: 0, atlas: 0, dust: 0, migration: 0 };
+  readonly atlas = new Atlas();
+  private atlasShown: AtlasId | null = null;
+  private atlasAdded = false;
+  /** The year on screen, fractional while it runs. */
+  year = 2024;
+  private yearRun: { from: number; to: number; t0: number; seconds: number } | null = null;
+  private hoverSlot = -1;
+  private hoverAt = 0;
   private flows: Partial<Record<FlowId, FlowField>> = {};
   private flowSamplers: Partial<Record<FlowId, { s: Sampler; scale: number }>> = {};
   private flowShown: FlowId | null = null;
@@ -218,11 +238,32 @@ export class Globe {
     if (look.data) jobs.push(this.layers.get(look.data));
     if (look.flow) jobs.push(this.loadFlow(look.flow));
     if (look.fires) jobs.push(this.loadFires());
+    if (look.atlas || look.dust || look.migration) jobs.push(this.loadAtlas());
     await Promise.all(jobs);
   }
 
+  loadAtlas(): Promise<void> {
+    return this.atlas.load().then(() => {
+      if (this.atlasAdded) return;
+      this.atlasAdded = true;
+      this.scene.add(this.atlas.dust!, this.atlas.flows!, this.atlas.arcs!);
+    });
+  }
+
+  /** Show a year (the atlas); `run` makes the years flow from the current one. */
+  setYear(year: number) {
+    this.yearRun = null;
+    this.year = year;
+  }
+
+  get yearRunning() { return this.yearRun; }
+
   setLook(next: Partial<Look>) {
     this.look = { ...DEFAULT_LOOK, ...next };
+    if (this.look.years) {
+      this.year = this.look.years[0];
+      this.yearRun = { from: this.look.years[0], to: this.look.years[1], t0: this.time, seconds: this.look.yearSeconds };
+    } else if (this.look.year != null) this.setYear(this.look.year);
     void this.prepare(this.look);
     if (this.look.pin) lonLatToVec(this.look.pin.lon, this.look.pin.lat, 1, this.pinVec);
   }
@@ -384,6 +425,9 @@ export class Globe {
     }
     u.uTrailGain.value = c.trail * c.trail;
 
+    // The atlas: countries, the dust of people, streams of asylum seekers.
+    this.updateAtlas(dt);
+
     // Fires and the station.
     if (this.fires) {
       const m = this.fires.material.uniforms;
@@ -397,6 +441,51 @@ export class Globe {
     this.tiles?.update(this.rig, this.renderer);
   }
 
+  private updateAtlas(dt: number) {
+    const L = this.look, c = this.cur, u = this.u;
+    if (this.yearRun) {
+      const r = this.yearRun;
+      const k = Math.min(1, Math.max(0, (this.time - r.t0) / r.seconds));
+      this.year = r.from + (r.to - r.from) * k;
+    }
+    if (!this.atlas.ready) { u.uAtlasMix.value = 0; return; }
+    const want = L.atlas;
+    if (want !== this.atlasShown) {
+      c.atlas = Math.max(0, c.atlas - dt * 1.6);
+      if (c.atlas <= 0) {
+        this.atlasShown = want;
+        if (want) {
+          const def = ATLAS[want];
+          u.uAtlasId.value = this.atlas.idMap!;
+          u.uAtlasValues.value = this.atlas.values(want);
+          u.uAtlasPalette.value = this.atlas.palette(want);
+          u.uAtlasRange.value.set(def.min, def.max, def.curve);
+          u.uAtlasFill.value = def.fill ? 1 : 0;
+          u.uAtlasYears.value = this.atlas.years.length;
+        }
+      }
+    } else if (want) c.atlas = Math.min(1, c.atlas + dt * 0.9);
+    u.uAtlasMix.value = c.atlas * c.atlas * (3 - 2 * c.atlas);
+    const yi = Math.min(this.atlas.years.length - 1.001, Math.max(0, this.year - this.atlas.years[0]));
+    u.uAtlasYear.value = yi;
+    if (this.time - this.hoverAt > 0.2) this.hoverSlot = -1;
+    u.uAtlasHover.value = this.hoverSlot;
+    c.dust = approach(c.dust, L.dust, dt, 1.4);
+    c.migration = approach(c.migration, L.migration, dt, 1.4);
+    const dust = this.atlas.dust!, flows = this.atlas.flows!;
+    dust.visible = c.dust > 0.002;
+    flows.visible = this.atlas.arcs!.visible = c.migration > 0.002;
+    const am = this.atlas.arcs!.material as ShaderMaterial;
+    am.uniforms.uYear.value = this.year - this.atlas.years[0];
+    am.uniforms.uOpacity.value = c.migration;
+    const dm = dust.material as ShaderMaterial, fm = flows.material as ShaderMaterial;
+    dm.uniforms.uYear.value = yi;
+    dm.uniforms.uOpacity.value = c.dust;
+    fm.uniforms.uYear.value = yi;
+    fm.uniforms.uOpacity.value = c.migration;
+    fm.uniforms.uTime.value = this.time;
+  }
+
   /** What is under the cursor. */
   probe(clientX: number, clientY: number): Probe | null {
     const ndc = new Vector2((clientX / innerWidth) * 2 - 1, -(clientY / innerHeight) * 2 + 1);
@@ -406,6 +495,23 @@ export class Globe {
     const { lon, lat } = vecToLonLat(hit);
     const L = this.look;
     let text: string | null = null, sub: string | null = null;
+    if ((L.atlas || L.migration) && this.atlas.ready) {
+      const country = this.atlas.countryAt(lon, lat);
+      if (country) {
+        this.hoverSlot = country.stat ? this.atlas.slots.get(country.stat) ?? -1 : -1;
+        this.hoverAt = this.time;
+        const year = Math.round(this.year);
+        sub = `${country.name} · ${year}`;
+        if (L.migration && country.stat) {
+          const n = this.atlas.asylumByCountry[country.stat]?.[year - this.atlas.years[0]];
+          text = n ? `${n.toLocaleString('it-IT')} domande di asilo` : 'nessuna domanda pubblicata';
+        } else if (L.atlas) {
+          const v = country.stat ? this.atlas.value(L.atlas, country.stat, year) : null;
+          text = v == null ? 'nessun dato per quest’anno' : ATLAS[L.atlas].format(v);
+        }
+        return { lon, lat, text, sub };
+      }
+    }
     if (L.data && this.dataShown === L.data && this.dataMeta) {
       const s = this.dataSamplers[Math.floor(this.frame) % this.dataSamplers.length];
       const [r, g] = s.read(lon, lat);

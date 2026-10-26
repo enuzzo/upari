@@ -11,7 +11,8 @@
     "data:earth": "node scripts/prepare-earth.mjs",
     "data:fields": "node scripts/prepare-fields.mjs",
     "data:layers": "node scripts/prepare-layers.mjs",
-    "data:stars": "node scripts/prepare-stars.mjs"
+    "data:stars": "node scripts/prepare-stars.mjs",
+    "data:atlas": "node scripts/prepare-atlas.mjs"
   },
   "dependencies": {
     "satellite.js": "^6.0.1",

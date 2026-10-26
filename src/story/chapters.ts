@@ -36,7 +36,7 @@ export interface Chapter {
   arrive?: (g: Globe) => Promise<string>;
   /** A live panel beside the narration. */
   telemetry?: 'iss';
-  clock?: 'rain';
+  clock?: 'rain' | 'year';
   pin?: (g: Globe) => Promise<{ lon: number; lat: number; label: string; sub: string } | null>;
 }
 

@@ -120,6 +120,11 @@ export class Globe {
     this.composer.renderTarget1.texture.type = HalfFloatType;
     this.composer.renderTarget2.texture.type = HalfFloatType;
     this.composer.addPass(new RenderPass(this.scene, this.rig.camera));
+    // The station's own pass, on top: near the camera, nothing in the planet's scene can hide it.
+    const stationPass = new RenderPass(this.station.scene, this.station.camera);
+    stationPass.clear = false;
+    stationPass.clearDepth = true;
+    this.composer.addPass(stationPass);
     this.bloom = new UnrealBloomPass(new Vector2(512, 512), 0.6, 0.55, 1.35);
     this.composer.addPass(this.bloom);
     this.composer.addPass(new OutputPass());
@@ -260,9 +265,11 @@ export class Globe {
     c.studio = approach(c.studio, L.sun === 'studio' ? 1 : 0, dt, 1.4);
     c.pin = approach(c.pin, L.pin ? 1 : 0, dt, 2);
 
+    // The station moves 7.7 km every second: place it for this frame before the camera follows it.
+    const date = this.now;
+    this.station.update(date, c.iss, this.time);
     this.rig.update(dt);
     const cam = this.rig.camera;
-    const date = this.now;
 
     // Sun: real position, or a soft key light over the viewer's shoulder.
     sunDirection(date, this.sunVec);
@@ -381,7 +388,7 @@ export class Globe {
       m.uHeight.value = innerHeight;
       this.fires.points.visible = c.fires > 0.002;
     }
-    this.station.update(date, c.iss, this.time);
+    this.station.placeFor(cam, this.sunVec, c.iss);
     this.tiles?.update(this.rig, this.renderer);
   }
 

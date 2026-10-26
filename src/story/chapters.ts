@@ -21,6 +21,8 @@ export interface Chapter {
   beats: (g: Globe) => Promise<Beat[]>;
   legend?: Legend;
   follow?: 'iss';
+  /** After the beats, fly down to the station and ride along with it. */
+  approach?: 'iss';
   clock?: 'rain';
   pin?: (g: Globe) => Promise<{ lon: number; lat: number; label: string; sub: string } | null>;
 }
@@ -299,8 +301,9 @@ export const CHAPTERS: Chapter[] = [
   {
     id: 'lassu', title: 'Lassù', kicker: 'La Stazione Spaziale, ora',
     look: { sun: 'real', clouds: 1, night: 1.1, iss: 1, atmo: 1 },
-    duration: 26,
+    duration: 38,
     follow: 'iss',
+    approach: 'iss',
     narrate: async (g) => {
       const s = g.station;
       const alt = s.altKm > 300 ? Math.round(s.altKm) : 415;

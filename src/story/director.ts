@@ -113,6 +113,11 @@ export class Director {
       this.globe.rig.drift = b.drift ?? 0;
     }
     if (c.follow === 'iss') this.following = true;
+    if (c.approach === 'iss' && this.globe.station.altKm > 0) {
+      const s = this.globe.station;
+      // About 350 m behind and above the station, with the Earth rolling by underneath.
+      await this.globe.rig.focusOn(() => ({ pos: s.position, fwd: s.velocity }), { dist: 0.000055, yaw: 28, pitch: 22 }, 12);
+    }
   }
 
   private speak(text: string) {
@@ -258,7 +263,9 @@ export class Director {
       const v = lonLatToVec(a.lon, a.lat, 1 + a.alt / 6371);
       const p = this.globe.screenOf(v);
       a.el.style.transform = `translate(${p.x}px, ${p.y}px)`;
-      a.el.style.visibility = p.visible ? 'visible' : 'hidden';
+      // Within about 50 km the station itself is on screen: the label would sit on it.
+      const onTop = a.follow === 'iss' && s.range < 0.008;
+      a.el.style.visibility = p.visible && !onTop ? 'visible' : 'hidden';
     }
 
     const t = c?.clock === 'rain' ? this.globe.dataFrameTime() : null;

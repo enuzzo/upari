@@ -1,5 +1,6 @@
 import {
   AdditiveBlending, BufferAttribute, BufferGeometry, Line, Points, ShaderMaterial, Vector3, Group, LineBasicMaterial,
+  Scene, DirectionalLight, HemisphereLight, AmbientLight, Matrix4, Mesh, MeshStandardMaterial, PerspectiveCamera, Box3, type Material,
 } from 'three';
 import { json2satrec, propagate, gstime, eciToGeodetic, type SatRec } from 'satellite.js';
 import { lonLatToVec } from './astro';
@@ -59,9 +60,27 @@ export function createFires(data: Float32Array) {
   return { points, material, count: n };
 }
 
+const EARTH_M = 6371000;
+/** NASA's model spans 45.4 units across the truss; the real truss is 109 m. */
+const MODEL_M = 109 / 45.4;
+
 /** The International Space Station, its position now and its orbit. */
 export class Station {
   readonly group = new Group();
+  /**
+   * The station itself, drawn in its own pass in metres around the camera: at 6,800 km from
+   * the centre of the Earth a 109 m object would shake in single-precision coordinates.
+   */
+  readonly scene = new Scene();
+  readonly camera = new PerspectiveCamera();
+  private model: Group | null = null;
+  private modelLoading = false;
+  private pivot = new Group();
+  private sunLight = new DirectionalLight(0xfff4e6, 3);
+  private earthshine = new HemisphereLight(0x000000, 0x3d5a80, 0);
+  readonly velocity = new Vector3();
+  /** Distance from the camera, planet radii (Infinity when unknown). */
+  range = Infinity;
   private satrec: SatRec | null = null;
   private dot: Points;
   private orbit: Line;
@@ -103,6 +122,72 @@ export class Station {
     this.orbit.frustumCulled = false;
     this.orbit.renderOrder = 4;
     this.group.add(this.orbit, this.dot);
+    this.scene.add(this.sunLight, this.sunLight.target, this.earthshine, new AmbientLight(0x8899aa, 0.04), this.pivot);
+    this.pivot.visible = false;
+  }
+
+  /** NASA's ISS (B) model (public domain), loaded the first time the station is shown. */
+  private async loadModel() {
+    this.modelLoading = true;
+    const [{ GLTFLoader }, { DRACOLoader }] = await Promise.all([
+      import('three/examples/jsm/loaders/GLTFLoader.js'),
+      import('three/examples/jsm/loaders/DRACOLoader.js'),
+    ]);
+    const draco = new DRACOLoader().setDecoderPath('draco/');
+    const loader = new GLTFLoader().setDRACOLoader(draco);
+    const gltf = await loader.loadAsync('models/iss.glb');
+    draco.dispose();
+    const root = gltf.scene;
+    // Two stray truss fragments float 40 units away from the station in the source file.
+    const junk: Mesh[] = [];
+    const panel = new MeshStandardMaterial({ color: 0x5a4024, metalness: 0.45, roughness: 0.38 });
+    const radiator = new MeshStandardMaterial({ color: 0xf2f0ea, metalness: 0.0, roughness: 0.55 });
+    const hull = new MeshStandardMaterial({ color: 0xd9d6cf, metalness: 0.15, roughness: 0.5 });
+    const pick = (m: Material) => (/lambert7/.test(m.name) ? panel : /blinn5SG|bendedtruss_blin\./.test(m.name) ? radiator : hull);
+    root.traverse((o) => {
+      const mesh = o as Mesh;
+      if (!mesh.isMesh) return;
+      if (/^(bendedtru|pCylinder)/.test(mesh.name)) { junk.push(mesh); return; }
+      mesh.material = Array.isArray(mesh.material) ? mesh.material.map(pick) : pick(mesh.material);
+    });
+    junk.forEach((m) => m.removeFromParent());
+    const center = new Box3().setFromObject(root).getCenter(new Vector3());
+    root.position.copy(center).multiplyScalar(-1);
+    const model = new Group();
+    model.add(root);
+    model.scale.setScalar(MODEL_M);
+    this.pivot.add(model);
+    this.model = model;
+  }
+
+  /**
+   * Places the station's pass around `cam`. The model's x axis points to the zenith, y along
+   * the flight, z along the truss, as the station flies (LVLH attitude).
+   */
+  placeFor(cam: PerspectiveCamera, sun: Vector3, opacity: number) {
+    this.range = this.position.distanceTo(cam.position);
+    const near = opacity > 0.5 && this.altKm > 0 && this.range < 0.05;
+    if (near && !this.model && !this.modelLoading) void this.loadModel().catch((err) => { console.warn('ISS model unavailable', err); });
+    this.pivot.visible = near && !!this.model;
+    if (!this.pivot.visible) return;
+    const up = this.position.clone().normalize();
+    const fwd = this.velocity.clone().addScaledVector(up, -this.velocity.dot(up)).normalize();
+    const side = new Vector3().crossVectors(up, fwd);
+    this.pivot.quaternion.setFromRotationMatrix(new Matrix4().makeBasis(up, fwd, side));
+    this.pivot.position.copy(this.position).sub(cam.position).multiplyScalar(EARTH_M);
+    this.camera.copy(cam, false);
+    this.camera.position.set(0, 0, 0);
+    this.camera.near = Math.max(0.5, this.range * EARTH_M * 0.05);
+    this.camera.far = this.range * EARTH_M + 500;
+    this.camera.updateProjectionMatrix();
+    // Sunlight, unless the station is in the Earth's shadow; earthshine from the day side below.
+    const b = this.position.dot(sun);
+    const axis = Math.sqrt(Math.max(this.position.lengthSq() - b * b, 0));
+    const lit = b > 0 ? 1 : Math.min(1, Math.max(0, (axis - 0.995) / 0.01));
+    this.sunLight.position.copy(sun);
+    this.sunLight.intensity = 3.2 * lit;
+    this.earthshine.position.copy(up);
+    this.earthshine.intensity = 0.9 * Math.min(1, Math.max(0, (up.dot(sun) + 0.1) / 0.4));
   }
 
   /**
@@ -138,7 +223,8 @@ export class Station {
   }
 
   update(date: Date, opacity: number, time: number) {
-    this.material.uniforms.uOpacity.value = opacity;
+    // The glowing dot gives way to the model as the camera comes close (range in planet radii).
+    this.material.uniforms.uOpacity.value = opacity * Math.min(1, Math.max(0, (this.range - 0.0008) / 0.006));
     this.material.uniforms.uTime.value = time;
     (this.orbit.material as LineBasicMaterial).opacity = opacity * 0.55;
     this.group.visible = opacity > 0.001;
@@ -146,6 +232,8 @@ export class Station {
     const p = this.at(date, this.position);
     if (p) {
       this.lon = p.lon; this.lat = p.lat; this.altKm = p.alt;
+      const ahead = new Vector3();
+      if (this.at(new Date(date.getTime() + 1000), ahead)) this.velocity.copy(ahead).sub(this.position);
       (this.dot.geometry.attributes.position as BufferAttribute).set([this.position.x, this.position.y, this.position.z]);
       this.dot.geometry.attributes.position.needsUpdate = true;
     }

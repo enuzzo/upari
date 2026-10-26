@@ -32,6 +32,15 @@ export class CameraRig {
   private frameShiftTarget = 0;
   private vel = { lon: 0, lat: 0, zoom: 0 };
   private flight: null | { from: Required<Shot>; to: Required<Shot>; t: number; dur: number; arc: number; resolve: () => void } = null;
+  /** Following a moving object (the station) instead of a place on the ground. */
+  private focus: null | {
+    target: () => { pos: Vector3; fwd: Vector3 };
+    dist: number; yaw: number; pitch: number;
+    from: { dir: Vector3; dist: number; quat: Quaternion };
+    t: number; dur: number; resolve: () => void;
+  } = null;
+  /** After leaving the focus, the view turns smoothly back to the ground. */
+  private settle: null | { quat: Quaternion; t: number } = null;
   private dragging = false;
   private tiltLocked = false;
   private last = { x: 0, y: 0 };
@@ -45,7 +54,40 @@ export class CameraRig {
   }
 
   get altitudeKm() { return this.dist * 6371; }
-  get busy() { return !!this.flight; }
+  get busy() { return !!this.flight || !!this.focus; }
+  get focused() { return !!this.focus; }
+
+  /**
+   * Fly to a moving object and stay with it: `dist` in planet radii, seen from behind
+   * (yaw, degrees) and above (pitch, degrees), with the horizon in frame.
+   */
+  focusOn(target: () => { pos: Vector3; fwd: Vector3 }, opts: { dist: number; yaw?: number; pitch?: number }, seconds = 10): Promise<void> {
+    this.flight?.resolve();
+    this.flight = null;
+    this.focus?.resolve();
+    const p = target().pos;
+    const off = this.camera.position.clone().sub(p);
+    return new Promise((resolve) => {
+      this.focus = {
+        target, dist: opts.dist, yaw: (opts.yaw ?? 0) * DEG, pitch: (opts.pitch ?? 20) * DEG,
+        from: { dir: off.clone().normalize(), dist: off.length(), quat: this.camera.quaternion.clone() },
+        t: 0, dur: seconds, resolve,
+      };
+    });
+  }
+
+  /** Back to the ground-based camera, from wherever the focus left it. */
+  private unfocus() {
+    const f = this.focus;
+    if (!f) return;
+    this.focus = null;
+    const cam = this.camera.position;
+    const { lon, lat } = { lon: Math.atan2(-cam.z, cam.x) / DEG, lat: Math.asin(MathUtils.clamp(cam.y / cam.length(), -1, 1)) / DEG };
+    Object.assign(this, { lon, lat, dist: Math.max(MIN_DIST, cam.length() - 1), tilt: 0, heading: 0 });
+    this.tiltLocked = false;
+    this.settle = { quat: this.camera.quaternion.clone(), t: 0 };
+    f.resolve();
+  }
 
   resize(w: number, h: number) {
     this.width = w; this.height = h;
@@ -68,6 +110,7 @@ export class CameraRig {
 
   /** Fly along the great circle, climbing when the journey is long. */
   flyTo(shot: Shot, seconds?: number): Promise<void> {
+    this.unfocus();
     this.flight?.resolve();
     const from = this.current();
     this.tiltLocked = shot.tilt !== undefined;
@@ -86,6 +129,7 @@ export class CameraRig {
   }
 
   cancelFlight() {
+    this.unfocus();
     if (!this.flight) return;
     const r = this.flight.resolve;
     this.flight = null;
@@ -94,6 +138,11 @@ export class CameraRig {
 
   update(dt: number) {
     this.frameShift += (this.frameShiftTarget - this.frameShift) * Math.min(1, dt * 2.2);
+    if (this.focus) {
+      this.updateFocus(dt);
+      this.applyOffset();
+      return;
+    }
     if (this.flight) {
       const f = this.flight;
       f.t = Math.min(1, f.t + dt / f.dur);
@@ -129,7 +178,38 @@ export class CameraRig {
     }
     this.lon = ((this.lon + 540) % 360) - 180;
     this.place();
+    if (this.settle) {
+      this.settle.t = Math.min(1, this.settle.t + dt / 0.9);
+      this.camera.quaternion.slerpQuaternions(this.settle.quat, this.camera.quaternion.clone(), easeSine(this.settle.t));
+      if (this.settle.t >= 1) this.settle = null;
+    }
     this.applyOffset();
+  }
+
+  private updateFocus(dt: number) {
+    const f = this.focus!;
+    f.t = Math.min(1, f.t + dt / f.dur);
+    const e = ease(f.t);
+    const { pos, fwd } = f.target();
+    const up = pos.clone().normalize();
+    const ahead = fwd.clone().addScaledVector(up, -fwd.dot(up)).normalize();
+    const side = new Vector3().crossVectors(up, ahead);
+    // Behind and above the object, looking at it: the Earth fills the lower part of the frame.
+    const want = ahead.clone().multiplyScalar(-Math.cos(f.pitch) * Math.cos(f.yaw))
+      .addScaledVector(side, Math.cos(f.pitch) * Math.sin(f.yaw)).addScaledVector(up, Math.sin(f.pitch)).normalize();
+    const dir = f.from.dir.clone();
+    const ang = Math.acos(MathUtils.clamp(dir.dot(want), -1, 1));
+    if (ang > 1e-5) dir.applyQuaternion(new Quaternion().setFromAxisAngle(new Vector3().crossVectors(dir, want).normalize(), ang * e));
+    const dist = Math.exp(MathUtils.lerp(Math.log(f.from.dist), Math.log(f.dist), easeSine(f.t)));
+    this.camera.position.copy(pos).addScaledVector(dir, dist);
+    this.camera.up.copy(up);
+    this.camera.lookAt(pos);
+    // Ease out of the previous framing during the first part of the approach.
+    const k = MathUtils.smoothstep(f.t, 0, 0.25);
+    if (k < 1) this.camera.quaternion.slerpQuaternions(f.from.quat, this.camera.quaternion.clone(), k);
+    const near = Math.max(0.0004, Math.min(0.05, (this.camera.position.length() - 1) * 0.3));
+    if (Math.abs(near - this.camera.near) / this.camera.near > 0.05) { this.camera.near = near; this.camera.updateProjectionMatrix(); }
+    if (f.t >= 1 && f.from.dist !== f.dist) { f.from.dist = f.dist; f.resolve(); }
   }
 
   private place() {
@@ -185,10 +265,16 @@ export class CameraRig {
     el.addEventListener('pointercancel', end);
     el.addEventListener('wheel', (e) => {
       e.preventDefault();
+      const delta = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+      if (this.focus && this.focus.t >= 1) {
+        // Close to the station the wheel moves towards it or away, without leaving it.
+        this.onUserInput();
+        this.focus.dist = this.focus.from.dist = MathUtils.clamp(this.focus.dist * Math.exp(MathUtils.clamp(delta, -120, 120) * 0.004), 2e-6, 0.02);
+        return;
+      }
       this.cancelFlight();
       this.tiltLocked = false;
       this.onUserInput();
-      const delta = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
       this.vel.zoom += MathUtils.clamp(delta, -120, 120) * 0.022;
     }, { passive: false });
   }

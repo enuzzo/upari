@@ -1,5 +1,6 @@
 import type { Globe } from '../engine/globe';
-import { lonLatToVec } from '../engine/astro';
+import { lonLatToVec, sunDirection } from '../engine/astro';
+import { loadCountries, placeBelow, type Country } from './geo';
 import { cssGradient } from '../engine/palettes';
 import { CHAPTERS, type Chapter } from './chapters';
 
@@ -19,6 +20,8 @@ export class Director {
   private following = false;
   /** The viewer left the chapter (a place search): resuming restarts it. */
   private detour = false;
+  private countries: Country[] | null = null;
+  private telemetryAt = 0;
   private chapterEls: HTMLLIElement[] = [];
 
   constructor(private globe: Globe) {
@@ -111,12 +114,24 @@ export class Director {
       await this.globe.rig.flyTo(b.shot, b.seconds);
       if (token !== this.token || !this.playing) return;
       this.globe.rig.drift = b.drift ?? 0;
+      if (b.hold) {
+        this.following = !!b.follow;
+        const until = this.elapsed + b.hold;
+        while (this.elapsed < until) {
+          await new Promise((r) => setTimeout(r, 150));
+          if (token !== this.token || !this.playing) return;
+        }
+        this.following = false;
+      }
     }
     if (c.follow === 'iss') this.following = true;
     if (c.approach === 'iss' && this.globe.station.altKm > 0) {
       const s = this.globe.station;
       // About 350 m behind and above the station, with the Earth rolling by underneath.
       await this.globe.rig.focusOn(() => ({ pos: s.position, fwd: s.velocity }), { dist: 0.000055, yaw: 28, pitch: 22 }, 12);
+      if (token !== this.token || !this.playing) return;
+      const line = await c.arrive?.(this.globe).catch(() => '');
+      if (line && token === this.token) this.speak(line);
     }
   }
 
@@ -224,6 +239,28 @@ export class Director {
 
   get drawerOpen() { return $('drawer').classList.contains('on'); }
 
+  /** The station's live numbers, beside the narration. */
+  private telemetry(c: Chapter | null, dt: number) {
+    const panel = $('telemetry');
+    const show = c?.telemetry === 'iss' && this.lineReady && !this.drawerOpen && this.globe.station.altKm > 0;
+    panel.classList.toggle('on', show);
+    if (!show) return;
+    this.telemetryAt -= dt;
+    if (this.telemetryAt > 0) return;
+    this.telemetryAt = 0.5;
+    if (!this.countries) void loadCountries().then((c) => { this.countries = c; }).catch(() => {});
+    const s = this.globe.station, now = this.globe.now;
+    const it = (n: number, d = 0) => n.toLocaleString('it-IT', { maximumFractionDigits: d, minimumFractionDigits: d });
+    const light = s.daylight(now, (d) => sunDirection(d));
+    const set = (id: string, v: string) => { const el = $(id); if (el.textContent !== v) el.textContent = v; };
+    set('tm-alt', `${it(s.altKm)} km`);
+    set('tm-speed', `${it(s.speedKmh)} km/h`);
+    set('tm-below', placeBelow(this.countries, s.lon, s.lat));
+    set('tm-light', !light ? '' : `${light.day ? 'giorno' : 'notte'}${Number.isFinite(light.minutes) ? ` · ${light.day ? 'tramonto' : 'alba'} tra ${it(Math.round(light.minutes))} min` : ''}`);
+    set('tm-pos', `${it(Math.abs(s.lat), 1)}° ${s.lat >= 0 ? 'N' : 'S'} · ${it(Math.abs(s.lon), 1)}° ${s.lon >= 0 ? 'E' : 'O'}`);
+    set('tm-orbit', `${Math.floor(s.orbitsToday(now)) + 1}ª di oggi`);
+  }
+
   tick(dt: number) {
     const c = this.chapter;
     if (c && this.playing && this.lineReady && !this.drawerOpen) {
@@ -267,6 +304,8 @@ export class Director {
       const onTop = a.follow === 'iss' && s.range < 0.008;
       a.el.style.visibility = p.visible && !onTop ? 'visible' : 'hidden';
     }
+
+    this.telemetry(c, dt);
 
     const t = c?.clock === 'rain' ? this.globe.dataFrameTime() : null;
     const dc = $('data-clock');

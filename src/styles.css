@@ -153,6 +153,18 @@ body.started .brand { opacity: 1; visibility: visible; transition-delay: 0.6s, 0
 .legend-bar { height: 6px; border-radius: 3px; box-shadow: 0 0 24px rgba(255, 255, 255, 0.06); }
 .legend-ends { display: flex; justify-content: space-between; margin-top: 8px; font-family: var(--serif); font-size: 17px; color: var(--ink); }
 
+/* ——— Telemetry ——— */
+.telemetry {
+  position: fixed; right: var(--gutter); bottom: calc(var(--gutter) + 82px); z-index: 5; width: 300px;
+  padding: 16px 18px 14px; background: rgba(3, 4, 7, 0.78); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 2px;
+  opacity: 0; transform: translateY(8px); transition: opacity 0.9s var(--ease), transform 0.9s var(--ease); pointer-events: none;
+}
+.telemetry.on { opacity: 1; transform: none; }
+.tm-title { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--warm); margin-bottom: 12px; }
+.telemetry dl { display: grid; grid-template-columns: auto 1fr; gap: 7px 16px; margin: 0; }
+.telemetry dt { font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); padding-top: 3px; }
+.telemetry dd { margin: 0; font-family: var(--serif); font-size: 19px; line-height: 1.15; color: var(--ink); font-variant-numeric: tabular-nums; }
+
 /* ——— Rail ——— */
 .rail {
   position: fixed; left: var(--gutter); right: var(--gutter); bottom: calc(var(--gutter) * 0.7); z-index: 6;

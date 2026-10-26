@@ -1,6 +1,6 @@
 import {
-  AdditiveBlending, BufferAttribute, BufferGeometry, Line, Points, ShaderMaterial, Vector3, Group, LineBasicMaterial,
-  Scene, DirectionalLight, HemisphereLight, AmbientLight, Matrix4, Mesh, MeshStandardMaterial, PerspectiveCamera, Box3, type Material,
+  AdditiveBlending, BufferAttribute, BufferGeometry, Points, ShaderMaterial, Vector3, Vector2, Group,
+  Scene, DirectionalLight, HemisphereLight, AmbientLight, Matrix4, Mesh, MeshStandardMaterial, DoubleSide, PerspectiveCamera, Box3, type Material,
 } from 'three';
 import { json2satrec, propagate, gstime, eciToGeodetic, type SatRec } from 'satellite.js';
 import { lonLatToVec } from './astro';
@@ -64,6 +64,14 @@ const EARTH_M = 6371000;
 /** NASA's model spans 45.4 units across the truss; the real truss is 109 m. */
 const MODEL_M = 109 / 45.4;
 
+/** Sunlight at a point above the Earth (planet radii), 0 in the shadow, soft at its edge. */
+function sunlit(p: Vector3, sun: Vector3): number {
+  const b = p.dot(sun);
+  if (b > 0) return 1;
+  const axis = Math.sqrt(Math.max(p.lengthSq() - b * b, 0));
+  return Math.min(1, Math.max(0, (axis - 0.995) / 0.01));
+}
+
 /** The International Space Station, its position now and its orbit. */
 export class Station {
   readonly group = new Group();
@@ -77,14 +85,19 @@ export class Station {
   private modelLoading = false;
   private pivot = new Group();
   private sunLight = new DirectionalLight(0xfff4e6, 3);
+  private moonLight = new DirectionalLight(0x9db4ff, 0);
   private earthshine = new HemisphereLight(0x000000, 0x3d5a80, 0);
   readonly velocity = new Vector3();
   /** Distance from the camera, planet radii (Infinity when unknown). */
   range = Infinity;
   private satrec: SatRec | null = null;
   private dot: Points;
-  private orbit: Line;
-  private orbitPositions = new Float32Array(3 * 241);
+  private orbit: Mesh;
+  /** 241 samples, two vertices each: a ribbon drawn a few pixels wide on screen. */
+  private orbitPositions = new Float32Array(3 * 482);
+  private orbitPrev = new Float32Array(3 * 482);
+  private orbitNext = new Float32Array(3 * 482);
+  private orbitMaterial: ShaderMaterial;
   private lastOrbitAt = 0;
   readonly material: ShaderMaterial;
   readonly position = new Vector3();
@@ -118,11 +131,49 @@ export class Station {
     this.dot.renderOrder = 5;
     const og = new BufferGeometry();
     og.setAttribute('position', new BufferAttribute(this.orbitPositions, 3));
-    this.orbit = new Line(og, new LineBasicMaterial({ color: 0x9fc4ff, transparent: true, opacity: 0, blending: AdditiveBlending, depthWrite: false }));
+    og.setAttribute('prev', new BufferAttribute(this.orbitPrev, 3));
+    og.setAttribute('next', new BufferAttribute(this.orbitNext, 3));
+    og.setAttribute('when', new BufferAttribute(Float32Array.from({ length: 482 }, (_, k) => ((k >> 1) - 120) * 23), 1));
+    og.setAttribute('side', new BufferAttribute(Float32Array.from({ length: 482 }, (_, k) => (k & 1 ? 1 : -1)), 1));
+    const idx: number[] = [];
+    for (let i = 0; i < 240; i++) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+    og.setIndex(idx);
+    // The orbit as a thread of light: faint behind the station, brighter ahead, with pulses
+    // running in the direction of flight.
+    this.orbitMaterial = new ShaderMaterial({
+      uniforms: { uOpacity: { value: 0 }, uNow: { value: 0 }, uTime: { value: 0 }, uRes: { value: new Vector2(1, 1) }, uWidth: { value: 3 } },
+      vertexShader: /* glsl */ `
+        attribute vec3 prev, next;
+        attribute float when, side;
+        uniform float uNow, uWidth;
+        uniform vec2 uRes;
+        varying float vRel, vSide;
+        void main() {
+          mat4 m = projectionMatrix * modelViewMatrix;
+          vec4 c = m * vec4(position, 1.0), p = m * vec4(prev, 1.0), n = m * vec4(next, 1.0);
+          vec2 dir = normalize((n.xy / n.w - p.xy / p.w) * uRes + 1e-6);
+          c.xy += vec2(-dir.y, dir.x) / uRes * uWidth * side * c.w;
+          vRel = when - uNow;
+          vSide = side;
+          gl_Position = c;
+        }`,
+      fragmentShader: /* glsl */ `
+        uniform float uOpacity, uTime;
+        varying float vRel, vSide;
+        void main() {
+          float ahead = step(0.0, vRel);
+          float base = mix(0.22, 0.75 * (1.0 - smoothstep(600.0, 2760.0, vRel)) + 0.2, ahead);
+          float pulse = ahead * pow(1.0 - fract((vRel - uTime * 140.0) / 420.0), 6.0) * (1.0 - smoothstep(1200.0, 2760.0, vRel));
+          float edge = 1.0 - smoothstep(0.2, 1.0, abs(vSide));
+          gl_FragColor = vec4(vec3(0.62, 0.77, 1.0) * (base + pulse * 1.6) * edge * uOpacity, 1.0);
+        }`,
+      blending: AdditiveBlending, depthWrite: false, transparent: true, side: DoubleSide,
+    });
+    this.orbit = new Mesh(og, this.orbitMaterial);
     this.orbit.frustumCulled = false;
     this.orbit.renderOrder = 4;
     this.group.add(this.orbit, this.dot);
-    this.scene.add(this.sunLight, this.sunLight.target, this.earthshine, new AmbientLight(0x8899aa, 0.04), this.pivot);
+    this.scene.add(this.sunLight, this.sunLight.target, this.moonLight, this.moonLight.target, this.earthshine, new AmbientLight(0x8899aa, 0.04), this.pivot);
     this.pivot.visible = false;
   }
 
@@ -164,7 +215,7 @@ export class Station {
    * Places the station's pass around `cam`. The model's x axis points to the zenith, y along
    * the flight, z along the truss, as the station flies (LVLH attitude).
    */
-  placeFor(cam: PerspectiveCamera, sun: Vector3, opacity: number) {
+  placeFor(cam: PerspectiveCamera, sun: Vector3, opacity: number, moon?: { dir: Vector3; brightness: number }) {
     this.range = this.position.distanceTo(cam.position);
     const near = opacity > 0.5 && this.altKm > 0 && this.range < 0.05;
     if (near && !this.model && !this.modelLoading) void this.loadModel().catch((err) => { console.warn('ISS model unavailable', err); });
@@ -181,10 +232,13 @@ export class Station {
     this.camera.far = this.range * EARTH_M + 500;
     this.camera.updateProjectionMatrix();
     // Sunlight, unless the station is in the Earth's shadow; earthshine from the day side below.
-    const b = this.position.dot(sun);
-    const axis = Math.sqrt(Math.max(this.position.lengthSq() - b * b, 0));
-    const lit = b > 0 ? 1 : Math.min(1, Math.max(0, (axis - 0.995) / 0.01));
+    const lit = sunlit(this.position, sun);
     this.sunLight.position.copy(sun);
+    // At night the real Moon lights the station, exposed like the planet's night side.
+    if (moon) {
+      this.moonLight.position.copy(moon.dir);
+      this.moonLight.intensity = 0.9 * moon.brightness * (1 - lit) * Math.max(0, Math.sign(this.position.dot(moon.dir) + 0.3));
+    }
     this.sunLight.intensity = 3.2 * lit;
     this.earthshine.position.copy(up);
     this.earthshine.intensity = 0.9 * Math.min(1, Math.max(0, (up.dot(sun) + 0.1) / 0.4));
@@ -222,11 +276,38 @@ export class Station {
     return { lon, lat, alt: geo.height };
   }
 
+  /** Whether the station is in sunlight at a date, and minutes to the next sunrise or sunset on board. */
+  daylight(date: Date, sun: (d: Date) => Vector3): { day: boolean; minutes: number } | null {
+    const p = new Vector3();
+    if (!this.at(date, p)) return null;
+    const day = sunlit(p, sun(date)) > 0.5;
+    for (let s = 15; s <= 100 * 60; s += 15) {
+      const d = new Date(date.getTime() + s * 1000);
+      if (this.at(d, p) && (sunlit(p, sun(d)) > 0.5) !== day) return { day, minutes: s / 60 };
+    }
+    return { day, minutes: Infinity };
+  }
+
+  /** Orbits flown since midnight UTC, from the mean motion. */
+  orbitsToday(date: Date): number {
+    const perMin = this.satrec ? this.satrec.no / (2 * Math.PI) : 1 / 92.9;
+    const midnight = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+    return (date.getTime() - midnight) / 60000 * perMin;
+  }
+
+  /** Drawing-buffer size, for the orbit's width in pixels. */
+  setResolution(w: number, h: number, pixelRatio: number) {
+    this.orbitMaterial.uniforms.uRes.value.set(w * pixelRatio, h * pixelRatio);
+    this.orbitMaterial.uniforms.uWidth.value = 3.2 * pixelRatio; // full width in device pixels, soft-edged
+  }
+
   update(date: Date, opacity: number, time: number) {
     // The glowing dot gives way to the model as the camera comes close (range in planet radii).
     this.material.uniforms.uOpacity.value = opacity * Math.min(1, Math.max(0, (this.range - 0.0008) / 0.006));
     this.material.uniforms.uTime.value = time;
-    (this.orbit.material as LineBasicMaterial).opacity = opacity * 0.55;
+    // The thread fades as the camera reaches the station: it would run through the lens.
+    this.orbitMaterial.uniforms.uOpacity.value = opacity * Math.min(1, Math.max(0, (this.range - 0.004) / 0.03));
+    this.orbitMaterial.uniforms.uTime.value = time;
     this.group.visible = opacity > 0.001;
     if (!this.group.visible) return;
     const p = this.at(date, this.position);
@@ -240,12 +321,22 @@ export class Station {
     if (Math.abs(date.getTime() - this.lastOrbitAt) > 20000) {
       this.lastOrbitAt = date.getTime();
       const v = new Vector3();
+      const pts: Vector3[] = [];
       for (let i = 0; i <= 240; i++) {
         // One full revolution centred on now (≈ 92 minutes).
         this.at(new Date(date.getTime() + (i - 120) * 23000), v);
-        this.orbitPositions.set([v.x, v.y, v.z], i * 3);
+        pts.push(v.clone());
       }
-      this.orbit.geometry.attributes.position.needsUpdate = true;
+      for (let i = 0; i <= 240; i++) {
+        const a = pts[Math.max(0, i - 1)], b = pts[i], c = pts[Math.min(240, i + 1)];
+        for (const k of [i * 2, i * 2 + 1]) {
+          this.orbitPositions.set([b.x, b.y, b.z], k * 3);
+          this.orbitPrev.set([a.x, a.y, a.z], k * 3);
+          this.orbitNext.set([c.x, c.y, c.z], k * 3);
+        }
+      }
+      for (const name of ['position', 'prev', 'next']) this.orbit.geometry.attributes[name].needsUpdate = true;
     }
+    this.orbitMaterial.uniforms.uNow.value = (date.getTime() - this.lastOrbitAt) / 1000;
   }
 }

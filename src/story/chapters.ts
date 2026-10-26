@@ -4,8 +4,17 @@ import { PALETTES, type Stop } from '../engine/palettes';
 import { sunDirection, vecToLonLat, lonLatToVec } from '../engine/astro';
 import { stats, formatLonLat } from './stats';
 import { seaName } from './places';
+import { loadCountries, placeBelow } from './geo';
 
-export interface Beat { shot: Shot; seconds?: number; drift?: number }
+export interface Beat {
+  shot: Shot;
+  seconds?: number;
+  drift?: number;
+  /** Seconds to stay on this shot before the next one. */
+  hold?: number;
+  /** Ride along with the station while holding. */
+  follow?: boolean;
+}
 export interface Fact { value: string; label: string }
 export interface Detail { facts: Fact[]; text: string; source: string }
 export interface Legend { stops: Stop[]; left: string; right: string; title: string }
@@ -23,6 +32,10 @@ export interface Chapter {
   follow?: 'iss';
   /** After the beats, fly down to the station and ride along with it. */
   approach?: 'iss';
+  /** A second line, said once the camera has arrived. */
+  arrive?: (g: Globe) => Promise<string>;
+  /** A live panel beside the narration. */
+  telemetry?: 'iss';
   clock?: 'rain';
   pin?: (g: Globe) => Promise<{ lon: number; lat: number; label: string; sub: string } | null>;
 }
@@ -301,13 +314,23 @@ export const CHAPTERS: Chapter[] = [
   {
     id: 'lassu', title: 'Lassù', kicker: 'La Stazione Spaziale, ora',
     look: { sun: 'real', clouds: 1, night: 1.1, iss: 1, atmo: 1 },
-    duration: 38,
+    duration: 62,
     follow: 'iss',
     approach: 'iss',
+    telemetry: 'iss',
     narrate: async (g) => {
       const s = g.station;
       const alt = s.altKm > 300 ? Math.round(s.altKm) : 415;
       return `E lassù, a ${it(alt)} chilometri, la Stazione Spaziale gira intorno a tutto questo a ${it(Math.round(s.speedKmh / 100) * 100 || 27600)} km/h. Un giro completo ogni 92 minuti: sedici albe al giorno.`;
+    },
+    arrive: async (g) => {
+      const s = g.station;
+      const below = placeBelow(await loadCountries().catch(() => null), s.lon, s.lat);
+      const light = s.daylight(g.now, (d) => sunDirection(d));
+      const next = light && Number.isFinite(light.minutes)
+        ? (light.day ? ` A bordo è giorno: il prossimo tramonto tra ${it(Math.round(light.minutes))} minuti.` : ` A bordo è notte: la prossima alba tra ${it(Math.round(light.minutes))} minuti.`)
+        : '';
+      return `Questo è ciò che l’equipaggio vede adesso dal finestrino: sotto di loro, ${below}.${next}`;
     },
     detail: async (g) => ({
       facts: [
@@ -318,6 +341,14 @@ export const CHAPTERS: Chapter[] = [
       text: 'La posizione è calcolata ora dagli elementi orbitali pubblicati da CelesTrak. La linea mostra un’orbita completa: mezz’ora nel passato e un’ora nel futuro. Da vicino la stazione vola con il suo vero assetto: i moduli nel senso del moto, la trave perpendicolare all’orbita.',
       source: 'Elementi orbitali NORAD 25544 · CelesTrak · propagazione SGP4 · modello 3D NASA',
     }),
-    beats: async (g) => [{ shot: { lon: g.station.lon, lat: g.station.lat, dist: 1.25 }, seconds: 4.5 }],
+    beats: async (g) => {
+      const s = g.station;
+      return [
+        // The whole planet, the orbit as a thread of light and the station running along it.
+        { shot: { lon: s.lon - 12, lat: Math.max(-35, Math.min(35, s.lat * 0.7)), dist: 3.7 }, seconds: 4.5, hold: 7 },
+        // Riding along, high up, to see where it is going.
+        { shot: { lon: s.lon, lat: s.lat, dist: 0.5, tilt: 30 }, seconds: 6, hold: 9, follow: true },
+      ];
+    },
   },
 ];

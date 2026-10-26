@@ -147,6 +147,7 @@ export class Globe {
     this.bloom.resolution.set(w, h);
     this.rig.resize(w, h);
     this.grain.uniforms.uRes.value.set(w, h);
+    this.station.setResolution(w, h, this.renderer.getPixelRatio());
   }
 
   async init(progress: (p: number) => void) {
@@ -392,7 +393,7 @@ export class Globe {
       m.uHeight.value = innerHeight;
       this.fires.points.visible = c.fires > 0.002;
     }
-    this.station.placeFor(cam, this.sunVec, c.iss);
+    this.station.placeFor(cam, this.sunVec, c.iss, { dir: this.moonVec, brightness: moonBrightness(this.sunVec, this.moonVec) });
     this.tiles?.update(this.rig, this.renderer);
   }
 

@@ -87,10 +87,27 @@ Il racconto attuale diventa il primo di una serie. All'avvio si sceglie quale ve
 - Dominio upari.netmilk.dev su GitHub Pages (serve il record DNS).
 - Test automatici delle trasformazioni dei dati.
 
-## Ordine di lavoro attuale
+## Stato
 
-1. Lassù, il viaggio.
-2. Le persone: motore dell'atlante, poi il racconto.
-3. Scelta del racconto all'avvio.
-4. Pannello degli strati in esplorazione.
-5. La Terra trema.
+Fatto e pubblicato il 26 ottobre 2026:
+
+- **Lassù, il viaggio**: Terra intera con l'orbita come filo di luce, inseguimento, discesa
+  alla ISS, telemetria dal vivo, didascalia «Questo è ciò che l'equipaggio vede adesso».
+- **Le persone**: motore dell'atlante (paesi come luce, polvere della popolazione,
+  scie dell'asilo) e un racconto di sette capitoli.
+- **Scelta del racconto** all'avvio e nella barra in alto; a fine racconto, «Continua».
+- **Esplora**: tutti gli strati, anno, ora, luce vera, nuvole, rotazione, «Raggiungi la
+  Stazione», link condivisibili.
+- **La Terra trema**: terremoti USGS degli ultimi sette giorni, aggiornati ogni mattina,
+  nuovo capitolo del primo racconto e strato in Esplora.
+
+## Prossimi passi
+
+1. **Il tuo luogo**: dopo una ricerca, un racconto breve sul luogo (ora solare, alba e
+   tramonto, vento, pioggia e mare intorno, prossimo passaggio visibile della ISS).
+2. **Scheda del paese**: al clic, la curva dal 1960 di ogni indicatore.
+3. **Un giorno sulla Terra**: ventiquattro ore in un minuto.
+4. **Cartolina**: salva l'inquadratura con titolo, data e fonti.
+5. **Dati nuovi**: cicloni attivi, aerosol, neve e vegetazione, lunghe serie (CO₂, ghiaccio
+   artico, temperatura globale).
+6. **Piattaforma**: tablet e telefono, accessibilità, inglese, dominio upari.netmilk.dev.

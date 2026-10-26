@@ -359,6 +359,24 @@ const layers = {
     writeAtomic(join(OUT, 'fires.json'), JSON.stringify({ id: 'fires', count: cells.size, detections: lines.length - 1, newest, days: 7, source: 'NASA FIRMS · VIIRS NOAA-20' }, null, 1));
     console.log(`fires: ${cells.size} cells from ${lines.length - 1} detections, newest ${newest}`);
   },
+  async quakes() {
+    // USGS: every earthquake of magnitude 2.5 or more in the last seven days (public domain).
+    const feed = JSON.parse((await fetchBuffer('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson')).toString());
+    const list = (feed.features ?? [])
+      .filter((f) => f.properties?.type === 'earthquake' && Number.isFinite(f.properties.mag) && f.geometry?.coordinates?.length >= 3)
+      .map((f) => {
+        const [lon, lat, depth] = f.geometry.coordinates;
+        return [+lon.toFixed(3), +lat.toFixed(3), Math.round(Math.max(0, depth)), +f.properties.mag.toFixed(1), f.properties.time, f.properties.place ?? ''];
+      })
+      .sort((x, y) => x[4] - y[4]);
+    const previous = readMeta(OUT, 'quakes');
+    if (list.length < 100 || (previous?.count && list.length < previous.count * 0.3)) {
+      throw new Error(`quakes: ${list.length} events look incomplete; keeping the published file`);
+    }
+    const newest = new Date(list.at(-1)[4]).toISOString();
+    writeAtomic(join(OUT, 'quakes.json'), JSON.stringify({ id: 'quakes', count: list.length, newest, days: 7, minMagnitude: 2.5, source: 'USGS Earthquake Hazards Program', quakes: list }));
+    console.log(`quakes: ${list.length} events, newest ${newest}`);
+  },
 };
 
 const pick = process.argv.slice(2);

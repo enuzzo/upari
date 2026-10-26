@@ -300,7 +300,7 @@ export class Atlas {
           float r = length(gl_PointCoord - 0.5) * 2.0;
           gl_FragColor = vec4(vec3(1.0, 0.84, 0.6) * exp(-r * r * 3.5) * 1.5 * vAlpha * uOpacity, 1.0);
         }`,
-      blending: AdditiveBlending, depthWrite: false, transparent: true,
+      blending: AdditiveBlending, depthWrite: false, depthTest: false, transparent: true,
     });
     const points = new Points(g, material);
     points.frustumCulled = false;
@@ -354,7 +354,7 @@ export class Atlas {
         varying vec3 vTint;
         varying float vAlpha;
         void main() { gl_FragColor = vec4(vTint * 0.35 * vAlpha * uOpacity, 1.0); }`,
-      blending: AdditiveBlending, depthWrite: false, transparent: true,
+      blending: AdditiveBlending, depthWrite: false, depthTest: false, transparent: true,
     });
     const lines = new LineSegments(g, material);
     lines.frustumCulled = false;
@@ -435,7 +435,7 @@ export class Atlas {
           float r = length(gl_PointCoord - 0.5) * 2.0;
           gl_FragColor = vec4(vTint * exp(-r * r * 3.0) * 2.4 * vAlpha * uOpacity, 1.0);
         }`,
-      blending: AdditiveBlending, depthWrite: false, transparent: true,
+      blending: AdditiveBlending, depthWrite: false, depthTest: false, transparent: true,
     });
     const points = new Points(g, material);
     points.frustumCulled = false;

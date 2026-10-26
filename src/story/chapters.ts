@@ -5,6 +5,7 @@ import { sunDirection, vecToLonLat, lonLatToVec } from '../engine/astro';
 import { stats, formatLonLat } from './stats';
 import { seaName } from './places';
 import { loadCountries, placeBelow } from './geo';
+import { placeIt, type Quake } from '../engine/markers';
 
 export interface Beat {
   shot: Shot;
@@ -271,6 +272,46 @@ export const CHAPTERS: Chapter[] = [
       };
     },
     beats: async () => [{ shot: { lon: 14, lat: -6, dist: 3.2 }, drift: 1.2 }],
+  },
+  {
+    id: 'terremoti', title: 'La Terra trema', kicker: 'Ultimi sette giorni',
+    look: { sun: 'studio', clouds: 0, dim: 0.74, desat: 0.75, night: 0, atmo: 0.65, quakes: 1, quakeReplay: 14, bloom: 1.3 },
+    duration: 24,
+    legend: { stops: [[0, '#ffc76b'], [0.25, '#ff6b8c'], [1, '#8c73ff']], left: 'in superficie', right: '700 km', title: 'profondità del terremoto' },
+    narrate: async (g) => {
+      await g.loadQuakes();
+      const top = g.strongestQuake!;
+      return `In sette giorni la Terra ha tremato ${it(g.quakeCount)} volte con magnitudo 2,5 o più: la settimana scorre in pochi secondi. Il più forte, di magnitudo ${it(top[3], 1)}, ${placeIt(top[5])}. Insieme disegnano i confini delle placche.`;
+    },
+    detail: async (g) => {
+      await g.loadQuakes();
+      const q = await (await fetch('layers/quakes.json')).json();
+      const list = q.quakes as Quake[];
+      const deepest = list.reduce((a, b) => (b[2] > a[2] ? b : a));
+      return {
+        facts: [
+          { value: it(list.length), label: 'terremoti di magnitudo 2,5 o più negli ultimi 7 giorni' },
+          { value: it(list.filter((e) => e[3] >= 5).length), label: 'di magnitudo 5 o più' },
+          { value: `${it(deepest[2])} km`, label: `il più profondo, ${placeIt(deepest[5])}` },
+        ],
+        text: 'Ogni punto è un terremoto, grande quanto la sua magnitudo e colorato secondo la profondità: ambra in superficie, rosa a media profondità, viola fin sotto i 300 km, dove una placca scende sotto l’altra. Fuori dagli Stati Uniti la rete USGS registra soprattutto i terremoti dalla magnitudo 4 in su.',
+        source: `USGS Earthquake Hazards Program · aggiornato al ${dateIt(q.newest.slice(0, 10))}`,
+      };
+    },
+    beats: async (g) => {
+      await g.loadQuakes();
+      const top = g.strongestQuake!;
+      return [
+        // The Ring of Fire while the week replays, then the strongest quake.
+        { shot: { lon: 165, lat: 8, dist: 3.3 }, drift: 1.2, hold: 10 },
+        { shot: { lon: top[0], lat: top[1] - 4, dist: 2.2 }, seconds: 4, drift: 0.4 },
+      ];
+    },
+    pin: async (g) => {
+      await g.loadQuakes();
+      const top = g.strongestQuake!;
+      return { lon: top[0], lat: top[1], label: `magnitudo ${it(top[3], 1)}`, sub: 'il più forte della settimana' };
+    },
   },
   {
     id: 'ghiaccio', title: 'Il ghiaccio', kicker: 'In cima al mondo',

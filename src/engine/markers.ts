@@ -1,6 +1,6 @@
 import {
   AdditiveBlending, BufferAttribute, BufferGeometry, Points, ShaderMaterial, Vector3, Vector2, Group,
-  Scene, DirectionalLight, HemisphereLight, AmbientLight, Matrix4, Mesh, MeshStandardMaterial, DoubleSide, PerspectiveCamera, Box3, type Material,
+  CustomBlending, MaxEquation, OneFactor, Scene, DirectionalLight, HemisphereLight, AmbientLight, Matrix4, Mesh, MeshStandardMaterial, DoubleSide, PerspectiveCamera, Box3, type Material,
 } from 'three';
 import { json2satrec, propagate, gstime, eciToGeodetic, type SatRec } from 'satellite.js';
 import { lonLatToVec } from './astro';
@@ -63,6 +63,99 @@ export function createFires(data: Float32Array) {
 const EARTH_M = 6371000;
 /** NASA's model spans 45.4 units across the truss; the real truss is 109 m. */
 const MODEL_M = 109 / 45.4;
+
+export type Quake = [lon: number, lat: number, depthKm: number, mag: number, timeMs: number, place: string];
+
+/**
+ * A week of earthquakes (USGS): a dot for each, as large as its magnitude, coloured by depth
+ * (shallow amber, intermediate rose, deep violet). `uClock` replays the week: each quake
+ * flashes when its time comes and stays; the strongest keep pulsing.
+ */
+export function createQuakes(list: Quake[], newest: number) {
+  const n = list.length;
+  const pos = new Float32Array(n * 3), attr = new Float32Array(n * 4);
+  const v = new Vector3();
+  const week = 7 * 86400;
+  list.forEach((q, i) => {
+    lonLatToVec(q[0], q[1], 1.0009, v);
+    pos.set([v.x, v.y, v.z], i * 3);
+    attr.set([q[3], q[2], week - (newest - q[4]) / 1000, Math.random()], i * 4);
+  });
+  const geo = new BufferGeometry();
+  geo.setAttribute('position', new BufferAttribute(pos, 3));
+  geo.setAttribute('quake', new BufferAttribute(attr, 4));
+  const material = new ShaderMaterial({
+    uniforms: { uClock: { value: week }, uTime: { value: 0 }, uOpacity: { value: 0 }, uPixelRatio: { value: Math.min(devicePixelRatio, 2) } },
+    vertexShader: /* glsl */ `
+      attribute vec4 quake; // magnitude, depth km, seconds since the start of the week, random
+      uniform float uClock, uTime, uPixelRatio;
+      varying vec3 vColor;
+      varying float vAlpha, vFlash, vRing, vBig;
+      void main() {
+        float mag = quake.x, depth = quake.y, since = uClock - quake.z;
+        vec3 shallow = vec3(1.0, 0.78, 0.42), mid = vec3(1.0, 0.42, 0.55), deep = vec3(0.55, 0.45, 1.0);
+        vColor = depth < 70.0 ? mix(shallow, mid, depth / 70.0) : mix(mid, deep, clamp((depth - 70.0) / 330.0, 0.0, 1.0));
+        vec3 toCam = normalize(cameraPosition - position);
+        vAlpha = step(0.0, since) * smoothstep(0.0, 0.2, dot(normalize(position), toCam));
+        vFlash = since >= 0.0 ? exp(-since / 21600.0) : 0.0; // six hours of the replay
+        vBig = smoothstep(4.8, 6.0, mag);
+        vRing = fract(uTime * 0.35 + quake.w);
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        gl_Position = projectionMatrix * mv;
+        float core = 3.0 + 1.8 * pow(max(mag - 2.5, 0.0), 1.5);
+        gl_PointSize = vAlpha > 0.0 ? min(core * (1.0 + 2.5 * max(vBig, vFlash)), 56.0) * uPixelRatio : 0.0;
+      }`,
+    fragmentShader: /* glsl */ `
+      uniform float uOpacity;
+      varying vec3 vColor;
+      varying float vAlpha, vFlash, vRing, vBig;
+      void main() {
+        // q runs from the centre (0) to the edge of the sprite (1); everything fades out before the edge.
+        float grow = 1.0 + 2.5 * max(vBig, vFlash);
+        float q = length(gl_PointCoord - 0.5) * 2.0;
+        float core = exp(-pow(q * grow, 2.0) * 2.2);
+        float ring = vBig * exp(-pow((q - vRing * 0.9) / 0.05, 2.0)) * (1.0 - vRing) * 0.7;
+        float flash = vFlash * exp(-q * q * 6.0) * 1.2;
+        float edge = 1.0 - smoothstep(0.85, 1.0, q);
+        gl_FragColor = vec4(vColor * (core * 1.5 + ring + flash) * edge * vAlpha * uOpacity, 1.0);
+      }`,
+    // A sprite has one depth, its centre's: the curved ground would cut it. The far side is
+    // hidden by the facing test in the vertex shader instead. Max blending: quakes on the same
+    // fault (dozens a week in Tonga) do not add up into a blinding blot for the bloom.
+    blending: CustomBlending, blendEquation: MaxEquation, blendSrc: OneFactor, blendDst: OneFactor,
+    depthWrite: false, depthTest: false, transparent: true,
+  });
+  const points = new Points(geo, material);
+  points.frustumCulled = false;
+  points.renderOrder = 3;
+  return { points, material, list, week };
+}
+
+const REGIONS: Record<string, string> = {
+  China: 'Cina', Japan: 'Giappone', Philippines: 'Filippine', Peru: 'Perù', Mexico: 'Messico', Turkey: 'Turchia', Türkiye: 'Turchia',
+  Greece: 'Grecia', Italy: 'Italia', 'Papua New Guinea': 'Papua Nuova Guinea', 'New Zealand': 'Nuova Zelanda', Fiji: 'Figi',
+  'Solomon Islands': 'Isole Salomone', Taiwan: 'Taiwan', Chile: 'Cile', Ecuador: 'Ecuador', Colombia: 'Colombia', Guatemala: 'Guatemala',
+  'Timor Leste': 'Timor Est', 'East Timor': 'Timor Est', Russia: 'Russia', Iran: 'Iran', Afghanistan: 'Afghanistan', Pakistan: 'Pakistan',
+  India: 'India', Nepal: 'Nepal', Myanmar: 'Myanmar', 'Northern Mariana Islands': 'Isole Marianne Settentrionali', 'Puerto Rico': 'Porto Rico',
+  'Dominican Republic': 'Repubblica Dominicana', 'El Salvador': 'El Salvador', Nicaragua: 'Nicaragua', 'Costa Rica': 'Costa Rica',
+  Panama: 'Panamá', Argentina: 'Argentina', Bolivia: 'Bolivia', Vanuatu: 'Vanuatu', Tonga: 'Tonga', Samoa: 'Samoa', Iceland: 'Islanda',
+  Portugal: 'Portogallo', Spain: 'Spagna', Albania: 'Albania', Croatia: 'Croazia', Cyprus: 'Cipro', Algeria: 'Algeria', Morocco: 'Marocco',
+  Ethiopia: 'Etiopia', Kenya: 'Kenya', Tanzania: 'Tanzania', Tajikistan: 'Tagikistan', Kyrgyzstan: 'Kirghizistan', Kazakhstan: 'Kazakistan',
+  Indonesia: 'Indonesia', 'South Sandwich Islands region': 'Isole Sandwich Australi', 'Kermadec Islands region': 'Isole Kermadec',
+  'Mid-Atlantic Ridge': 'Dorsale medio-atlantica', 'Fiji region': 'Figi', 'Tonga region': 'Tonga', 'Vanuatu region': 'Vanuatu',
+};
+
+/** "147 km ENE of Lospalos, Timor Leste" → "a 147 km da Lospalos, Timor Est". */
+export function placeIt(place: string): string {
+  const it = (name: string) => {
+    const k = name.lastIndexOf(', ');
+    const region = k >= 0 ? name.slice(k + 2) : name;
+    const tr = REGIONS[region];
+    return tr ? (k >= 0 ? `${name.slice(0, k)}, ${tr}` : tr) : name;
+  };
+  const m = /^(\d+) km [NSEW]{1,3} of (.+)$/.exec(place);
+  return m ? `a ${m[1]} km da ${it(m[2])}` : place.startsWith('near ') ? `vicino a ${it(place.slice(5))}` : `nella regione ${it(place)}`;
+}
 
 /** Sunlight at a point above the Earth (planet radii), 0 in the shadow, soft at its edge. */
 function sunlit(p: Vector3, sun: Vector3): number {

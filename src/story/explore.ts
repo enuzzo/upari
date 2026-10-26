@@ -27,6 +27,7 @@ const PLANET: Layer[] = [
   { id: 'plancton', label: 'Fitoplancton', look: chapterLook('fioritura'), legend: chapterLegend('fioritura') },
   { id: 'pioggia', label: 'Pioggia, ultime 24 ore', look: chapterLook('pioggia'), legend: chapterLegend('pioggia') },
   { id: 'fuochi', label: 'Fuochi, ultimi 7 giorni', look: chapterLook('fuoco') },
+  { id: 'terremoti', label: 'Terremoti, ultimi 7 giorni', look: () => ({ ...chapterLook('terremoti')(), quakeReplay: 0 }), legend: chapterLegend('terremoti') },
   { id: 'ghiaccio', label: 'Ghiaccio marino', look: chapterLook('ghiaccio'), legend: chapterLegend('ghiaccio') },
   { id: 'luci', label: 'Le luci della notte', look: chapterLook('luci') },
   { id: 'stazione', label: 'Stazione Spaziale', look: chapterLook('lassu') },
@@ -51,7 +52,7 @@ const LAYERS = [...PLANET, ...HUMAN];
 /** Chapter → layer, to open the panel on what the story was showing. */
 const FROM_CHAPTER: Record<string, string> = {
   pianeta: 'adesso', respiro: 'venti', correnti: 'correnti', calore: 'mare', febbre: 'anomalia', fioritura: 'plancton', pioggia: 'pioggia',
-  fuoco: 'fuochi', ghiaccio: 'ghiaccio', luci: 'luci', lassu: 'stazione', popolazione: 'popolazione', nascite: 'nascite', vita: 'vita',
+  fuoco: 'fuochi', terremoti: 'terremoti', ghiaccio: 'ghiaccio', luci: 'luci', lassu: 'stazione', popolazione: 'popolazione', nascite: 'nascite', vita: 'vita',
   bambini: 'bambini', saldo: 'saldo', luce: 'elettricita', fuga: 'asilo',
 };
 

@@ -11,7 +11,7 @@ import { createAtmosphere, createEarth, earthUniforms, type EarthUniforms } from
 import { createSky, createSun } from './sky';
 import { FlowField, coherenceTexture } from './flow';
 import { FLOW_COLORS } from './palettes';
-import { createFires, Station } from './markers';
+import { createFires, createQuakes, placeIt, Station, type Quake } from './markers';
 import { DATA, LayerStore, Sampler, loadTexture, type DataId, type LayerMeta } from './layers';
 import { gmst, lonLatToVec, moonBrightness, moonDirection, sunDirection, vecToLonLat } from './astro';
 import { Tiles } from './tiles';
@@ -46,12 +46,16 @@ export interface Look {
   year: number | null;
   years: [number, number] | null;
   yearSeconds: number;
+  /** A week of earthquakes, 0..1. */
+  quakes: number;
+  /** Seconds to replay the week in (0: all at once). */
+  quakeReplay: number;
 }
 
 export const DEFAULT_LOOK: Look = {
   sun: 'real', clouds: 1, cloudFlow: 1, night: 1, dim: 0, desat: 0, data: null, flow: null,
   fires: 0, iss: 0, stars: 1, atmo: 1, exposure: 1, relief: 1, bloom: 1, pin: null,
-  atlas: null, dust: 0, migration: 0, year: null, years: null, yearSeconds: 18,
+  atlas: null, dust: 0, migration: 0, year: null, years: null, yearSeconds: 18, quakes: 0, quakeReplay: 0,
 };
 
 export interface Probe {
@@ -93,7 +97,10 @@ export class Globe {
   private clock = new Clock();
   private time = 0;
   private look: Look = { ...DEFAULT_LOOK };
-  cur = { clouds: 1, cloudFlow: 1, night: 1, dim: 0, desat: 0, fires: 0, iss: 0, stars: 1, atmo: 1, exposure: 1, relief: 1, bloom: 1, dataMix: 0, trail: 0, studio: 0, pin: 0, atlas: 0, dust: 0, migration: 0 };
+  cur = { clouds: 1, cloudFlow: 1, night: 1, dim: 0, desat: 0, fires: 0, iss: 0, stars: 1, atmo: 1, exposure: 1, relief: 1, bloom: 1, dataMix: 0, trail: 0, studio: 0, pin: 0, atlas: 0, dust: 0, migration: 0, quakes: 0 };
+  private quakes: ReturnType<typeof createQuakes> | null = null;
+  private quakesLoading: Promise<void> | null = null;
+  private quakeT0 = 0;
   readonly atlas = new Atlas();
   private atlasShown: AtlasId | null = null;
   private atlasAdded = false;
@@ -239,8 +246,26 @@ export class Globe {
     if (look.flow) jobs.push(this.loadFlow(look.flow));
     if (look.fires) jobs.push(this.loadFires());
     if (look.atlas || look.dust || look.migration) jobs.push(this.loadAtlas());
+    if (look.quakes) jobs.push(this.loadQuakes());
     await Promise.all(jobs);
   }
+
+  loadQuakes(): Promise<void> {
+    this.quakesLoading ??= (async () => {
+      const d = await (await fetch('layers/quakes.json')).json();
+      this.quakes = createQuakes(d.quakes as Quake[], Date.parse(d.newest));
+      this.scene.add(this.quakes.points);
+    })();
+    this.quakesLoading.catch(() => { this.quakesLoading = null; });
+    return this.quakesLoading;
+  }
+
+  /** The strongest earthquake of the week, once loaded. */
+  get strongestQuake(): Quake | null {
+    return this.quakes ? this.quakes.list.reduce((a, b) => (b[3] > a[3] ? b : a)) : null;
+  }
+
+  get quakeCount() { return this.quakes?.list.length ?? 0; }
 
   loadAtlas(): Promise<void> {
     return this.atlas.load().then(() => {
@@ -264,6 +289,7 @@ export class Globe {
       this.year = this.look.years[0];
       this.yearRun = { from: this.look.years[0], to: this.look.years[1], t0: this.time, seconds: this.look.yearSeconds };
     } else if (this.look.year != null) this.setYear(this.look.year);
+    this.quakeT0 = this.time;
     void this.prepare(this.look);
     if (this.look.pin) lonLatToVec(this.look.pin.lon, this.look.pin.lat, 1, this.pinVec);
   }
@@ -428,6 +454,17 @@ export class Globe {
     // The atlas: countries, the dust of people, streams of asylum seekers.
     this.updateAtlas(dt);
 
+    // A week of earthquakes, replayed or all at once.
+    c.quakes = approach(c.quakes, L.quakes, dt, 1.4);
+    if (this.quakes) {
+      const m = this.quakes.material.uniforms;
+      const k = L.quakeReplay > 0 ? Math.min(1, (this.time - this.quakeT0) / L.quakeReplay) : 1;
+      m.uClock.value = this.quakes.week * k;
+      m.uTime.value = this.time;
+      m.uOpacity.value = c.quakes;
+      this.quakes.points.visible = c.quakes > 0.002;
+    }
+
     // Fires and the station.
     if (this.fires) {
       const m = this.fires.material.uniforms;
@@ -536,6 +573,21 @@ export class Globe {
           sub = `l’acqua scorre verso ${names[Math.round(to / 45) % 8]}`;
         }
       }
+    } else if (L.quakes && this.quakes) {
+      // The nearest earthquake within about 300 km.
+      const p = lonLatToVec(lon, lat), q = new Vector3();
+      let best: Quake | null = null, bestDot = Math.cos(300 / 6371);
+      for (const e of this.quakes.list) {
+        if (Math.abs(e[1] - lat) > 3) continue;
+        const d = lonLatToVec(e[0], e[1], 1, q).dot(p);
+        if (d > bestDot) { bestDot = d; best = e; }
+      }
+      if (best) {
+        const hours = (Date.now() - best[4]) / 3600e3;
+        const ago = hours < 1 ? 'meno di un’ora fa' : hours < 48 ? `${Math.round(hours)} ore fa` : `${Math.round(hours / 24)} giorni fa`;
+        text = `magnitudo ${best[3].toLocaleString('it-IT', { minimumFractionDigits: 1 })}`;
+        sub = `${placeIt(best[5])} · ${best[2]} km di profondità · ${ago}`;
+      } else { text = 'nessun terremoto qui'; sub = 'magnitudo 2,5 o più, ultimi 7 giorni'; }
     } else if (L.fires && this.fireData) {
       const p = lonLatToVec(lon, lat), q = new Vector3();
       let n = 0;

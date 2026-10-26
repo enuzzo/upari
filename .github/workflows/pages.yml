@@ -1,6 +1,6 @@
 name: Dati del giorno e pubblicazione
 
-# Every day: fetch today's planet (winds, sea, ice, plankton, rain, fires, ISS orbit),
+# Every day: fetch today's planet (winds, sea, ice, plankton, rain, fires, earthquakes, ISS orbit),
 # rebuild the site and publish it on GitHub Pages. Also runs on every push to main.
 # 10:41 UTC comes after NASA publishes yesterday's GHRSST MUR and GAMSSA days.
 # Fresh data are not committed: the repository keeps a validated snapshot that is
@@ -57,7 +57,7 @@ jobs:
         run: |
           status=0
           node scripts/prepare-fields.mjs wind || status=1
-          node scripts/prepare-layers.mjs sst anomaly ice chlorophyll rain fires || status=1
+          node scripts/prepare-layers.mjs sst anomaly ice chlorophyll rain fires quakes || status=1
           exit $status
 
       - name: Orbita della ISS

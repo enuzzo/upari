@@ -30,7 +30,7 @@ node scripts/prepare-stars.mjs    # Yale Bright Star Catalogue
 node tools/shots.mjs http://127.0.0.1:4181/ shots   # screenshot di QA in Chrome headless
 ```
 
-Tastiera: spazio pausa, frecce capitoli, I approfondimento, F schermo intero, + e − zoom, / cerca un luogo (Nominatim di OpenStreetMap, una richiesta solo quando premi Invio).
+Tastiera: spazio pausa, frecce capitoli, I approfondimento, F schermo intero, + e − zoom, / cerca un luogo (Nominatim di OpenStreetMap, una richiesta solo quando premi Invio), M audio (musica e ambienti, attivi dopo il primo clic).
 
 ## Aggiornamento quotidiano
 

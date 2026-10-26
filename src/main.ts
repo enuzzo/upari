@@ -3,13 +3,35 @@ import { Globe } from './engine/globe';
 import { Director } from './story/director';
 import { sunDirection, vecToLonLat } from './engine/astro';
 import { framing, initSearch, type Place } from './story/search';
+import { Sound, type Ambience } from './engine/audio';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
 const canvas = $<HTMLCanvasElement>('scene');
 const globe = new Globe(canvas);
 const director = new Director(globe);
+const sound = new Sound();
 let started = false;
+
+const soundBtn = $('sound-btn');
+const showSound = (on: boolean) => {
+  soundBtn.classList.toggle('muted', !on);
+  soundBtn.setAttribute('aria-pressed', String(on));
+  soundBtn.setAttribute('aria-label', on ? 'Disattiva l’audio' : 'Attiva l’audio');
+};
+sound.onChange = showSound;
+showSound(sound.enabled);
+soundBtn.addEventListener('click', () => { sound.start(); sound.toggle(); });
+
+/** The ambience that goes with what the planet shows. */
+function ambienceOf(): Ambience | null {
+  const L = globe.currentLook;
+  if (L.flow === 'wind') return 'wind';
+  if (L.flow === 'currents') return 'ocean';
+  if (L.data === 'rain') return 'rain';
+  if (L.fires > 0) return 'fire';
+  return null;
+}
 
 /** Opening shot: from the night side, the Sun about to rise over the limb. */
 function openingShot() {
@@ -45,6 +67,7 @@ async function boot() {
 function begin(story: boolean) {
   if (started) return;
   started = true;
+  sound.start();
   $('veil').classList.add('gone');
   document.body.classList.add('started');
   globe.rig.setFrameShift(0.14);
@@ -93,6 +116,7 @@ addEventListener('keydown', (e) => {
   else if (e.key === 'ArrowRight') director.next();
   else if (e.key === 'ArrowLeft') director.prev();
   else if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+  else if (e.key === 'm' || e.key === 'M') { sound.start(); sound.toggle(); }
   else if (e.key === 'i' || e.key === 'I') { if (director.drawerOpen) director.closeDrawer(); else void director.openDrawer(); }
   else if (e.key === '+' || e.key === '=') globe.rig.zoomBy(0.6);
   else if (e.key === '-') globe.rig.zoomBy(1.6);
@@ -111,6 +135,7 @@ addEventListener('pointerup', () => { pressed = false; });
 let clockT = 0;
 globe.onFrame = (dt) => {
   director.tick(dt);
+  sound.setAmbience(started ? ambienceOf() : null);
   if (pointer && started && !pressed) {
     const p = globe.probe(pointer.x, pointer.y);
     if (p) {
@@ -137,4 +162,4 @@ boot().catch((err) => {
   $('veil').classList.add('shown');
 });
 
-if (import.meta.env.DEV) Object.assign(window, { upari: { globe, director, probeEl: probe, jump: (i: number) => { begin(true); void director.go(i); }, advance: async (sec: number) => { for (let t = 0; t < sec; t += 1 / 30) { globe.tick(1 / 30); if (Math.round(t * 30) % 15 === 0) await new Promise((r) => setTimeout(r, 0)); } } } });
+if (import.meta.env.DEV) Object.assign(window, { upari: { globe, director, sound, probeEl: probe, jump: (i: number) => { begin(true); void director.go(i); }, advance: async (sec: number) => { for (let t = 0; t < sec; t += 1 / 30) { globe.tick(1 / 30); if (Math.round(t * 30) % 15 === 0) await new Promise((r) => setTimeout(r, 0)); } } } });

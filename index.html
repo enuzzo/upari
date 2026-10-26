@@ -36,6 +36,10 @@
         <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></svg>
       </button>
       <span class="clock" id="clock"></span>
+      <button class="icon-btn sound-btn" id="sound-btn" aria-label="Audio" aria-pressed="true" title="Audio (M)">
+        <svg class="i-on" viewBox="0 0 24 24"><path d="M4 10v4h3.5L12 18V6L7.5 10z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></svg>
+        <svg class="i-off" viewBox="0 0 24 24"><path d="M4 10v4h3.5L12 18V6L7.5 10z"/><path d="M16 10l4 4M20 10l-4 4"/></svg>
+      </button>
       <button class="icon-btn" id="credits-btn" aria-label="Fonti e crediti" title="Fonti e crediti">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>
       </button>
@@ -84,7 +88,7 @@
 
   <div class="tile-credit" id="tile-credit"><a href="https://cloudless.eox.at" target="_blank" rel="noopener">EOxCloudless 2016</a> di EOX IT Services GmbH · contiene dati Copernicus Sentinel 2016 e 2017 modificati · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></div>
 
-  <div class="hint" id="hint">Trascina per ruotare · rotella per avvicinarti · tocca un punto per leggerlo · / per cercare un luogo</div>
+  <div class="hint" id="hint">Trascina per ruotare · rotella per avvicinarti · tocca un punto per leggerlo · / per cercare un luogo · M per l’audio</div>
 
   <div class="veil" id="veil">
     <div class="intro" id="intro">
@@ -119,6 +123,7 @@
         <li><b>Fuochi</b> NASA FIRMS, VIIRS NOAA-20</li>
         <li><b>Stazione Spaziale</b> elementi orbitali CelesTrak, propagazione SGP4 con satellite.js; modello 3D NASA 3D Resources, ISS (B), di Michael D. Carbajal</li>
         <li><b>Stelle</b> Yale Bright Star Catalogue</li>
+        <li><b>Musica e suoni</b> composti per Upari con Magnific (Google Lyria, ElevenLabs)</li>
         <li><b>Ricerca dei luoghi</b> <a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, dati © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, ODbL</li>
       </ul>
       <p class="credits-foot">I dati del giorno si aggiornano ogni mattina. Immagini fornite dai servizi NASA GIBS, parte di NASA ESDIS. Attribuzioni e licenze complete in <a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener">THIRD_PARTY_NOTICES</a>. Upari è un progetto di <a href="https://netmilk.ch" target="_blank" rel="noopener">Netmilk Studio</a>, software libero con licenza Apache 2.0: <a href="https://github.com/enuzzo/upari" target="_blank" rel="noopener">codice sorgente</a>.</p>

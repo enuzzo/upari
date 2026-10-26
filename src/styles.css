@@ -45,6 +45,8 @@ body.started .brand { opacity: 1; visibility: visible; transition-delay: 0.6s, 0
   transition: color 0.3s, background 0.3s;
 }
 .icon-btn:hover { color: var(--ink); background: rgba(255, 255, 255, 0.06); }
+.sound-btn .i-off, .sound-btn.muted .i-on { display: none; }
+.sound-btn.muted .i-off { display: block; }
 
 /* ——— Search ——— */
 .search { position: relative; width: 0; opacity: 0; visibility: hidden; transition: width 0.6s var(--ease), opacity 0.4s, visibility 0s linear 0.6s; }

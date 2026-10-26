@@ -19,6 +19,7 @@ const mean = async (g: Globe, id: AtlasId, year: number) => (await atlas(g)).wor
 export const PEOPLE: Chapter[] = [
   {
     id: 'popolazione', title: 'Otto miliardi', kicker: 'Popolazione, 1960 – 2025',
+    mood: 'calm', sound: 'city',
     look: { ...LOOK, dim: 0.76, atlas: 'population', dust: 1, years: [1960, 2025], yearSeconds: 20, bloom: 1.2 },
     duration: 26, clock: 'year',
     narrate: async (g) => {
@@ -42,6 +43,7 @@ export const PEOPLE: Chapter[] = [
   },
   {
     id: 'nascite', title: 'Si nasce di meno', kicker: 'Natalità, 1960 – 2024',
+    mood: 'curious', sound: 'city',
     look: { ...LOOK, atlas: 'birth', years: [1960, 2024], yearSeconds: 18 },
     duration: 24, clock: 'year', legend: legend('birth'),
     narrate: async (g) => {
@@ -65,6 +67,7 @@ export const PEOPLE: Chapter[] = [
   },
   {
     id: 'vita', title: 'Si vive più a lungo', kicker: 'Speranza di vita, 1960 – 2024',
+    mood: 'open', sound: 'city',
     look: { ...LOOK, atlas: 'life', years: [1960, 2024], yearSeconds: 18 },
     duration: 24, clock: 'year', legend: legend('life'),
     narrate: async (g) => `Nel 1960 chi nasceva poteva aspettarsi, in media, ${it(await mean(g, 'life', 1960))} anni di vita. Oggi ${it(await mean(g, 'life', 2024))}. È una delle grandi conquiste del secolo, e non è finita.`,
@@ -85,6 +88,7 @@ export const PEOPLE: Chapter[] = [
   },
   {
     id: 'bambini', title: 'I bambini', kicker: 'Mortalità sotto i cinque anni, 1960 – 2024',
+    mood: 'grave', sound: 'city',
     look: { ...LOOK, atlas: 'under5', years: [1960, 2024], yearSeconds: 18 },
     duration: 24, clock: 'year', legend: legend('under5'),
     narrate: async (g) => {
@@ -110,6 +114,7 @@ export const PEOPLE: Chapter[] = [
   },
   {
     id: 'saldo', title: 'Il saldo', kicker: 'Nascite meno decessi, 1960 – 2024',
+    mood: 'curious', sound: 'city',
     look: { ...LOOK, atlas: 'balance', years: [1960, 2024], yearSeconds: 18 },
     duration: 24, clock: 'year', legend: legend('balance'),
     narrate: async (g) => {
@@ -132,6 +137,7 @@ export const PEOPLE: Chapter[] = [
   },
   {
     id: 'luce', title: 'La luce elettrica', kicker: 'Accesso all’elettricità, 2000 – 2024',
+    mood: 'calm', sound: 'night',
     look: { ...LOOK, atlas: 'electricity', years: [2000, 2024], yearSeconds: 16 },
     duration: 24, clock: 'year', legend: legend('electricity'),
     narrate: async (g) => {
@@ -162,6 +168,7 @@ export const PEOPLE: Chapter[] = [
   },
   {
     id: 'fuga', title: 'In fuga', kicker: 'Domande di asilo, 2011 – 2024',
+    mood: 'grave', sound: 'wind',
     look: { ...LOOK, dim: 0.72, migration: 1, years: [2011, 2024], yearSeconds: 20, bloom: 1.3 },
     duration: 26, clock: 'year',
     legend: {

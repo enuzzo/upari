@@ -1,8 +1,9 @@
 import type { Globe, Look } from '../engine/globe';
 import { ATLAS, type AtlasId } from '../engine/atlas';
 import { cssGradient } from '../engine/palettes';
-import { CHAPTERS, type Legend } from './chapters';
+import { CHAPTERS, type Chapter, type Legend } from './chapters';
 import { PEOPLE } from './people';
+import { NATURE } from './nature';
 import type { Director } from './director';
 
 // Free exploration: every layer of both stories, the year, the hour, the sky, the station,
@@ -48,12 +49,19 @@ const HUMAN: Layer[] = [
   },
 ];
 
-const LAYERS = [...PLANET, ...HUMAN];
+const NATURE_LAYERS: Layer[] = [
+  { id: 'verde', label: 'Vegetazione, mese per mese', look: () => ({ ...NATURE.find((c) => c.id === 'verde')!.look }), legend: NATURE.find((c) => c.id === 'verde')!.legend },
+  { id: 'foreste', label: 'Foreste perdute, 2001 – 2024', people: true, look: () => ({ ...NATURE.find((c) => c.id === 'foreste')!.look, years: null }), legend: NATURE.find((c) => c.id === 'foreste')!.legend },
+  { id: 'aria', label: 'Polveri e fumo nell’aria', look: () => ({ ...NATURE.find((c) => c.id === 'aria')!.look }), legend: NATURE.find((c) => c.id === 'aria')!.legend },
+  { id: 'coralli', label: 'Calore sulle barriere coralline', look: () => ({ ...NATURE.find((c) => c.id === 'coralli')!.look }), legend: NATURE.find((c) => c.id === 'coralli')!.legend },
+];
+
+const LAYERS = [...PLANET, ...NATURE_LAYERS, ...HUMAN];
 /** Chapter → layer, to open the panel on what the story was showing. */
 const FROM_CHAPTER: Record<string, string> = {
   pianeta: 'adesso', respiro: 'venti', correnti: 'correnti', calore: 'mare', febbre: 'anomalia', fioritura: 'plancton', pioggia: 'pioggia',
   fuoco: 'fuochi', terremoti: 'terremoti', ghiaccio: 'ghiaccio', luci: 'luci', lassu: 'stazione', popolazione: 'popolazione', nascite: 'nascite', vita: 'vita',
-  bambini: 'bambini', saldo: 'saldo', luce: 'elettricita', fuga: 'asilo',
+  bambini: 'bambini', saldo: 'saldo', luce: 'elettricita', fuga: 'asilo', verde: 'verde', foreste: 'foreste', aria: 'aria', coralli: 'coralli',
 };
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -76,6 +84,13 @@ export class Explorer {
 
   get isOpen() { return this.open; }
 
+  /** The chapter whose look this layer borrows, for its sound. */
+  get chapter(): Chapter | null {
+    const id = Object.entries(FROM_CHAPTER).find(([, l]) => l === this.layer.id)?.[0];
+    // Statistics without a chapter of their own sound like the other people layers.
+    return [...CHAPTERS, ...NATURE, ...PEOPLE].find((c) => c.id === id) ?? (this.layer.people ? PEOPLE[0] : null);
+  }
+
   private build() {
     const group = (title: string, layers: Layer[]) => {
       const box = document.createElement('div');
@@ -92,7 +107,7 @@ export class Explorer {
       return box;
     };
     const list = $('ex-layers');
-    list.append(group('Il pianeta', PLANET), group('Le persone', HUMAN));
+    list.append(group('Il pianeta', PLANET), group('La natura', NATURE_LAYERS), group('Le persone', HUMAN));
     const year = $<HTMLInputElement>('ex-year');
     year.addEventListener('input', () => { this.year = Number(year.value); this.globe.setYear(this.year); this.refresh(); });
     $('ex-play').addEventListener('click', () => this.playYears());
@@ -155,7 +170,7 @@ export class Explorer {
 
   private playYears() {
     const last = this.layer.id === 'asilo' ? 2025 : 2024;
-    const from = this.year >= last ? (this.layer.id === 'asilo' ? 2000 : this.layer.id === 'elettricita' ? 1990 : 1960) : this.year;
+    const from = this.year >= last ? (this.layer.id === 'asilo' ? 2000 : this.layer.id === 'foreste' ? 2001 : this.layer.id === 'elettricita' ? 1990 : 1960) : this.year;
     const look: Partial<Look> = { ...this.globe.currentLook, year: null, years: [from, last], yearSeconds: Math.max(4, (last - from) * 0.3) };
     this.globe.setLook(look);
     this.year = last;

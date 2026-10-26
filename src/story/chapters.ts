@@ -1,5 +1,6 @@
 import type { Globe, Look } from '../engine/globe';
 import type { Shot } from '../engine/camera';
+import type { Ambience, Mood } from '../engine/audio';
 import { PALETTES, type Stop } from '../engine/palettes';
 import { sunDirection, vecToLonLat, lonLatToVec } from '../engine/astro';
 import { stats, formatLonLat } from './stats';
@@ -37,7 +38,10 @@ export interface Chapter {
   arrive?: (g: Globe) => Promise<string>;
   /** A live panel beside the narration. */
   telemetry?: 'iss';
-  clock?: 'rain' | 'year';
+  /** The feeling of the score, and the sound of the place. */
+  mood?: Mood;
+  sound?: Ambience;
+  clock?: 'data' | 'year';
   pin?: (g: Globe) => Promise<{ lon: number; lat: number; label: string; sub: string } | null>;
 }
 
@@ -82,6 +86,7 @@ function nightSide(g: Globe): Shot {
 export const CHAPTERS: Chapter[] = [
   {
     id: 'pianeta', title: 'Il pianeta', kicker: 'Adesso',
+    mood: 'calm', sound: 'sky',
     look: { sun: 'real', clouds: 1, night: 1 },
     duration: 22,
     narrate: async () => 'Questa è la Terra, in questo istante. Metà nel giorno, metà nella notte. La linea d’ombra scivola sull’equatore a 1.670 chilometri all’ora.',
@@ -98,6 +103,7 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: 'respiro', title: 'Il respiro', kicker: 'I venti di oggi',
+    mood: 'curious', sound: 'wind',
     look: { sun: 'studio', clouds: 0.12, cloudFlow: 1, dim: 0.62, desat: 0.5, night: 0, flow: 'wind', atmo: 0.8 },
     duration: 24,
     legend: { stops: [[0, '#3a5a9a'], [0.25, '#9cc7ff'], [0.5, '#ffffff'], [0.75, '#ffd37a'], [1, '#ff7a4a']], left: 'calma', right: '80 km/h', title: 'velocità del vento' },
@@ -129,6 +135,7 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: 'correnti', title: 'Le correnti', kicker: 'Fiumi nel mare',
+    mood: 'curious', sound: 'ocean',
     look: { sun: 'studio', clouds: 0, dim: 0.62, desat: 0.5, night: 0, flow: 'currents', atmo: 0.75 },
     duration: 24,
     legend: { stops: [[0, '#1f5f7a'], [0.3, '#4ad1d1'], [0.6, '#b8fff0'], [1, '#ffffff']], left: 'lenta', right: '4 km/h', title: 'velocità della corrente' },
@@ -147,13 +154,14 @@ export const CHAPTERS: Chapter[] = [
     ],
   },
   {
-    id: 'calore', title: 'Il calore del mare', kicker: 'Temperatura del mare',
+    id: 'calore', title: 'Il calore del mare', kicker: 'Un anno di temperatura del mare',
+    mood: 'calm', sound: 'waves',
     look: { sun: 'studio', data: 'sst', clouds: 0.06, dim: 0.3, desat: 0.4, night: 0, atmo: 0.85 },
-    duration: 22,
+    duration: 24, clock: 'data',
     legend: { stops: PALETTES.sst, left: '−2 °C', right: '34 °C', title: 'temperatura dell’acqua' },
     narrate: async (g) => {
       const h = await stats.hottestSea(g), day = when((await meta(g, 'sst')).dates?.[0]);
-      return `Il mare è il grande termosifone del pianeta. Il punto più caldo, ${day}, ${day === 'oggi' ? 'è' : 'era'} ${seaName(h.lon, h.lat)}: ${h.value >= 31.9 ? 'oltre 32' : it(h.value, 1)} gradi. Ai poli l’acqua scende sotto lo zero senza gelare, perché è salata.`;
+      return `Il mare è il grande termosifone del pianeta. Il punto più caldo, ${day}, ${day === 'oggi' ? 'è' : 'era'} ${seaName(h.lon, h.lat)}: ${h.value >= 31.9 ? 'oltre 32' : it(h.value, 1)} gradi. Guarda l’acqua calda salire verso nord d’estate e tornare a sud d’inverno: un anno in pochi secondi.`;
     },
     detail: async (g) => {
       const h = await stats.hottestSea(g), m = await meta(g, 'sst');
@@ -177,15 +185,16 @@ export const CHAPTERS: Chapter[] = [
     },
   },
   {
-    id: 'febbre', title: 'La febbre', kicker: 'Rispetto al normale',
+    id: 'febbre', title: 'La febbre', kicker: 'Un anno, rispetto al normale',
+    mood: 'grave', sound: 'waves',
     look: { sun: 'studio', data: 'anomaly', clouds: 0.06, dim: 0.55, desat: 0.75, night: 0, atmo: 0.85 },
-    duration: 22,
+    duration: 24, clock: 'data',
     legend: { stops: PALETTES.anomaly, left: '−3 °C', right: '+3 °C', title: 'differenza dalla media' },
     narrate: async (g) => {
       const { share } = await stats.warmShare(g);
       const pct = Math.round(share * 100);
       const day = when((await meta(g, 'anomaly')).dates?.[0]);
-      return `In rosso il mare più caldo del solito, in blu quello più freddo. ${cap(day)} ${day === 'oggi' ? 'è' : 'era'} più caldo della media il ${pct}% degli oceani.`;
+      return `In rosso il mare più caldo del solito, in blu quello più freddo, mese dopo mese per un anno. ${cap(day)} ${day === 'oggi' ? 'è' : 'era'} più caldo della media il ${pct}% degli oceani.`;
     },
     detail: async (g) => {
       const { share, hottest } = await stats.warmShare(g), m = await meta(g, 'anomaly');
@@ -209,11 +218,12 @@ export const CHAPTERS: Chapter[] = [
     },
   },
   {
-    id: 'fioritura', title: 'Il mare che fiorisce', kicker: 'Fitoplancton',
+    id: 'fioritura', title: 'Il mare che fiorisce', kicker: 'Un anno di fitoplancton',
+    mood: 'open', sound: 'reef',
     look: { sun: 'studio', data: 'chlorophyll', clouds: 0.04, dim: 0.66, desat: 0.5, night: 0, atmo: 0.8, bloom: 1.3 },
-    duration: 24,
+    duration: 26, clock: 'data',
     legend: { stops: PALETTES.chlorophyll, left: 'acqua limpida', right: 'fioritura', title: 'clorofilla in superficie' },
-    narrate: async () => 'Ogni bagliore verde è una prateria invisibile: miliardi di alghe microscopiche, il fitoplancton. Producono circa metà dell’ossigeno che respiriamo.',
+    narrate: async () => 'Ogni bagliore verde è una prateria invisibile: miliardi di alghe microscopiche, il fitoplancton. Producono circa metà dell’ossigeno che respiriamo, e fioriscono dove arriva la primavera, prima in un emisfero, poi nell’altro.',
     detail: async (g) => {
       const m = await meta(g, 'chlorophyll');
       return {
@@ -230,9 +240,10 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: 'pioggia', title: 'La pioggia', kicker: 'Ventiquattro ore',
+    mood: 'calm', sound: 'rain',
     look: { sun: 'studio', data: 'rain', clouds: 0.18, dim: 0.62, desat: 0.55, night: 0, atmo: 0.8, bloom: 0.8 },
     duration: 24,
-    clock: 'rain',
+    clock: 'data',
     legend: { stops: PALETTES.rain, left: 'pioviggine', right: 'nubifragio', title: 'intensità della pioggia' },
     narrate: async () => 'Un giorno intero di pioggia, in pochi secondi. Lungo l’equatore l’aria calda sale, si raffredda, e restituisce al mare l’acqua che il Sole gli aveva preso.',
     detail: async (g) => {
@@ -252,6 +263,7 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: 'fuoco', title: 'Il fuoco', kicker: 'Ultimi sette giorni',
+    mood: 'grave', sound: 'fire',
     look: { sun: 'studio', clouds: 0, dim: 0.78, desat: 0.75, night: 0.35, fires: 1, atmo: 0.6, bloom: 1.4 },
     duration: 22,
     narrate: async () => {
@@ -275,6 +287,7 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: 'terremoti', title: 'La Terra trema', kicker: 'Ultimi sette giorni',
+    mood: 'grave', sound: 'quake',
     look: { sun: 'studio', clouds: 0, dim: 0.74, desat: 0.75, night: 0, atmo: 0.65, quakes: 1, quakeReplay: 14, bloom: 1.3 },
     duration: 24,
     legend: { stops: [[0, '#ffc76b'], [0.25, '#ff6b8c'], [1, '#8c73ff']], left: 'in superficie', right: '700 km', title: 'profondità del terremoto' },
@@ -314,13 +327,14 @@ export const CHAPTERS: Chapter[] = [
     },
   },
   {
-    id: 'ghiaccio', title: 'Il ghiaccio', kicker: 'In cima al mondo',
+    id: 'ghiaccio', title: 'Il ghiaccio', kicker: 'Un anno ai poli',
+    mood: 'curious', sound: 'ice',
     look: { sun: 'studio', data: 'ice', clouds: 0.08, dim: 0.5, desat: 0.5, night: 0, atmo: 0.9 },
-    duration: 22,
+    duration: 24, clock: 'data',
     legend: { stops: PALETTES.ice, left: '15%', right: '100%', title: 'mare ghiacciato' },
     narrate: async (g) => {
       const { north } = await stats.arcticIce(g), day = when((await meta(g, 'ice')).dates?.[0]);
-      return `In cima al mondo il mare gela. ${cap(day)} il ghiaccio artico ${day === 'oggi' ? 'copre' : 'copriva'} ${it(north / 1e6, 1)} milioni di chilometri quadrati, e ogni inverno si allarga di un’area grande come l’Europa.`;
+      return `In cima al mondo il mare gela. ${cap(day)} il ghiaccio artico ${day === 'oggi' ? 'copre' : 'copriva'} ${it(north / 1e6, 1)} milioni di chilometri quadrati, e ogni inverno si allarga di un’area più grande dell’Europa. Qui scorre un anno: l’Artico si scioglie mentre l’Antartide gela.`;
     },
     detail: async (g) => {
       const { north, south } = await stats.arcticIce(g), m = await meta(g, 'ice');
@@ -338,6 +352,7 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: 'luci', title: 'Le luci', kicker: 'La notte, adesso',
+    mood: 'open', sound: 'night',
     look: { sun: 'real', clouds: 0.45, night: 0.85, atmo: 1, bloom: 0.9 },
     duration: 22,
     narrate: async () => 'Quando cala la notte, il pianeta si accende. Queste luci sono il ritratto più fedele di dove viviamo: lungo le coste, i fiumi, le strade.',
@@ -354,6 +369,7 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: 'lassu', title: 'Lassù', kicker: 'La Stazione Spaziale, ora',
+    mood: 'open', sound: 'station',
     look: { sun: 'real', clouds: 1, night: 1.1, iss: 1, atmo: 1 },
     duration: 62,
     follow: 'iss',

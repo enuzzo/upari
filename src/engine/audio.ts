@@ -1,21 +1,31 @@
-// Sound: a quiet score under the whole film and an ambience for the chapters that have a
-// voice of their own (wind, sea currents, rain, fire). Everything loops by crossfading a
-// clip into itself, so the MP3 encoder's padding never makes a gap.
+// Sound: one score in four moods, and an ambience for every chapter. The moods share key
+// and instruments (C minor / E-flat major, piano, pads, strings), so passing from one to the
+// next is a slow crossfade, never a cut. Everything loops by crossfading a clip into itself,
+// so the MP3 encoder's padding never makes a gap.
 
-export type Ambience = 'wind' | 'ocean' | 'rain' | 'fire';
+export type Ambience = 'wind' | 'ocean' | 'rain' | 'fire' | 'forest' | 'waves' | 'reef' | 'quake' | 'ice' | 'night' | 'station' | 'desert' | 'city' | 'sky';
+export type Mood = 'calm' | 'grave' | 'curious' | 'open';
 
-const MUSIC = ['audio/music-1.mp3', 'audio/music-2.mp3'];
-const AMBIENCE: Record<Ambience, string> = { wind: 'audio/wind.mp3', ocean: 'audio/ocean.mp3', rain: 'audio/rain.mp3', fire: 'audio/fire.mp3' };
+const MUSIC: Record<Mood, string[]> = {
+  calm: ['audio/music-1.mp3', 'audio/music-2.mp3'],
+  grave: ['audio/music-grave.mp3'],
+  curious: ['audio/music-curious.mp3'],
+  open: ['audio/music-open.mp3'],
+};
 const MUSIC_LEVEL = 0.5;
-const AMBIENCE_LEVEL = 0.8;
+const AMBIENCE_LEVEL = 0.55;
+const MOOD_FADE = 7;
 const KEY = 'upari-sound';
 
 export class Sound {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
+  private moods = new Map<Mood, GainNode>();
+  private moodLoading = new Set<Mood>();
   private beds = new Map<Ambience, GainNode>();
   private loading = new Map<Ambience, Promise<void>>();
   private current: Ambience | null = null;
+  private mood: Mood = 'calm';
   enabled = true;
   onChange: (enabled: boolean) => void = () => {};
 
@@ -38,16 +48,10 @@ export class Sound {
     this.master.connect(ctx.destination);
     if (this.enabled) this.fade(this.master.gain, 1, 4);
     else void ctx.suspend();
-    const music = ctx.createGain();
-    music.gain.value = MUSIC_LEVEL;
-    music.connect(this.master);
-    // The first piece starts as soon as it arrives; the second joins the rotation later.
-    void this.load(MUSIC[0]).then(async (first) => {
-      const pieces = [first];
-      this.loop(pieces, music, 6);
-      pieces.push(await this.load(MUSIC[1]));
-    }).catch((err) => console.warn('music unavailable', err));
+    this.startMood(this.mood, true);
     if (this.current) this.setAmbience(this.current, true);
+    // The other moods arrive in the background, so later changes are immediate.
+    window.setTimeout(() => (['curious', 'open', 'grave'] as Mood[]).forEach((m) => this.startMood(m, false)), 15000);
   }
 
   toggle() { this.setEnabled(!this.enabled); }
@@ -66,6 +70,41 @@ export class Sound {
     this.onChange(v);
   }
 
+  /** The feeling of the score: the same theme, darker, questioning or released. */
+  setMood(mood: Mood) {
+    if (mood === this.mood) return;
+    this.mood = mood;
+    if (!this.ctx) return;
+    this.startMood(mood, false);
+    for (const [m, g] of this.moods) this.fade(g.gain, m === mood ? MUSIC_LEVEL : 0, MOOD_FADE);
+  }
+
+  /** Load a mood and keep it looping (silent until chosen). */
+  private startMood(mood: Mood, audible: boolean) {
+    if (!this.ctx || this.moods.has(mood) || this.moodLoading.has(mood)) return;
+    this.moodLoading.add(mood);
+    const ctx = this.ctx;
+    const bus = ctx.createGain();
+    bus.gain.value = 0;
+    // The grave mood sits a little lower in the spectrum: a gentle low-pass darkens it.
+    if (mood === 'grave') {
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 1500;
+      lp.Q.value = 0.4;
+      bus.connect(lp).connect(this.master!);
+    } else bus.connect(this.master!);
+    void (async () => {
+      const files = MUSIC[mood];
+      const first = await this.load(files[0]);
+      const pieces = [first];
+      this.moods.set(mood, bus);
+      this.loop(pieces, bus, 6);
+      if (this.mood === mood) this.fade(bus.gain, MUSIC_LEVEL, audible ? 3 : MOOD_FADE);
+      for (const f of files.slice(1)) pieces.push(await this.load(f));
+    })().catch((err) => { this.moodLoading.delete(mood); console.warn(`music ${mood} unavailable`, err); });
+  }
+
   /** Crossfade to the ambience of what the planet shows now (null: the score alone). */
   setAmbience(id: Ambience | null, force = false) {
     if (id === this.current && !force) return;
@@ -77,7 +116,7 @@ export class Sound {
       const bed = ctx.createGain();
       bed.gain.value = 0;
       bed.connect(this.master!);
-      const job = this.load(AMBIENCE[id]).then((buf) => {
+      const job = this.load(`audio/${id}.mp3`).then((buf) => {
         this.beds.set(id, bed);
         this.loop([buf], bed, 3);
         if (this.current === id) this.fade(bed.gain, AMBIENCE_LEVEL, 3);

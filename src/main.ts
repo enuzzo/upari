@@ -3,7 +3,7 @@ import { Globe } from './engine/globe';
 import { Director } from './story/director';
 import { sunDirection, vecToLonLat } from './engine/astro';
 import { framing, initSearch, type Place } from './story/search';
-import { Sound, type Ambience } from './engine/audio';
+import { Sound, type Ambience, type Mood } from './engine/audio';
 import { Explorer } from './story/explore';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -29,14 +29,11 @@ sound.onChange = showSound;
 showSound(sound.enabled);
 soundBtn.addEventListener('click', () => { sound.start(); sound.toggle(); });
 
-/** The ambience that goes with what the planet shows. */
-function ambienceOf(): Ambience | null {
-  const L = globe.currentLook;
-  if (L.flow === 'wind') return 'wind';
-  if (L.flow === 'currents') return 'ocean';
-  if (L.data === 'rain') return 'rain';
-  if (L.fires > 0) return 'fire';
-  return null;
+/** The ambience and mood of what is on screen: the chapter, or the layer being explored. */
+function soundOf(): { ambience: Ambience | null; mood: Mood } {
+  const c = explorer.isOpen ? explorer.chapter : director.chapter;
+  if (c) return { ambience: c.sound ?? null, mood: c.mood ?? 'calm' };
+  return { ambience: 'sky', mood: 'calm' };
 }
 
 /** Opening shot: from the night side, the Sun about to rise over the limb. */
@@ -50,6 +47,7 @@ async function boot() {
   const bar = $('loader-bar');
   $('start-btn').setAttribute('disabled', '');
   $('people-btn').setAttribute('disabled', '');
+  $('nature-btn').setAttribute('disabled', '');
   $('explore-btn').setAttribute('disabled', '');
   await globe.init((p) => (bar.style.width = `${Math.round(p * 100)}%`));
   const shot = openingShot();
@@ -66,6 +64,7 @@ async function boot() {
   setTimeout(() => {
     $('start-btn').removeAttribute('disabled');
     $('people-btn').removeAttribute('disabled');
+    $('nature-btn').removeAttribute('disabled');
     $('explore-btn').removeAttribute('disabled');
   }, 900);
   // A shared link opens the explorer on what it showed.
@@ -97,6 +96,7 @@ function begin(story: string | null) {
 
 $('start-btn').addEventListener('click', () => begin('pianeta'));
 $('people-btn').addEventListener('click', () => begin('persone'));
+$('nature-btn').addEventListener('click', () => begin('natura'));
 $('explore-btn').addEventListener('click', () => begin(null));
 $('brand').addEventListener('click', () => { if (started) director.go(0); });
 $('zoom-in').addEventListener('click', () => globe.rig.zoomBy(0.5));
@@ -150,7 +150,11 @@ let clockT = 0;
 globe.onFrame = (dt) => {
   director.tick(dt);
   explorer.tick(dt);
-  sound.setAmbience(started ? ambienceOf() : null);
+  if (started) {
+    const s = soundOf();
+    sound.setAmbience(s.ambience);
+    sound.setMood(s.mood);
+  }
   if (pointer && started && !pressed) {
     const p = globe.probe(pointer.x, pointer.y);
     if (p) {

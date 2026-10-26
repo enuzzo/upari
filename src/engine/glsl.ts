@@ -25,7 +25,9 @@ float planetShadow(vec3 p, vec3 L) {
   float b = dot(p, L);
   if (b > 0.0) return 1.0;
   float closest = sqrt(max(dot(p, p) - b * b, 0.0));
-  return smoothstep(R_PLANET - 0.018, R_PLANET + 0.014, closest);
+  // Ease into the shadow behind the planet: a hard start at b = 0 would draw the terminator
+  // plane as a straight line across the sky and the haze.
+  return mix(1.0, smoothstep(R_PLANET - 0.018, R_PLANET + 0.014, closest), smoothstep(0.0, 0.04, -b));
 }
 
 // Optical depth (Rayleigh, Mie) from p towards L, to the top of the atmosphere.

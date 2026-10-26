@@ -53,10 +53,14 @@ uniform sampler2D uData2;
 uniform sampler2D uPalette;
 uniform vec2 uDataSize;
 uniform float uDataBlend;
+uniform sampler2D uConf;   // coverage, when a series keeps it apart from the value
+uniform sampler2D uConf2;
+uniform float uDataSplit;
 uniform float uDataMix;
 uniform vec4 uDataStyle; // x: lit, y: glow, z: mask (0 any, 1 ocean, 2 land), w: above clouds
 uniform vec2 uDataRange;
-uniform float uDataFx;   // 1: rain, drawn as falling streaks instead of a glowing veil
+uniform float uDataFx;   // 1: rain, drawn as falling streaks; 2: forest loss, year by year
+uniform float uLossYear; // forest loss: years since 2000 on screen, fractional
 
 // Atlas: countries coloured by a statistic, year by year.
 uniform sampler2D uAtlasId;      // red: country slot; green 0 on borders
@@ -200,6 +204,15 @@ void main() {
     float toSun = mix(texture(uClouds, uv1 + shadowShift * 0.35).r, texture(uClouds, uv0 + shadowShift * 0.35).r, wgt);
     cloudShade = 1.0 - 0.45 * clamp((toSun - cloudBase) * 4.0, 0.0, 1.0) * uCloudDetail;
   }
+  // Relief of the cloud tops from the gradient of their density: slopes facing the Sun light
+  // up, the lee side falls into shade. It shows most near the terminator, as in photographs.
+  vec2 ct = vec2(1.6 / 8192.0, 1.6 / 4096.0);
+  float gx = texture(uClouds, uv0 + vec2(ct.x, 0.0)).r - texture(uClouds, uv0 - vec2(ct.x, 0.0)).r;
+  float gy = texture(uClouds, uv0 + vec2(0.0, ct.y)).r - texture(uClouds, uv0 - vec2(0.0, ct.y)).r;
+  vec3 cn = normalize(N - (gx * east + gy * north) * 2.2);
+  float cloudRelief = clamp(1.0 + (dot(cn, L) - dot(N, L)) * 2.8, 0.5, 1.35);
+  // Thick decks are brighter than thin veils.
+  float cloudAlbedo = mix(0.46, 0.66, smoothstep(0.25, 0.95, cloudBase));
   // Thin haze in a 5 km map reads as fog from close by: let it clear as the camera comes down.
   cloud = smoothstep(0.08 + 0.2 * uCloudDetail, 0.95, cloud) * uCloudOpacity;
   float cloudShadow = smoothstep(0.08, 0.95, texture(uClouds, uv0 + shadowShift).r) * uCloudOpacity;
@@ -211,7 +224,7 @@ void main() {
   vec3 sky = vec3(0.03, 0.06, 0.12) * smoothstep(-0.25, 0.3, NL) + vec3(0.004, 0.006, 0.011);
   // Twilight: past the terminator the sky still lights the ground, warm at first, then blue.
   float below = max(-NL, 0.0);
-  sky += mix(vec3(0.15, 0.085, 0.06), vec3(0.025, 0.04, 0.10), smoothstep(0.0, 0.07, below)) * exp(-abs(NL + 0.012) / 0.05) * 0.8;
+  sky += mix(vec3(0.15, 0.085, 0.06), vec3(0.025, 0.04, 0.10), smoothstep(0.0, 0.07, below)) * exp(-pow((NL + 0.012) / 0.055, 2.0)) * 0.8; // smooth: a cusp here draws a crease along the terminator
   // Moonlight, from the real Moon and its phase; drawn cool, as the eye sees the night.
   float night = smoothstep(0.06, -0.12, NL);
   vec3 moonC = vec3(0.62, 0.74, 1.0) * uMoon.w * night;
@@ -220,7 +233,8 @@ void main() {
   // Ocean glint.
   vec3 H = normalize(L + V);
   float fres = 0.02 + 0.98 * pow(1.0 - max(dot(N, V), 0.0), 5.0);
-  float glint = pow(max(dot(N, H), 0.0), 140.0) * 0.55 + pow(max(dot(N, H), 0.0), 14.0) * 0.03;
+  // A bright core and a faint wide halo: a milky disc would hide the sea and its clouds.
+  float glint = pow(max(dot(N, H), 0.0), 160.0) * 0.6 + pow(max(dot(N, H), 0.0), 24.0) * 0.012;
   // Seen from near the ground the glint fills the sea: let waves break it up, as in photographs from orbit.
   if (glint * uGlint > 0.002 && uGlintWaves > 0.001) glint *= mix(1.0, 0.35 + 1.0 * smoothstep(0.2, 0.85, fbm(N * vec3(520.0, 900.0, 520.0) + vec3(0.0, 0.0, uTime * 0.01))), uGlintWaves);
   surface += (1.0 - land) * sunT * glint * (1.0 - cloud) * uSunPower * (1.0 - uBaseDim) * uGlint;
@@ -234,12 +248,24 @@ void main() {
     vec4 d1 = textureBicubic(uData, uv, uDataSize);
     vec4 d = d1;
     if (uDataBlend > 0.0) d = mix(d1, textureBicubic(uData2, uv, uDataSize), uDataBlend);
+    if (uDataSplit > 0.5) d.g = mix(texture(uConf, uv).r, texture(uConf2, uv).r, uDataBlend);
     float v = clamp((d.r - uDataRange.x) / max(uDataRange.y - uDataRange.x, 1e-4), 0.0, 1.0);
     vec4 pal = texture(uPalette, vec2(v, 0.5));
     pal.rgb *= pal.rgb;
     float mask = uDataStyle.z < 0.5 ? 1.0 : (uDataStyle.z < 1.5 ? 1.0 - land : land);
     float a = clamp(d.g * 1.15, 0.0, 1.0) * pal.a * mask * uDataMix;
-    if (uDataFx > 0.5) {
+    if (uDataFx > 1.5) {
+      // Forest loss: the year of loss is a code, never blended between neighbours.
+      vec4 f = texelFetch(uData, ivec2(uv * uDataSize), 0);
+      float year = floor(f.r * 25.5 + 0.5);
+      float age = uLossYear - year;
+      float shown = year > 0.5 ? smoothstep(-0.6, 0.0, age) : 0.0;
+      // Fresh loss glows like embers, then cools to a dark scar.
+      vec3 fresh = vec3(1.0, 0.42, 0.16), scar = vec3(0.32, 0.07, 0.05);
+      float k = exp(-max(age, 0.0) / 2.5);
+      pal = vec4(mix(scar, fresh, k), 1.0);
+      a = shown * clamp(f.g * 1.4, 0.0, 1.0) * (0.55 + 0.45 * k) * mask * uDataMix;
+    } else if (uDataFx > 0.5) {
       float dashes = rainDashes(vec2(uv.x * 40075.0 * cosLat, uv.y * 20004.0), uTime * 0.8);
       a *= 0.42 + 0.75 * dashes;
       pal.rgb *= 0.8 + 0.45 * dashes;
@@ -254,7 +280,10 @@ void main() {
 
   // ---- Cloud layer.
   vec3 cloudLight = sunT * (smoothstep(-0.12, 0.6, NL) * 0.92 + 0.04) * uSunPower + sky * 0.6 + moonC * (smoothstep(-0.2, 0.6, dot(N, uMoon.xyz)) * 0.9 + 0.1);
-  vec3 col = mix(surface, vec3(0.58) * cloudLight * cloudShade * (1.0 - uBaseDim * 0.6), cloud);
+  // Shaded cloud sides take the blue of the sky above them.
+  float lit = cloudShade * cloudRelief;
+  vec3 cloudCol = cloudAlbedo * cloudLight * mix(vec3(0.78, 0.86, 1.0), vec3(1.0), smoothstep(0.6, 1.05, lit)) * lit;
+  vec3 col = mix(surface, cloudCol * (1.0 - uBaseDim * 0.6), cloud);
 
   if (uDataMix > 0.001 && uDataStyle.w > 0.5) {
     col = mix(col, dataColor.rgb, dataColor.a);
@@ -290,7 +319,9 @@ void main() {
   float lights = max(texture(uNight, uv).r - 0.165, 0.0) / 0.835; // Black Marble keeps a faint land base
   float dark = smoothstep(0.08, -0.18, NL);
   vec3 sodium = vec3(1.0, 0.68, 0.36);
-  col += sodium * pow(lights, 1.6) * dark * (1.0 - cloud * 0.7) * uNightGain;
+  // Steeper and compressed at the top: crisp networks of light instead of glowing blobs.
+  float city = pow(lights, 2.1) * uNightGain * 2.4;
+  col += sodium * city / (1.0 + 0.55 * city) * dark * (1.0 - cloud * 0.75);
 
   // ---- Flow trails (winds, currents).
   col += texture(uTrail, uv).rgb * uTrailGain;
@@ -354,10 +385,14 @@ export function earthUniforms(t: EarthTextures) {
     uPalette: { value: blank as Texture },
     uDataSize: { value: new Vector2(1, 1) },
     uDataBlend: { value: 0 },
+    uConf: { value: blank as Texture },
+    uConf2: { value: blank as Texture },
+    uDataSplit: { value: 0 },
     uDataMix: { value: 0 },
     uDataStyle: { value: new Vector4(0, 0, 1, 0) },
     uDataRange: { value: new Vector2(0, 1) },
     uDataFx: { value: 0 },
+    uLossYear: { value: 24 },
     uAtlasId: { value: blank as Texture },
     uAtlasValues: { value: blank as Texture },
     uAtlasPalette: { value: blank as Texture },

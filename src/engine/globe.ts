@@ -12,7 +12,7 @@ import { createSky, createSun } from './sky';
 import { FlowField, coherenceTexture } from './flow';
 import { FLOW_COLORS } from './palettes';
 import { createFires, createQuakes, placeIt, Station, type Quake } from './markers';
-import { DATA, LayerStore, Sampler, loadTexture, type DataId, type LayerMeta } from './layers';
+import { DATA, LayerStore, Sampler, SplitSampler, loadTexture, type DataId, type LayerMeta } from './layers';
 import { gmst, lonLatToVec, moonBrightness, moonDirection, sunDirection, vecToLonLat } from './astro';
 import { Tiles } from './tiles';
 import { ATLAS, Atlas, type AtlasId } from './atlas';
@@ -114,8 +114,9 @@ export class Globe {
   private flowShown: FlowId | null = null;
   private dataShown: DataId | null = null;
   private dataMeta: LayerMeta | null = null;
-  private dataSamplers: Sampler[] = [];
+  private dataSamplers: (Sampler | SplitSampler)[] = [];
   private dataFrames: Texture[] = [];
+  private dataConf: Texture[] | null = null;
   private dataRetryAt = 0;
   private dataPending: DataId | null = null;
   private frame = 0;
@@ -133,7 +134,7 @@ export class Globe {
   /** Simulated time. Runs at real speed unless scrubbed. */
   timeOffset = 0;
   /** Master gains, tuned by eye. */
-  tune = { atmo: 5, haze: 0.6, limb: 2, sun: 2.2, night: 3.2, relief: 9, bloom: 0.6, moon: 0.06, airglow: 0.05 };
+  tune = { atmo: 5, haze: 0.85, limb: 2, sun: 2.2, night: 3.2, relief: 9, bloom: 0.6, moon: 0.06, airglow: 0.05 };
   rainSpeed = 1.8;
   onFrame: (dt: number) => void = () => {};
 
@@ -369,7 +370,8 @@ export class Globe {
     // Close to the ground the glint spreads over the whole sea: dim it and give it waves.
     const near = Math.min(1, Math.max(0, (0.35 - alt) / 0.3));
     u.uGlint.value = (1 - c.studio) * (1 - 0.6 * near);
-    u.uGlintWaves.value = near;
+    // Waves break up the glint at every distance; closer, they take over.
+    u.uGlintWaves.value = 0.45 + 0.55 * near;
     // Moonlight and airglow are real but faint: exposed like a long night photograph.
     moonDirection(date, this.moonVec);
     const nightK = Math.min(1, c.night) * (1 - c.studio);
@@ -399,16 +401,19 @@ export class Globe {
         if (want && this.time >= this.dataRetryAt && this.dataPending !== want) {
           this.dataPending = want;
           const pending = this.layers.get(want);
-          void pending.then(({ tex, meta, sampler }) => {
+          void pending.then(({ tex, conf, meta, sampler }) => {
             this.dataPending = null;
             if (this.look.data !== want || this.dataShown === want) return;
             this.dataShown = want;
             this.dataMeta = meta;
             this.dataFrames = tex;
+            this.dataConf = conf;
             this.dataSamplers = sampler;
             this.frame = 0;
             u.uData.value = tex[0];
             u.uData2.value = tex[Math.min(1, tex.length - 1)];
+            u.uDataSplit.value = conf ? 1 : 0;
+            if (conf) { u.uConf.value = conf[0]; u.uConf2.value = conf[Math.min(1, conf.length - 1)]; }
             u.uDataSize.value.set(meta.width, meta.height);
             u.uPalette.value = this.layers.palette(want);
             u.uDataStyle.value.set(...DATA[want].style);
@@ -426,11 +431,18 @@ export class Globe {
     }
     u.uDataMix.value = c.dataMix * c.dataMix * (3 - 2 * c.dataMix);
     if (this.dataShown && this.dataFrames.length > 1) {
-      this.frame = (this.frame + dt * this.rainSpeed) % this.dataFrames.length;
-      const i = Math.floor(this.frame), j = (i + 1) % this.dataFrames.length;
+      // Play the series; rest on the last frame, then fade back to the first.
+      const def = DATA[this.dataShown], n = this.dataFrames.length;
+      const fps = def.fps ?? this.rainSpeed, hold = (def.hold ?? 0) * fps;
+      this.frame = (this.frame + dt * fps) % (n - (hold ? 1 : 0) + hold);
+      let i: number, j: number, blend: number;
+      if (!hold) { i = Math.floor(this.frame); j = (i + 1) % n; blend = this.frame - i; }
+      else if (this.frame < n - 1) { i = Math.floor(this.frame); j = i + 1; blend = this.frame - i; }
+      else { i = n - 1; j = 0; const k = (this.frame - (n - 1)) / hold; blend = Math.max(0, (k - 0.75) / 0.25); blend = blend * blend * (3 - 2 * blend); }
       u.uData.value = this.dataFrames[i];
       u.uData2.value = this.dataFrames[j];
-      u.uDataBlend.value = Math.max(this.frame - i, 1e-3);
+      if (this.dataConf) { u.uConf.value = this.dataConf[i]; u.uConf2.value = this.dataConf[j]; }
+      u.uDataBlend.value = Math.max(blend, 1e-3);
     }
 
     // Flow trails.
@@ -485,6 +497,7 @@ export class Globe {
       const k = Math.min(1, Math.max(0, (this.time - r.t0) / r.seconds));
       this.year = r.from + (r.to - r.from) * k;
     }
+    u.uLossYear.value = this.year - 2000; // forest loss plays on the same clock as the atlas
     if (!this.atlas.ready) { u.uAtlasMix.value = 0; return; }
     const want = L.atlas;
     if (want !== this.atlasShown) {
@@ -624,12 +637,14 @@ export class Globe {
 
   flowSampler(id: FlowId) { return this.flowSamplers[id] ?? null; }
 
-  /** Time of the rain frame on screen, while the rain layer plays. */
-  dataFrameTime(): string | null {
-    if (!this.dataMeta?.frames || this.dataShown !== 'rain') return null;
-    return this.dataMeta.frames[Math.floor(this.frame) % this.dataMeta.frames.length]?.time ?? null;
+  /** Time and cadence of the frame on screen, while a series plays. */
+  dataFrameTime(): { time: string; cadence: 'hour' | 'day' | 'month' } | null {
+    const frames = this.dataMeta?.frames;
+    if (!frames || frames.length < 2 || !this.dataShown) return null;
+    const i = Math.min(frames.length - 1, Math.round(this.frame));
+    return { time: frames[i].time, cadence: this.dataMeta!.cadence ?? 'hour' };
   }
-  /** How far through the rain loop the frame on screen is, 0..1. */
+  /** How far through the series the frame on screen is, 0..1. */
   dataFrameProgress(): number {
     const n = this.dataFrames.length;
     return n > 1 ? Math.min(1, this.frame / (n - 1)) : 0;

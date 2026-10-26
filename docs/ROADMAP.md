@@ -101,6 +101,18 @@ Fatto e pubblicato il 26 ottobre 2026:
 - **La Terra trema**: terremoti USGS degli ultimi sette giorni, aggiornati ogni mattina,
   nuovo capitolo del primo racconto e strato in Esplora.
 
+Fatto e pubblicato il 26 ottobre 2026, sera:
+
+- **La natura**, terzo racconto: il respiro verde (NDVI mensile), le foreste perdute
+  (2001–2024, anno per anno), l'aria (aerosol MERRA-2 mensili), le barriere coralline
+  (Coral Reef Watch). Strati anche in Esplora.
+- **Strati animati**: temperatura del mare, anomalia, plancton e ghiaccio sono serie di
+  dodici mesi fino a oggi, con l'orologio del mese.
+- **Audio**: quattro caratteri della stessa musica (calmo, grave, interrogativo, disteso)
+  in dissolvenza; un ambiente per ogni capitolo; effetti più bassi.
+- **Grafica**: nuvole con rilievo, luci delle città nitide, oceano più azzurro, riflesso del
+  Sole più netto; corretta una linea sul lato notturno.
+
 ## Prossimi passi
 
 1. **Il tuo luogo**: dopo una ricerca, un racconto breve sul luogo (ora solare, alba e
@@ -108,6 +120,9 @@ Fatto e pubblicato il 26 ottobre 2026:
 2. **Scheda del paese**: al clic, la curva dal 1960 di ogni indicatore.
 3. **Un giorno sulla Terra**: ventiquattro ore in un minuto.
 4. **Cartolina**: salva l'inquadratura con titolo, data e fonti.
-5. **Dati nuovi**: cicloni attivi, aerosol, neve e vegetazione, lunghe serie (CO₂, ghiaccio
-   artico, temperatura globale).
-6. **Piattaforma**: tablet e telefono, accessibilità, inglese, dominio upari.netmilk.dev.
+5. **Dati nuovi**: cicloni attivi, neve, lunghe serie (CO₂, ghiaccio artico, temperatura
+   globale); in La natura, un capitolo sul mare (plastica o ipossia) se si trova un dato aperto
+   e affidabile.
+6. **Grafica**: nuvole volumetriche vere da vicino, oceano con onde normali, atmosfera
+   multi-scattering, transizione notte–giorno al crepuscolo con la luce cinerea della Luna.
+7. **Piattaforma**: tablet e telefono, accessibilità, inglese, dominio upari.netmilk.dev.

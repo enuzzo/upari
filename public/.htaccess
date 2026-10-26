@@ -1,0 +1,57 @@
+# upari.earth on SiteGround (Apache behind NGINX and the SiteGround CDN).
+# The daily workflow uploads a new build every morning, so the page and the data of the
+# day must never be stale, while the heavy textures, models and audio rarely change.
+
+Options -Indexes
+DirectoryIndex index.html
+
+# The list of published files kept by scripts/deploy-siteground.sh.
+<Files ".deploy-manifest">
+  Require all denied
+</Files>
+
+# One address: https, no www.
+RewriteEngine On
+RewriteCond %{HTTPS} !=on [OR]
+RewriteCond %{HTTP_HOST} ^www\. [NC]
+RewriteRule ^ https://upari.earth%{REQUEST_URI} [R=301,L]
+
+AddType model/gltf-binary .glb
+AddType application/wasm .wasm
+AddType image/webp .webp
+AddType application/geo+json .geojson
+AddType application/octet-stream .bin
+AddType text/markdown;charset=utf-8 .md
+AddDefaultCharset utf-8
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/markdown application/javascript text/javascript application/json application/geo+json image/svg+xml application/wasm
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Default for everything that is not listed below: a day, then revalidate.
+  Header set Cache-Control "public, max-age=86400"
+
+  # The page: always ask whether there is a newer one (cheap 304 when there is not).
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+
+  # Vite bundles carry a content hash in their name.
+  <If "%{REQUEST_URI} =~ m#^/assets/#">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </If>
+
+  # Rarely changing and heavy: textures, model, decoder, audio, stars, statistics snapshots, ocean currents.
+  <If "%{REQUEST_URI} =~ m#^/(earth|models|draco|audio|statistics)/# || %{REQUEST_URI} =~ m#^/(sky/stars\.bin|fields/currents\.(json|png)|icon\.svg)$#">
+    Header set Cache-Control "public, max-age=2592000, stale-while-revalidate=604800"
+  </If>
+
+  # Data of the day (wind, sea, ice, plankton, rain, fires, earthquakes, ISS orbit): refreshed every morning.
+  <If "%{REQUEST_URI} =~ m#^/(layers/|fields/wind\.|sky/iss\.json$)#">
+    Header set Cache-Control "public, max-age=3600, stale-while-revalidate=86400"
+  </If>
+
+  Header set X-Content-Type-Options "nosniff"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

@@ -1,7 +1,8 @@
 name: Dati del giorno e pubblicazione
 
 # Every day: fetch today's planet (winds, sea, ice, plankton, rain, fires, earthquakes, ISS orbit),
-# rebuild the site and publish it on GitHub Pages. Also runs on every push to main.
+# rebuild the site and publish it on upari.earth (SiteGround, over FTPS). Also runs on every push to main.
+# GitHub Pages only keeps a page that sends the old address, enuzzo.github.io/upari, to upari.earth.
 # 10:41 UTC comes after NASA publishes yesterday's GHRSST MUR and GAMSSA days.
 # Fresh data are not committed: the repository keeps a validated snapshot that is
 # used whenever a source is late, partial or unreachable.
@@ -16,7 +17,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: pages
+  group: publish
   cancel-in-progress: false
 
 jobs:
@@ -36,10 +37,10 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: ImageMagick
+      - name: ImageMagick e lftp
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq --no-install-recommends imagemagick
+          sudo apt-get install -y -qq --no-install-recommends imagemagick lftp
           convert -version | head -1
 
       - name: Dipendenze
@@ -93,13 +94,51 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Pubblica su upari.earth
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PASSWORD: ${{ secrets.DEPLOY_PASSWORD }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: scripts/deploy-siteground.sh dist
+
+      - name: Controlla upari.earth
+        # The SiteGround CDN sits in front of the server: say so if it still serves an old page or old data.
+        continue-on-error: true
+        run: |
+          sleep 20
+          stale=0
+          for f in index.html layers/rain.json fields/wind.json; do
+            live=$(curl -fsS --max-time 30 "https://upari.earth/${f/index.html/}" | sha256sum | cut -c1-64)
+            built=$(sha256sum "dist/$f" | cut -c1-64)
+            if [ "$live" = "$built" ]; then echo "$f: aggiornato"; else echo "$f: upari.earth serve ancora una versione precedente"; stale=1; fi
+          done
+          if [ $stale = 1 ]; then echo '> upari.earth non serve ancora tutti i file nuovi: probabilmente la cache del CDN SiteGround.' >> "$GITHUB_STEP_SUMMARY"; exit 1; fi
+
+      - name: Rimando dal vecchio indirizzo
+        run: |
+          mkdir -p redirect
+          cat > redirect/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+          <meta charset="utf-8">
+          <title>Upari · upari.earth</title>
+          <link rel="canonical" href="https://upari.earth/">
+          <script>location.replace('https://upari.earth/' + location.hash)</script>
+          <meta http-equiv="refresh" content="0; url=https://upari.earth/">
+          <p>Upari now lives at <a href="https://upari.earth/">upari.earth</a>.</p>
+          </html>
+          HTML
+          cp redirect/index.html redirect/404.html
+
       - name: Prepara Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
 
-      - name: Carica il sito
+      - name: Carica il rimando
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
-          path: dist
+          path: redirect
 
   # Scheduled workflows stop after 60 days without repository activity:
   # once a month, commit the fresh ISS elements to keep the daily refresh alive.

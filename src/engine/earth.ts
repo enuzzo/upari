@@ -38,6 +38,7 @@ uniform float uSunPower;
 uniform float uAtmoPower;
 uniform float uHaze;
 uniform float uGlint;
+uniform float uGlintWaves;
 uniform float uTime;
 uniform float uCloudOpacity;
 uniform float uCloudFlow;
@@ -139,6 +140,9 @@ void main() {
   // Sentinel-2 cloudless graded to Blue Marble (per-channel quantile fit on land), so the hand-over has no colour jump.
   vec3 tileC = vec3(0.55, 0.47, 0.86) * pow(max(s2 - vec3(0.005, 0.0175, 0.02), 0.0), vec3(0.82, 0.76, 1.2));
   albedo = mix(albedo, tileC, uTileMix);
+  // Sentinel-2 knows the coastline better than the 5 km relief: dark, blue-dominant pixels are water.
+  float tileWater = smoothstep(0.004, 0.016, s2.b - max(s2.r, s2.g)) * (1.0 - smoothstep(0.08, 0.16, s2.b));
+  land = mix(land, min(land, 1.0 - tileWater), uTileMix);
 #endif
   float depth = clamp((0.502 - hc) / 0.502, 0.0, 1.0);
   float shelf = (1.0 - smoothstep(0.0, 0.16, depth)) * (1.0 - land);
@@ -178,6 +182,8 @@ void main() {
   vec3 H = normalize(L + V);
   float fres = 0.02 + 0.98 * pow(1.0 - max(dot(N, V), 0.0), 5.0);
   float glint = pow(max(dot(N, H), 0.0), 140.0) * 0.55 + pow(max(dot(N, H), 0.0), 14.0) * 0.03;
+  // Seen from near the ground the glint fills the sea: let waves break it up, as in photographs from orbit.
+  if (glint * uGlint > 0.002 && uGlintWaves > 0.001) glint *= mix(1.0, 0.35 + 1.0 * smoothstep(0.2, 0.85, fbm(N * vec3(520.0, 900.0, 520.0) + vec3(0.0, 0.0, uTime * 0.01))), uGlintWaves);
   surface += (1.0 - land) * sunT * glint * (1.0 - cloud) * uSunPower * (1.0 - uBaseDim) * uGlint;
   surface += (1.0 - land) * fres * vec3(0.10, 0.18, 0.32) * smoothstep(-0.2, 0.4, NL) * 0.35 * (1.0 - uBaseDim);
   vec3 Hm = normalize(uMoon.xyz + V);
@@ -270,6 +276,7 @@ export function earthUniforms(t: EarthTextures) {
     uHaze: { value: 0.6 },
     uLimb: { value: 2 },
     uGlint: { value: 1 },
+    uGlintWaves: { value: 0 },
     uTime: { value: 0 },
     uCloudOpacity: { value: 1 },
     uCloudFlow: { value: 1 },

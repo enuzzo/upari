@@ -287,7 +287,10 @@ export class Globe {
     u.uSunPower.value = this.tune.sun;
     u.uHaze.value = this.tune.haze * (0.45 + 0.55 * lowS);
     u.uLimb.value = this.tune.limb;
-    u.uGlint.value = 1 - c.studio;
+    // Close to the ground the glint spreads over the whole sea: dim it and give it waves.
+    const near = Math.min(1, Math.max(0, (0.35 - alt) / 0.3));
+    u.uGlint.value = (1 - c.studio) * (1 - 0.6 * near);
+    u.uGlintWaves.value = near;
     // Moonlight and airglow are real but faint: exposed like a long night photograph.
     moonDirection(date, this.moonVec);
     const nightK = Math.min(1, c.night) * (1 - c.studio);

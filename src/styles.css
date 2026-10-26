@@ -86,6 +86,9 @@ body.started .brand { opacity: 1; visibility: visible; transition-delay: 0.6s, 0
   background:
     radial-gradient(ellipse at 30% 62%, rgba(2, 3, 6, 0.82) 0%, rgba(2, 3, 6, 0.55) 38%, transparent 72%),
     linear-gradient(90deg, rgba(2, 3, 6, 0.55) 25%, transparent 62%);
+  /* Fade the box out at the top, so the shade never shows a straight edge. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 40%);
+  mask-image: linear-gradient(to bottom, transparent, #000 40%);
   pointer-events: none;
 }
 .caption { text-shadow: var(--halo); }

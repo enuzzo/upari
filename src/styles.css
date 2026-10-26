@@ -32,7 +32,9 @@ svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width:
 }
 body.ready .top { opacity: 1; }
 .top > * { pointer-events: auto; }
-.brand { font-family: var(--serif); font-size: 30px; letter-spacing: 0.01em; line-height: 1; }
+.brand { font-family: var(--serif); font-size: 30px; letter-spacing: 0.01em; line-height: 1; opacity: 0; visibility: hidden; transition: opacity 1.2s var(--ease) 0.6s, visibility 0s 1.8s; }
+/* The title already says Upari: the small mark appears once the planet takes the stage. */
+body.started .brand { opacity: 1; visibility: visible; transition-delay: 0.6s, 0s; }
 .top-actions { display: flex; align-items: center; gap: 6px; }
 .clock { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); margin-right: 14px; font-variant-numeric: tabular-nums; }
 .icon-btn {
@@ -213,22 +215,33 @@ body.ready.started .rail { opacity: 1; transform: none; }
   transition: background 3.2s var(--ease);
 }
 .veil.clear { background: transparent; }
+/* A shade from the left that ends just on the planet's face, so the title reads on clouds and desert. */
+.veil::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 2s var(--ease);
+  background: linear-gradient(90deg, rgba(3, 4, 7, 0.78) 0%, rgba(3, 4, 7, 0.62) 38%, rgba(3, 4, 7, 0.28) 54%, rgba(3, 4, 7, 0) 66%);
+}
+.veil.shown::before { opacity: 1; }
+.veil.gone::before { opacity: 0; }
+.veil > * { position: relative; }
 .veil.gone { pointer-events: none; }
 .veil.gone .intro { opacity: 0; transform: translateY(-14px); filter: blur(8px); }
 .intro { max-width: 640px; transition: opacity 1.4s var(--ease), transform 1.6s var(--ease), filter 1.4s var(--ease); }
 .intro-mark {
   font-family: var(--serif); font-size: clamp(110px, 13vw, 220px); line-height: 0.82; letter-spacing: -0.02em;
-  background: linear-gradient(180deg, #fff 30%, rgba(255, 233, 200, 0.75));
+  /* The gradient is clipped to the text box: pad it so the descender of the p is painted. */
+  padding-bottom: 0.2em; margin-bottom: -0.2em;
+  background: linear-gradient(180deg, #fff 30%, rgba(255, 238, 212, 0.92));
   -webkit-background-clip: text; background-clip: text; color: transparent;
-  opacity: 0; transform: translateY(18px); filter: blur(10px);
+  opacity: 0; transform: translateY(18px); filter: blur(10px) drop-shadow(0 2px 18px rgba(0, 0, 0, 0.7));
   transition: opacity 2.4s var(--ease), transform 2.6s var(--ease), filter 2.4s var(--ease);
 }
 .intro-line {
-  font-family: var(--serif); font-style: italic; font-size: clamp(24px, 2.2vw, 34px); color: var(--ink-2); margin: 22px 0 46px 0.08em;
+  font-family: var(--serif); font-style: italic; font-size: clamp(24px, 2.2vw, 34px); color: var(--ink); margin: 22px 0 46px 0.08em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), 0 0 22px rgba(0, 0, 0, 0.85);
   opacity: 0; transition: opacity 2s var(--ease) 0.8s;
 }
 .intro-actions { display: flex; gap: 28px; align-items: center; opacity: 0; transition: opacity 1.6s var(--ease) 1.6s; }
-.veil.shown .intro-mark { opacity: 1; transform: none; filter: none; }
+.veil.shown .intro-mark { opacity: 1; transform: none; filter: blur(0) drop-shadow(0 2px 18px rgba(0, 0, 0, 0.7)); }
 .veil.shown .intro-line, .veil.shown .intro-actions { opacity: 1; }
 .cta {
   font-size: 13px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
@@ -237,7 +250,7 @@ body.ready.started .rail { opacity: 1; transform: none; }
   box-shadow: 0 0 0 0 rgba(255, 224, 180, 0);
 }
 .cta:hover { transform: translateY(-1px); box-shadow: 0 0 40px 2px rgba(255, 224, 180, 0.28); }
-.ghost { font-size: 13px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-2); padding: 18px 0; border-bottom: 1px solid transparent; transition: color 0.3s, border-color 0.3s; }
+.ghost { font-size: 13px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-2); text-shadow: 0 0 16px rgba(0, 0, 0, 0.9); padding: 18px 0; border-bottom: 1px solid transparent; transition: color 0.3s, border-color 0.3s; }
 .ghost:hover { color: var(--ink); border-color: var(--ink-3); }
 .intro-actions button:disabled { opacity: 0.35; cursor: progress; }
 .loader { position: fixed; left: 0; right: 0; bottom: 0; height: 1px; background: transparent; }

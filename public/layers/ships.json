@@ -1,0 +1,15 @@
+{
+ "id": "ships",
+ "width": 4096,
+ "height": 2048,
+ "unit": "log10(1+AIS)",
+ "scale": "log",
+ "min": 0,
+ "max": 7.592948483742114,
+ "coverage": 1,
+ "dates": [
+  "2015-01-01",
+  "2021-02-28"
+ ],
+ "source": "World Bank / IMF \u00b7 Global Shipping Traffic Density \u00b7 CC BY 4.0"
+}

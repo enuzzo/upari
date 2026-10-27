@@ -1,0 +1,77 @@
+{
+ "id": "ozone",
+ "width": 2048,
+ "height": 1024,
+ "cadence": "day",
+ "unit": "DU",
+ "scale": "linear",
+ "min": 100,
+ "max": 500,
+ "source": "NASA/NOAA OMPS · ozono totale · GIBS",
+ "layer": "OMPS_Ozone_Total_Column",
+ "dates": [
+  "2026-10-26"
+ ],
+ "frames": [
+  {
+   "file": "ozone-2025-10.jpg",
+   "conf": "ozone-2025-10-c.png",
+   "time": "2025-10-15"
+  },
+  {
+   "file": "ozone-2025-11.jpg",
+   "conf": "ozone-2025-11-c.png",
+   "time": "2025-11-15"
+  },
+  {
+   "file": "ozone-2025-12.jpg",
+   "conf": "ozone-2025-12-c.png",
+   "time": "2025-12-15"
+  },
+  {
+   "file": "ozone-2026-01.jpg",
+   "conf": "ozone-2026-01-c.png",
+   "time": "2026-01-15"
+  },
+  {
+   "file": "ozone-2026-02.jpg",
+   "conf": "ozone-2026-02-c.png",
+   "time": "2026-02-15"
+  },
+  {
+   "file": "ozone-2026-03.jpg",
+   "conf": "ozone-2026-03-c.png",
+   "time": "2026-03-15"
+  },
+  {
+   "file": "ozone-2026-04.jpg",
+   "conf": "ozone-2026-04-c.png",
+   "time": "2026-04-15"
+  },
+  {
+   "file": "ozone-2026-05.jpg",
+   "conf": "ozone-2026-05-c.png",
+   "time": "2026-05-15"
+  },
+  {
+   "file": "ozone-2026-06.jpg",
+   "conf": "ozone-2026-06-c.png",
+   "time": "2026-06-15"
+  },
+  {
+   "file": "ozone-2026-08.jpg",
+   "conf": "ozone-2026-08-c.png",
+   "time": "2026-08-15"
+  },
+  {
+   "file": "ozone-2026-09.jpg",
+   "conf": "ozone-2026-09-c.png",
+   "time": "2026-09-15"
+  },
+  {
+   "file": "ozone-latest.jpg",
+   "conf": "ozone-latest-c.png",
+   "time": "2026-10-26"
+  }
+ ]
+}

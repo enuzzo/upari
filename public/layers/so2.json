@@ -1,0 +1,18 @@
+{
+ "id": "so2",
+ "width": 2048,
+ "height": 1024,
+ "coverage": 1,
+ "unit": "DU",
+ "scale": "linear",
+ "min": 1,
+ "max": 16,
+ "dates": [
+  "2026-10-26",
+  "2026-10-25",
+  "2026-10-24",
+  "2026-10-23"
+ ],
+ "source": "ESA/Copernicus Sentinel-5P TROPOMI · NASA GIBS",
+ "layer": "TROPOMI_L2_Sulfur_Dioxide_Total_Vertical_Column"
+}

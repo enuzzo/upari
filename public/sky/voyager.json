@@ -1,0 +1,19 @@
+{
+ "date": "2026-10-27",
+ "lightDayAu": 173.145,
+ "v1": {
+  "au": 172.752,
+  "lightHours": 23.95,
+  "ra": 258.725,
+  "dec": 12.108,
+  "lightDay": "2026-11-20"
+ },
+ "v2": {
+  "au": 144.476,
+  "lightHours": 20.03,
+  "ra": 302.402,
+  "dec": -59.648,
+  "lightDay": null
+ },
+ "source": "NASA/JPL Horizons"
+}

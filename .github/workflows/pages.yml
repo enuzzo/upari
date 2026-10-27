@@ -24,7 +24,7 @@ jobs:
   build:
     if: github.repository == 'enuzzo/upari'
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 55
     steps:
       - name: Leggi il codice
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -50,16 +50,30 @@ jobs:
         id: refresh
         # A source that fails keeps its published snapshot; the site is rebuilt anyway.
         continue-on-error: true
-        timeout-minutes: 25
+        timeout-minutes: 32
         env:
           MAGICK_BIN: convert
           UPARI_TMP: ${{ runner.temp }}/upari
-          UPARI_DEADLINE_MIN: '20'
+          UPARI_DEADLINE_MIN: '28'
         run: |
           status=0
           node scripts/prepare-fields.mjs wind || status=1
           # Series keep their past months in the repository: only new months and the latest day are fetched.
-          node scripts/prepare-layers.mjs sst anomaly ice chlorophyll ndvi aerosol coral rain fires quakes || status=1
+          node scripts/prepare-layers.mjs sst anomaly ice chlorophyll ndvi aerosol coral ozone no2 snow so2 rain fires quakes cyclones volcanoes icebergs slicks || status=1
+          exit $status
+
+      - name: Il cielo e il clima
+        # Satellites, the Sun, aurora, launches, asteroids, fireballs, Voyager; temperature, CO2, sea ice.
+        # Each source keeps its published file when it fails.
+        continue-on-error: true
+        timeout-minutes: 6
+        env:
+          MAGICK_BIN: convert
+          UPARI_TMP: ${{ runner.temp }}/upari
+        run: |
+          status=0
+          node scripts/prepare-sky.mjs || status=1
+          node scripts/prepare-climate.mjs || status=1
           exit $status
 
       - name: Orbita della ISS
@@ -79,13 +93,19 @@ jobs:
             echo
             echo '| Strato | Date | Copertura |'
             echo '|---|---|---|'
-            for f in sst anomaly ice chlorophyll ndvi aerosol coral; do
+            for f in sst anomaly ice chlorophyll ndvi aerosol coral ozone no2 snow; do
               node -e 'const m=require("./public/layers/"+process.argv[1]+".json"); console.log(`| ${m.id} | ${m.frames ? `${m.frames[0].time} → ${m.frames.at(-1).time}` : (m.dates||[])[0]} | ${m.frames ? `${m.frames.length} fotogrammi` : m.coverage} |`)' "$f"
             done
             node -e 'const m=require("./public/layers/rain.json"); console.log(`| pioggia | ${m.frames[0].time} → ${m.frames.at(-1).time} | ${m.frames.length} fotogrammi |`)'
             node -e 'const m=require("./public/layers/fires.json"); console.log(`| fuochi | fino al ${m.newest} | ${m.detections} rilevamenti |`)'
             node -e 'const m=require("./public/fields/wind.json"); console.log(`| vento | ${m.time} | ${m.valid} celle |`)'
             node -e 'const [o]=require("./public/sky/iss.json"); console.log(`| ISS | epoca ${o.EPOCH} | |`)'
+            for f in cyclones volcanoes icebergs slicks; do
+              node -e 'const m=require("./public/layers/"+process.argv[1]+".json"); console.log(`| ${m.id} | ${m.fetched} | ${m.count} |`)' "$f" || true
+            done
+            node -e 'try { const m=require("./public/sky/satellites.json"); console.log(`| satelliti | ${m.base} | ${m.count} |`) } catch { console.log("| satelliti | — | non disponibili |") }'
+            node -e 'const m=require("./public/climate/temperature.json"); console.log(`| temperatura globale | ${m.last.date} | ${m.last.anomaly} °C su 1991–2020 (${m.last.status}) |`)'
+            node -e 'const m=require("./public/climate/co2.json"); console.log(`| CO₂ Mauna Loa | ${m.last.date} | ${m.last.ppm} ppm |`)'
             echo
             if [ "${{ steps.refresh.outcome }}" != "success" ]; then
               echo '> Almeno una fonte non era disponibile o incompleta: per quella resta la versione precedente.'

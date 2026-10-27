@@ -17,3 +17,6 @@ __pycache__/
 /bridge-data/
 /node_modules 2/
 /public/cesium/
+
+# Fetched in CI only (CelesTrak); a local copy is just for testing
+/public/sky/satellites.*

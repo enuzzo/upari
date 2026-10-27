@@ -1,0 +1,19 @@
+{
+ "id": "aurora",
+ "width": 360,
+ "height": 181,
+ "unit": "%",
+ "scale": "linear",
+ "min": 0,
+ "max": 50,
+ "dates": [
+  "2026-10-27T15:59:00Z"
+ ],
+ "observed": "2026-10-27T14:54:00Z",
+ "kp": {
+  "now": 2,
+  "time": "2026-10-27T12:00:00",
+  "max24h": 2.67
+ },
+ "source": "NOAA SWPC · OVATION aurora forecast · planetary Kp"
+}

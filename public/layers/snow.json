@@ -1,0 +1,89 @@
+{
+ "id": "snow",
+ "width": 2048,
+ "height": 1024,
+ "cadence": "month",
+ "unit": "%",
+ "scale": "linear",
+ "min": 0,
+ "max": 100,
+ "source": "NASA VIIRS NOAA-20 · copertura nevosa NDSI · GIBS",
+ "layer": "VIIRS_NOAA20_NDSI_Snow_Cover",
+ "dates": [
+  "2026-10-26",
+  "2026-10-25",
+  "2026-10-24",
+  "2026-10-23",
+  "2026-10-22",
+  "2026-10-21",
+  "2026-10-20",
+  "2026-10-19"
+ ],
+ "frames": [
+  {
+   "file": "snow-2025-10.jpg",
+   "conf": "snow-2025-10-c.png",
+   "time": "2025-10-15"
+  },
+  {
+   "file": "snow-2025-11.jpg",
+   "conf": "snow-2025-11-c.png",
+   "time": "2025-11-15"
+  },
+  {
+   "file": "snow-2025-12.jpg",
+   "conf": "snow-2025-12-c.png",
+   "time": "2025-12-15"
+  },
+  {
+   "file": "snow-2026-01.jpg",
+   "conf": "snow-2026-01-c.png",
+   "time": "2026-01-15"
+  },
+  {
+   "file": "snow-2026-02.jpg",
+   "conf": "snow-2026-02-c.png",
+   "time": "2026-02-15"
+  },
+  {
+   "file": "snow-2026-03.jpg",
+   "conf": "snow-2026-03-c.png",
+   "time": "2026-03-15"
+  },
+  {
+   "file": "snow-2026-04.jpg",
+   "conf": "snow-2026-04-c.png",
+   "time": "2026-04-15"
+  },
+  {
+   "file": "snow-2026-05.jpg",
+   "conf": "snow-2026-05-c.png",
+   "time": "2026-05-15"
+  },
+  {
+   "file": "snow-2026-06.jpg",
+   "conf": "snow-2026-06-c.png",
+   "time": "2026-06-15"
+  },
+  {
+   "file": "snow-2026-07.jpg",
+   "conf": "snow-2026-07-c.png",
+   "time": "2026-07-15"
+  },
+  {
+   "file": "snow-2026-08.jpg",
+   "conf": "snow-2026-08-c.png",
+   "time": "2026-08-15"
+  },
+  {
+   "file": "snow-2026-09.jpg",
+   "conf": "snow-2026-09-c.png",
+   "time": "2026-09-15"
+  },
+  {
+   "file": "snow-latest.jpg",
+   "conf": "snow-latest-c.png",
+   "time": "2026-10-26"
+  }
+ ]
+}

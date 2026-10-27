@@ -330,7 +330,13 @@ async function series(id, steps, build, meta, { W, H, minFrames, confScale = 4, 
  * not come back half drawn like large WMS renders sometimes do). In EPSG:4326, level 2 has
  * 5 × 3 tiles of 72°, 512 px each: 2560 × 1280 px for the world, resized to W × H.
  */
-async function wmtsWorld(layer, time, W, H, matrix = '1km') {
+/** Tile matrix set of each layer in GIBS (they come at different native resolutions). */
+const MATRIX = {
+  OMPS_Ozone_Total_Column: '2km', TROPOMI_L2_Nitrogen_Dioxide_Tropospheric_Column: '2km',
+  TROPOMI_L2_Sulfur_Dioxide_Total_Vertical_Column: '2km', VIIRS_NOAA20_NDSI_Snow_Cover: '500m',
+};
+
+async function wmtsWorld(layer, time, W, H, matrix = MATRIX[layer] ?? '1km') {
   const file = join(TMP, `${layer}_${time}_wmts_${W}.png`);
   if (existsSync(file)) return file;
   const tiles = [];
@@ -384,6 +390,27 @@ async function daySeries(id, layer, cmap, norm, W, H, meta) {
 }
 
 const months = (n, day) => pastMonths(n, day).map((t) => ({ key: t.slice(0, 7), time: t }));
+
+/** Pixel-wise maximum of several frames, in normalised units (for things seen only now and then). */
+function maxComposite(frames, cmap, norm, W, H) {
+  const val = new Float32Array(W * H);
+  for (const buf of frames) for (let i = 0; i < W * H; i++) {
+    if (buf[i * 4 + 3] < 128) continue;
+    const v = cmap.get((buf[i * 4] << 16) | (buf[i * 4 + 1] << 8) | buf[i * 4 + 2]);
+    if (v !== undefined) val[i] = Math.max(val[i], norm(v));
+  }
+  return val;
+}
+
+/** Points published as a small JSON file, kept when the new list looks broken. */
+function writePoints(id, list, meta, min = 1) {
+  const previous = readMeta(OUT, id);
+  if (list.length < min || (previous?.count && list.length < previous.count * 0.3)) throw new Error(`${id}: ${list.length} items look incomplete; keeping the published file`);
+  writeAtomic(join(OUT, `${id}.json`), JSON.stringify({ id, count: list.length, fetched: new Date().toISOString(), ...meta, list }));
+  console.log(`${id}: ${list.length}`);
+}
+
+async function getJson(url) { return JSON.parse((await fetchBuffer(url)).toString()); }
 
 const layers = {
   async chlorophyll() {
@@ -481,6 +508,137 @@ const layers = {
       return { val: pushPull(val, w, W, H), conf: blurCoverage(w, W, H, 1), dates: [step.time], time: step.time };
     }, { unit: '°C-settimane', scale: 'linear', min: 0, max: MAX, source: 'NOAA Coral Reef Watch · Degree Heating Week · PacIOOS ERDDAP', layer: 'CRW_DHW' },
     { W, H, minFrames: 10, cadence: 'day' });
+  },
+  async ozone() {
+    // The ozone layer through the year: the hole opens over Antarctica every southern spring.
+    // OMPS sees by sunlight, so the polar night has no data (and the map fades there).
+    const W = 2048, H = 1024, cmap = await colormap('OMPS_Ozone_Total_Column');
+    const lo = 100, hi = 500;
+    await daySeries('ozone', 'OMPS_Ozone_Total_Column', cmap, (v) => (v - lo) / (hi - lo), W, H,
+      { unit: 'DU', scale: 'linear', min: lo, max: hi, source: 'NASA/NOAA OMPS · ozono totale · GIBS', layer: 'OMPS_Ozone_Total_Column' });
+  },
+  async no2() {
+    // Nitrogen dioxide, the gas of engines and chimneys: one month of Sentinel-5P TROPOMI days
+    // per frame (clouds hide most of a single day), the latest frame fuses the last ten days.
+    const W = 2048, H = 1024, cmap = await colormap('OMI_Nitrogen_Dioxide_Tropo_Column');
+    const lo = 14.5, hi = 16.3; // log10 molecules/cm²
+    const norm = (v) => (Math.log10(Math.max(v, 10 ** lo)) - lo) / (hi - lo);
+    const layer = 'TROPOMI_L2_Nitrogen_Dioxide_Tropospheric_Column';
+    const fuse = (frames) => {
+      const { val, w } = composite(frames, cmap, norm, W, H);
+      return { val: pushPull(val, w, W, H), conf: blurCoverage(w, W, H, 3).map((c) => Math.min(1, c * 2)) };
+    };
+    const steps = [...months(12, 15), { key: 'latest', time: iso(new Date()), live: true }];
+    await series('no2', steps, async (step) => {
+      if (step.live) {
+        const { frames, dates } = await availableDays(layer, cmap, 10, W, H, 14, false, true);
+        return frames.length >= 5 ? { ...fuse(frames), dates, time: dates[0] } : null;
+      }
+      const bufs = [];
+      for (const day of [3, 8, 13, 18, 23, 28]) {
+        const r = await dayNear(layer, cmap, `${step.key}-${pad(day)}`, W, H, false, 2, true);
+        if (r) bufs.push(r.buf);
+      }
+      return bufs.length >= 3 ? fuse(bufs) : null;
+    }, { unit: 'molecole/cm²', scale: 'log10', min: lo, max: hi, source: 'ESA/Copernicus Sentinel-5P TROPOMI · NASA GIBS', layer }, { W, H, minFrames: 10 });
+  },
+  async snow() {
+    // Where snow lies, month by month: the most snow seen over eight days of each month
+    // (VIIRS sees the ground only between clouds; ground without snow and clouds look alike,
+    // so this shows where snow was seen, not where it surely was not).
+    const W = 2048, H = 1024, cmap = await colormap('MODIS_NDSI_Snow_Cover');
+    const layer = 'VIIRS_NOAA20_NDSI_Snow_Cover';
+    const norm = (v) => (v >= 1 && v <= 100 ? v / 100 : NaN);
+    const fuse = (frames) => {
+      const val = maxComposite(frames, cmap, (v) => (Number.isNaN(norm(v)) ? 0 : norm(v)), W, H);
+      return { val, conf: new Float32Array(W * H).fill(1) };
+    };
+    const steps = [...months(12, 15), { key: 'latest', time: iso(new Date()), live: true }];
+    await series('snow', steps, async (step) => {
+      if (step.live) {
+        const { frames, dates } = await availableDays(layer, cmap, 8, W, H, 12, false, true);
+        return frames.length >= 4 ? { ...fuse(frames), dates, time: dates[0] } : null;
+      }
+      const bufs = [];
+      for (const day of [2, 6, 10, 14, 18, 22, 26, 28]) {
+        const r = await dayNear(layer, cmap, `${step.key}-${pad(day)}`, W, H, false, 2, true);
+        if (r) bufs.push(r.buf);
+      }
+      return bufs.length >= 4 ? fuse(bufs) : null;
+    }, { unit: '%', scale: 'linear', min: 0, max: 100, source: 'NASA VIIRS NOAA-20 · copertura nevosa NDSI · GIBS', layer }, { W, H, minFrames: 10, confScale: 8 });
+  },
+  async so2() {
+    // Sulphur dioxide of the last four days, the breath of volcanoes (and of some smelters).
+    const W = 2048, H = 1024, cmap = await colormap('OMI_SO2_Lower_Troposphere');
+    const layer = 'TROPOMI_L2_Sulfur_Dioxide_Total_Vertical_Column';
+    const { frames, dates } = await availableDays(layer, cmap, 4, W, H, 8, false, true);
+    if (frames.length < 2) throw new Error('so2: not enough days');
+    const val = maxComposite(frames, cmap, (v) => Math.min(1, Math.max(0, (v - 1) / 15)), W, H);
+    writeLayer('so2', val, new Float32Array(W * H).fill(1), W, H, { unit: 'DU', scale: 'linear', min: 1, max: 16, dates, source: 'ESA/Copernicus Sentinel-5P TROPOMI · NASA GIBS', layer });
+  },
+  async cyclones() {
+    // Tropical cyclones of the last ten days, with their tracks (IBTrACS, about two days late).
+    const csv = (await fetchBuffer('https://www.ncei.noaa.gov/data/international-best-track-archive-for-climate-stewardship-ibtracs/v04r01/access/csv/ibtracs.ACTIVE.list.v04r01.csv')).toString();
+    const lines = csv.trim().split('\n');
+    const cols = lines[0].split(',');
+    const ci = (n) => cols.indexOf(n);
+    const [iSid, iName, iBasin, iTime, iLat, iLon, iWind, iUsa] = ['SID', 'NAME', 'BASIN', 'ISO_TIME', 'LAT', 'LON', 'WMO_WIND', 'USA_WIND'].map(ci);
+    const storms = new Map();
+    for (const l of lines.slice(2)) {
+      const c = l.split(',');
+      const wind = Number(c[iWind]) || Number(c[iUsa]) || null;
+      const s = storms.get(c[iSid]) ?? { name: c[iName], basin: c[iBasin], track: [] };
+      s.track.push([c[iTime].replace(' ', 'T') + 'Z', Number(c[iLat]), Number(c[iLon]), wind]);
+      storms.set(c[iSid], s);
+    }
+    const since = Date.now() - 10 * 86400e3;
+    const list = [...storms.entries()].filter(([, s]) => Date.parse(s.track.at(-1)[0]) > since)
+      .map(([sid, s]) => ({ sid, name: s.name === 'NOT_NAMED' ? null : s.name, basin: s.basin, peak: Math.max(0, ...s.track.map((p) => p[3] ?? 0)), track: s.track }));
+    writeAtomic(join(OUT, 'cyclones.json'), JSON.stringify({ id: 'cyclones', count: list.length, fetched: new Date().toISOString(), days: 10, unit: 'kt', source: 'NOAA NCEI IBTrACS v04r01 · ACTIVE', list }));
+    console.log(`cyclones: ${list.length} in the last 10 days`);
+  },
+  async volcanoes() {
+    // Eruptions still going on, from the Smithsonian Global Volcanism Program.
+    const d = await getJson("https://webservices.volcano.si.edu/geoserver/GVP-VOTW/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=GVP-VOTW:E3WebApp_Eruptions1960&outputFormat=application/json&CQL_FILTER=ContinuingEruption%3D%27True%27");
+    const list = (d.features ?? []).map((f) => {
+      const p = f.properties;
+      return { name: p.VolcanoName, number: p.VolcanoNumber, lat: p.LatitudeDecimal, lon: p.LongitudeDecimal, since: p.StartDate, vei: p.ExplosivityIndexMax };
+    }).filter((v) => Number.isFinite(v.lat) && Number.isFinite(v.lon));
+    writePoints('volcanoes', list, { source: 'Smithsonian Institution, Global Volcanism Program · Volcanoes of the World' }, 10);
+  },
+  async icebergs() {
+    // The named Antarctic icebergs tracked by the US National Ice Center, about once a week.
+    const csv = (await fetchBuffer('https://usicecenter.gov/File/DownloadCurrent?pId=134')).toString().replace(/^\uFEFF/, '');
+    const rows = csv.trim().split('\n').slice(1).map((l) => l.split(','));
+    const list = rows.map((c) => ({ name: c[0], lengthNm: Number(c[1]), widthNm: Number(c[2]), lat: Number(c[3]), lon: Number(c[4]), km2: Number(c[7]), updated: c[8]?.trim() }))
+      .filter((b) => Number.isFinite(b.lat) && Number.isFinite(b.lon));
+    writePoints('icebergs', list, { source: 'U.S. National Ice Center · Antarctic icebergs' }, 5);
+  },
+  async slicks() {
+    // Oil slicks found by SkyTruth Cerulean in Sentinel-1 radar images, the last thirty days,
+    // only the detections the model is surest about. Machine detections: not reviewed by a
+    // person, and SkyTruth does not judge whether a slick is illegal. CC BY-SA 4.0.
+    const end = new Date(), start = new Date(Date.now() - 30 * 86400e3);
+    const list = [];
+    for (let offset = 0; offset < 20000; offset += 1000) {
+      checkDeadline('slicks');
+      const q = new URLSearchParams({
+        limit: '1000', offset: String(offset), datetime: `${start.toISOString().slice(0, 19)}Z/${end.toISOString().slice(0, 19)}Z`,
+        filter: 'machine_confidence > 0.95', properties: 'slick_timestamp,area,machine_confidence',
+      });
+      const page = await getJson(`https://api.cerulean.skytruth.org/collections/public.slick_plus/items?${q}`);
+      for (const f of page.features ?? []) {
+        let x0 = 180, x1 = -180, y0 = 90, y1 = -90;
+        const walk = (c) => { if (typeof c[0] === 'number') { x0 = Math.min(x0, c[0]); x1 = Math.max(x1, c[0]); y0 = Math.min(y0, c[1]); y1 = Math.max(y1, c[1]); } else c.forEach(walk); };
+        if (!f.geometry) continue;
+        walk(f.geometry.coordinates);
+        const p = f.properties;
+        if (Math.abs((y0 + y1) / 2) > 70) continue; // sea ice fools the radar model
+        list.push([+((y0 + y1) / 2).toFixed(3), +((x0 + x1) / 2).toFixed(3), +(Number(p.area) / 1e6).toFixed(2), p.slick_timestamp.slice(0, 10)]);
+      }
+      if ((page.features?.length ?? 0) < 1000) break;
+    }
+    writePoints('slicks', list, { days: 30, fields: ['lat', 'lon', 'km2', 'date'], source: 'SkyTruth Cerulean · Sentinel-1 · CC BY-SA 4.0' }, 100);
   },
   async rain() {
     // Last 24 hours of global rain, one frame per hour, promoted only as a complete set.

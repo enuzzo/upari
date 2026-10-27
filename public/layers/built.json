@@ -1,0 +1,92 @@
+{
+ "id": "built",
+ "width": 4096,
+ "height": 2048,
+ "cadence": "year",
+ "unit": "%",
+ "scale": "sqrt",
+ "min": 0,
+ "max": 1,
+ "dates": [
+  "2030-07-01"
+ ],
+ "projected": [
+  2025,
+  2030
+ ],
+ "source": "European Commission, JRC \u00b7 GHS-BUILT-S R2023A \u00b7 Pesaresi & Politis 2023",
+ "frames": [
+  {
+   "file": "built-1975.jpg",
+   "conf": "built-1975-c.png",
+   "time": "1975-07-01",
+   "km2": 173580
+  },
+  {
+   "file": "built-1980.jpg",
+   "conf": "built-1980-c.png",
+   "time": "1980-07-01",
+   "km2": 194288
+  },
+  {
+   "file": "built-1985.jpg",
+   "conf": "built-1985-c.png",
+   "time": "1985-07-01",
+   "km2": 220084
+  },
+  {
+   "file": "built-1990.jpg",
+   "conf": "built-1990-c.png",
+   "time": "1990-07-01",
+   "km2": 249833
+  },
+  {
+   "file": "built-1995.jpg",
+   "conf": "built-1995-c.png",
+   "time": "1995-07-01",
+   "km2": 280113
+  },
+  {
+   "file": "built-2000.jpg",
+   "conf": "built-2000-c.png",
+   "time": "2000-07-01",
+   "km2": 315677
+  },
+  {
+   "file": "built-2005.jpg",
+   "conf": "built-2005-c.png",
+   "time": "2005-07-01",
+   "km2": 345786
+  },
+  {
+   "file": "built-2010.jpg",
+   "conf": "built-2010-c.png",
+   "time": "2010-07-01",
+   "km2": 382248
+  },
+  {
+   "file": "built-2015.jpg",
+   "conf": "built-2015-c.png",
+   "time": "2015-07-01",
+   "km2": 422816
+  },
+  {
+   "file": "built-2020.jpg",
+   "conf": "built-2020-c.png",
+   "time": "2020-07-01",
+   "km2": 464586
+  },
+  {
+   "file": "built-2025.jpg",
+   "conf": "built-2025-c.png",
+   "time": "2025-07-01",
+   "km2": 491637
+  },
+  {
+   "file": "built-2030.jpg",
+   "conf": "built-2030-c.png",
+   "time": "2030-07-01",
+   "km2": 509277
+  }
+ ]
+}

@@ -1,0 +1,91 @@
+{
+ "id": "no2",
+ "width": 2048,
+ "height": 1024,
+ "cadence": "month",
+ "unit": "molecole/cm²",
+ "scale": "log10",
+ "min": 14.5,
+ "max": 16.3,
+ "source": "ESA/Copernicus Sentinel-5P TROPOMI · NASA GIBS",
+ "layer": "TROPOMI_L2_Nitrogen_Dioxide_Tropospheric_Column",
+ "dates": [
+  "2026-10-26",
+  "2026-10-25",
+  "2026-10-24",
+  "2026-10-23",
+  "2026-10-22",
+  "2026-10-21",
+  "2026-10-20",
+  "2026-10-19",
+  "2026-10-18",
+  "2026-10-17"
+ ],
+ "frames": [
+  {
+   "file": "no2-2025-10.jpg",
+   "conf": "no2-2025-10-c.png",
+   "time": "2025-10-15"
+  },
+  {
+   "file": "no2-2025-11.jpg",
+   "conf": "no2-2025-11-c.png",
+   "time": "2025-11-15"
+  },
+  {
+   "file": "no2-2025-12.jpg",
+   "conf": "no2-2025-12-c.png",
+   "time": "2025-12-15"
+  },
+  {
+   "file": "no2-2026-01.jpg",
+   "conf": "no2-2026-01-c.png",
+   "time": "2026-01-15"
+  },
+  {
+   "file": "no2-2026-02.jpg",
+   "conf": "no2-2026-02-c.png",
+   "time": "2026-02-15"
+  },
+  {
+   "file": "no2-2026-03.jpg",
+   "conf": "no2-2026-03-c.png",
+   "time": "2026-03-15"
+  },
+  {
+   "file": "no2-2026-04.jpg",
+   "conf": "no2-2026-04-c.png",
+   "time": "2026-04-15"
+  },
+  {
+   "file": "no2-2026-05.jpg",
+   "conf": "no2-2026-05-c.png",
+   "time": "2026-05-15"
+  },
+  {
+   "file": "no2-2026-06.jpg",
+   "conf": "no2-2026-06-c.png",
+   "time": "2026-06-15"
+  },
+  {
+   "file": "no2-2026-07.jpg",
+   "conf": "no2-2026-07-c.png",
+   "time": "2026-07-15"
+  },
+  {
+   "file": "no2-2026-08.jpg",
+   "conf": "no2-2026-08-c.png",
+   "time": "2026-08-15"
+  },
+  {
+   "file": "no2-2026-09.jpg",
+   "conf": "no2-2026-09-c.png",
+   "time": "2026-09-15"
+  },
+  {
+   "file": "no2-latest.jpg",
+   "conf": "no2-latest-c.png",
+   "time": "2026-10-26"
+  }
+ ]
+}

@@ -1,5 +1,6 @@
 import { t } from '../i18n';
 import { num, dayMonth, dayShort, timeUtc } from '../i18n/format';
+import { fresh } from '../engine/fresh';
 
 // Panels drawn beside the planet when a number needs its history to be understood:
 // the temperature of every day since 1940, the carbon dioxide of Mauna Loa, the Sun of
@@ -13,7 +14,7 @@ const $ = (id: string) => document.getElementById(id)!;
 const cache = new Map<string, Promise<any>>();
 const json = (url: string) => {
   let p = cache.get(url);
-  if (!p) { p = fetch(url).then((r) => { if (!r.ok) throw new Error(url); return r.json(); }); p.catch(() => cache.delete(url)); cache.set(url, p); }
+  if (!p) { p = fetch(fresh(url)).then((r) => { if (!r.ok) throw new Error(url); return r.json(); }); p.catch(() => cache.delete(url)); cache.set(url, p); }
   return p;
 };
 

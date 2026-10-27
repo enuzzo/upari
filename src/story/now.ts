@@ -3,6 +3,7 @@ import { placeIt, type Quake } from '../engine/markers';
 import { climate } from './charts';
 import { t } from '../i18n';
 import { dayMonth, num } from '../i18n/format';
+import { fresh } from '../engine/fresh';
 
 // "Happening now": the few things of today that deserve a word on the opening title, each
 // with the chapter that shows it. Thresholds are ours and deliberately high, so the line is
@@ -26,7 +27,7 @@ export async function happenings(): Promise<Happening[]> {
       }
     }),
     // A geomagnetic storm (Kp 5 or more).
-    fetch('layers/aurora.json').then((r) => r.json()).then((a) => {
+    fetch(fresh('layers/aurora.json')).then((r) => r.json()).then((a) => {
       const kp = a.kp?.max24h ?? 0;
       if (kp >= 5) out.push({ text: () => t.now.aurora(num(kp, 0)), story: 'cielo', chapter: 'aurora', weight: 100 + kp * 10 });
     }),
@@ -38,7 +39,7 @@ export async function happenings(): Promise<Happening[]> {
       }
     }),
     // A strong earthquake in the last two days.
-    fetch('layers/quakes.json').then((r) => r.json()).then((q) => {
+    fetch(fresh('layers/quakes.json')).then((r) => r.json()).then((q) => {
       const top = (q.quakes as Quake[]).filter((e) => Date.now() - e[4] < 2 * DAY).sort((a, b) => b[3] - a[3])[0];
       if (top && top[3] >= 6.3) out.push({ text: () => t.now.quake(num(top[3], 1), placeIt(top[5])), story: 'pianeta', chapter: 'terremoti', weight: 120 + top[3] * 10 });
     }),

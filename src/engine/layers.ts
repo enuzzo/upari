@@ -2,6 +2,7 @@ import { DataTexture, LinearFilter, LinearMipmapLinearFilter, RGBAFormat, Repeat
 import { PALETTES, paletteTexture, type Stop } from './palettes';
 import { t } from '../i18n';
 import { num } from '../i18n/format';
+import { fresh } from './fresh';
 
 export type DataId = 'chlorophyll' | 'sst' | 'anomaly' | 'rain' | 'ice' | 'ndvi' | 'aerosol' | 'coral' | 'forest'
   | 'ozone' | 'no2' | 'snow' | 'so2' | 'aurora' | 'ships' | 'built' | 'sealevel' | 'waves';
@@ -196,7 +197,7 @@ export class LayerStore {
     let p = this.cache.get(id);
     if (!p) {
       p = id === 'aurora' ? this.aurora() : (async () => {
-        const meta: LayerMeta = await (await fetch(`layers/${id}.json`)).json();
+        const meta: LayerMeta = await (await fetch(fresh(`layers/${id}.json`))).json();
         const files = meta.frames ? meta.frames.map((f) => f.file) : [`${id}.png`];
         const split = !!meta.frames?.[0]?.conf;
         const [tex, conf] = await Promise.all([
@@ -226,7 +227,7 @@ export class LayerStore {
    * with no cookies), and fall back to the copy of this morning when it does not answer.
    */
   private async aurora() {
-    const meta: LayerMeta & { kp?: { now: number; max24h: number } | null } = await (await fetch('layers/aurora.json')).json();
+    const meta: LayerMeta & { kp?: { now: number; max24h: number } | null } = await (await fetch(fresh('layers/aurora.json'))).json();
     try {
       const res = await fetch('https://services.swpc.noaa.gov/json/ovation_aurora_latest.json', { signal: AbortSignal.timeout(8000), credentials: 'omit', referrerPolicy: 'no-referrer' });
       const d = await res.json() as { 'Forecast Time': string; coordinates: [number, number, number][] };

@@ -24,6 +24,7 @@ import { createFlyby } from './flyby';
 import { ATLAS, Atlas, atlasText, type AtlasId } from './atlas';
 import { t } from '../i18n';
 import { num } from '../i18n/format';
+import { fresh } from './fresh';
 
 export type FlowId = 'wind' | 'currents';
 
@@ -260,7 +261,7 @@ export class Globe {
 
   async loadFlow(id: FlowId): Promise<FlowField> {
     if (this.flows[id]) return this.flows[id]!;
-    const meta = await (await fetch(`fields/${id}.json`)).json();
+    const meta = await (await fetch(fresh(`fields/${id}.json`))).json();
     const tex = await loadTexture(`fields/${id}.png`, { mipmaps: false });
     const style = id === 'wind'
       ? { scale: meta.scale, speed: 22000, vmax: 26, colors: FLOW_COLORS.wind as unknown as [number, number, number][], life: 7, fade: 0.988, intensity: 0.28 }
@@ -278,7 +279,7 @@ export class Globe {
 
   async loadFires() {
     if (this.fires) return;
-    const buf = await (await fetch('layers/fires.bin')).arrayBuffer();
+    const buf = await (await fetch(fresh('layers/fires.bin'))).arrayBuffer();
     this.fireData = new Float32Array(buf);
     this.fires = createFires(this.fireData);
     this.scene.add(this.fires.points);
@@ -315,7 +316,7 @@ export class Globe {
   get satellites() { return this.sats?.meta ?? null; }
 
   loadFlyby(): Promise<void> {
-    this.flybyLoading ??= fetch('sky/neo.json').then((r) => r.json()).then((d) => {
+    this.flybyLoading ??= fetch(fresh('sky/neo.json')).then((r) => r.json()).then((d) => {
       if (!d.path || !d.moon) throw new Error('no path');
       this.flybyScene = createFlyby(d.path, d.moon);
       this.scene.add(this.flybyScene.group);
@@ -339,7 +340,7 @@ export class Globe {
 
   loadQuakes(): Promise<void> {
     this.quakesLoading ??= (async () => {
-      const d = await (await fetch('layers/quakes.json')).json();
+      const d = await (await fetch(fresh('layers/quakes.json'))).json();
       this.quakes = createQuakes(d.quakes as Quake[], Date.parse(d.newest));
       this.scene.add(this.quakes.points);
     })();

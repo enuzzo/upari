@@ -1,6 +1,7 @@
 import { AdditiveBlending, Group, Mesh, PlaneGeometry, ShaderMaterial, SphereGeometry, Texture, Vector3 } from 'three';
 import { noiseGLSL } from './glsl';
 import { loadTexture } from './layers';
+import { fresh } from './fresh';
 
 // The Sun as a body, for comparison: 109 times the Earth's radius, placed beside the planet
 // in the true direction of the Sun but far nearer than it really is (to scale in size, not in
@@ -87,7 +88,7 @@ export function createSunBody() {
     group,
     /** This morning's visible-light image, once. */
     load() {
-      loading ??= loadTexture('sky/sun-hmi.jpg', { mipmaps: true, repeat: false })
+      loading ??= loadTexture(fresh('sky/sun-hmi.jpg'), { mipmaps: true, repeat: false })
         .then((t) => { uniforms.uImage.value = t; uniforms.uHasImage.value = 1; })
         .catch(() => {});
       return loading;

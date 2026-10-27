@@ -47,8 +47,9 @@ AddDefaultCharset utf-8
     Header set Cache-Control "public, max-age=2592000, stale-while-revalidate=604800"
   </If>
 
-  # Data of the day (wind, sea, ice, plankton, rain, fires, earthquakes, ISS orbit): refreshed every morning.
-  <If "%{REQUEST_URI} =~ m#^/(layers/|fields/wind\.|sky/iss\.json$)#">
+  # Data of the day (wind, sea, ice, plankton, rain, fires, earthquakes, the sky, the climate):
+  # refreshed every morning. The page also asks for them with the mark of its build (src/engine/fresh.ts).
+  <If "%{REQUEST_URI} =~ m#^/(layers/|climate/|fields/wind\.|sky/(iss|satellites|sun|launches|neo|fireballs|voyager))#">
     Header set Cache-Control "public, max-age=3600, stale-while-revalidate=86400"
   </If>
 

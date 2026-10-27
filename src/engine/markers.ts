@@ -6,6 +6,7 @@ import { json2satrec, propagate, gstime, eciToGeodetic, type SatRec } from 'sate
 import { lonLatToVec } from './astro';
 import { t } from '../i18n';
 import { regionName } from '../i18n/regions';
+import { fresh } from './fresh';
 
 /** Seven days of active fires as glowing embers. */
 export function createFires(data: Float32Array) {
@@ -335,7 +336,7 @@ export class Station {
       const [omm] = await r.json();
       return omm as { EPOCH: string };
     };
-    let omm = await read('sky/iss.json').catch(() => null);
+    let omm = await read(fresh('sky/iss.json')).catch(() => null);
     const age = omm ? Date.now() - Date.parse(omm.EPOCH + 'Z') : Infinity;
     if (age > 2 * 86400e3) omm = (await read('https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=JSON').catch(() => null)) ?? omm;
     if (omm) this.satrec = json2satrec(omm as Parameters<typeof json2satrec>[0]);

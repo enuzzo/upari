@@ -11,6 +11,7 @@ import { climate, type ChartId } from './charts';
 import { loadSpots } from '../engine/spots';
 import { t } from '../i18n';
 import { num, dayMonth, dayMonthTime, dayShort, timeLocal, timeUtc } from '../i18n/format';
+import { fresh } from '../engine/fresh';
 
 export interface Beat {
   shot: Shot;
@@ -181,7 +182,7 @@ export const CHAPTERS: Chapter[] = titled([
     },
     detail: async (g) => {
       const w = await stats.windiest(g);
-      const m = await (await fetch('fields/wind.json')).json();
+      const m = await (await fetch(fresh('fields/wind.json'))).json();
       return {
         facts: [{ value: `${num(w.value)} ${t.units.kmh}`, label: t.respiro.strongest(formatLonLat(w.lon, w.lat)) }, ...facts(t.respiro.facts)],
         text: t.respiro.text,
@@ -349,12 +350,12 @@ export const CHAPTERS: Chapter[] = titled([
     look: { sun: 'studio', clouds: 0, dim: 0.78, desat: 0.75, night: 0.35, fires: 1, atmo: 0.6, bloom: 1.4 },
     duration: 20,
     narrate: async () => {
-      const f = await (await fetch('layers/fires.json')).json();
+      const f = await (await fetch(fresh('layers/fires.json'))).json();
       const k = Math.round(f.detections / 1000);
       return t.fuoco.narrate({ thousands: num(k), approx: num(k * 1000) });
     },
     detail: async () => {
-      const f = await (await fetch('layers/fires.json')).json();
+      const f = await (await fetch(fresh('layers/fires.json'))).json();
       return {
         facts: [{ value: num(f.detections), label: t.fuoco.count }, ...facts(t.fuoco.facts)],
         text: t.fuoco.text,
@@ -376,7 +377,7 @@ export const CHAPTERS: Chapter[] = titled([
     },
     detail: async (g) => {
       await g.loadQuakes();
-      const q = await (await fetch('layers/quakes.json')).json();
+      const q = await (await fetch(fresh('layers/quakes.json'))).json();
       const list = q.quakes as Quake[];
       const deepest = list.reduce((a, b) => (b[2] > a[2] ? b : a));
       return {

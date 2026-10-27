@@ -3,6 +3,7 @@ import { lonLatToVec } from './astro';
 import { hexToLinear } from './palettes';
 import { t } from '../i18n';
 import { dayShort, num } from '../i18n/format';
+import { fresh } from './fresh';
 
 // Things that happen in places: cyclones and their tracks, erupting volcanoes, icebergs,
 // oil slicks, launch pads and fireballs. Each set is a cloud of glowing dots on the globe,
@@ -169,7 +170,7 @@ const cache = new Map<SpotId, Promise<SpotSet>>();
 export function loadSpots(id: SpotId): Promise<SpotSet> {
   let p = cache.get(id);
   if (!p) {
-    p = fetch(FILES[id]).then((r) => { if (!r.ok) throw new Error(`${FILES[id]}: ${r.status}`); return r.json(); })
+    p = fetch(fresh(FILES[id])).then((r) => { if (!r.ok) throw new Error(`${FILES[id]}: ${r.status}`); return r.json(); })
       .then((d) => createSet(id, BUILD[id](d), d));
     p.catch(() => cache.delete(id));
     cache.set(id, p);

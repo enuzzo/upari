@@ -1,5 +1,6 @@
 import { AdditiveBlending, BufferAttribute, BufferGeometry, Points, ShaderMaterial, Vector3 } from 'three';
 import { hexToLinear } from './palettes';
+import { fresh } from './fresh';
 
 // Every active satellite, moved on the GPU from its mean orbital elements (CelesTrak OMM):
 // a Kepler orbit with the secular drift of the node and the perigee caused by the Earth's
@@ -21,8 +22,8 @@ const MU = (398600.4418 * 3600) / 6378.137 ** 3;
 
 export async function loadSatellites() {
   const [meta, buf] = await Promise.all([
-    fetch('sky/satellites.json').then((r) => { if (!r.ok) throw new Error('no satellites'); return r.json() as Promise<SatMeta>; }),
-    fetch('sky/satellites.bin').then((r) => { if (!r.ok) throw new Error('no satellites'); return r.arrayBuffer(); }),
+    fetch(fresh('sky/satellites.json')).then((r) => { if (!r.ok) throw new Error('no satellites'); return r.json() as Promise<SatMeta>; }),
+    fetch(fresh('sky/satellites.bin')).then((r) => { if (!r.ok) throw new Error('no satellites'); return r.arrayBuffer(); }),
   ]);
   const el = new Float32Array(buf);
   const n = el.length / 8;

@@ -86,6 +86,9 @@ const layers = {
     if (buf.length < 50_000) throw new Error('sun: image too small');
     writeAtomic(join(OUT, 'sun.jpg'), buf);
     const time = new Date(headers.get('last-modified') ?? Date.now()).toISOString();
+    // And in visible light (HMI continuum), with its sunspots, for the Sun as a body.
+    const hmi = await get('https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg', 'bin').catch(() => null);
+    if (hmi && hmi.buf.length > 30_000) writeAtomic(join(OUT, 'sun-hmi.jpg'), hmi.buf);
     writeAtomic(join(OUT, 'sun.json'), JSON.stringify({ time, channel: 'AIA 171 Å', source: 'NASA/SDO and the AIA, EVE and HMI science teams' }, null, 1));
     console.log(`sun: ${time}`);
   },
@@ -125,16 +128,26 @@ const layers = {
     const year = new Date().getUTCFullYear();
     const done = await get(`https://ll.thespacedevs.com/2.3.0/launches/previous/?net__gte=${year}-01-01T00:00:00Z&limit=1&mode=list`).catch(() => null);
     const horizon = Date.now() + 45 * 86400e3;
-    const list = (up.results ?? []).filter((l) => Date.parse(l.net) < horizon && l.pad?.latitude != null).map((l) => ({
+    const shape = (l) => ({
       name: l.name, net: l.net, status: l.status?.abbrev ?? '', provider: l.launch_service_provider?.name ?? '',
       rocket: l.rocket?.configuration?.full_name ?? l.rocket?.configuration?.name ?? '',
       mission: l.mission?.name ?? '', orbit: l.mission?.orbit?.abbrev ?? '', type: l.mission?.type ?? '',
       pad: l.pad.name, place: l.pad.location?.name ?? '', country: l.pad.country?.alpha_2_code ?? l.pad.location?.country_code ?? '',
       lat: round(Number(l.pad.latitude)), lon: round(Number(l.pad.longitude)),
-    }));
+    });
+    const list = (up.results ?? []).filter((l) => Date.parse(l.net) < horizon && l.pad?.latitude != null).map(shape);
     if (!list.length) throw new Error('launches: none in the next 45 days');
-    writeAtomic(join(OUT, 'launches.json'), JSON.stringify({ fetched: new Date().toISOString(), year, launchedThisYear: done?.count ?? null, launches: list, source: 'Launch Library 2 · The Space Devs' }, null, 1));
-    console.log(`launches: ${list.length} in the next 45 days, ${done?.count ?? '?'} so far in ${year}`);
+    // The last twelve months, a hundred per request (four requests at most, well inside 15 an hour).
+    const since = new Date(Date.now() - 365 * 86400e3).toISOString().slice(0, 19) + 'Z';
+    const past = [];
+    let next = `https://ll.thespacedevs.com/2.3.0/launches/previous/?net__gte=${since}&limit=100&mode=normal&ordering=net`;
+    for (let k = 0; next && k < 4; k++) {
+      const page = await get(next);
+      for (const l of page.results ?? []) if (l.pad?.latitude != null) past.push(shape(l));
+      next = page.next;
+    }
+    writeAtomic(join(OUT, 'launches.json'), JSON.stringify({ fetched: new Date().toISOString(), year, launchedThisYear: done?.count ?? null, launches: list, past, source: 'Launch Library 2 · The Space Devs' }, null, 1));
+    console.log(`launches: ${list.length} in the next 45 days, ${past.length} in the last twelve months, ${done?.count ?? '?'} so far in ${year}`);
   },
 
   async neo() {
@@ -146,7 +159,27 @@ const layers = {
       kms: round(Number(r[f.v_rel]), 1), h: Number(r[f.h]), diameter: r[f.diameter] ? Number(r[f.diameter]) : null,
     }));
     if (!list.length) throw new Error('neo: empty list');
-    writeAtomic(join(OUT, 'neo.json'), JSON.stringify({ fetched: new Date().toISOString(), days: 60, maxAu: 0.05, list, source: 'NASA/JPL CNEOS · SBDB Close-Approach Data' }, null, 1));
+    // The real path of the closest one around the Earth (±3 days, hourly) and the Moon's orbit
+    // (±15 days), geocentric, equatorial (ICRF), in Earth radii: the story draws them in 3D.
+    const vectors = async (command, start, stop, step) => {
+      const q = new URLSearchParams({
+        format: 'json', COMMAND: `'${command}'`, EPHEM_TYPE: 'VECTORS', CENTER: "'500@399'", START_TIME: `'${start}'`, STOP_TIME: `'${stop}'`,
+        STEP_SIZE: `'${step}'`, REF_PLANE: "'FRAME'", VEC_TABLE: "'1'", CSV_FORMAT: "'YES'", OUT_UNITS: "'KM-S'", OBJ_DATA: "'NO'",
+      });
+      const r = (await get(`https://ssd.jpl.nasa.gov/api/horizons.api?${q}`)).result;
+      if (!r.includes('$$SOE')) throw new Error(`horizons ${command}: no table`);
+      return r.slice(r.indexOf('$$SOE') + 5, r.indexOf('$$EOE')).trim().split('\n').map((l) => l.split(',').slice(2, 5).map((v) => round(Number(v) / RE, 3)));
+    };
+    const at = Date.parse(list[0].time), day = 86400e3, fmt = (t) => new Date(t).toISOString().slice(0, 16).replace('T', ' ');
+    const path = await vectors(`DES=${list[0].name};`, fmt(at - 3 * day), fmt(at + 3 * day), '1h').catch((e) => { console.warn(`neo path: ${e.message}`); return null; });
+    const now = Date.now();
+    const moon = await vectors('301', fmt(now - 15 * day), fmt(now + 15 * day), '6h').catch(() => null);
+    writeAtomic(join(OUT, 'neo.json'), JSON.stringify({
+      fetched: new Date().toISOString(), days: 60, maxAu: 0.05, list,
+      path: path ? { name: list[0].name, start: new Date(at - 3 * day).toISOString(), stepHours: 1, xyz: path } : null,
+      moon: moon ? { start: new Date(now - 15 * day).toISOString(), stepHours: 6, xyz: moon } : null,
+      source: 'NASA/JPL CNEOS · SBDB Close-Approach Data · JPL Horizons',
+    }));
     console.log(`neo: ${list.length}, closest ${list[0].name} at ${list[0].ld} LD on ${list[0].time}`);
   },
 

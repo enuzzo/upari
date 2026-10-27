@@ -56,10 +56,11 @@ Files in `public/` are derived from the sources below by the scripts in `scripts
 - **World Bank, World Development Indicators** — international migrant stock (% of population, from UN DESA; `public/statistics/migrants.json`) and CO₂ emissions per capita excluding LULUCF (from EDGAR, European Commission JRC; `public/statistics/co2.json`), CC BY 4.0, produced by `scripts/prepare-wdi.mjs`. Migrant stock is measured every five years: a year shows the latest measurement and the cursor says which.
 - **UNHCR Refugee Data Finder** (`public/statistics/refugees.json`): refugees and other people in need of international protection by country of origin, 1990–2024, divided by World Bank WDI population; CC BY 4.0, https://www.unhcr.org/refugee-statistics/
 - **NOAA Space Weather Prediction Center**, OVATION aurora forecast and planetary Kp (`public/layers/aurora.*`, refreshed daily); when the aurora is shown, the visitor's browser also asks https://services.swpc.noaa.gov for the latest forecast, without cookies or referrer. U.S. government data.
-- **NASA/SDO** (`public/sky/sun.jpg`): AIA 171 Å image refreshed daily, "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams." https://sdo.gsfc.nasa.gov
+- **NASA/SDO** (`public/sky/sun.jpg`, `sun-hmi.jpg`): AIA 171 Å and HMI continuum (visible light) images refreshed daily; the HMI image is the face of the 3D Sun turned to the Earth. "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams." https://sdo.gsfc.nasa.gov
 - **CelesTrak** GP elements of the active satellites (`public/sky/satellites.*`, fetched by the workflow once a day, not committed). https://celestrak.org/
 - **Launch Library 2, The Space Devs** (`public/sky/launches.json`), free API within its rate limits; credit The Space Devs. https://thespacedevs.com
-- **NASA/JPL CNEOS** close-approach and fireball data (`public/sky/neo.json`, `fireballs.json`) and **NASA/JPL Horizons** ephemerides of Voyager 1 and 2 (`public/sky/voyager.json`). https://ssd.jpl.nasa.gov
+- **NASA/JPL CNEOS** close-approach and fireball data (`public/sky/neo.json`, `fireballs.json`) and **NASA/JPL Horizons** ephemerides: Voyager 1 and 2 (`public/sky/voyager.json`), the geocentric path of the next close asteroid and the Moon's orbit (`public/sky/neo.json`). https://ssd.jpl.nasa.gov
+- **Launch Library 2** also gives the launches of the last twelve months (`public/sky/launches.json`); the ascents drawn from each pad are illustrative.
 - **Yale Bright Star Catalogue**, 5th revised edition (Hoffleit & Warren, 1991), via the JSON edition at https://github.com/brettonw/YaleBrightStarCatalog — Copyright (c) 2016 Bretton Wade, MIT License (text below).
 
 ## MIT License text

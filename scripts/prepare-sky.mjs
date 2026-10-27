@@ -53,7 +53,9 @@ function kindOf(name, revPerDay) {
 const layers = {
   async satellites() {
     // Every active satellite as mean orbital elements (OMM): the browser moves them on the GPU.
-    const list = await get('https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=json');
+    // CelesTrak answers curl where Node's fetch is turned away (the ISS step already uses curl).
+    const url = 'https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=json';
+    const list = await get(url).catch(() => JSON.parse(execFileSync('curl', ['-fsS', '--max-time', '120', url], { maxBuffer: 1 << 28 }).toString()));
     if (!Array.isArray(list) || list.length < 5000) throw new Error(`satellites: ${list?.length} objects look incomplete`);
     const base = Date.parse(list.reduce((a, s) => (s.EPOCH > a ? s.EPOCH : a), '')) ;
     const out = new Float32Array(list.length * 8);

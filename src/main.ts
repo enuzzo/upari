@@ -6,6 +6,8 @@ import { framing, initSearch, type Place } from './story/search';
 import { Sound, type Ambience, type Mood } from './engine/audio';
 import { Explorer } from './story/explore';
 import { happenings, type Happening } from './story/now';
+import { savePostcard, screenDate } from './story/postcard';
+import { closeCountry, openCountry } from './story/country';
 import { LANGS, NATIVE, detect, lang, onLang, setLang, t, type Lang } from './i18n';
 import { dayMonth, timeUtc } from './i18n/format';
 
@@ -205,7 +207,7 @@ function toggleFullscreen() {
 addEventListener('keydown', (e) => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.target instanceof HTMLInputElement) return;
-  if (e.key === 'Escape') { $('credits').classList.remove('on'); closeAbout(); closeClasse(); showMenu(false); director.closeDrawer(); search.close(); explorer.toggle(false); return; }
+  if (e.key === 'Escape') { closeCountry(); $('credits').classList.remove('on'); closeAbout(); closeClasse(); showMenu(false); director.closeDrawer(); search.close(); explorer.toggle(false); return; }
   if (e.key === '/') { e.preventDefault(); search.open(); return; }
   if (!started) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); begin('pianeta'); } return; }
   if (e.key === ' ') { e.preventDefault(); director.setPlaying(!director.playing); if (director.playing) explorer.toggle(false); }
@@ -214,10 +216,27 @@ addEventListener('keydown', (e) => {
   else if (e.key === 'f' || e.key === 'F') toggleFullscreen();
   else if (e.key === 'm' || e.key === 'M') { sound.start(); sound.toggle(); }
   else if (e.key === 'l' || e.key === 'L') explorer.toggle();
+  else if (e.key === 'p' || e.key === 'P') void postcard();
   else if (e.key === 'i' || e.key === 'I') { if (director.drawerOpen) director.closeDrawer(); else void director.openDrawer(); }
   else if (e.key === '+' || e.key === '=') globe.rig.zoomBy(0.6);
   else if (e.key === '-') globe.rig.zoomBy(1.6);
 });
+
+// The postcard: what is on screen, with its title, date and sources.
+async function postcard() {
+  const date = screenDate();
+  if (explorer.isOpen) {
+    const id = explorer.layer.id as keyof typeof t.explore.layers;
+    await savePostcard(globe, { kicker: t.explore.title, title: t.explore.layers[id] ?? '', when: date, source: $('ex-note-source').textContent ?? '' });
+    return;
+  }
+  const c = director.chapter;
+  if (!c) return;
+  const d = await c.detail?.(globe).catch(() => null);
+  await savePostcard(globe, { kicker: c.kicker, title: c.title, when: date, source: d?.source ?? '' });
+}
+$('postcard-btn').addEventListener('click', () => void postcard());
+$('ex-postcard').addEventListener('click', () => void postcard());
 
 // The probe: what is under the cursor.
 const probe = $('probe');
@@ -226,7 +245,16 @@ let pointer: { x: number; y: number } | null = null;
 let pressed = false;
 canvas.addEventListener('pointermove', (e) => { pointer = { x: e.clientX, y: e.clientY }; });
 canvas.addEventListener('pointerleave', () => { pointer = null; });
-canvas.addEventListener('pointerdown', () => { pressed = true; });
+let downAt: { x: number; y: number } | null = null;
+canvas.addEventListener('pointerdown', (e) => { pressed = true; downAt = { x: e.clientX, y: e.clientY }; });
+// A click (not a drag) on a country opens its card; anywhere else closes it.
+canvas.addEventListener('pointerup', (e) => {
+  if (!downAt || Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) > 5) return;
+  const c = globe.countryUnder(e.clientX, e.clientY);
+  if (c) openCountry(globe, c.code, c.name, c.shown, c.year, e.clientX, e.clientY);
+  else closeCountry();
+});
+$('cc-close').addEventListener('click', closeCountry);
 addEventListener('pointerup', () => { pressed = false; });
 
 let clockT = 0;

@@ -47,6 +47,7 @@ const it = {
     /** The clock in the top bar. */
     clock: (day: string, time: string) => `${day} · ${time} UTC`,
     about: 'Perché Upari',
+    postcard: 'Salva una cartolina',
     embedOpen: 'Apri Upari',
   },
 
@@ -618,6 +619,17 @@ const it = {
     dawns: ['16', 'albe e tramonti al giorno per l’equipaggio'] as [string, string],
     text: 'La posizione è calcolata ora dagli elementi orbitali pubblicati da CelesTrak. La linea mostra un’orbita completa: mezz’ora nel passato e un’ora nel futuro. Da vicino la stazione vola con il suo vero assetto: i moduli nel senso del moto, la trave perpendicolare all’orbita.',
     source: 'Elementi orbitali NORAD 25544 · CelesTrak · propagazione SGP4 · modello 3D NASA',
+  },
+  giorno: {
+    title: 'Un giorno sulla Terra', kicker: 'Ventiquattro ore in un minuto',
+    narrate: 'Le prossime ventiquattro ore in un minuto. La notte scivola da est a ovest e, dove passa, si accendono le città; la Stazione Spaziale fa sedici volte il giro del mondo. Domani a quest’ora il Sole sarà di nuovo qui.',
+    facts: [
+      ['1.670 km/h', 'la velocità del confine fra il giorno e la notte all’equatore'],
+      ['16', 'giri della Stazione Spaziale in un giorno'],
+      ['23 h 56 min', 'il tempo di un giro della Terra su sé stessa, rispetto alle stelle'],
+    ] as [string, string][],
+    text: 'Il Sole è nella sua posizione vera per ogni istante delle prossime ventiquattro ore e la Stazione segue le orbite calcolate. Le nuvole e le luci delle città restano quelle delle ultime immagini: non è una previsione del tempo.',
+    source: 'Posizione del Sole calcolata · elementi orbitali CelesTrak, SGP4 · NASA Black Marble · nuvole NASA',
   },
 
   // ——— La natura ———

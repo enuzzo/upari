@@ -62,6 +62,7 @@
     <div class="cap-actions">
       <button class="more" id="more-btn"><span data-t="page.more"></span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
       <button class="more next-story" id="next-story"><span></span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <button class="postcard-btn" id="postcard-btn" data-t-aria="page.postcard" data-t-title="page.postcard"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="1.5"/><circle cx="12" cy="12.5" r="3.5"/><path d="M8.5 6l1.4-2h4.2l1.4 2"/></svg></button>
     </div>
   </section>
 
@@ -141,6 +142,7 @@
     </div>
     <button class="more ex-compare" id="ex-compare"><span data-t="explore.compare"></span><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l-3 4 3 4M19 8l3 4-3 4"/></svg></button>
     <div class="ex-block ex-note" id="ex-note"><span class="kind" id="ex-note-kind"></span><p id="ex-note-text"></p><p class="ex-note-source" id="ex-note-source"></p></div>
+    <button class="more ex-postcard" id="ex-postcard"><span data-t="page.postcard"></span><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="1.5"/><circle cx="12" cy="12.5" r="3.5"/></svg></button>
     <button class="more ex-iss" id="ex-iss"><span data-t="explore.reach"></span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
     <div class="ex-block">
       <div class="ex-title"><span data-t="explore.hour"></span> <b id="ex-hours-label"></b> <button class="ex-now" id="ex-now" data-t="explore.backToNow"></button></div>
@@ -151,6 +153,17 @@
       <label><input type="checkbox" id="ex-clouds" /> <span data-t="explore.clouds"></span></label>
       <label><input type="checkbox" id="ex-spin" /> <span data-t="explore.spin"></span></label>
     </div>
+  </aside>
+
+  <aside class="country-card" id="country-card" aria-live="polite">
+    <button class="icon-btn cc-close" id="cc-close" data-t-aria="page.close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <h3 id="cc-name"></h3>
+    <div class="cc-title" id="cc-title"></div>
+    <div class="cc-now"><b id="cc-value"></b> <span id="cc-year"></span></div>
+    <svg class="cc-curve" id="cc-curve" viewBox="0 0 260 70" preserveAspectRatio="none"></svg>
+    <div class="cc-axis"><span id="cc-from"></span><span id="cc-to"></span></div>
+    <ul class="cc-others" id="cc-others"></ul>
+    <p class="cc-source" id="cc-source"></p>
   </aside>
 
   <div class="tile-credit" id="tile-credit" data-t-html="page.tileCredit"></div>

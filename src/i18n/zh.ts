@@ -55,6 +55,7 @@ const zh: Dict = {
     noWebgl: '需要支持 WebGL 2 的浏览器才能看到地球。',
     clock: (day: string, time: string) => `${day} · ${time} UTC`,
     about: '为什么是 Upari',
+    postcard: '保存为明信片',
     embedOpen: '打开 Upari',
   },
 
@@ -606,6 +607,17 @@ const zh: Dict = {
     dawns: ['16', '机组人员每天经历的日出与日落'],
     text: '位置是根据 CelesTrak 发布的轨道根数实时计算的。这条线显示一整圈轨道：过去半小时，加上未来一小时。拉近时，空间站以真实姿态飞行：舱段沿运动方向排列，桁架与轨道垂直。',
     source: 'NORAD 25544 轨道根数 · CelesTrak · SGP4 推算 · NASA 3D 模型',
+  },
+  giorno: {
+    title: '地球上的一天', kicker: '一分钟，二十四小时',
+    narrate: '一分钟，看完接下来的二十四小时。黑夜自东向西滑过，所到之处，城市亮起灯火；空间站绕地球飞行十六圈。明天此时，太阳将再次回到这里。',
+    facts: [
+      ['1,670 km/h', '赤道上昼夜分界线移动的速度'],
+      ['16', '空间站一天绕地球的圈数'],
+      ['23 小时 56 分', '地球相对于恒星自转一周所需的时间'],
+    ] as [string, string][],
+    text: '未来二十四小时里的每一刻，太阳都在其真实位置上，空间站则沿计算出的轨道运行。云层和城市灯光仍是最新影像中的样子：这不是天气预报。',
+    source: '太阳位置（计算）· CelesTrak 轨道根数，SGP4 · NASA Black Marble · NASA 云图',
   },
 
   // ——— 自然 ———

@@ -102,6 +102,7 @@ const fr: Dict = {
     noWebgl: 'Il faut un navigateur compatible WebGL 2 pour voir la planète.',
     clock: (day: string, time: string) => `${first(day)} · ${time} UTC`,
     about: 'Pourquoi Upari',
+    postcard: 'Enregistrer une carte postale',
     embedOpen: 'Ouvrir Upari',
   },
 
@@ -657,6 +658,17 @@ const fr: Dict = {
     dawns: ['16', 'levers et couchers de soleil par jour pour l’équipage'],
     text: 'La position est calculée à l’instant à partir des éléments orbitaux publiés par CelesTrak. La ligne montre une orbite complète : une demi-heure dans le passé et une heure dans le futur. De près, la station vole dans sa véritable attitude : les modules dans le sens du mouvement, la poutre perpendiculaire à l’orbite.',
     source: 'Éléments orbitaux NORAD 25544 · CelesTrak · propagation SGP4 · modèle 3D NASA',
+  },
+  giorno: {
+    title: 'Un jour sur Terre', kicker: 'Vingt-quatre heures en une minute',
+    narrate: 'Les prochaines vingt-quatre heures en une minute. La nuit glisse d’est en ouest et, là où elle passe, les villes s’allument ; la Station spatiale fait seize fois le tour du monde. Demain à cette heure, le Soleil sera de nouveau ici.',
+    facts: [
+      ['1 670 km/h', 'la vitesse de la frontière entre le jour et la nuit à l’équateur'],
+      ['16', 'orbites de la Station spatiale en un jour'],
+      ['23 h 56 min', 'le temps que met la Terre à faire un tour sur elle-même, par rapport aux étoiles'],
+    ] as [string, string][],
+    text: 'Le Soleil est à sa vraie position pour chaque instant des vingt-quatre prochaines heures, et la Station suit ses orbites calculées. Les nuages et les lumières des villes restent ceux des dernières images : ce n’est pas une prévision météo.',
+    source: 'Position du Soleil calculée · éléments orbitaux CelesTrak, SGP4 · NASA Black Marble · nuages NASA',
   },
 
   // ——— La nature ———

@@ -52,7 +52,7 @@ export interface Chapter {
   /** The feeling of the score, and the sound of the place. */
   mood?: Mood;
   sound?: Ambience;
-  clock?: 'data' | 'year' | 'replay';
+  clock?: 'data' | 'year' | 'replay' | 'lapse';
   /** The years a replay of spots runs through, for the clock. */
   replay?: [number, number];
   /** A chart beside the planet. */
@@ -497,6 +497,20 @@ export const CHAPTERS: Chapter[] = titled([
         // Riding along, high up, to see where it is going.
         { shot: { lon: s.lon, lat: s.lat, dist: 0.5, tilt: 30 }, seconds: 6, hold: 9, follow: true },
       ];
+    },
+  },
+  {
+    id: 'giorno',
+    kind: 'computed',
+    mood: 'calm', sound: 'night',
+    // 0.4 hours a second: the next twenty-four hours in a minute.
+    look: { sun: 'real', clouds: 1, night: 1.15, iss: 1, atmo: 1, lapse: 0.4 },
+    duration: 62, clock: 'lapse',
+    narrate: async () => t.giorno.narrate,
+    detail: async () => ({ facts: facts(t.giorno.facts), text: t.giorno.text, source: t.giorno.source }),
+    beats: async (g) => {
+      const s = g.station;
+      return [{ shot: { lon: s.lon + 40, lat: 18, dist: 3.5 }, seconds: 4, drift: 0.4 }];
     },
   },
 ]);

@@ -86,6 +86,7 @@ const pt: Dict = {
     noWebgl: 'É preciso um navegador com WebGL 2 para ver o planeta.',
     clock: (day: string, time: string) => `${day} · ${time} UTC`,
     about: 'Por que Upari',
+    postcard: 'Salvar um cartão-postal',
     embedOpen: 'Abrir o Upari',
   },
 
@@ -644,6 +645,17 @@ const pt: Dict = {
     dawns: ['16', 'amanheceres e anoiteceres por dia para a tripulação'],
     text: 'A posição é calculada agora a partir dos elementos orbitais publicados pelo CelesTrak. A linha mostra uma órbita completa: meia hora no passado e uma hora no futuro. De perto, a estação voa com a sua atitude real: os módulos no sentido do movimento, a treliça perpendicular à órbita.',
     source: 'Elementos orbitais NORAD 25544 · CelesTrak · propagação SGP4 · modelo 3D da NASA',
+  },
+  giorno: {
+    title: 'Um dia na Terra', kicker: 'Vinte e quatro horas em um minuto',
+    narrate: 'As próximas vinte e quatro horas em um minuto. A noite desliza de leste para oeste e, por onde passa, as cidades se acendem; a Estação Espacial dá dezesseis voltas ao mundo. Amanhã, a esta hora, o Sol estará de novo aqui.',
+    facts: [
+      ['1.670 km/h', 'a velocidade da linha entre o dia e a noite no equador'],
+      ['16', 'órbitas da Estação Espacial em um dia'],
+      ['23 h 56 min', 'o tempo que a Terra leva para dar uma volta sobre si mesma, em relação às estrelas'],
+    ] as [string, string][],
+    text: 'O Sol está na sua posição real a cada instante das próximas vinte e quatro horas, e a Estação segue as órbitas calculadas. As nuvens e as luzes das cidades continuam sendo as das últimas imagens: não é uma previsão do tempo.',
+    source: 'Posição do Sol calculada · elementos orbitais do CelesTrak, SGP4 · NASA Black Marble · nuvens da NASA',
   },
 
   // ——— A natureza ———

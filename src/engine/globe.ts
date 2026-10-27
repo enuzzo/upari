@@ -66,6 +66,8 @@ export interface Look {
   spots: SpotId | null;
   /** Seconds to reveal them in the order of their time (0: all at once). */
   spotReplay: number;
+  /** Hours of the planet's clock that pass in each second (0: the clock is now). */
+  lapse: number;
   /** Every active satellite, 0..1. */
   satellites: number;
   /** The Sun as a body beside the Earth, to scale in size, 0..1. */
@@ -82,7 +84,7 @@ export const DEFAULT_LOOK: Look = {
   sun: 'real', clouds: 1, cloudFlow: 1, night: 1, dim: 0, desat: 0, data: null, flow: null,
   fires: 0, iss: 0, stars: 1, atmo: 1, exposure: 1, relief: 1, bloom: 1, pin: null,
   atlas: null, dust: 0, migration: 0, migrationAll: 0, year: null, years: null, yearSeconds: 18, quakes: 0, quakeReplay: 0,
-  spots: null, spotReplay: 0, satellites: 0, solar: 0, reach: 26, rockets: 0, flyby: 0,
+  spots: null, spotReplay: 0, lapse: 0, satellites: 0, solar: 0, reach: 26, rockets: 0, flyby: 0,
 };
 
 export interface Probe {
@@ -174,6 +176,8 @@ export class Globe {
   private sphere = new Sphere(new Vector3(), 1);
   /** Simulated time. Runs at real speed unless scrubbed. */
   timeOffset = 0;
+  /** The clock was run ahead by a look, and comes back to now when the look lets go. */
+  private lapsing = false;
   /** Master gains, tuned by eye. */
   tune = { atmo: 5, haze: 0.85, limb: 2, sun: 2.2, night: 3.2, relief: 9, bloom: 0.6, moon: 0.06, airglow: 0.05 };
   rainSpeed = 1.8;
@@ -429,6 +433,16 @@ export class Globe {
     requestAnimationFrame(loop);
   }
 
+  /** The frame as it is now, copied to a 2D canvas (read right after drawing, in the same task). */
+  snapshot(): HTMLCanvasElement {
+    this.composer.render(0);
+    const gl = this.renderer.domElement;
+    const c = document.createElement('canvas');
+    c.width = gl.width; c.height = gl.height;
+    c.getContext('2d')!.drawImage(gl, 0, 0);
+    return c;
+  }
+
   tick(dt: number) {
     this.update(dt);
     this.onFrame(dt);
@@ -443,6 +457,10 @@ export class Globe {
     c.iss = approach(c.iss, L.iss, dt, 2);
     c.studio = approach(c.studio, L.sun === 'studio' ? 1 : 0, dt, 1.4);
     c.pin = approach(c.pin, L.pin ? 1 : 0, dt, 2);
+
+    // A day in a minute: the clock runs ahead while the look asks for it.
+    if (L.lapse > 0) { this.timeOffset += dt * L.lapse * 3600e3; this.lapsing = true; }
+    else if (this.lapsing) { this.lapsing = false; this.timeOffset = 0; }
 
     // The station moves 7.7 km every second: place it for this frame before the camera follows it.
     const date = this.now;
@@ -735,6 +753,20 @@ export class Globe {
       fa.uniforms.uYear.value = yi; fa.uniforms.uOpacity.value = c.migrationAll; fa.uniforms.uTime.value = this.time;
       aa.uniforms.uYear.value = this.year - this.atlas.years[0]; aa.uniforms.uOpacity.value = c.migrationAll;
     }
+  }
+
+  /** The country under a point of the screen, while the people of the planet are shown. */
+  countryUnder(clientX: number, clientY: number): { code: string; name: string; shown: AtlasId; year: number } | null {
+    const L = this.look;
+    if (!(L.atlas || L.migration || L.migrationAll) || !this.atlas.ready) return null;
+    const ndc = new Vector2((clientX / innerWidth) * 2 - 1, -(clientY / innerHeight) * 2 + 1);
+    this.raycaster.setFromCamera(ndc, this.rig.camera);
+    const hit = this.raycaster.ray.intersectSphere(this.sphere, new Vector3());
+    if (!hit) return null;
+    const { lon, lat } = vecToLonLat(hit);
+    const c = this.atlas.countryAt(lon, lat);
+    if (!c?.stat) return null;
+    return { code: c.stat, name: c.name, shown: L.atlas ?? 'population', year: Math.round(this.year) };
   }
 
   /** What is under the cursor. */

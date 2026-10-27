@@ -206,6 +206,10 @@ ACLED, OpenSky, TeleGeography, Ookla, WHO GHO, NHM BII (NC-SA, sostituito da que
 Blitzortung, dati SOS presi direttamente dal catalogo.
 
 ### Ancora dalla roadmap
-1. **Il tuo luogo**. 2. **Scheda del paese**. 3. **Un giorno sulla Terra**. 4. **Cartolina**.
+1. **Il tuo luogo**. 2. [x] **Scheda del paese**: un clic su un paese, quando sono mostrate le
+persone, apre la sua curva dal 1960 per l’indicatore in vista e gli altri numeri, ognuno con
+l’anno della misura. 3. [x] **Un giorno sulla Terra**: ultimo capitolo de «Il pianeta, adesso», le prossime
+ventiquattro ore in un minuto con il Sole vero, le luci e la Stazione. 4. [x] **Cartolina**: l’inquadratura salvata
+come immagine con titolo, data e fonti (icona accanto alla didascalia, voce in Esplora, tasto P).
 5. **Grafica**: nuvole volumetriche, onde, multi-scattering. 6. **Piattaforma**: telefono,
 accessibilità.

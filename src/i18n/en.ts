@@ -45,6 +45,7 @@ const en: Dict = {
     noWebgl: 'You need a browser with WebGL 2 to see the planet.',
     clock: (day: string, time: string) => `${day} · ${time} UTC`,
     about: 'Why Upari',
+    postcard: 'Save a postcard',
     embedOpen: 'Open Upari',
   },
 
@@ -596,6 +597,17 @@ const en: Dict = {
     dawns: ['16', 'sunrises and sunsets a day for the crew'],
     text: 'The position is computed now from the orbital elements published by CelesTrak. The line shows one full orbit: half an hour in the past and an hour in the future. Up close the station flies in its true attitude: the modules along the direction of motion, the truss across the orbit.',
     source: 'NORAD 25544 orbital elements · CelesTrak · SGP4 propagation · NASA 3D model',
+  },
+  giorno: {
+    title: 'A day on Earth', kicker: 'Twenty-four hours in a minute',
+    narrate: 'The next twenty-four hours in a minute. Night slides from east to west and, where it passes, the cities light up; the Space Station goes around the world sixteen times. Tomorrow at this time the Sun will be here again.',
+    facts: [
+      ['1,670 km/h', 'the speed of the line between day and night at the equator'],
+      ['16', 'orbits of the Space Station in a day'],
+      ['23 h 56 min', 'the time the Earth takes to turn once on itself, against the stars'],
+    ] as [string, string][],
+    text: 'The Sun is in its true position for every moment of the next twenty-four hours, and the Station follows its computed orbits. The clouds and the city lights stay those of the latest images: this is not a weather forecast.',
+    source: 'Computed position of the Sun · CelesTrak orbital elements, SGP4 · NASA Black Marble · NASA clouds',
   },
 
   // ——— Nature ———

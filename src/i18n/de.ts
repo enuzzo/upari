@@ -47,6 +47,7 @@ const de: Dict = {
     noWebgl: 'Um den Planeten zu sehen, brauchst du einen Browser mit WebGL 2.',
     clock: (day: string, time: string) => `${day} · ${time} UTC`,
     about: 'Warum Upari',
+    postcard: 'Als Postkarte speichern',
     embedOpen: 'Upari öffnen',
   },
 
@@ -598,6 +599,17 @@ const de: Dict = {
     dawns: ['16', 'Sonnenauf- und -untergänge am Tag für die Besatzung'],
     text: 'Die Position wird in diesem Moment aus den Bahnelementen berechnet, die CelesTrak veröffentlicht. Die Linie zeigt einen vollen Umlauf: eine halbe Stunde in der Vergangenheit und eine Stunde in der Zukunft. Aus der Nähe fliegt die Station in ihrer echten Fluglage: die Module in Flugrichtung, der Gitterträger quer zur Bahn.',
     source: 'Bahnelemente NORAD 25544 · CelesTrak · SGP4-Propagation · 3D-Modell der NASA',
+  },
+  giorno: {
+    title: 'Ein Tag auf der Erde', kicker: 'Vierundzwanzig Stunden in einer Minute',
+    narrate: 'Die nächsten vierundzwanzig Stunden in einer Minute. Die Nacht gleitet von Ost nach West, und wo sie vorbeizieht, gehen die Lichter der Städte an; die Raumstation umkreist die Erde sechzehnmal. Morgen um diese Zeit steht die Sonne wieder hier.',
+    facts: [
+      ['1.670 km/h', 'die Geschwindigkeit der Linie zwischen Tag und Nacht am Äquator'],
+      ['16', 'Umläufe der Raumstation an einem Tag'],
+      ['23 h 56 min', 'so lange braucht die Erde für eine Drehung um sich selbst, bezogen auf die Sterne'],
+    ] as [string, string][],
+    text: 'Die Sonne steht für jeden Moment der nächsten vierundzwanzig Stunden an ihrer wahren Position, und die Station folgt ihren berechneten Bahnen. Wolken und Stadtlichter bleiben die der letzten Aufnahmen: Das ist keine Wettervorhersage.',
+    source: 'Berechnete Sonnenposition · Bahnelemente von CelesTrak, SGP4 · NASA Black Marble · NASA-Wolken',
   },
 
   // ——— Die Natur ———

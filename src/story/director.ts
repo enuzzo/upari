@@ -462,6 +462,7 @@ export class Director {
     const dc = $('data-clock');
     const run = c?.clock === 'year' ? this.globe.yearRunning : null;
     const replay = c?.clock === 'replay' && c.replay ? this.globe.spotProgress() : null;
+    const lapse = c?.clock === 'lapse' ? this.globe.timeOffset : null;
     // Over the planet, wherever the framing puts it.
     dc.style.setProperty('--globe-x', `${((0.5 + this.globe.rig.frameShift) * 100).toFixed(2)}%`);
     if (run) {
@@ -469,6 +470,14 @@ export class Director {
       $('data-from').textContent = String(run.from);
       $('data-to').textContent = String(run.to);
       $('data-dot').style.left = `${(((this.globe.year - run.from) / Math.max(1, run.to - run.from)) * 100).toFixed(2)}%`;
+      dc.classList.add('on');
+    } else if (lapse != null) {
+      // The planet's clock, a day ahead of now at most.
+      const start = new Date(Date.now()).toISOString(), at = this.globe.now.toISOString();
+      $('data-time').textContent = `${dayMonthShort(at)} · ${timeUtc(at)} UTC`;
+      $('data-from').textContent = `${timeUtc(start)} UTC`;
+      $('data-to').textContent = '+24 h';
+      $('data-dot').style.left = `${Math.min(100, (lapse / 864e5) * 100).toFixed(2)}%`;
       dc.classList.add('on');
     } else if (replay != null) {
       const [from, to] = c!.replay!;

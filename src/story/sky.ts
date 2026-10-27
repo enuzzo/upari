@@ -3,6 +3,7 @@ import { PALETTES } from '../engine/palettes';
 import { Vector3 } from 'three';
 import { gmst, sunDirection, vecToLonLat } from '../engine/astro';
 import { loadSpots } from '../engine/spots';
+import type { Fireball } from '../engine/meteors';
 import { ascent, type Launch } from '../engine/trajectories';
 import { legend, titled, type Chapter } from './chapters';
 import { climate } from './charts';
@@ -36,7 +37,7 @@ export const SKY_CHAPTERS: Chapter[] = titled([
     mood: 'open',
     // The Sun as a body beside the Earth: to scale in size, much nearer than it really is.
     look: { ...SKY, solar: 1, reach: 1400, clouds: 1, bloom: 0.45 },
-    duration: 32,
+    duration: 42,
     narrate: async () => {
       const d = await climate.sun();
       return t.sole.narrate(timeUtc(d.time));
@@ -61,7 +62,10 @@ export const SKY_CHAPTERS: Chapter[] = titled([
         // looks from 90° away along the Sun's meridian, over the pole, with that pole up.
         g.rig.portrait
           ? { shot: s.lat <= 0 ? { lon: s.lon + 180, lat: -90 - s.lat, dist: 1400, heading: 180 } : { lon: s.lon + 180, lat: 90 - s.lat, dist: 1400 }, seconds: 7, hold: 7, portraitShift: 0 }
-          : { shot: { lon: s.lon - 90, lat: 12, dist: 1150 }, seconds: 7, hold: 7 },
+          : { shot: { lon: s.lon - 90, lat: 12, dist: 1400 }, seconds: 7, hold: 7 },
+        // From behind the Earth: the face it sees, the last day of it at 304 Å, moving, and the
+        // planet a small silhouette in front of it.
+        { shot: { lon: s.lon + 180 - 4, lat: -s.lat + 3, dist: 260 }, seconds: 6, hold: 9, portraitShift: 0.05 },
         // Then close, with the Sun behind the planet as a measure.
         { shot: { lon: s.lon + 180 - 18, lat: -s.lat * 0.5 + 8, dist: 4.2 }, seconds: 6, drift: 0.4 },
       ];
@@ -140,8 +144,8 @@ export const SKY_CHAPTERS: Chapter[] = titled([
     look: { sun: 'studio', clouds: 0.1, night: 0, dim: 0.55, desat: 0.6, atmo: 0.8, rockets: 1 },
     duration: 30,
     narrate: async () => {
-      const d = await climate.launches(), recent = recentLaunches(d);
-      return t.partenze.narrate({ count: recent.length, yesterday: recent.yesterday, year: num(d.past?.length ?? 0) });
+      const d = await climate.launches(), soon = soonLaunches(d);
+      return t.partenze.narrate({ flown: soon.flown, coming: soon.coming, year: num(d.past?.length ?? 0) });
     },
     detail: async () => {
       const d = await climate.launches();
@@ -156,23 +160,27 @@ export const SKY_CHAPTERS: Chapter[] = titled([
       };
     },
     beats: async (g) => {
-      const d = await climate.launches(), recent = recentLaunches(d);
-      g.showRockets(recent);
-      const first = recent[0] ?? d.launches[0];
+      const d = await climate.launches(), soon = soonLaunches(d);
+      g.showRockets(soon.list);
+      g.showRocketYear((d.past ?? []) as Launch[]);
+      const first = soon.list[0] ?? d.launches[0];
+      // Where most of the year's launches left from: the camera looks there first.
+      const busy = busiestPad((d.past ?? []) as Launch[]) ?? first;
       return [
-        // Yesterday's rockets climbing from their pads, with where each is going.
+        // The rockets of these days climbing from their pads, with where each is going.
         { shot: { lon: first.lon + 30, lat: first.lat * 0.6 + 8, dist: 2.4 }, drift: 0.6, hold: 11 },
-        // Then the whole year, pad by pad, in the order they flew.
-        { shot: { lon: first.lon + 10, lat: 22, dist: 3.4 }, seconds: 4, drift: 1.4, clear: true, look: { rockets: 0, spots: 'launchyear', spotReplay: 12 } },
+        // Then the whole year at once: every launch of the last twelve months leaves its pad
+        // at the same moment, and the planet turns to show them all.
+        { shot: { lon: busy.lon + 25, lat: 24, dist: 3.9 }, seconds: 4, drift: 6, clear: true, look: { rockets: 0, rocketYear: 1 } },
       ];
     },
     badges: async () => {
       const d = await climate.launches();
-      return recentLaunches(d).slice(0, 6).map((l) => {
+      return soonLaunches(d).list.slice(0, 7).map((l) => {
         const end = ascent(l)(1);
         const ll = vecToLonLat(end);
         const [rocket, mission] = l.name.split(' | ');
-        return { lon: ll.lon, lat: ll.lat, altKm: (end.length() - 1) * 6371, title: mission ?? rocket, sub: `${rocket} · ${t.orbits[l.orbit as keyof typeof t.orbits] ?? l.orbit}` };
+        return { lon: ll.lon, lat: ll.lat, altKm: (end.length() - 1) * 6371, title: mission ?? rocket, sub: `${dayShort(l.net)} · ${rocket} · ${t.orbits[l.orbit as keyof typeof t.orbits] ?? l.orbit}` };
       });
     },
   },
@@ -181,10 +189,10 @@ export const SKY_CHAPTERS: Chapter[] = titled([
     kind: 'observed',
     mood: 'curious', sound: 'night',
     look: { sun: 'studio', clouds: 0, night: 0, dim: 0.72, desat: 0.8, atmo: 0.7, spots: 'fireballs', spotReplay: 13, bloom: 1.3 },
-    duration: 22,
+    duration: 32,
     narrate: async () => {
       const f = await fireballs();
-      return t.bolidi.narrate({ count: num(f.count), year: f.first.slice(0, 4), kt: num(f.top[3]), topYear: f.top[0].slice(0, 4) });
+      return t.bolidi.narrate({ count: num(f.count), year: f.first.slice(0, 4), kt: num(f.top[3]), topYear: f.top[0].slice(0, 4), falls: num(f.falls) });
     },
     detail: async () => {
       const f = await fireballs();
@@ -198,7 +206,21 @@ export const SKY_CHAPTERS: Chapter[] = titled([
         source: t.bolidi.source,
       };
     },
-    beats: async () => [{ shot: { lon: 30, lat: 20, dist: 3.4 }, drift: 2.2 }],
+    beats: async (g) => {
+      const f = await fireballs();
+      g.showMeteors(f.list);
+      const b = f.list[f.biggestFall];
+      return [
+        // Every one in the order they came, the falls of those whose direction is known.
+        { shot: { lon: 30, lat: 20, dist: 3.4 }, drift: 2.2, hold: 14 },
+        // Then the largest of those, falling again and again, seen from the side.
+        { shot: { lon: b[2] + 1, lat: b[1] - 4.5, dist: 0.22, tilt: 60 }, seconds: 6, drift: 0, look: { meteorLoop: f.biggestFall } },
+      ];
+    },
+    badges: async () => {
+      const f = await fireballs(), b = f.list[f.biggestFall];
+      return [{ lon: b[2], lat: b[1], altKm: b[4] ?? 30, title: t.spots.fireball(num(b[3])), sub: `${t.spots.fireballSub(dayShort(b[0].slice(0, 10)), b[4] == null ? null : num(b[4]))} · ${num(b[5] ?? 0, 1)} km/s` }];
+    },
   },
   {
     id: 'passaggi',
@@ -245,8 +267,8 @@ export const SKY_CHAPTERS: Chapter[] = titled([
     id: 'voyager',
     kind: 'computed',
     mood: 'open', sound: 'station',
-    look: { ...SKY, dim: 0.5 },
-    duration: 27,
+    look: { ...SKY, dim: 0.72 },
+    duration: 32, chart: 'voyager', probe: true,
     narrate: async () => {
       const d = await climate.voyager();
       return t.voyager.narrate({ hours: num(d.v1.lightHours, 2), day: d.v1.lightDay ? dayMonth(d.v1.lightDay) : null });
@@ -269,16 +291,9 @@ export const SKY_CHAPTERS: Chapter[] = titled([
       // From the far side of the Earth, looking out towards Voyager 1 (in Ophiuchus), then
       // towards Voyager 2 (far south, in Pavo): they are too far apart for one shot.
       return [
-        { shot: { lon: v1.lon + 180 + 12, lat: -v1.lat * 0.6 - 6, dist: 4.4 }, seconds: 6, drift: 0.12, hold: 9 },
-        { shot: { lon: v2.lon + 180 + 24, lat: -v2.lat, dist: 4.4 }, seconds: 5, drift: 0.1 },
+        { shot: { lon: v1.lon + 180 + 12, lat: -v1.lat * 0.6 - 6, dist: 6.5 }, seconds: 6, drift: 0.12, hold: 12 },
+        { shot: { lon: v2.lon + 180 + 24, lat: -v2.lat, dist: 6.5 }, seconds: 5, drift: 0.1 },
       ];
-    },
-    badges: async (g) => {
-      const d = await climate.voyager();
-      return (['v1', 'v2'] as const).map((k) => {
-        const v = voyagerDir(d[k], g.now);
-        return { lon: v.lon, lat: v.lat, altKm: 400 * 6371, title: k === 'v1' ? 'Voyager 1' : 'Voyager 2', sub: t.voyager.there(num(d[k].au, 1)) };
-      });
     },
   },
 ]);
@@ -291,16 +306,27 @@ function voyagerDir(v: { ra: number; dec: number }, now: Date) {
 }
 
 /** The launches of yesterday (the last two days); on a quiet day, the last three. */
-function recentLaunches(d: { past?: Launch[] }) {
-  const past = d.past ?? [];
-  const recent = past.filter((l) => Date.now() - Date.parse(l.net) < 2 * 86400e3);
-  const list = (recent.length ? recent : past.slice(-3)).slice().reverse() as Launch[] & { yesterday?: boolean };
-  list.yesterday = recent.length > 0;
-  return list as Launch[] & { yesterday: boolean };
+/** The launches of these days: flown since yesterday, and planned for the next three days. */
+function soonLaunches(d: { past?: Launch[]; launches: Launch[] }) {
+  const now = Date.now();
+  const flown = (d.past ?? []).filter((l) => now - Date.parse(l.net) < 2 * 86400e3).reverse();
+  const coming = d.launches.filter((l) => Date.parse(l.net) >= now && Date.parse(l.net) - now < 3 * 86400e3);
+  const list = [...flown, ...coming];
+  return { list: list.length ? list : (d.past ?? []).slice(-3).reverse(), flown: flown.length, coming: coming.length };
+}
+
+/** The pad most of these launches left from. */
+function busiestPad(list: Launch[]) {
+  const n = new Map<string, { l: Launch; k: number }>();
+  for (const l of list) { const key = `${l.lat},${l.lon}`; const e = n.get(key) ?? { l, k: 0 }; e.k++; n.set(key, e); }
+  return [...n.values()].sort((a, b) => b.k - a.k)[0]?.l ?? null;
 }
 
 async function fireballs() {
-  const d = (await loadSpots('fireballs')).data as { count: number; list: [string, number, number, number, number | null, number | null][] };
+  const d = (await loadSpots('fireballs')).data as { count: number; list: Fireball[] };
   const top = d.list.reduce((a, b) => (b[3] > a[3] ? b : a));
-  return { count: d.list.length, first: d.list[0][0], last: d.list.at(-1)!, top };
+  // The largest of those whose fall can be drawn (velocity known).
+  let biggestFall = -1;
+  d.list.forEach((x, i) => { if (x[6] != null && (biggestFall < 0 || x[3] > d.list[biggestFall][3])) biggestFall = i; });
+  return { list: d.list, count: d.list.length, first: d.list[0][0], last: d.list.at(-1)!, top, falls: d.list.filter((x) => x[6] != null).length, biggestFall: Math.max(0, biggestFall) };
 }

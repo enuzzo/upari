@@ -1,5 +1,5 @@
 import {
-  ACESFilmicToneMapping, Clock, HalfFloatType, Raycaster, Scene, ShaderMaterial, Sphere, Texture, Vector2, Vector3, WebGLRenderer,
+  ACESFilmicToneMapping, Clock, HalfFloatType, Mesh, Raycaster, Scene, ShaderMaterial, Sphere, Texture, Vector2, Vector3, WebGLRenderer,
 } from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
@@ -20,6 +20,7 @@ import { loadSatellites } from './satellites';
 import { createSunBody } from './sunbody';
 import { createAuroraCurtains } from './aurora';
 import { createTrajectories, type Launch } from './trajectories';
+import { createMeteors, type Fireball } from './meteors';
 import { createFlyby } from './flyby';
 import { createEarthRing } from './ring';
 import { ATLAS, Atlas, atlasText, type AtlasId } from './atlas';
@@ -76,6 +77,10 @@ export interface Look {
   reach: number;
   /** The ascents set with showRockets, 0..1. */
   rockets: number;
+  /** The year of launches set with showRocketYear, all leaving together, 0..1. */
+  rocketYear: number;
+  /** The fireball (its place in the list) whose fall is shown again and again; -1 none. */
+  meteorLoop: number;
   /** The next asteroid's pass with the Moon's orbit, 0..1. */
   flyby: number;
 }
@@ -84,7 +89,7 @@ export const DEFAULT_LOOK: Look = {
   sun: 'real', clouds: 1, cloudFlow: 1, night: 1, dim: 0, desat: 0, data: null, flow: null,
   fires: 0, iss: 0, stars: 1, atmo: 1, exposure: 1, relief: 1, bloom: 1, pin: null,
   atlas: null, dust: 0, migration: 0, migrationAll: 0, year: null, years: null, yearSeconds: 18, quakes: 0, quakeReplay: 0,
-  spots: null, spotReplay: 0, lapse: 0, satellites: 0, solar: 0, reach: 26, rockets: 0, flyby: 0,
+  spots: null, spotReplay: 0, lapse: 0, satellites: 0, solar: 0, reach: 26, rockets: 0, rocketYear: 0, meteorLoop: -1, flyby: 0,
 };
 
 export interface Probe {
@@ -126,11 +131,14 @@ export class Globe {
   private clock = new Clock();
   private time = 0;
   private look: Look = { ...DEFAULT_LOOK };
-  cur = { clouds: 1, cloudFlow: 1, night: 1, dim: 0, desat: 0, fires: 0, iss: 0, stars: 1, atmo: 1, exposure: 1, relief: 1, bloom: 1, dataMix: 0, trail: 0, studio: 0, pin: 0, atlas: 0, dust: 0, migration: 0, migrationAll: 0, quakes: 0, spots: 0, satellites: 0, solar: 0, rockets: 0, flyby: 0 };
+  cur = { clouds: 1, cloudFlow: 1, night: 1, dim: 0, desat: 0, fires: 0, iss: 0, stars: 1, atmo: 1, exposure: 1, relief: 1, bloom: 1, dataMix: 0, trail: 0, studio: 0, pin: 0, atlas: 0, dust: 0, migration: 0, migrationAll: 0, quakes: 0, spots: 0, satellites: 0, solar: 0, rockets: 0, rocketYear: 0, flyby: 0 };
   private flybyScene: ReturnType<typeof createFlyby> | null = null;
   private earthRing = createEarthRing();
   private flybyLoading: Promise<void> | null = null;
   private rocketTrails: ReturnType<typeof createTrajectories> | null = null;
+  private yearTrails: ReturnType<typeof createTrajectories> | null = null;
+  private meteors: ReturnType<typeof createMeteors> | null = null;
+  private yearT0 = 0;
   private sunBody = createSunBody();
   private curtains: ReturnType<typeof createAuroraCurtains> | null = null;
   private curtainsFrom: unknown = null;
@@ -341,6 +349,20 @@ export class Globe {
     if (this.rocketTrails) { this.scene.remove(this.rocketTrails.points); this.rocketTrails.points.geometry.dispose(); }
     this.rocketTrails = list.length ? createTrajectories(list) : null;
     if (this.rocketTrails) this.scene.add(this.rocketTrails.points);
+  }
+
+  /** The falls of the fireballs with a known velocity, drawn with their replay. */
+  showMeteors(list: Fireball[]) {
+    if (this.meteors) return;
+    this.meteors = createMeteors(list);
+    this.scene.add(this.meteors.points);
+  }
+
+  /** A whole year of launches, every one from its pad, all leaving together. */
+  showRocketYear(list: Launch[]) {
+    if (this.yearTrails) { this.scene.remove(this.yearTrails.points); this.yearTrails.points.geometry.dispose(); }
+    this.yearTrails = list.length ? createTrajectories(list, true) : null;
+    if (this.yearTrails) this.scene.add(this.yearTrails.points);
   }
 
   /** Compare two years (atlas) or the first and last frame (series) across a line; null stops. */
@@ -592,7 +614,7 @@ export class Globe {
     // The aurora's curtains stand on the oval of the forecast on screen.
     if (this.dataShown === 'aurora' && this.dataSamplers[0] && this.curtainsFrom !== this.dataSamplers[0]) {
       const s = this.dataSamplers[0];
-      if (this.curtains) { this.scene.remove(this.curtains.mesh); this.curtains.mesh.geometry.dispose(); }
+      if (this.curtains) { this.scene.remove(this.curtains.mesh); this.curtains.mesh.traverse((o) => (o as Mesh).geometry?.dispose()); }
       this.curtains = createAuroraCurtains((lon, lat) => s.read(lon, lat)[0]);
       this.curtainsFrom = s;
       this.scene.add(this.curtains.mesh);
@@ -655,6 +677,18 @@ export class Globe {
       m.uOpacity.value = c.spots;
       spotSet.points.visible = c.spots > 0.002;
     }
+    if (this.meteors) {
+      const on = this.spotShown === 'fireballs' && !!spotSet;
+      const m = this.meteors.material.uniforms;
+      this.meteors.points.visible = on && c.spots > 0.002;
+      if (on) {
+        m.uClock.value = spotSet!.material.uniforms.uClock.value;
+        m.uReplay.value = Math.max(1, L.spotReplay);
+        m.uOpacity.value = c.spots;
+        m.uTime.value = this.time;
+        m.uLoop.value = L.meteorLoop >= 0 ? this.meteors.indexOf(L.meteorLoop) : -1;
+      }
+    }
 
     // An asteroid's pass, replayed in twelve seconds.
     c.flyby = approach(c.flyby, L.flyby, dt, 1.4);
@@ -674,6 +708,15 @@ export class Globe {
       m.uTime.value = this.time;
       m.uOpacity.value = c.rockets;
       this.rocketTrails.points.visible = c.rockets > 0.002;
+    }
+    // The year lifts off from the moment the look asks for it.
+    if (L.rocketYear > 0 && c.rocketYear < 0.002) this.yearT0 = this.time;
+    c.rocketYear = approach(c.rocketYear, L.rocketYear, dt, 2.5);
+    if (this.yearTrails) {
+      const m = this.yearTrails.material.uniforms;
+      m.uTime.value = this.time - this.yearT0;
+      m.uOpacity.value = c.rocketYear;
+      this.yearTrails.points.visible = c.rocketYear > 0.002;
     }
 
     // Satellites: where each one is now.

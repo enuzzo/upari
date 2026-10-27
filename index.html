@@ -12,7 +12,7 @@
   <title>Upari · The planet, right now</title>
 </head>
 <body>
-  <canvas id="scene" data-t-aria="page.globe"></canvas>
+  <canvas id="scene" role="img" data-t-aria="page.globe"></canvas>
 
   <div class="anchors" id="anchors"></div>
 
@@ -154,6 +154,11 @@
       <label><input type="checkbox" id="ex-spin" /> <span data-t="explore.spin"></span></label>
     </div>
   </aside>
+
+  <figure class="probe-window" id="probe-window" aria-hidden="true">
+    <canvas id="probe-canvas"></canvas>
+    <figcaption data-t="voyager.model"></figcaption>
+  </figure>
 
   <aside class="country-card" id="country-card" aria-live="polite">
     <button class="icon-btn cc-close" id="cc-close" data-t-aria="page.close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>

@@ -18,6 +18,9 @@ const MAX_DIST = 26;
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const easeSine = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
 
+/** Visitors who asked their system for less motion: no idle drift, short flights without the zoom-out arc. */
+const reduce = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
+
 export class CameraRig {
   readonly camera: PerspectiveCamera;
   lon = 10;
@@ -138,8 +141,9 @@ export class CameraRig {
     while (to.heading - from.heading < -180) to.heading += 360;
     const a = lonLatToVec(from.lon, from.lat), b = lonLatToVec(to.lon, to.lat);
     const angle = Math.acos(MathUtils.clamp(a.dot(b), -1, 1));
-    const dur = seconds ?? MathUtils.clamp(2.2 + angle * 1.6 + Math.abs(Math.log(to.dist / from.dist)) * 0.5, 2.4, 7);
-    const arc = Math.max(0, Math.log(Math.min(MAX_DIST, 1.2 + angle * 1.1) / Math.max(from.dist, to.dist))) * Math.min(1, angle * 1.4);
+    let dur = seconds ?? MathUtils.clamp(2.2 + angle * 1.6 + Math.abs(Math.log(to.dist / from.dist)) * 0.5, 2.4, 7);
+    let arc = Math.max(0, Math.log(Math.min(MAX_DIST, 1.2 + angle * 1.1) / Math.max(from.dist, to.dist))) * Math.min(1, angle * 1.4);
+    if (reduce?.matches) { dur = Math.min(dur, 1.4); arc = 0; }
     this.vel = { lon: 0, lat: 0, zoom: 0 };
     return new Promise((resolve) => { this.flight = { from, to, t: 0, dur, arc, resolve }; });
   }
@@ -184,7 +188,7 @@ export class CameraRig {
         this.vel.lon *= k; this.vel.lat *= k;
         this.dist *= Math.exp(this.vel.zoom * dt);
         this.vel.zoom *= Math.exp(-dt * 6);
-        this.lon += this.drift * dt;
+        this.lon += (reduce?.matches ? 0 : this.drift) * dt;
       }
       this.dist = MathUtils.clamp(this.dist, MIN_DIST, Math.max(MAX_DIST, this.reach));
       this.lat = MathUtils.clamp(this.lat, -85, 85);

@@ -6,6 +6,7 @@ import type { Chapter } from './chapters';
 import { STORIES, type Story } from './stories';
 import { showChart } from './charts';
 import { placeFacts } from './place';
+import { showProbe } from './probe';
 import { t, lang } from '../i18n';
 import { dayMonthShort, dayShort, monthYear, num, timeUtc } from '../i18n/format';
 
@@ -117,6 +118,7 @@ export class Director {
     $('cap-title').textContent = c.title;
     this.legend(c);
     if (!this.detour && c.chart) showChart(c.chart);
+    if (!this.detour) showProbe(!!c.probe);
     const token = this.token;
     if (this.lineReady) void c.narrate(this.globe).catch(() => '').then((text) => { if (token === this.token && text) this.speak(text); });
     if (!this.detour) {
@@ -168,12 +170,15 @@ export class Director {
     const ready = this.globe.prepare(c.look);
     this.legend(c);
     showChart(c.chart ?? null);
+    showProbe(!!c.probe);
     await new Promise((r) => setTimeout(r, 650));
     if (token !== this.token) return;
 
     $('cap-num').textContent = roman(i);
     $('cap-kicker').textContent = c.kicker;
     $('cap-kind').textContent = c.kind ? t.kinds[c.kind] : '';
+    // What the planet shows, for screen readers (the narration itself is a live region).
+    $('scene').setAttribute('aria-label', `${t.page.globe}. ${c.title}: ${c.kicker}${c.kind ? `, ${t.kinds[c.kind]}` : ''}`);
     $('cap-title').textContent = c.title;
     $('cap-line').innerHTML = '';
     cap.classList.remove('out', 'hidden');
@@ -290,6 +295,7 @@ export class Director {
     $('legend').classList.remove('on');
     $('caption').classList.add('hidden');
     showChart(null);
+    showProbe(false);
   }
 
   /** Leave the story to show a place the viewer looked for. */
@@ -301,6 +307,7 @@ export class Director {
     $('legend').classList.remove('on');
     $('caption').classList.add('hidden');
     showChart(null);
+    showProbe(false);
     this.globe.setLook({ sun: 'real', clouds: 1, night: 1, pin: { lon, lat } });
     const el = document.createElement('div');
     const b = document.createElement('b'), small = document.createElement('small');

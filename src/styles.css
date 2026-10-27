@@ -703,3 +703,25 @@ button.about-link:hover { color: var(--ink); border-color: var(--ink-3); }
   .explore { width: 100vw; top: 56px; padding: 12px 20px 20px; background: rgba(4, 6, 10, 0.95); }
   .country-card { width: calc(100vw - 32px); }
 }
+
+/* The Voyagers' paths (src/story/charts.ts) */
+.chart .ch-orbit { fill: none; stroke: rgba(255, 255, 255, 0.16); stroke-width: 1; }
+.chart .ch-path { fill: none; stroke: #fff1d6; stroke-width: 1.6; filter: drop-shadow(0 0 4px rgba(255, 217, 160, 0.6)); }
+.chart .ch-path2 { fill: none; stroke: #9fc4ff; stroke-width: 1.3; }
+.chart .ch-heading { stroke: rgba(255, 241, 214, 0.7); stroke-width: 1.2; stroke-dasharray: 3 4; }
+.chart .ch-big { fill: var(--ink); font-family: var(--serif); font-size: 34px; }
+.chart .ch-dest { fill: var(--ink-2); font-size: 12px; }
+.chart .ch-live { animation: none; opacity: 1; }
+
+/* The spacecraft in 3D (src/story/probe.ts), above the caption. */
+.probe-window {
+  position: fixed; left: var(--gutter); top: calc(var(--gutter) * 0.55 + 76px); z-index: 5; margin: 0; width: 250px;
+  opacity: 0; transform: translateY(8px); transition: opacity 0.9s var(--ease), transform 0.9s var(--ease); pointer-events: none;
+}
+.probe-window.on { opacity: 1; transform: none; }
+.probe-window canvas { display: block; width: 250px; height: 190px; border-radius: 4px; background: radial-gradient(ellipse at 40% 45%, rgba(40, 46, 60, 0.55), rgba(3, 4, 7, 0.7) 70%); }
+.probe-window figcaption { margin-top: 8px; font-size: 11px; line-height: 1.4; letter-spacing: 0.04em; color: var(--ink-3); text-shadow: var(--halo-soft); }
+body.exploring .probe-window, body.reading .probe-window { opacity: 0; }
+@media (max-width: 720px) { .probe-window { display: none; } }
+.chart[data-chart="voyager"] { background: rgba(3, 4, 7, 0.88); }
+.chart[data-chart="voyager"] svg { overflow: hidden; }

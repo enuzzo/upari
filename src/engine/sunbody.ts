@@ -5,18 +5,24 @@ import { fresh } from './fresh';
 
 // The Sun as a body, for comparison: 109 times the Earth's radius, placed beside the planet
 // in the true direction of the Sun but far nearer than it really is (to scale in size, not in
-// distance). The side facing us wears this morning's SDO/HMI image in visible light, with its
-// real sunspots; the rest is granulation. Limb darkening and a soft corona complete it.
+// distance). The side facing us moves through the last twenty-four hours seen by SDO/AIA at
+// 304 Å (the chromosphere, in the red and yellow of its usual colours), darkened where this
+// morning's HMI image in visible light shows sunspots; the rest is boiling granulation in the
+// same colours. Limb darkening and a corona with prominences complete it.
 
 export const SUN_RADIUS = 109.1; // Earth radii
 /** How far the comparison Sun stands from the Earth's centre, in Earth radii. */
 export const SUN_DISTANCE = 300;
+/** The day at 304 Å: frames in the atlas (sky/sun-304.jpg), and the Sun's radius in a frame. */
+const ATLAS = { cols: 8, rows: 4, radius: 0.405 };
 
 export function createSunBody() {
   const group = new Group();
   group.visible = false;
   const uniforms = {
     uTime: { value: 0 }, uOpacity: { value: 0 }, uImage: { value: null as Texture | null }, uHasImage: { value: 0 },
+    // The last day at 304 Å: an atlas of COLS × ROWS frames, played in a loop.
+    uAtlas: { value: null as Texture | null }, uHasAtlas: { value: 0 }, uFrame: { value: 0 },
     uToEarth: { value: new Vector3(-1, 0, 0) },
   };
   const surface = new ShaderMaterial({
@@ -26,8 +32,20 @@ export function createSunBody() {
       void main() { vN = normalize(position); vec4 w = modelMatrix * vec4(position, 1.0); vWorld = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
     fragmentShader: /* glsl */ `
       ${noiseGLSL}
-      uniform float uTime, uOpacity, uHasImage;
-      uniform sampler2D uImage;
+      uniform float uTime, uOpacity, uHasImage, uHasAtlas, uFrame;
+      uniform sampler2D uImage, uAtlas;
+      // The colours of the Sun at 304 Å, from the dark of the cool gas to the white of a flare.
+      vec3 fire(float L) {
+        vec3 c = mix(vec3(0.32, 0.03, 0.0), vec3(0.95, 0.22, 0.02), smoothstep(0.0, 0.38, L));
+        c = mix(c, vec3(1.0, 0.55, 0.08), smoothstep(0.32, 0.62, L));
+        c = mix(c, vec3(1.0, 0.86, 0.42), smoothstep(0.58, 0.86, L));
+        return mix(c, vec3(1.0, 0.98, 0.86), smoothstep(0.86, 1.05, L));
+      }
+      vec3 tile(float f, vec2 uv) {
+        f = mod(f, ${ATLAS.cols * ATLAS.rows}.0);
+        float col = mod(f, ${ATLAS.cols}.0), row = floor(f / ${ATLAS.cols}.0);
+        return texture2D(uAtlas, vec2((col + uv.x) / ${ATLAS.cols}.0, (${ATLAS.rows - 1}.0 - row + uv.y) / ${ATLAS.rows}.0)).rgb;
+      }
       uniform vec3 uToEarth;
       varying vec3 vN; varying vec3 vWorld;
       void main() {
@@ -35,24 +53,35 @@ export function createSunBody() {
         float mu = clamp(dot(vN, view), 0.0, 1.0);
         // Limb darkening of the photosphere (Eddington-like, warmer at the edge): the volume.
         float limb = 0.22 + 0.78 * pow(mu, 0.55) + 0.12 * pow(mu, 6.0);
-        // Granulation: cells of rising gas, a thousand kilometres across, slowly boiling.
+        // Where no image reaches: granulation, a thousand kilometres across, and slow swirls
+        // of brighter and darker gas, boiling.
         float g = fbm(vN * 160.0 + vec3(0.0, 0.0, uTime * 0.05));
         float cells = 0.85 + 0.3 * smoothstep(0.35, 0.75, g);
-        float I = limb * cells;
-        // The face seen from the Earth: this morning's image (solar north up).
+        float swirl = fbm(vN * 9.0 + vec3(uTime * 0.03, 0.0, -uTime * 0.02));
+        float regions = fbm(vN * 3.5 + vec3(0.0, uTime * 0.01, 0.0));
+        float L = (0.5 + 0.24 * swirl + 0.22 * smoothstep(0.62, 0.8, regions)) * cells;
+        float spots = 1.0;
+        // The face seen from the Earth (solar north up).
         vec3 z = normalize(uToEarth), x = normalize(cross(vec3(0.0, 1.0, 0.0), z)), y = cross(z, x);
         float facing = dot(vN, z);
-        if (uHasImage > 0.5 && facing > 0.0) {
-          vec2 uv = vec2(dot(vN, x), dot(vN, y)) * 0.47 + 0.5;
-          float img = texture2D(uImage, uv).r;
-          // HMI holds the limb darkening as seen from the Earth: divide it out and apply the
-          // one of this view, so the photo meets the drawn surface without a dark seam.
-          float seen = 0.22 + 0.78 * pow(facing, 0.55) + 0.12 * pow(facing, 6.0);
-          float shown = 0.9 * img / max(seen, 0.3) * limb * cells;
-          I = mix(I, shown, smoothstep(0.2, 0.5, facing));
+        vec2 d = vec2(dot(vN, x), dot(vN, y));
+        float face = smoothstep(0.15, 0.45, facing);
+        if (uHasAtlas > 0.5 && facing > 0.0) {
+          // The last day at 304 Å, frame after frame, each fading into the next.
+          vec2 uv = d * ${ATLAS.radius} + 0.5;
+          float f0 = floor(uFrame);
+          vec3 c = mix(tile(f0, uv), tile(f0 + 1.0, uv), fract(uFrame));
+          L = mix(L, dot(c, vec3(0.62, 0.5, 0.05)) * 1.15, face);
         }
-        vec3 white = vec3(1.0, 0.9, 0.7), edge = vec3(1.0, 0.5, 0.2);
-        vec3 col = mix(edge, white, smoothstep(0.0, 0.8, mu)) * I * 1.05;
+        if (uHasImage > 0.5 && facing > 0.0) {
+          // This morning in visible light: where it is much darker than the disc around it,
+          // a sunspot. HMI holds the limb darkening seen from the Earth: divide it out.
+          float img = texture2D(uImage, d * 0.47 + 0.5).r;
+          float seen = 0.22 + 0.78 * pow(facing, 0.55) + 0.12 * pow(facing, 6.0);
+          spots = mix(1.0, 0.12 + 0.88 * smoothstep(0.35, 0.85, img / max(seen, 0.3)), face);
+        }
+        // A little contrast, so the cool gas goes red and the active regions yellow.
+        vec3 col = fire(pow(L * limb * spots, 1.45) * 1.25);
         gl_FragColor = vec4(col * uOpacity, 1.0);
       }`,
     transparent: true,
@@ -85,7 +114,7 @@ export function createSunBody() {
         float loops = smoothstep(0.58, 0.85, fbm(vec3(a * 10.0, (r - 1.0) * 22.0 - uTime * 0.04, 2.3)))
           * smoothstep(1.16, 1.02, r) * smoothstep(0.58, 0.74, field);
         vec3 h = vec3(1.0, 0.3, 0.16) * (rim + tongues * 1.5 + loops * 1.2);
-        gl_FragColor = vec4((vec3(1.0, 0.86, 0.66) * glow + h) * uOpacity, 1.0);
+        gl_FragColor = vec4((vec3(1.0, 0.68, 0.36) * glow + h) * uOpacity, 1.0);
       }`,
     blending: AdditiveBlending, depthWrite: false, transparent: true,
   });
@@ -98,9 +127,12 @@ export function createSunBody() {
     group,
     /** This morning's visible-light image, once. */
     load() {
-      loading ??= loadTexture(fresh('sky/sun-hmi.jpg'), { mipmaps: true, repeat: false })
-        .then((t) => { uniforms.uImage.value = t; uniforms.uHasImage.value = 1; })
-        .catch(() => {});
+      loading ??= Promise.all([
+        loadTexture(fresh('sky/sun-hmi.jpg'), { mipmaps: true, repeat: false })
+          .then((t) => { uniforms.uImage.value = t; uniforms.uHasImage.value = 1; }),
+        loadTexture(fresh('sky/sun-304.jpg'), { mipmaps: true, repeat: false })
+          .then((t) => { uniforms.uAtlas.value = t; uniforms.uHasAtlas.value = 1; }),
+      ].map((p) => p.catch(() => {}))).then(() => {});
       return loading;
     },
     update(sunDir: Vector3, camera: { position: Vector3; quaternion: import('three').Quaternion }, opacity: number, time: number) {
@@ -112,6 +144,8 @@ export function createSunBody() {
       uniforms.uToEarth.value.copy(sunDir).negate();
       uniforms.uOpacity.value = opacity;
       uniforms.uTime.value = time;
+      // The day in sixteen seconds, two frames a second.
+      uniforms.uFrame.value = (time * 2) % (ATLAS.cols * ATLAS.rows);
     },
   };
 }

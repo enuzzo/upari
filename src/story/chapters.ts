@@ -59,6 +59,8 @@ export interface Chapter {
   replay?: [number, number];
   /** A chart beside the planet. */
   chart?: ChartId;
+  /** The small window with the spacecraft in 3D. */
+  probe?: boolean;
   /** What kind of data the chapter shows: measured, model, forecast, statistics... */
   kind?: Kind;
   /** Labels on the globe (lon, lat, height in km), shown once the words are on screen. */

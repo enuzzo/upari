@@ -89,6 +89,24 @@ const layers = {
     // And in visible light (HMI continuum), with its sunspots, for the Sun as a body.
     const hmi = await get('https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg', 'bin').catch(() => null);
     if (hmi && hmi.buf.length > 30_000) writeAtomic(join(OUT, 'sun-hmi.jpg'), hmi.buf);
+    // The last day at 304 Å (the chromosphere, red and yellow), for the moving face of the Sun:
+    // SDO's 48-hour movie, the second half of it, one frame in five, tiled 8 × 4 by ffmpeg.
+    // The caption at the bottom of each frame is painted over. Kept as it was if anything fails.
+    try {
+      const movie = await get('https://sdo.gsfc.nasa.gov/assets/img/latest/mpeg/latest_512_0304.mp4', 'bin');
+      mkdirSync(TMP, { recursive: true });
+      const mp4 = join(TMP, 'aia304.mp4'), atlas = join(TMP, 'sun-304.jpg');
+      writeFileSync(mp4, movie.buf);
+      const dur = Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', mp4]).toString());
+      execFileSync('ffmpeg', ['-v', 'error', '-y', '-sseof', String(-dur / 2), '-i', mp4, '-vf',
+        "drawbox=x=0:y=ih*0.93:w=iw:h=ih*0.07:color=black:t=fill,select='not(mod(n\\,5))',scale=384:384,tile=8x4",
+        '-frames:v', '1', '-q:v', '4', atlas]);
+      const jpg = readFileSync(atlas);
+      if (jpg.length > 150_000) writeAtomic(join(OUT, 'sun-304.jpg'), jpg);
+      console.log(`sun: 304 atlas ${Math.round(jpg.length / 1024)} KB`);
+    } catch (e) {
+      console.log(`sun: 304 atlas kept (${e.message})`);
+    }
     writeAtomic(join(OUT, 'sun.json'), JSON.stringify({ time, channel: 'AIA 171 Å', source: 'NASA/SDO and the AIA, EVE and HMI science teams' }, null, 1));
     console.log(`sun: ${time}`);
   },
@@ -184,8 +202,10 @@ const layers = {
   },
 
   async fireballs() {
-    // Bright meteors seen by US government sensors since 1988: where, when, how much energy.
-    const d = await get('https://ssd-api.jpl.nasa.gov/fireball.api');
+    // Bright meteors seen by US government sensors since 1988: where, when, how much energy,
+    // and for about a third of them the velocity before entry (Earth-fixed x, y, z, km/s),
+    // which gives the direction they fell from.
+    const d = await get('https://ssd-api.jpl.nasa.gov/fireball.api?vel-comp=true');
     const f = Object.fromEntries(d.fields.map((k, i) => [k, i]));
     const list = (d.data ?? []).filter((r) => r[f.lat] && r[f.lon]).map((r) => [
       r[f.date],
@@ -194,9 +214,10 @@ const layers = {
       Number(r[f['impact-e']]),
       r[f.alt] ? Number(r[f.alt]) : null,
       r[f.vel] ? Number(r[f.vel]) : null,
+      ...(r[f.vx] != null && r[f.vy] != null && r[f.vz] != null ? [Number(r[f.vx]), Number(r[f.vy]), Number(r[f.vz])] : [null, null, null]),
     ]).sort((a, b) => (a[0] < b[0] ? -1 : 1));
     if (list.length < 500) throw new Error(`fireballs: ${list.length} events look incomplete`);
-    writeAtomic(join(OUT, 'fireballs.json'), JSON.stringify({ fetched: new Date().toISOString(), count: list.length, fields: ['date', 'lat', 'lon', 'kt', 'altKm', 'kms'], list, source: 'NASA/JPL CNEOS · Fireball Data' }));
+    writeAtomic(join(OUT, 'fireballs.json'), JSON.stringify({ fetched: new Date().toISOString(), count: list.length, fields: ['date', 'lat', 'lon', 'kt', 'altKm', 'kms', 'vx', 'vy', 'vz'], list, source: 'NASA/JPL CNEOS · Fireball Data' }));
     console.log(`fireballs: ${list.length}, newest ${list.at(-1)[0]}`);
   },
 
@@ -217,8 +238,22 @@ const layers = {
       const cross = days.find((d) => d.au >= LIGHT_DAY_AU);
       return { au: round(days[0].au, 3), lightHours: round((days[0].au * 149597870.7) / 299792.458 / 3600, 2), ra: round(days[0].ra, 3), dec: round(days[0].dec, 3), lightDay: cross ? cross.date : null };
     };
+    // Their paths since 1977, around the Sun, in the plane of the planets: [year, x, y, z] au,
+    // heliocentric ecliptic, one point a month (the story draws them leaving the planets behind).
+    const path = async (id) => {
+      const q = new URLSearchParams({
+        format: 'json', COMMAND: `'${id}'`, EPHEM_TYPE: 'VECTORS', CENTER: "'500@10'", START_TIME: "'1977-09-10'",
+        STOP_TIME: `'${iso(today)}'`, STEP_SIZE: "'30 d'", VEC_TABLE: "'1'", REF_PLANE: "'ECLIPTIC'", OUT_UNITS: "'AU-D'", CSV_FORMAT: "'YES'", OBJ_DATA: "'NO'",
+      });
+      const r = (await get(`https://ssd.jpl.nasa.gov/api/horizons.api?${q}`)).result;
+      return r.slice(r.indexOf('$$SOE') + 5, r.indexOf('$$EOE')).trim().split('\n').map((l) => {
+        const c = l.split(',').map((x) => x.trim());
+        return [round(2000 + (Number(c[0]) - 2451545) / 365.25, 3), round(Number(c[2]), 3), round(Number(c[3]), 3), round(Number(c[4]), 3)];
+      });
+    };
     const v1 = await probe(-31), v2 = await probe(-32);
-    writeAtomic(join(OUT, 'voyager.json'), JSON.stringify({ date: iso(today), lightDayAu: round(LIGHT_DAY_AU, 3), v1, v2, source: 'NASA/JPL Horizons' }, null, 1));
+    const paths = await Promise.all([path(-31), path(-32)]).catch(() => null);
+    writeAtomic(join(OUT, 'voyager.json'), JSON.stringify({ date: iso(today), lightDayAu: round(LIGHT_DAY_AU, 3), v1, v2, ...(paths ? { paths: { v1: paths[0], v2: paths[1] } } : {}), source: 'NASA/JPL Horizons' }));
     console.log(`voyager: V1 ${v1.au} au (${v1.lightHours} light-hours), one light-day on ${v1.lightDay ?? 'beyond 400 days'}`);
   },
 };

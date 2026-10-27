@@ -205,31 +205,101 @@ async function neo(svg: SVGElement, cap: HTMLElement) {
   cap.textContent = t.charts.neo(first.name, dayShort(first.time), num(first.ld, 2));
 }
 
-/** The Solar System on one line, and the Voyagers far out on the right. */
+/** A sentence in lines of at most `width` characters, from (x, y) down. */
+function lines(parent: Element, x: number, y: number, s: string, width: number, cls: string, anchor: string) {
+  const out: string[] = [];
+  for (const w of s.split(' ')) { const l = out.at(-1); if (l && (l + ' ' + w).length <= width) out[out.length - 1] = l + ' ' + w; else out.push(w); }
+  out.forEach((l, i) => text(parent, x, y + i * 16, l, cls, anchor));
+}
+
+/** When each Voyager met a planet: [year, which planet]. */
+const FLYBYS: Record<'v1' | 'v2', [number, 'jupiter' | 'saturn' | 'uranus' | 'neptune'][]> = {
+  v1: [[1979.17, 'jupiter'], [1980.86, 'saturn']],
+  v2: [[1979.52, 'jupiter'], [1981.65, 'saturn'], [1986.07, 'uranus'], [1989.65, 'neptune']],
+};
+const ORBITS: ['jupiter' | 'saturn' | 'uranus' | 'neptune' | '', number][] = [['', 1], ['jupiter', 5.2], ['saturn', 9.5], ['uranus', 19.2], ['neptune', 30.1]];
+
+/**
+ * The Voyagers leaving the planets behind: their real paths since 1977 (Horizons), seen from a
+ * little above the plane of the planets, the view widening as they go, from Jupiter's orbit to
+ * the edge of the Sun's wind and beyond; then the way each one is heading.
+ */
 async function voyager(svg: SVGElement, cap: HTMLElement) {
   const d = await climate.voyager();
-  const W = 640, H = 360, L = 30, R = 30, y = 200;
-  frame(svg, W, H);
-  const max = Math.ceil((d.v1.au + 10) / 10) * 10;
-  const X = (au: number) => L + (au / max) * (W - L - R);
-  el('line', { x1: X(0), x2: X(max), y1: y, y2: y, class: 'ch-axis' }, svg);
-  el('circle', { cx: X(0), cy: y, r: 6, class: 'ch-sunpt' }, svg);
-  const planets: [string, number][] = [['', 1], ['', 5.2], ['', 9.5], ['', 19.2], [t.charts.neptune, 30.1]];
-  for (const [name, au] of planets) {
-    el('circle', { cx: X(au), cy: y, r: 2.5, class: 'ch-rock' }, svg);
-    if (name) text(svg, X(au), y + 22, name, 'ch-tick', 'middle');
-  }
-  el('line', { x1: X(121.6), x2: X(121.6), y1: y - 40, y2: y + 40, class: 'ch-helio' }, svg);
-  text(svg, X(121.6), y + 58, t.charts.heliopause, 'ch-tick', 'middle');
-  for (const [k, v] of [['v2', d.v2], ['v1', d.v1]] as const) {
-    const g = el('g', { class: 'ch-neo' }, svg) as SVGElement;
-    g.style.animationDelay = k === 'v1' ? '1.2s' : '0.6s';
-    el('circle', { cx: X(v.au), cy: y, r: k === 'v1' ? 5 : 4, class: k === 'v1' ? 'ch-dot' : 'ch-rock' }, g);
-    el('line', { x1: X(v.au), x2: X(v.au), y1: y, y2: y - (k === 'v1' ? 80 : 46), class: 'ch-stem' }, g);
-    text(g, X(v.au), y - (k === 'v1' ? 96 : 56), `Voyager ${k === 'v1' ? 1 : 2}`, k === 'v1' ? 'ch-label' : 'ch-tick', 'middle');
-  }
-  text(svg, X(max), y + 40, t.charts.au, 'ch-tick', 'end');
+  const mine = token; // showChart counts each chart it shows: a newer one stops this animation
+  const W = 640, H = 420, cx = 96, cy = 214;
   cap.textContent = t.charts.voyager(num(d.v1.au, 1), num(d.v1.lightHours, 2));
+  frame(svg, W, H);
+  const paths = d.paths as Record<'v1' | 'v2', [number, number, number, number][]> | undefined;
+  if (!paths) return;
+  // Turn the plane so both point to the right; tilt the view 18° above it.
+  const end = (k: 'v1' | 'v2') => paths[k].at(-1)!;
+  const rot = -Math.atan2(end('v1')[2] + end('v2')[2], end('v1')[1] + end('v2')[1]);
+  const cr = Math.cos(rot), sr = Math.sin(rot), tilt = (18 * Math.PI) / 180;
+  const project = (x: number, y: number, z: number, s: number) => {
+    const u = x * cr - y * sr, v = x * sr + y * cr;
+    return [cx + u * s, cy - (z * Math.cos(tilt) + v * Math.sin(tilt)) * s];
+  };
+  const at = (k: 'v1' | 'v2', year: number) => {
+    const p = paths[k];
+    let i = p.findIndex((q) => q[0] > year);
+    if (i < 0) return p.at(-1)!;
+    if (i === 0) return p[0];
+    const a = p[i - 1], b = p[i], f = (year - a[0]) / (b[0] - a[0]);
+    return [year, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f, a[3] + (b[3] - a[3]) * f];
+  };
+  const y0 = paths.v1[0][0], y1 = end('v1')[0], SECONDS = 15;
+  const t0 = performance.now();
+  const draw = (now: number) => {
+    if (token !== mine || !svg.isConnected) return;
+    const k = Math.min(1, (now - t0) / 1000 / SECONDS);
+    // Slow at the planets (to Neptune, 1989, in the first six seconds), faster in the empty years after.
+    const split = 0.4, mid = 1990;
+    const year = k < split ? y0 + (mid - y0) * (k / split) : mid + (y1 - mid) * ((k - split) / (1 - split));
+    const p1 = at('v1', year), p2 = at('v2', year);
+    const reach = Math.max(9, Math.hypot(p1[1], p1[2], p1[3]), Math.hypot(p2[1], p2[2], p2[3]));
+    const s = (W - cx - 70) / (reach * 1.08);
+    svg.innerHTML = '';
+    // Everything inside the panel (an inner svg clips): the widest orbits would spill over the planet.
+    const g = el('svg', { x: 0, y: 0, width: W, height: H, overflow: 'hidden' }, svg);
+    // The planets' orbits shrink towards the Sun as the view widens.
+    for (const [name, r] of ORBITS) {
+      if (r * s < 2) continue;
+      el('ellipse', { cx, cy, rx: r * s, ry: r * s * Math.sin(tilt), class: 'ch-orbit' }, g);
+      if (name && r * s > 34) text(g, cx + r * s + 4, cy + 4, t.charts[name], 'ch-tick');
+    }
+    if (120 * s < W) {
+      el('ellipse', { cx, cy, rx: 120 * s, ry: 120 * s * Math.sin(tilt), class: 'ch-helio' }, g);
+      text(g, cx + 120 * s * 0.72, cy + 120 * s * Math.sin(tilt) * 0.7 + 16, t.charts.heliopause, 'ch-tick', 'middle');
+    }
+    el('circle', { cx, cy, r: 5, class: 'ch-sunpt' }, g);
+    for (const key of ['v2', 'v1'] as const) {
+      const pts = paths[key].filter((q) => q[0] <= year).map((q) => project(q[1], q[2], q[3], s));
+      const head = at(key, year), [hx, hy] = project(head[1], head[2], head[3], s);
+      pts.push([hx, hy]);
+      el('polyline', { points: pts.map((q) => q.join(',')).join(' '), class: key === 'v1' ? 'ch-path' : 'ch-path2' }, g);
+      // The planets met on the way, while they are still large enough to tell apart.
+      for (const [when, planet] of FLYBYS[key]) {
+        if (when > year || s * 5 < 9) continue;
+        const f = at(key, when), [fx, fy] = project(f[1], f[2], f[3], s);
+        el('circle', { cx: fx, cy: fy, r: 2.5, class: 'ch-rock' }, g);
+        if (s * 5 > 22) text(g, fx + 6, fy + (key === 'v1' ? -6 : 14), `${t.charts[planet]} ${Math.floor(when)}`, 'ch-tick');
+      }
+      // Where it is heading, once it is here: the line goes on, dashed.
+      if (k >= 1) {
+        const prev = at(key, year - 3), [px, py] = project(prev[1], prev[2], prev[3], s);
+        const dx = hx - px, dy = hy - py, n = Math.hypot(dx, dy) || 1;
+        el('line', { x1: hx, y1: hy, x2: hx + (dx / n) * 46, y2: hy + (dy / n) * 46, class: 'ch-heading' }, g);
+      }
+      el('circle', { cx: hx, cy: hy, r: key === 'v1' ? 5 : 4, class: key === 'v1' ? 'ch-dot ch-live' : 'ch-rock' }, g);
+      const r = Math.hypot(head[1], head[2], head[3]);
+      text(g, hx - 8, hy + (key === 'v1' ? -14 : 24), `Voyager ${key === 'v1' ? 1 : 2} · ${num(r, 0)} ${t.charts.auShort}`, key === 'v1' ? 'ch-label' : 'ch-tick', 'end');
+      if (k >= 1) lines(g, W - 8, key === 'v1' ? 66 : H - 52, key === 'v1' ? t.charts.heading1 : t.charts.heading2, 34, 'ch-tick ch-dest', 'end');
+    }
+    text(g, 12, 34, String(Math.floor(year)), 'ch-big');
+    if (k < 1) requestAnimationFrame(draw);
+  };
+  requestAnimationFrame(draw);
 }
 
 const DRAW: Record<ChartId, (svg: SVGElement, cap: HTMLElement) => Promise<void>> = { temperature, co2, sun, neo, voyager };

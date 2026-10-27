@@ -72,6 +72,8 @@ jobs:
           UPARI_TMP: ${{ runner.temp }}/upari
         run: |
           status=0
+          # ffmpeg tiles the Sun's last day; the runner may not have it.
+          command -v ffmpeg >/dev/null || sudo apt-get install -y --no-install-recommends ffmpeg >/dev/null || true
           node scripts/prepare-sky.mjs || status=1
           node scripts/prepare-climate.mjs || status=1
           exit $status

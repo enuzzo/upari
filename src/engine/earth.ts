@@ -68,6 +68,8 @@ uniform sampler2D uAtlasValues;  // x: slot, y: year; red value, green 1 where t
 uniform sampler2D uAtlasPalette;
 uniform float uAtlasMix;
 uniform float uAtlasYear;        // years since the first, fractional between two years
+uniform float uAtlasYear2;       // the other year, right of the comparison line
+uniform float uSplit;            // comparison line, drawing-buffer x (negative: no comparison)
 uniform float uAtlasYears;
 uniform vec3 uAtlasRange;        // min, max, curve
 uniform float uAtlasHover;
@@ -245,10 +247,12 @@ void main() {
   // ---- Data layer below the clouds.
   vec4 dataColor = vec4(0.0);
   if (uDataMix > 0.001) {
+    // Comparing: the first frame left of the line, the last one right of it.
+    float blend = uSplit > 0.0 ? step(uSplit, gl_FragCoord.x) : uDataBlend;
     vec4 d1 = textureBicubic(uData, uv, uDataSize);
     vec4 d = d1;
-    if (uDataBlend > 0.0) d = mix(d1, textureBicubic(uData2, uv, uDataSize), uDataBlend);
-    if (uDataSplit > 0.5) d.g = mix(texture(uConf, uv).r, texture(uConf2, uv).r, uDataBlend);
+    if (blend > 0.0) d = mix(d1, textureBicubic(uData2, uv, uDataSize), blend);
+    if (uDataSplit > 0.5) d.g = mix(texture(uConf, uv).r, texture(uConf2, uv).r, blend);
     float v = clamp((d.r - uDataRange.x) / max(uDataRange.y - uDataRange.x, 1e-4), 0.0, 1.0);
     vec4 pal = texture(uPalette, vec2(v, 0.5));
     pal.rgb *= pal.rgb;
@@ -303,14 +307,15 @@ void main() {
     int slot = int(idp.r * 255.0 + 0.5);
     float hover = slot > 0 && slot == int(uAtlasHover + 0.5) ? 1.0 : 0.0;
     if (slot > 0 && uAtlasFill > 0.5) {
-      int y0 = int(floor(uAtlasYear)), y1 = min(y0 + 1, int(uAtlasYears) - 1);
+      float yr = uSplit > 0.0 && gl_FragCoord.x > uSplit ? uAtlasYear2 : uAtlasYear;
+      int y0 = int(floor(yr)), y1 = min(y0 + 1, int(uAtlasYears) - 1);
       vec2 v0 = texelFetch(uAtlasValues, ivec2(slot, y0), 0).rg, v1 = texelFetch(uAtlasValues, ivec2(slot, y1), 0).rg;
       // Colours move between two years; the numbers are never interpolated.
       vec4 c0 = vec4(0.5, 0.52, 0.56, 0.12), c1 = c0;
       float span = max(uAtlasRange.y - uAtlasRange.x, 1e-4);
       if (v0.g > 0.5) { vec4 p = texture(uAtlasPalette, vec2(pow(clamp((v0.r - uAtlasRange.x) / span, 0.0, 1.0), uAtlasRange.z), 0.5)); c0 = vec4(p.rgb * p.rgb, 1.0); }
       if (v1.g > 0.5) { vec4 p = texture(uAtlasPalette, vec2(pow(clamp((v1.r - uAtlasRange.x) / span, 0.0, 1.0), uAtlasRange.z), 0.5)); c1 = vec4(p.rgb * p.rgb, 1.0); }
-      vec4 c = mix(c0, c1, fract(uAtlasYear));
+      vec4 c = mix(c0, c1, fract(yr));
       c.rgb *= 1.0 + hover * 0.6;
       col = mix(col, c.rgb * 0.9, c.a * 0.82 * uAtlasMix);
       col += c.rgb * c.a * 0.22 * uAtlasMix;
@@ -404,6 +409,8 @@ export function earthUniforms(t: EarthTextures) {
     uAtlasPalette: { value: blank as Texture },
     uAtlasMix: { value: 0 },
     uAtlasYear: { value: 0 },
+    uAtlasYear2: { value: 0 },
+    uSplit: { value: -1 },
     uAtlasYears: { value: 1 },
     uAtlasRange: { value: new Vector3(0, 1, 1) },
     uAtlasHover: { value: -1 },

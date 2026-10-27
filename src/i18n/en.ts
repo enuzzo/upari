@@ -85,6 +85,7 @@ const en: Dict = {
     realLight: 'True sunlight',
     clouds: 'Clouds',
     spin: 'Slow spin',
+    compare: 'Compare before and after',
     groups: { planet: 'The planet', nature: 'Nature', people: 'People', sky: 'The sky' },
     layers: {
       adesso: 'The Earth, right now', venti: 'Winds', correnti: 'Currents', mare: 'Sea temperature',
@@ -101,6 +102,7 @@ const en: Dict = {
       aurora: 'Aurora, right now', satelliti: 'Every satellite', partenze: 'Next launches', bolidi: 'Fireballs since 1988',
       citta: 'Cities, 1975 – 2030', rotte: 'Shipping lanes',
       livello: 'Sea level', onde: 'Waves, last 24 hours',
+      migranti: 'Born abroad', co2: 'CO₂ per person', rifugiati: 'Refugees by country of origin',
     },
   },
 
@@ -146,6 +148,8 @@ const en: Dict = {
       ['Cities', 'European Commission, JRC, GHS-BUILT-S R2023A (2025 and 2030 are projections), CC BY 4.0'],
       ['Sea level', 'NOAA CoastWatch, sea level anomaly from altimetry (contains AVISO+ products and Copernicus Sentinel data), via ERDDAP'],
       ['Waves', 'NOAA WaveWatch III model, via PacIOOS ERDDAP'],
+      ['Migrants and CO₂ per person', 'World Bank WDI (UN DESA; EDGAR, European Commission JRC), CC BY 4.0'],
+      ['Refugees by origin', 'UNHCR Refugee Data Finder, CC BY 4.0'],
       ['People', 'World Bank, World Development Indicators (with data from UN World Population Prospects, UN IGME and ILO), CC BY 4.0; asylum applications UNHCR Refugee Data Portal, CC BY 4.0; Natural Earth borders, public domain'],
       ['Music and sounds', 'composed for Upari with Magnific (Google Lyria, ElevenLabs)'],
       ['Place search', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, ODbL'],
@@ -226,6 +230,7 @@ const en: Dict = {
     solarDay: 'solar time · daytime',
     solarNight: 'solar time · night',
     solarDusk: 'solar time · twilight',
+    measured: (year: number) => `value of ${year}`,
   },
 
   data: {
@@ -268,9 +273,32 @@ const en: Dict = {
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · burst at ${alt} km altitude` : ''}`,
   },
 
+  classe: {
+    open: 'For the classroom',
+    kicker: 'For the classroom',
+    title: 'The planet in class',
+    lead: 'Upari works in class as it is: no accounts, nothing to install, in twelve languages. Each chapter lasts about twenty seconds and stops with the space bar.',
+    showTitle: 'How to show it',
+    show1: '<b>On a projector.</b> Space stops and resumes the story; the ← → arrows move to the previous or next chapter; I opens the chapter’s numbers and sources.',
+    show2: '<b>On a screen in the hall.</b> Add <code>?kiosk</code> to the address: the four stories play by themselves, without menus.',
+    show3: '<b>Inside a school web page.</b> Use <code>&lt;iframe src="https://upari.earth/?embed" width="100%" height="600"&gt;&lt;/iframe&gt;</code>.',
+    show4: '<b>An address for every discovery.</b> In Explore the address remembers layer, place and year: copy it and send it to the class. “Compare before and after” sets the first and last year side by side.',
+    askTitle: 'Questions to start with',
+    ask1: 'The thermometer: what year were you born? Write it under the chart and see where your line falls.',
+    ask2: 'The breath of carbon: why does the curve rise and fall every year, and why does each year start higher?',
+    ask3: 'The storms and the heat of the sea: where are cyclones born, and what does warm water have to do with it?',
+    ask4: 'Cities grow: find your region in 1975 and in 2020 with “Compare before and after”. What changed?',
+    ask5: 'The lanes: where do the goods you use every day pass? Which straits, if they closed, would stop the world?',
+    ask6: 'The satellites: how many does your phone’s navigator use? Why are the geostationary ones so far away?',
+    readTitle: 'Reading the data honestly',
+    read1: 'Observed, model or forecast: every layer says which in its note in Explore. The waves are a simulation; the snow is what satellites saw between the clouds.',
+    read2: 'The gaps are deliberate: where data are missing, the map fades instead of inventing.',
+    read3: 'Every number has its source, open: “Sources and credits” says where it comes from and under which licence.',
+  },
+
   notes: {
     livello: {
-      text: 'How far the sea surface stands above or below its 1993–2012 mean, measured by altimetry satellites. Warm eddies bulge by a few tens of centimetres; El Niño lifts the eastern Pacific. One frame a month, then the latest day.',
+      text: 'How far the sea surface stands above or below its 1993–2012 mean, measured by altimetry satellites. Almost all the sea is above that mean today: since 1993 the mean level has risen by about ten centimetres. Warm eddies bulge by a few tens of centimetres; El Niño lifts the eastern Pacific. One frame a month, then the latest day.',
       source: 'NOAA CoastWatch · multi-satellite altimetry (AVISO+, Copernicus Sentinel) · 0.25°',
     },
     onde: {
@@ -314,6 +342,8 @@ const en: Dict = {
     heliopause: 'heliopause',
     au: 'astronomical units',
     auShort: 'AU',
+    born: 'The year you were born',
+    bornLine: (year: number, then: string, now: string, diff: string) => `In ${year} the Earth averaged ${then} °C; over the last twelve months, ${now} °C: ${diff} °C.`,
   },
 
   atlas: {
@@ -348,6 +378,18 @@ const en: Dict = {
     unemployment: {
       title: 'unemployment, ILO modelled estimates', left: '0%', right: '30%', source: 'ILO, modelled estimates, via World Bank WDI · SL.UEM.TOTL.ZS',
       format: (v: number) => `${num(v, 1)}% of the labour force`,
+    },
+    migrants: {
+      title: 'people born in another country', left: '0%', right: '50%', source: 'UN DESA, International Migrant Stock, via World Bank WDI · SM.POP.TOTL.ZS',
+      format: (v: number) => `${num(v, 1)}% of the population was born abroad`,
+    },
+    co2: {
+      title: 'CO₂ per person, in a year', left: '0 t', right: '25 t', source: 'EDGAR (European Commission, JRC), via World Bank WDI · EN.GHG.CO2.PC.CE.AR5',
+      format: (v: number) => `${num(v, 1)} t of CO₂ per person`,
+    },
+    refugees: {
+      title: 'refugees abroad, per 1,000 inhabitants', left: '0', right: '300', source: 'UNHCR Refugee Data Finder, CC BY 4.0, with World Bank WDI population',
+      format: (v: number) => `${num(v, v < 1 ? 2 : 0)} refugees abroad per 1,000 inhabitants`,
     },
   },
 
@@ -690,6 +732,21 @@ const en: Dict = {
     first: (country: string) => `people without electricity in ${country}`,
     second: (country: string) => `in ${country}`,
     text: 'Access from the grid, mini-grids or stand-alone systems: it says nothing about continuity, quality or price. It starts in 2000 because before then many countries have no values.',
+  },
+  impronta: {
+    title: 'The footprint', kicker: 'CO₂ per person, 1970 – 2024',
+    narrate: (p: { then: string; now: string; count: string }) => `How much carbon dioxide one person produces in a year: on average ${p.then} tonnes in 1970, ${p.now} today. But the average hides everything: in ${p.count} countries it is over ten tonnes a head, in many others it is not even one.`,
+    world: 'tonnes of CO₂ per person in 2024, world mean weighted by population',
+    high: 'countries above ten tonnes per person',
+    low: 'countries below one tonne per person',
+    text: 'CO₂ emissions from fossil fuels, industry and processes, without land use and forests, divided by the inhabitants. They are the emissions produced within the borders, not those of imported goods.',
+  },
+  esilio: {
+    title: 'Far from home', kicker: 'Refugees by country of origin, 1990 – 2024',
+    narrate: (p: { top: string; per: string }) => `How many people from each country live as refugees elsewhere, per thousand who stayed. The colour lights up and fades with the wars. Today the highest value: ${p.top}, ${p.per} per thousand inhabitants.`,
+    top: (name: string) => `refugees abroad per 1,000 inhabitants, the highest value: ${name}`,
+    many: 'countries that at least 1% of the population has fled',
+    text: 'Refugees under UNHCR’s mandate and other people in need of international protection, by country of origin, divided by the population that stayed. It does not include people displaced within their own country, nor the Palestinians assisted by UNRWA.',
   },
   fuga: {
     title: 'Fleeing', kicker: 'Asylum applications, 2011 – 2024',

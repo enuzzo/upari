@@ -104,6 +104,7 @@ const ja: Dict = {
     realLight: '実際の太陽光',
     clouds: '雲',
     spin: 'ゆっくり回転',
+    compare: '前後を比べる',
     groups: { planet: '地球', nature: '自然', people: '人々', sky: '空' },
     layers: {
       adesso: 'いまの地球', venti: '風', correnti: '海流', mare: '海面水温',
@@ -120,6 +121,7 @@ const ja: Dict = {
       aurora: 'いまのオーロラ', satelliti: 'すべての人工衛星', partenze: '次の打ち上げ', bolidi: '1988年以降の火球',
       citta: '都市（1975–2030年）', rotte: '船の航路',
       livello: '海面の高さ', onde: '波（過去24時間）',
+      migranti: '外国生まれ', co2: '1人あたりのCO₂', rifugiati: '出身国別の難民',
     },
   },
 
@@ -165,6 +167,8 @@ const ja: Dict = {
       ['都市', '欧州委員会、JRC、GHS-BUILT-S R2023A（2025年と2030年は予測）、CC BY 4.0'],
       ['海面の高さ', 'NOAA CoastWatch、衛星高度計による海面高度偏差（AVISO+のプロダクトとCopernicus Sentinelのデータを含む）、ERDDAP経由'],
       ['波', 'NOAA WaveWatch IIIモデル、PacIOOS ERDDAP経由'],
+      ['移民と1人あたりのCO₂', 'World Bank WDI（UN DESA、EDGAR・欧州委員会JRC）、CC BY 4.0'],
+      ['出身国別の難民', 'UNHCR Refugee Data Finder、CC BY 4.0'],
       ['人々', 'World Bank、World Development Indicators（UN World Population Prospects、UN IGME、ILOのデータを含む）、CC BY 4.0。庇護申請はUNHCR Refugee Data Portal、CC BY 4.0。国境はNatural Earth、パブリックドメイン'],
       ['音楽と効果音', 'Magnific（Google Lyria、ElevenLabs）を使い、Upariのために作曲'],
       ['場所の検索', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>、データ © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors、ODbL'],
@@ -245,6 +249,7 @@ const ja: Dict = {
     solarDay: '太陽時 · 昼',
     solarNight: '太陽時 · 夜',
     solarDusk: '太陽時 · 薄明',
+    measured: (year: number) => `${year}年の値`,
   },
 
   data: {
@@ -287,9 +292,32 @@ const ja: Dict = {
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · 高度${alt} kmで爆発` : ''}`,
   },
 
+  classe: {
+    open: '授業で使う',
+    kicker: '授業で使う',
+    title: '教室の中の地球',
+    lead: 'Upariはそのまま授業で使える。アカウントもインストールもいらず、12の言語で読める。各章はおよそ20秒で、スペースキーで止まる。',
+    showTitle: '見せ方',
+    show1: '<b>プロジェクターで。</b>スペースキーで物語を止めたり再開したりできる。矢印キー ← → で前後の章へ移り、Iキーでその章の数値と出典が開く。',
+    show2: '<b>ロビーの画面で。</b>アドレスに<code>?kiosk</code>を付け加えると、四つの物語がメニューなしで自動的に流れる。',
+    show3: '<b>学校のウェブページの中に。</b><code>&lt;iframe src="https://upari.earth/?embed" width="100%" height="600"&gt;&lt;/iframe&gt;</code>を使う。',
+    show4: '<b>発見ごとに、ひとつのアドレス。</b>「探索」では、アドレスがレイヤー、場所、年を覚えている。コピーしてクラスに送ればいい。「前後を比べる」は、最初の年と最後の年を並べて見せる。',
+    askTitle: '最初の問い',
+    ask1: '温度計：あなたは何年生まれ？グラフの下にその年を書いて、自分の線がどこに来るか見てみよう。',
+    ask2: '炭素の呼吸：なぜ曲線は毎年上がったり下がったりするのか。そして、なぜ毎年より高いところから始まるのか。',
+    ask3: '嵐と海の熱：サイクロンはどこで生まれるのか。暖かい海はそれとどう関わっているのか。',
+    ask4: '広がる都市：「前後を比べる」で、1975年と2020年の自分の地域を探してみよう。何が変わったか。',
+    ask5: '航路：毎日使うものは、どこを通って運ばれてくるのか。どの海峡が閉じたら、世界は止まってしまうのか。',
+    ask6: '人工衛星：スマートフォンのナビは何機の衛星を使っているのか。静止衛星はなぜあんなに遠くにあるのか。',
+    readTitle: 'データを正直に読む',
+    read1: '観測か、モデルか、予報か：どのレイヤーも「探索」の注記にそれを書いている。波はシミュレーション。雪は、衛星が雲の切れ間から見たものだ。',
+    read2: '空白はわざとだ：データのないところでは、地図は何かをこしらえる代わりに薄れていく。',
+    read3: 'どの数値にも、公開された出典がある：「データの出典とクレジット」に、どこから来たか、どのライセンスかが書いてある。',
+  },
+
   notes: {
     livello: {
-      text: '海面が1993–2012年の平均よりどれだけ高いか低いかを、衛星高度計で測ったもの。暖かい渦は数十センチ盛り上がり、El Niñoは東太平洋を押し上げる。月に1コマ、最後に最新の日。',
+      text: '海面が1993–2012年の平均よりどれだけ高いか低いかを、衛星高度計で測ったもの。いまでは海のほぼ全体がその平均より高く、1993年以降、平均海面は約10センチ上がった。暖かい渦は数十センチ盛り上がり、エルニーニョは東太平洋を押し上げる。月に1コマ、最後に最新の日。',
       source: 'NOAA CoastWatch · 複数衛星の高度計（AVISO+、Copernicus Sentinel）· 0.25°',
     },
     onde: {
@@ -333,6 +361,8 @@ const ja: Dict = {
     heliopause: 'ヘリオポーズ',
     au: '天文単位',
     auShort: 'au',
+    born: 'あなたの生まれた年',
+    bornLine: (year: number, then: string, now: string, diff: string) => `${year}年の地球の平均気温は${then} °C、直近12か月は${now} °C：その差${diff} °C。`,
   },
 
   atlas: {
@@ -367,6 +397,18 @@ const ja: Dict = {
     unemployment: {
       title: '失業率（ILOモデル推計）', left: '0%', right: '30%', source: 'ILOモデル推計、World Bank WDI経由 · SL.UEM.TOTL.ZS',
       format: (v: number) => `労働力人口の${num(v, 1)}%`,
+    },
+    migrants: {
+      title: 'ほかの国で生まれた人の割合', left: '0%', right: '50%', source: 'UN DESA、International Migrant Stock、World Bank WDI経由 · SM.POP.TOTL.ZS',
+      format: (v: number) => `人口の${num(v, 1)}%が外国生まれ`,
+    },
+    co2: {
+      title: '1人あたりのCO₂排出量（年間）', left: '0トン', right: '25トン', source: 'EDGAR（欧州委員会、JRC）、World Bank WDI経由 · EN.GHG.CO2.PC.CE.AR5',
+      format: (v: number) => `1人あたり${num(v, 1)}トンのCO₂`,
+    },
+    refugees: {
+      title: '国外にいる難民（人口1,000人あたり）', left: '0', right: '300', source: 'UNHCR Refugee Data Finder、CC BY 4.0、人口はWorld Bank WDI',
+      format: (v: number) => `国外の難民、人口1,000人あたり${num(v, v < 1 ? 2 : 0)}人`,
     },
   },
 
@@ -709,6 +751,21 @@ const ja: Dict = {
     first: (country: string) => `${country}で電気のない人々`,
     second: (country: string) => `${country}`,
     text: '送電網、ミニグリッド、独立型システムによる電気へのアクセス。供給の安定性や質、料金については何も示さない。2000年から始まるのは、それ以前は多くの国で値がないためだ。',
+  },
+  impronta: {
+    title: '足あと', kicker: '1人あたりのCO₂、1970–2024年',
+    narrate: (p: { then: string; now: string; count: string }) => `1人の人間が1年に出す二酸化炭素の量。1970年には平均${p.then}トン、いまは${p.now}トン。だが平均はすべてを覆い隠す。${p.count}か国では1人あたり10トンを超え、ほかの多くの国では1トンにも届かない。`,
+    world: '2024年の1人あたりCO₂（トン）、人口で重みづけした世界平均',
+    high: '1人あたり10トンを超える国の数',
+    low: '1人あたり1トンに満たない国の数',
+    text: '化石燃料、産業、工業プロセスから出るCO₂を、土地利用と森林を除いて、住民の数で割ったもの。国境の内側で出た排出量で、輸入品に含まれる排出は入らない。',
+  },
+  esilio: {
+    title: '故郷を遠く離れて', kicker: '出身国別の難民、1990–2024年',
+    narrate: (p: { top: string; per: string }) => `それぞれの国から、どれだけの人が難民として国外で暮らしているか。国に残った人1,000人あたりで数える。色は戦争とともに灯り、また消えていく。いま最も高い値：${p.top}、住民1,000人あたり${p.per}人。`,
+    top: (name: string) => `国外の難民、人口1,000人あたり、最も高い値：${name}`,
+    many: '人口の1%以上が逃れた国の数',
+    text: 'UNHCRの保護対象となる難民と、国際的な保護を必要とするその他の人々を、出身国ごとに数え、国に残った人口で割ったもの。自国内の避難民と、UNRWAが支援するパレスチナ難民は含まない。',
   },
   fuga: {
     title: '逃れる人々', kicker: '庇護申請、2011–2024年',

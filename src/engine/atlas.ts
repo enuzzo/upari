@@ -13,7 +13,8 @@ import { countryName } from '../i18n/regions';
 // Natural Earth borders (public domain). Colours move between years; numbers never do:
 // a year without a value stays empty.
 
-export type AtlasId = 'population' | 'birth' | 'death' | 'balance' | 'life' | 'under5' | 'electricity' | 'unemployment';
+export type AtlasId = 'population' | 'birth' | 'death' | 'balance' | 'life' | 'under5' | 'electricity' | 'unemployment'
+  | 'migrants' | 'co2' | 'refugees';
 
 export interface AtlasDef {
   /** Fixed scale for every year and country, so a colour always means the same value. */
@@ -24,7 +25,9 @@ export interface AtlasDef {
   palette: Stop[];
   /** Drawn as coloured countries (population is drawn as dust instead). */
   fill: boolean;
-  file: 'world' | 'health' | 'electricity';
+  file: 'world' | 'health' | 'electricity' | 'migrants' | 'co2' | 'refugees';
+  /** Measured only now and then (every five years): a year shows the latest measurement before it. */
+  hold?: boolean;
 }
 
 /** The words of an indicator (legend, value under the cursor, source), in the language of the page. */
@@ -59,6 +62,18 @@ export const ATLAS: Record<AtlasId, AtlasDef> = {
   unemployment: {
     min: 0, max: 30, curve: 0.8, fill: true, file: 'world',
     palette: [[0, '#12202e'], [0.3, '#2c5a6a'], [0.6, '#b98f4a'], [1, '#ff7a5a']],
+  },
+  migrants: {
+    min: 0, max: 50, curve: 0.55, fill: true, file: 'migrants', hold: true,
+    palette: [[0, '#151b2e'], [0.3, '#2b4f8a'], [0.6, '#5fb0c8'], [0.85, '#c8f0d8'], [1, '#ffffff']],
+  },
+  co2: {
+    min: 0, max: 25, curve: 0.6, fill: true, file: 'co2',
+    palette: [[0, '#10161f'], [0.25, '#3a3324'], [0.5, '#8a6a3a'], [0.75, '#e0a050'], [1, '#ffe2a8']],
+  },
+  refugees: {
+    min: 0, max: 300, curve: 0.4, fill: true, file: 'refugees',
+    palette: [[0, '#141a26'], [0.2, '#2f3f63'], [0.5, '#8a5aa8'], [0.8, '#e07ab0'], [1, '#ffd0e4']],
   },
 };
 
@@ -119,6 +134,9 @@ export class Atlas {
     for (const id of ['population', 'birth', 'death', 'balance', 'life', 'unemployment'] as const) this.series.set(id, world.values[id]);
     this.series.set('under5', health.values);
     this.series.set('electricity', electricity.values);
+    // The newer indicators are optional: the atlas still works without them.
+    await Promise.all((['migrants', 'co2', 'refugees'] as const).map((id) =>
+      get(`${id}.json`).then((d) => { this.series.set(id, d.values); }).catch(() => {})));
     this.relations = asylum.relations;
     this.asylumByCountry = asylum.values;
     this.countries = countries;
@@ -166,7 +184,14 @@ export class Atlas {
     for (const [code, slot] of this.slots) {
       const row = s[code];
       if (!row) continue;
-      row.forEach((v, y) => { if (v != null) { data[(y * SLOTS + slot) * 2] = v; data[(y * SLOTS + slot) * 2 + 1] = 1; } });
+      // Five-yearly series: each year carries the latest measurement (the cursor says which year).
+      let last: number | null = null;
+      row.forEach((v, y) => {
+        if (v != null) last = v;
+        const shown = v ?? (ATLAS[id].hold ? last : null);
+        if (shown == null) return;
+        data[(y * SLOTS + slot) * 2] = shown; data[(y * SLOTS + slot) * 2 + 1] = 1;
+      });
     }
     t = new DataTexture(data, SLOTS, this.years.length, RGFormat, FloatType);
     t.magFilter = t.minFilter = NearestFilter;
@@ -182,8 +207,17 @@ export class Atlas {
   }
 
   value(id: AtlasId, code: string, year: number): number | null {
+    return this.measured(id, code, year)?.value ?? null;
+  }
+
+  /** The value shown for a year, and the year it was measured (earlier, for five-yearly series). */
+  measured(id: AtlasId, code: string, year: number): { value: number; year: number } | null {
+    const row = this.series.get(id)?.[code];
+    if (!row) return null;
     const y = Math.round(year) - this.years[0];
-    return this.series.get(id)?.[code]?.[y] ?? null;
+    if (!ATLAS[id].hold) return row[y] == null ? null : { value: row[y]!, year: this.years[y] };
+    for (let k = Math.min(y, row.length - 1); k >= 0; k--) if (row[k] != null) return { value: row[k]!, year: this.years[k] };
+    return null;
   }
 
   /** Sum over all territories for a year (population, asylum totals). */

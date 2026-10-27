@@ -150,18 +150,24 @@ richieda un account o una chiave che l’utente non ha dato.
 ### Dopo
 - [x] Il cielo, adesso. [x] Lanci. [x] Iceberg. [x] Città 1975–2030. [x] Accade adesso.
 - [x] Altezza del mare (CoastWatch ERDDAP, 12 mesi). [x] Onde (WaveWatch III via PacIOOS,
-  ultime 24 ore). [ ] Allagamenti, gelo e disgelo (MODIS Flood, SMAP).
+  ultime 24 ore). [ ] Allagamenti, gelo e disgelo (MODIS Flood, SMAP): a scala globale non
+  si leggono, servono viste ravvicinate.
 - [x] Ghiaccio NSIDC v4 dentro «Il ghiaccio» (oggi contro la media 1981–2010 dello stesso giorno).
 - [x] Il tuo luogo, prima parte: un luogo cercato mostra ora solare, alba e tramonto, vento e
   mare intorno. [ ] La parte con l’anno di nascita.
 - [x] Modalità `?kiosk` (i quattro racconti in ciclo, cursore nascosto) e `?embed` (cornice
-  quieta con il link al sito). [ ] Pagina «Per la classe».
+  quieta con il link al sito).
 - [ ] Mare che si acidifica (OceanSODA: licenza dei file da confermare). Zone morte WRI: il
   dataset non è più online.
-- [ ] Integrità della biodiversità (BII, CC BY). [ ] Mangrovie 1996–2020.
-- [ ] Migranti per origine e destinazione (UN DESA). [ ] Asilo da tutte le origini (UNHCR).
-- [ ] Gas serra 1970–2024 (EDGAR, non IEA-EDGAR CO₂) e dighe nel tempo.
-- [ ] Tendina prima/dopo sul cursore degli anni. [ ] Il tuo luogo con l’anno di nascita.
+- [ ] Integrità della biodiversità (BII, CC BY, 100 m: file molto grandi). [ ] Mangrovie
+  1996–2020 (Global Mangrove Watch, licenza da confermare sulla fonte primaria).
+- [x] Nati all’estero (UN DESA via WDI, ogni cinque anni, il dato mostra il suo anno).
+  [x] Rifugiati per paese d’origine (UNHCR, ogni mille abitanti): capitolo «Lontano da casa».
+  [ ] Flussi origine–destinazione di tutte le origini (le scie oggi restano tre).
+- [x] CO₂ per persona 1970–2024 (EDGAR via WDI, non IEA-EDGAR): capitolo «L’impronta».
+  [ ] Dighe nel tempo.
+- [x] Tendina prima/dopo in Esplora (atlante e serie). [x] Anno di nascita nel «Termometro».
+- [x] Pagina «Per la classe» (da «Perché Upari»).
 - [ ] Riserva per gli elementi orbitali: SatNOGS rimanda dati Space-Track, la cui
   ridistribuzione non è chiara; per ora resta l’ultimo file buono del giorno.
 

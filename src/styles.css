@@ -570,3 +570,48 @@ body.embed .embed-link {
 }
 body.embed .embed-link::after { content: ' ↗'; }
 body.embed .embed-link:hover { color: var(--ink); }
+
+/* Before and after, in Esplora. */
+.ex-compare { display: none; margin: 4px 0 18px; }
+.ex-compare.on { display: inline-flex; }
+.ex-compare.active { color: var(--warm); border-color: var(--warm); }
+.ex-compare svg { fill: none; stroke: currentColor; stroke-width: 1.6; }
+.swipe { position: fixed; inset: 0; z-index: 4; pointer-events: none; display: none; --x: 50vw; }
+.swipe.on { display: block; }
+.swipe-line { position: absolute; top: 0; bottom: 0; left: var(--x); width: 1px; background: rgba(255, 236, 210, 0.75); box-shadow: 0 0 12px rgba(255, 217, 160, 0.6); }
+.swipe-handle {
+  position: absolute; top: 50%; left: var(--x); width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%;
+  background: rgba(3, 4, 7, 0.8); border: 1px solid rgba(255, 236, 210, 0.8); pointer-events: auto; cursor: ew-resize; touch-action: none;
+}
+.swipe-handle::before { content: '‹ ›'; color: var(--ink); font-size: 14px; letter-spacing: 0.1em; }
+.swipe-label {
+  position: absolute; top: calc(var(--gutter) * 0.55 + 70px); padding: 6px 12px; border-radius: 4px; background: rgba(3, 4, 7, 0.7);
+  font-family: var(--serif); font-size: 24px; color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums;
+}
+.swipe-a { right: calc(100% - var(--x) + 16px); }
+.swipe-b { left: calc(var(--x) + 16px); }
+
+/* The year you were born, on Il termometro. */
+.chart { pointer-events: none; }
+.chart.on .ch-born { pointer-events: auto; }
+.ch-born { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; flex-basis: 100%; margin-top: 4px; }
+.ch-born label { display: inline-flex; align-items: baseline; gap: 8px; color: var(--ink-3); }
+.ch-born input {
+  width: 4.2em; padding: 2px 4px; border: 0; border-bottom: 1px solid var(--ink-4); background: transparent;
+  font: inherit; font-family: var(--serif); font-size: 16px; color: var(--ink); text-align: center; -moz-appearance: textfield;
+}
+.ch-born input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.ch-born input:focus { outline: none; border-color: var(--warm); }
+.ch-born-line { color: var(--ink); }
+.chart svg.ch-has-mine .ch-year { opacity: 0.35 !important; }
+.chart svg .ch-year.ch-mine { opacity: 1 !important; stroke: #9fe8ff !important; stroke-width: 2.2; filter: drop-shadow(0 0 5px rgba(160, 230, 255, 0.9)); }
+
+/* For the classroom. */
+.classe-list { margin: 10px 0 6px; padding-left: 1.2em; display: grid; gap: 10px; color: var(--ink-2); font-size: 15px; line-height: 1.55; }
+.classe-list b { color: var(--ink); font-weight: 600; }
+.classe-list code { font-size: 12.5px; color: var(--warm); background: rgba(255, 255, 255, 0.05); padding: 1px 5px; border-radius: 3px; word-break: break-all; }
+button.about-link { background: none; border: 0; border-bottom: 1px solid var(--ink-4); cursor: pointer; font: inherit; font-size: 13px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-2); padding: 0 0 3px; }
+button.about-link:hover { color: var(--ink); border-color: var(--ink-3); }
+.classe .classe-list li { display: list-item; grid-template-columns: none; border-bottom: 0; padding: 0; font-size: 15px; line-height: 1.55; color: var(--ink-2); }
+.classe .classe-list li b { display: inline; font-weight: 600; }
+.classe .classe-list li code { display: inline; }

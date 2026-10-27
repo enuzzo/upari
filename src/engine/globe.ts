@@ -113,6 +113,8 @@ export class Globe {
   private spotShown: SpotId | null = null;
   private spotT0 = 0;
   private sats: Awaited<ReturnType<typeof loadSatellites>> | null = null;
+  /** Before and after: a vertical line (CSS px) with the first year or frame left, the last right. */
+  private compare: { x: number; from: number; to: number } | null = null;
   private satsLoading: Promise<void> | null = null;
   private quakes: ReturnType<typeof createQuakes> | null = null;
   private quakesLoading: Promise<void> | null = null;
@@ -291,6 +293,9 @@ export class Globe {
   }
 
   get satellites() { return this.sats?.meta ?? null; }
+
+  /** Compare two years (atlas) or the first and last frame (series) across a line; null stops. */
+  setCompare(c: { x: number; from: number; to: number } | null) { this.compare = c; }
 
   loadQuakes(): Promise<void> {
     this.quakesLoading ??= (async () => {
@@ -492,7 +497,14 @@ export class Globe {
       c.dataMix = Math.min(1, c.dataMix + dt * 0.9);
     }
     u.uDataMix.value = c.dataMix * c.dataMix * (3 - 2 * c.dataMix);
-    if (this.dataShown && this.dataFrames.length > 1) {
+    u.uSplit.value = this.compare ? this.compare.x * this.renderer.getPixelRatio() : -1;
+    if (this.compare && this.dataShown && this.dataFrames.length > 1) {
+      // Before and after: the first frame and the last measured one (projections stay out), still.
+      const n = this.lastMeasuredFrame();
+      u.uData.value = this.dataFrames[0];
+      u.uData2.value = this.dataFrames[n];
+      if (this.dataConf) { u.uConf.value = this.dataConf[0]; u.uConf2.value = this.dataConf[n]; }
+    } else if (this.dataShown && this.dataFrames.length > 1) {
       // Play the series; rest on the last frame, then fade back to the first.
       const def = DATA[this.dataShown], n = this.dataFrames.length;
       const fps = def.fps ?? this.rainSpeed, hold = (def.hold ?? 0) * fps;
@@ -607,8 +619,10 @@ export class Globe {
       }
     } else if (want) c.atlas = Math.min(1, c.atlas + dt * 0.9);
     u.uAtlasMix.value = c.atlas * c.atlas * (3 - 2 * c.atlas);
-    const yi = Math.min(this.atlas.years.length - 1.001, Math.max(0, this.year - this.atlas.years[0]));
-    u.uAtlasYear.value = yi;
+    const at = (year: number) => Math.min(this.atlas.years.length - 1.001, Math.max(0, year - this.atlas.years[0]));
+    const yi = at(this.year);
+    u.uAtlasYear.value = this.compare ? at(this.compare.from) : yi;
+    u.uAtlasYear2.value = this.compare ? at(this.compare.to) : yi;
     if (this.time - this.hoverAt > 0.2) this.hoverSlot = -1;
     u.uAtlasHover.value = this.hoverSlot;
     c.dust = approach(c.dust, L.dust, dt, 1.4);
@@ -642,7 +656,8 @@ export class Globe {
         this.hoverSlot = country.stat ? this.atlas.slots.get(country.stat) ?? -1 : -1;
         this.hoverAt = this.time;
         const year = Math.round(this.year);
-        sub = `${country.name} · ${year}`;
+        const seen = L.atlas && country.stat ? this.atlas.measured(L.atlas, country.stat, year) : null;
+        sub = `${country.name} · ${seen && seen.year !== year ? t.probe.measured(seen.year) : year}`;
         if (L.migration && country.stat) {
           const n = this.atlas.asylumByCountry[country.stat]?.[year - this.atlas.years[0]];
           text = n ? t.probe.asylum(num(n)) : t.probe.noAsylum;
@@ -739,6 +754,20 @@ export class Globe {
     const i = Math.min(frames.length - 1, Math.round(this.frame));
     return { time: frames[i].time, first: frames[0].time, last: frames[frames.length - 1].time, cadence: this.dataMeta!.cadence ?? 'hour' };
   }
+  /** The last frame that is a measurement (GHSL projects 2025 and 2030). */
+  lastMeasuredFrame(): number {
+    const frames = this.dataMeta?.frames ?? [];
+    const projected = (this.dataMeta as { projected?: number[] } | null)?.projected ?? [];
+    let k = frames.length - 1;
+    while (k > 0 && projected.includes(Number(frames[k].time.slice(0, 4)))) k--;
+    return Math.max(0, k);
+  }
+
+  /** Time of that frame, for labels. */
+  lastMeasuredTime(): string | null {
+    return this.dataMeta?.frames?.[this.lastMeasuredFrame()]?.time ?? null;
+  }
+
   /** How far through the series the frame on screen is, 0..1. */
   dataFrameProgress(): number {
     const n = this.dataFrames.length;

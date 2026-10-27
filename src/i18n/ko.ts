@@ -131,6 +131,7 @@ const ko: Dict = {
     realLight: '실제 햇빛',
     clouds: '구름',
     spin: '천천히 회전',
+    compare: '전후 비교하기',
     groups: { planet: '행성', nature: '자연', people: '사람들', sky: '하늘' },
     layers: {
       adesso: '지금의 지구', venti: '바람', correnti: '해류', mare: '해수면 온도',
@@ -147,6 +148,7 @@ const ko: Dict = {
       aurora: '지금의 오로라', satelliti: '모든 위성', partenze: '다음 발사', bolidi: '1988년 이후의 화구',
       citta: '도시, 1975 – 2030', rotte: '배의 항로',
       livello: '해수면 높이', onde: '파도, 최근 24시간',
+      migranti: '외국 출생', co2: '1인당 CO₂', rifugiati: '출신국별 난민',
     },
   },
 
@@ -192,6 +194,8 @@ const ko: Dict = {
       ['도시', '유럽연합 집행위원회, JRC, GHS-BUILT-S R2023A (2025년과 2030년은 예측), CC BY 4.0'],
       ['해수면 높이', 'NOAA CoastWatch, 위성 고도계로 잰 해수면 편차 (AVISO+ 산출물과 Copernicus Sentinel 데이터 포함), ERDDAP 경유'],
       ['파도', 'NOAA WaveWatch III 모델, PacIOOS ERDDAP 경유'],
+      ['이주민과 1인당 CO₂', 'World Bank WDI (UN DESA; EDGAR, 유럽연합 집행위원회 JRC), CC BY 4.0'],
+      ['출신국별 난민', 'UNHCR Refugee Data Finder, CC BY 4.0'],
       ['사람들', 'World Bank, World Development Indicators (UN World Population Prospects, UN IGME, ILO 데이터 포함), CC BY 4.0; 망명 신청 UNHCR Refugee Data Portal, CC BY 4.0; Natural Earth 국경, 퍼블릭 도메인'],
       ['음악과 소리', 'Magnific (Google Lyria, ElevenLabs)으로 Upari를 위해 만듦'],
       ['장소 검색', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, 데이터 © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, ODbL'],
@@ -274,6 +278,7 @@ const ko: Dict = {
     solarDay: '태양시 · 낮',
     solarNight: '태양시 · 밤',
     solarDusk: '태양시 · 황혼',
+    measured: (year: number) => `${year}년 값`,
   },
 
   data: {
@@ -316,9 +321,32 @@ const ko: Dict = {
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · 고도 ${alt} km에서 폭발` : ''}`,
   },
 
+  classe: {
+    open: '수업에서',
+    kicker: '수업에서',
+    title: '교실 속의 행성',
+    lead: 'Upari는 있는 그대로 수업에 쓸 수 있다. 계정도, 설치도 필요 없고, 열두 개 언어로 볼 수 있다. 챕터 하나는 20초쯤 이어지고, 스페이스 바로 멈춘다.',
+    showTitle: '보여 주는 법',
+    show1: '<b>프로젝터로.</b> 스페이스 바는 이야기를 멈추고 다시 이어 간다. 화살표 ← →는 이전 챕터나 다음 챕터로 넘어가고, I 키는 그 챕터의 숫자와 출처를 연다.',
+    show2: '<b>로비 화면에서.</b> 주소 뒤에 <code>?kiosk</code>를 붙이면 네 개의 이야기가 메뉴 없이 저절로 흘러간다.',
+    show3: '<b>학교 웹페이지 안에.</b> <code>&lt;iframe src="https://upari.earth/?embed" width="100%" height="600"&gt;&lt;/iframe&gt;</code>를 쓰면 된다.',
+    show4: '<b>발견마다 주소 하나.</b> 탐색에서는 주소가 레이어, 장소, 연도를 기억한다: 복사해서 반 학생들에게 보내면 된다. ‘전후 비교하기’는 첫해와 마지막 해를 나란히 놓는다.',
+    askTitle: '시작하는 질문',
+    ask1: '온도계: 몇 년에 태어났을까? 그래프 아래에 적고, 내 선이 어디에 놓이는지 보자.',
+    ask2: '탄소의 숨결: 곡선은 왜 해마다 오르내릴까? 그리고 왜 해마다 더 높은 곳에서 다시 시작할까?',
+    ask3: '폭풍과 바다의 온기: 사이클론은 어디서 태어날까? 따뜻한 바다는 그것과 무슨 관계가 있을까?',
+    ask4: '자라는 도시: ‘전후 비교하기’로 1975년과 2020년의 우리 지역을 찾아보자. 무엇이 바뀌었을까?',
+    ask5: '항로: 날마다 쓰는 물건은 어디를 거쳐 올까? 어느 해협이 막히면 세계가 멈출까?',
+    ask6: '위성들: 휴대폰 내비게이션은 위성을 몇 개나 쓸까? 정지 궤도 위성은 왜 그렇게 멀리 있을까?',
+    readTitle: '데이터를 정직하게 읽기',
+    read1: '관측인지, 모델인지, 예보인지: 모든 레이어가 탐색의 설명에서 밝힌다. 파도는 시뮬레이션이고, 눈은 위성이 구름 사이로 본 것이다.',
+    read2: '빈자리는 일부러 남긴 것이다: 데이터가 없는 곳에서는 지도가 무언가를 지어내는 대신 흐려진다.',
+    read3: '모든 숫자에는 공개된 출처가 있다: ‘출처와 크레딧’에 어디서 왔는지, 어떤 라이선스인지 적혀 있다.',
+  },
+
   notes: {
     livello: {
-      text: '해수면이 1993–2012년 평균보다 얼마나 높거나 낮은지를 위성 고도계로 잰 값이다. 따뜻한 소용돌이는 수십 센티미터 솟아오르고, El Niño는 동태평양을 끌어올린다. 한 달에 한 장면, 그다음은 가장 최근의 하루.',
+      text: '해수면이 1993–2012년 평균보다 얼마나 높거나 낮은지를 위성 고도계로 잰 값이다. 오늘날 바다는 거의 모두 그 평균보다 높다: 1993년 이후 평균 해수면은 약 10센티미터 올라갔다. 따뜻한 소용돌이는 수십 센티미터 솟아오르고, 엘니뇨는 동태평양을 끌어올린다. 한 달에 한 장면, 그다음은 가장 최근의 하루.',
       source: 'NOAA CoastWatch · 다중 위성 고도계 (AVISO+, Copernicus Sentinel) · 0.25°',
     },
     onde: {
@@ -362,6 +390,8 @@ const ko: Dict = {
     heliopause: '태양권계면',
     au: '천문단위',
     auShort: 'AU',
+    born: '내가 태어난 해',
+    bornLine: (year: number, then: string, now: string, diff: string) => `${year}년 지구의 평균 기온은 ${then} °C, 최근 12개월은 ${now} °C: ${diff} °C.`,
   },
 
   atlas: {
@@ -396,6 +426,18 @@ const ko: Dict = {
     unemployment: {
       title: '실업률, ILO 모델 추정치', left: '0%', right: '30%', source: 'ILO 모델 추정치, World Bank WDI 경유 · SL.UEM.TOTL.ZS',
       format: (v: number) => `노동력의 ${num(v, 1)}%`,
+    },
+    migrants: {
+      title: '다른 나라에서 태어난 사람', left: '0%', right: '50%', source: 'UN DESA, International Migrant Stock, World Bank WDI 경유 · SM.POP.TOTL.ZS',
+      format: (v: number) => `인구의 ${num(v, 1)}%가 외국 출생`,
+    },
+    co2: {
+      title: '1인당 CO₂, 한 해 동안', left: '0톤', right: '25톤', source: 'EDGAR (유럽연합 집행위원회, JRC), World Bank WDI 경유 · EN.GHG.CO2.PC.CE.AR5',
+      format: (v: number) => `1인당 CO₂ ${num(v, 1)}톤`,
+    },
+    refugees: {
+      title: '해외 난민, 인구 1,000명당', left: '0', right: '300', source: 'UNHCR Refugee Data Finder, CC BY 4.0, World Bank WDI 인구 기준',
+      format: (v: number) => `인구 1,000명당 해외 난민 ${num(v, v < 1 ? 2 : 0)}명`,
     },
   },
 
@@ -738,6 +780,21 @@ const ko: Dict = {
     first: (country: string) => `${country}에서 전기 없이 사는 사람`,
     second: (country: string) => `${country}`,
     text: '전력망, 소규모 전력망, 독립형 시스템을 통한 접근: 공급의 지속성이나 품질, 가격에 대해서는 아무것도 말해 주지 않는다. 2000년부터 시작하는 것은 그 이전에는 값이 없는 나라가 많기 때문이다.',
+  },
+  impronta: {
+    title: '발자국', kicker: '1인당 CO₂, 1970 – 2024',
+    narrate: (p: { then: string; now: string; count: string }) => `한 사람이 한 해에 내놓는 이산화탄소의 양: 1970년에는 평균 ${p.then}톤, 오늘은 ${p.now}톤. 그러나 평균은 모든 것을 가린다: ${p.count}개 나라에서는 1인당 10톤을 넘고, 다른 많은 나라에서는 1톤에도 못 미친다.`,
+    world: '2024년 1인당 CO₂ 톤, 인구 가중 세계 평균',
+    high: '1인당 10톤을 넘는 나라',
+    low: '1인당 1톤에 못 미치는 나라',
+    text: '화석 연료, 산업, 공정에서 나온 CO₂ 배출량을, 토지 이용과 숲을 빼고, 주민 수로 나눈 값이다. 국경 안에서 만들어진 배출량이며, 수입한 물건의 배출량은 들어 있지 않다.',
+  },
+  esilio: {
+    title: '집에서 멀리', kicker: '출신국별 난민, 1990 – 2024',
+    narrate: (p: { top: string; per: string }) => `나라마다 몇 사람이 다른 곳에서 난민으로 살고 있는지, 남아 있는 주민 1,000명당으로 센다. 색은 전쟁과 함께 켜지고 꺼진다. 오늘 가장 높은 값: ${p.top}, 주민 1,000명당 ${p.per}명.`,
+    top: (name: string) => `인구 1,000명당 해외 난민, 가장 높은 값: ${name}`,
+    many: '인구의 1% 이상이 떠나 피란한 나라',
+    text: 'UNHCR의 보호 대상인 난민과 국제적 보호가 필요한 그 밖의 사람들을, 출신국별로, 남아 있는 인구로 나눈 값이다. 자기 나라 안에서 피란한 국내 실향민과 UNRWA가 돕는 팔레스타인 사람들은 포함하지 않는다.',
   },
   fuga: {
     title: '피난', kicker: '망명 신청, 2011 – 2024',

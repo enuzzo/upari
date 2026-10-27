@@ -95,6 +95,7 @@ const zh: Dict = {
     realLight: '真实日照',
     clouds: '云层',
     spin: '缓慢自转',
+    compare: '对比前后',
     groups: { planet: '地球', nature: '自然', people: '人类', sky: '天空' },
     layers: {
       adesso: '此刻的地球', venti: '风', correnti: '洋流', mare: '海表温度',
@@ -111,6 +112,7 @@ const zh: Dict = {
       aurora: '此刻的极光', satelliti: '所有卫星', partenze: '即将到来的发射', bolidi: '1988 年以来的火流星',
       citta: '城市，1975 – 2030', rotte: '船舶航线',
       livello: '海平面', onde: '海浪，过去 24 小时',
+      migranti: '出生在国外', co2: '人均 CO₂', rifugiati: '按原籍国统计的难民',
     },
   },
 
@@ -156,6 +158,8 @@ const zh: Dict = {
       ['城市', '欧盟委员会，JRC，GHS-BUILT-S R2023A（2025 年与 2030 年为预测），CC BY 4.0'],
       ['海平面', 'NOAA CoastWatch，基于卫星测高的海平面异常（含 AVISO+ 产品与 Copernicus Sentinel 数据），来自 ERDDAP'],
       ['海浪', 'NOAA WaveWatch III 模型，来自 PacIOOS ERDDAP'],
+      ['移民与人均 CO₂', 'World Bank WDI（UN DESA；EDGAR，欧盟委员会 JRC），CC BY 4.0'],
+      ['按原籍统计的难民', 'UNHCR Refugee Data Finder，CC BY 4.0'],
       ['人类', 'World Bank，World Development Indicators（含 UN World Population Prospects、UN IGME 与 ILO 的数据），CC BY 4.0；庇护申请来自 UNHCR Refugee Data Portal，CC BY 4.0；Natural Earth 边界，公有领域'],
       ['音乐与音效', '借助 Magnific（Google Lyria、ElevenLabs）为 Upari 创作'],
       ['地点搜索', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>，数据 © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors，ODbL'],
@@ -236,6 +240,7 @@ const zh: Dict = {
     solarDay: '太阳时 · 白天',
     solarNight: '太阳时 · 夜晚',
     solarDusk: '太阳时 · 晨昏',
+    measured: (year: number) => `${year} 年的数据`,
   },
 
   data: {
@@ -278,9 +283,32 @@ const zh: Dict = {
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · 在 ${alt} km 高空爆炸` : ''}`,
   },
 
+  classe: {
+    open: '课堂使用',
+    kicker: '课堂使用',
+    title: '课堂里的地球',
+    lead: 'Upari 可以直接在课堂上使用：无需账号，无需安装，支持十二种语言。每一章大约二十秒，按空格键即可暂停。',
+    showTitle: '如何展示',
+    show1: '<b>投影播放。</b>空格键暂停或继续讲述；方向键 ← → 切换到上一章或下一章；I 键打开本章的数字和来源。',
+    show2: '<b>大厅屏幕。</b>在网址后加上 <code>?kiosk</code>：四个故事会自动轮播，不显示菜单。',
+    show3: '<b>嵌入学校网页。</b>使用 <code>&lt;iframe src="https://upari.earth/?embed" width="100%" height="600"&gt;&lt;/iframe&gt;</code>。',
+    show4: '<b>每个发现都有自己的网址。</b>在“探索”中，网址会记住图层、地点和年份：复制下来发给全班。“对比前后”会把第一年和最后一年并排显示。',
+    askTitle: '开场问题',
+    ask1: '温度计：你是哪一年出生的？把它写在图表下方，看看你的那条线落在哪里。',
+    ask2: '碳的呼吸：为什么曲线每年都会升了又降？为什么每一年都从更高的地方重新开始？',
+    ask3: '风暴与海洋的热量：气旋在哪里形成？温暖的海水和它有什么关系？',
+    ask4: '城市在生长：用“对比前后”找到你所在的地区在 1975 年和 2020 年的样子。发生了什么变化？',
+    ask5: '航线：你每天使用的商品从哪里经过？哪些海峡一旦关闭，就会让世界停摆？',
+    ask6: '卫星：手机导航会用到多少颗卫星？为什么地球静止卫星离我们那么远？',
+    readTitle: '诚实地读数据',
+    read1: '观测、模型还是预报：每个图层都在“探索”里的说明中写明。海浪是模拟结果；积雪是卫星在云层间隙中看到的。',
+    read2: '空白是有意为之：缺少数据的地方，地图会淡出，而不是凭空编造。',
+    read3: '每个数字都有公开的来源：在“来源与致谢”中可以看到它来自哪里、采用什么许可。',
+  },
+
   notes: {
     livello: {
-      text: '海面比 1993–2012 年平均值高出或低出多少，由测高卫星测得。暖涡会隆起几十厘米；El Niño 会抬高东太平洋。每月一帧，最后是最新的一天。',
+      text: '海面比 1993–2012 年平均值高出或低出多少，由测高卫星测得。如今几乎整个海洋都高于这一平均值：自 1993 年以来，平均海平面上升了约十厘米。暖涡会隆起几十厘米；厄尔尼诺会抬高东太平洋。每月一帧，最后是最新的一天。',
       source: 'NOAA CoastWatch · 多卫星测高（AVISO+、Copernicus Sentinel）· 0.25°',
     },
     onde: {
@@ -324,6 +352,8 @@ const zh: Dict = {
     heliopause: '日球层顶',
     au: '天文单位',
     auShort: '天文单位',
+    born: '你出生的年份',
+    bornLine: (year: number, then: string, now: string, diff: string) => `${year} 年，地球平均气温为 ${then} °C；过去十二个月为 ${now} °C：相差 ${diff} °C。`,
   },
 
   atlas: {
@@ -358,6 +388,18 @@ const zh: Dict = {
     unemployment: {
       title: '失业率，ILO 模型估计', left: '0%', right: '30%', source: 'ILO 模型估计，经由 World Bank WDI · SL.UEM.TOTL.ZS',
       format: (v: number) => `${num(v, 1)}% 的劳动力`,
+    },
+    migrants: {
+      title: '出生在其他国家的人', left: '0%', right: '50%', source: 'UN DESA，International Migrant Stock，经由 World Bank WDI · SM.POP.TOTL.ZS',
+      format: (v: number) => `${num(v, 1)}% 的人口出生在国外`,
+    },
+    co2: {
+      title: '人均 CO₂，每年', left: '0 吨', right: '25 吨', source: 'EDGAR（欧盟委员会，JRC），经由 World Bank WDI · EN.GHG.CO2.PC.CE.AR5',
+      format: (v: number) => `人均 ${num(v, 1)} 吨 CO₂`,
+    },
+    refugees: {
+      title: '身在国外的难民，每千名居民', left: '0', right: '300', source: 'UNHCR Refugee Data Finder，CC BY 4.0，人口数据来自 World Bank WDI',
+      format: (v: number) => `每千名居民中有 ${num(v, v < 1 ? 2 : 0)} 人在国外做难民`,
     },
   },
 
@@ -700,6 +742,21 @@ const zh: Dict = {
     first: (country: string) => `${country}没有电的人口`,
     second: (country: string) => `${country}`,
     text: '接入方式包括电网、微电网或独立系统：它不反映供电的稳定性、质量或价格。之所以从 2000 年开始，是因为在那之前许多国家没有数据。',
+  },
+  impronta: {
+    title: '足迹', kicker: '人均 CO₂，1970 – 2024',
+    narrate: (p: { then: string; now: string; count: string }) => `一个人一年排放多少二氧化碳：1970 年平均 ${p.then} 吨，如今是 ${p.now} 吨。但平均值掩盖了一切：在 ${p.count} 个国家，人均超过十吨；在许多其他国家，连一吨都不到。`,
+    world: '2024 年人均 CO₂ 吨数，按人口加权的世界平均值',
+    high: '人均超过十吨的国家',
+    low: '人均不到一吨的国家',
+    text: '来自化石燃料、工业和工业过程的 CO₂ 排放，不含土地利用和森林，除以居民人数。这是在国境之内产生的排放，不包括进口商品所含的排放。',
+  },
+  esilio: {
+    title: '远离家园', kicker: '按原籍国统计的难民，1990 – 2024',
+    narrate: (p: { top: string; per: string }) => `每个国家有多少人在别处以难民身份生活，按每千名留下的居民计算。颜色随着战争亮起又暗下。如今的最高值：${p.top}，每千名居民 ${p.per} 人。`,
+    top: (name: string) => `每千名居民中身在国外的难民，最高值：${name}`,
+    many: '至少 1% 人口出逃的国家',
+    text: '受 UNHCR 授权保护的难民，以及其他需要国际保护的人，按原籍国统计，除以留在国内的人口。不包括在本国境内流离失所的人，也不包括由 UNRWA 援助的巴勒斯坦人。',
   },
   fuga: {
     title: '逃离', kicker: '庇护申请，2011 – 2024',

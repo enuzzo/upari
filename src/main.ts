@@ -160,6 +160,13 @@ $('credits').addEventListener('click', (e) => { if (e.target === $('credits')) $
 $('footer').addEventListener('click', () => { $('about').classList.add('on'); $('about').setAttribute('aria-hidden', 'false'); });
 const closeAbout = () => { $('about').classList.remove('on'); $('about').setAttribute('aria-hidden', 'true'); };
 $('about-close').addEventListener('click', closeAbout);
+// For the classroom: opened from "Why Upari".
+const closeClasse = () => { $('classe').classList.remove('on'); $('classe').setAttribute('aria-hidden', 'true'); };
+$('classe-open').addEventListener('click', () => { closeAbout(); $('classe').classList.add('on'); $('classe').setAttribute('aria-hidden', 'false'); });
+$('classe-close').addEventListener('click', closeClasse);
+$('classe').addEventListener('click', (e) => { if (e.target === $('classe')) closeClasse(); });
+// A field in a chart (the year you were born) holds the story while it is filled in.
+document.addEventListener('upari-hold', () => director.setPlaying(false));
 $('about').addEventListener('click', (e) => { if (e.target === $('about')) closeAbout(); });
 
 // The language menu, top right: native names, the choice is remembered.
@@ -198,7 +205,7 @@ function toggleFullscreen() {
 addEventListener('keydown', (e) => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.target instanceof HTMLInputElement) return;
-  if (e.key === 'Escape') { $('credits').classList.remove('on'); closeAbout(); showMenu(false); director.closeDrawer(); search.close(); explorer.toggle(false); return; }
+  if (e.key === 'Escape') { $('credits').classList.remove('on'); closeAbout(); closeClasse(); showMenu(false); director.closeDrawer(); search.close(); explorer.toggle(false); return; }
   if (e.key === '/') { e.preventDefault(); search.open(); return; }
   if (!started) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); begin('pianeta'); } return; }
   if (e.key === ' ') { e.preventDefault(); director.setPlaying(!director.playing); if (director.playing) explorer.toggle(false); }

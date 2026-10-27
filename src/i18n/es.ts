@@ -114,6 +114,7 @@ const es: Dict = {
     realLight: 'Luz real del Sol',
     clouds: 'Nubes',
     spin: 'Rotación lenta',
+    compare: 'Comparar antes y después',
     groups: { planet: 'El planeta', nature: 'La naturaleza', people: 'Las personas', sky: 'El cielo' },
     layers: {
       adesso: 'La Tierra, ahora', venti: 'Vientos', correnti: 'Corrientes', mare: 'Temperatura del mar',
@@ -130,6 +131,7 @@ const es: Dict = {
       aurora: 'Aurora, ahora', satelliti: 'Todos los satélites', partenze: 'Próximos lanzamientos', bolidi: 'Bólidos desde 1988',
       citta: 'Ciudades, 1975 – 2030', rotte: 'Rutas de los barcos',
       livello: 'Nivel del mar', onde: 'Olas, últimas 24 horas',
+      migranti: 'Nacidos en el extranjero', co2: 'CO₂ por persona', rifugiati: 'Refugiados por país de origen',
     },
   },
 
@@ -175,6 +177,8 @@ const es: Dict = {
       ['Ciudades', 'Comisión Europea, JRC, GHS-BUILT-S R2023A (2025 y 2030 son proyecciones), CC BY 4.0'],
       ['Nivel del mar', 'NOAA CoastWatch, anomalía del nivel del mar por altimetría (contiene productos AVISO+ y datos de Copernicus Sentinel), vía ERDDAP'],
       ['Olas', 'modelo NOAA WaveWatch III, vía PacIOOS ERDDAP'],
+      ['Migrantes y CO₂ por persona', 'World Bank WDI (DAES de la ONU; EDGAR, Comisión Europea JRC), CC BY 4.0'],
+      ['Refugiados por origen', 'UNHCR Refugee Data Finder, CC BY 4.0'],
       ['Las personas', 'World Bank, World Development Indicators (con datos de World Population Prospects de la ONU, UN IGME e ILO), CC BY 4.0; solicitudes de asilo de UNHCR Refugee Data Portal, CC BY 4.0; fronteras de Natural Earth, dominio público'],
       ['Música y sonidos', 'compuestos para Upari con Magnific (Google Lyria, ElevenLabs)'],
       ['Búsqueda de lugares', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, datos © colaboradores de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>, ODbL'],
@@ -235,6 +239,7 @@ const es: Dict = {
     solarDay: 'hora solar · es de día',
     solarNight: 'hora solar · es de noche',
     solarDusk: 'hora solar · crepúsculo',
+    measured: (year: number) => `dato de ${year}`,
   },
 
   data: {
@@ -277,9 +282,32 @@ const es: Dict = {
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · estalló a ${alt} km de altura` : ''}`,
   },
 
+  classe: {
+    open: 'Para la clase',
+    kicker: 'Para la clase',
+    title: 'El planeta en el aula',
+    lead: 'Upari se usa en clase tal como es: sin cuentas, sin instalar nada, en doce idiomas. Cada capítulo dura unos veinte segundos y se detiene con la barra espaciadora.',
+    showTitle: 'Cómo mostrarlo',
+    show1: '<b>Proyectado.</b> La barra espaciadora detiene y reanuda el relato; las flechas ← → pasan al capítulo anterior o al siguiente; la tecla I abre los números y las fuentes del capítulo.',
+    show2: '<b>En la pantalla del vestíbulo.</b> Añade <code>?kiosk</code> a la dirección: los cuatro relatos avanzan solos, sin menús.',
+    show3: '<b>Dentro de una página de la escuela.</b> Usa <code>&lt;iframe src="https://upari.earth/?embed" width="100%" height="600"&gt;&lt;/iframe&gt;</code>.',
+    show4: '<b>Una dirección para cada descubrimiento.</b> En Explorar, la dirección recuerda capa, lugar y año: cópiala y envíasela a la clase. «Comparar antes y después» pone lado a lado el primer año y el último.',
+    askTitle: 'Preguntas para empezar',
+    ask1: 'El termómetro: ¿en qué año naciste? Escríbelo debajo del gráfico y mira dónde cae tu línea.',
+    ask2: 'El aliento del carbono: ¿por qué la curva sube y baja cada año, y por qué cada año vuelve a empezar más arriba?',
+    ask3: 'Las tormentas y el calor del mar: ¿dónde nacen los ciclones y qué tiene que ver el mar cálido?',
+    ask4: 'Las ciudades crecen: busca tu región en 1975 y en 2020 con «Comparar antes y después». ¿Qué ha cambiado?',
+    ask5: 'Las rutas: ¿por dónde pasan las mercancías que usas cada día? ¿Qué estrechos, si se cerraran, pararían el mundo?',
+    ask6: 'Los satélites: ¿cuántos usa el navegador del teléfono? ¿Por qué los geoestacionarios están tan lejos?',
+    readTitle: 'Leer los datos con honestidad',
+    read1: 'Observación, modelo o previsión: cada capa lo dice en su nota, en Explorar. Las olas son una simulación; la nieve es la que los satélites han visto entre las nubes.',
+    read2: 'Los huecos son intencionados: donde falta un dato, el mapa se desvanece en lugar de inventar.',
+    read3: 'Cada número tiene su fuente, abierta: en «Fuentes y créditos» se dice de dónde viene y con qué licencia.',
+  },
+
   notes: {
     livello: {
-      text: 'Cuánto está la superficie del mar por encima o por debajo de su media de 1993–2012, medido por los satélites altimétricos. Los remolinos cálidos sobresalen unas decenas de centímetros; El Niño eleva el Pacífico oriental. Un fotograma al mes, luego el último día.',
+      text: 'Cuánto está la superficie del mar por encima o por debajo de su media de 1993–2012, medido por los satélites altimétricos. Hoy casi todo el mar está por encima de esa media: desde 1993, el nivel medio ha subido unos diez centímetros. Los remolinos cálidos sobresalen unas decenas de centímetros; El Niño eleva el Pacífico oriental. Un fotograma al mes, luego el último día.',
       source: 'NOAA CoastWatch · altimetría multisatélite (AVISO+, Copernicus Sentinel) · 0,25°',
     },
     onde: {
@@ -323,6 +351,8 @@ const es: Dict = {
     heliopause: 'heliopausa',
     au: 'unidades astronómicas',
     auShort: 'UA',
+    born: 'Tu año de nacimiento',
+    bornLine: (year: number, then: string, now: string, diff: string) => `En ${year} la Tierra tenía de media ${then} °C; en los últimos doce meses, ${now} °C: ${diff} °C.`,
   },
 
   atlas: {
@@ -357,6 +387,18 @@ const es: Dict = {
     unemployment: {
       title: 'desempleo, estimaciones modelizadas de la ILO', left: '0%', right: '30%', source: 'ILO, estimaciones modelizadas, a través de World Bank WDI · SL.UEM.TOTL.ZS',
       format: (v: number) => `${num(v, 1)}% de la población activa`,
+    },
+    migrants: {
+      title: 'personas nacidas en otro país', left: '0%', right: '50%', source: 'DAES de la ONU, International Migrant Stock, a través de World Bank WDI · SM.POP.TOTL.ZS',
+      format: (v: number) => `${num(v, 1)}% de la población nació en el extranjero`,
+    },
+    co2: {
+      title: 'CO₂ por persona, en un año', left: '0 t', right: '25 t', source: 'EDGAR (Comisión Europea, JRC), a través de World Bank WDI · EN.GHG.CO2.PC.CE.AR5',
+      format: (v: number) => `${num(v, 1)} t de CO₂ por persona`,
+    },
+    refugees: {
+      title: 'refugiados en el extranjero, por cada 1000 habitantes', left: '0', right: '300', source: 'UNHCR Refugee Data Finder, CC BY 4.0, con la población de World Bank WDI',
+      format: (v: number) => `${num(v, v < 1 ? 2 : 0)} refugiados en el extranjero por cada 1000 habitantes`,
     },
   },
 
@@ -699,6 +741,21 @@ const es: Dict = {
     first: (country: string) => `personas sin electricidad en ${country}`,
     second: (country: string) => `en ${country}`,
     text: 'Acceso a la red, a minirredes o a sistemas autónomos: no dice nada de la continuidad, la calidad ni el precio. Se empieza en 2000 porque antes muchos países no tienen datos.',
+  },
+  impronta: {
+    title: 'La huella', kicker: 'CO₂ por persona, 1970 – 2024',
+    narrate: (p: { then: string; now: string; count: string }) => `Cuánto dióxido de carbono produce una persona en un año: de media ${p.then} toneladas en 1970, ${p.now} hoy. Pero la media lo esconde todo: en ${p.count} países se superan las diez toneladas por cabeza; en muchos otros no se llega a una.`,
+    world: 'toneladas de CO₂ por persona en 2024, media mundial ponderada por la población',
+    high: 'países por encima de diez toneladas por persona',
+    low: 'países por debajo de una tonelada por persona',
+    text: 'Emisiones de CO₂ de los combustibles fósiles, la industria y los procesos, sin el uso del suelo ni los bosques, divididas por los habitantes. Son las emisiones producidas dentro de las fronteras, no las de los bienes importados.',
+  },
+  esilio: {
+    title: 'Lejos de casa', kicker: 'Refugiados por país de origen, 1990 – 2024',
+    narrate: (p: { top: string; per: string }) => `Cuántas personas de cada país viven refugiadas en otro lugar, por cada mil habitantes que se quedaron. El color se enciende y se apaga con las guerras. Hoy, el valor más alto: ${p.top}, ${p.per} por cada mil habitantes.`,
+    top: (name: string) => `refugiados en el extranjero por cada 1000 habitantes, el valor más alto: ${name}`,
+    many: 'países de los que ha huido al menos el 1% de la población',
+    text: 'Refugiados bajo el mandato del UNHCR y otras personas que necesitan protección internacional, por país de origen, divididos por la población que se quedó. No incluye a los desplazados dentro de su propio país ni a los palestinos atendidos por la UNRWA.',
   },
   fuga: {
     title: 'Huir', kicker: 'Solicitudes de asilo, 2011 – 2024',

@@ -81,7 +81,7 @@ async function temperature(svg: SVGElement, cap: HTMLElement) {
   const lines = el('g', {}, svg);
   years.forEach((y, k) => {
     if (y === now) return;
-    const p = el('path', { d: path(d.years[y]), class: 'ch-year', stroke: yearColor((y - years[0]) / (now - years[0])) }, lines);
+    const p = el('path', { d: path(d.years[y]), class: 'ch-year', stroke: yearColor((y - years[0]) / (now - years[0])), 'data-year': y }, lines);
     (p as SVGElement).style.animationDelay = `${(k / years.length) * 7}s`;
   });
   el('path', { d: path(d.clim), class: 'ch-clim' }, svg);
@@ -94,6 +94,48 @@ async function temperature(svg: SVGElement, cap: HTMLElement) {
   lab.style.animationDelay = '8.4s';
   cap.innerHTML = '';
   cap.append(swatch(years[0], now), t.charts.temperature(dayMonth(d.last.date), `${d.last.anomaly > 0 ? '+' : '−'}${num(Math.abs(d.last.anomaly), 2)}`));
+  cap.append(bornField(svg, d, years[0], now));
+}
+
+/** Mean of the 365 days of a year, or of the last 365 days measured. */
+function yearMean(d: { years: Record<string, (number | null)[]> }, y: number | 'last') {
+  let vals: number[];
+  if (y === 'last') {
+    const all = Object.keys(d.years).map(Number).sort((a, b) => a - b).flatMap((k) => d.years[k]).filter((v): v is number => v != null);
+    vals = all.slice(-365);
+  } else vals = (d.years[y] ?? []).filter((v): v is number => v != null);
+  return vals.length >= 300 ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+}
+
+/** An optional field: the year you were born, its line lit, its mean against the last twelve months. */
+function bornField(svg: SVGElement, d: any, first: number, now: number) {
+  const KEY = 'upari.born';
+  const box = document.createElement('span');
+  box.className = 'ch-born';
+  const label = document.createElement('label');
+  const input = document.createElement('input');
+  input.type = 'number'; input.inputMode = 'numeric'; input.min = String(first); input.max = String(now - 1); input.placeholder = '—';
+  label.append(t.charts.born, input);
+  const line = document.createElement('span');
+  line.className = 'ch-born-line';
+  box.append(label, line);
+  const show = () => {
+    const y = Number(input.value);
+    svg.querySelectorAll('.ch-mine').forEach((p) => p.classList.remove('ch-mine'));
+    svg.classList.toggle('ch-has-mine', false);
+    line.textContent = '';
+    if (!(y >= first && y < now)) return;
+    try { localStorage.setItem(KEY, String(y)); } catch { /* private mode */ }
+    const p = svg.querySelector(`[data-year="${y}"]`);
+    p?.classList.add('ch-mine');
+    svg.classList.toggle('ch-has-mine', !!p);
+    const then = yearMean(d, y), last = yearMean(d, 'last');
+    if (then != null && last != null) line.textContent = t.charts.bornLine(y, num(then, 2), num(last, 2), `${last - then >= 0 ? '+' : '−'}${num(Math.abs(last - then), 2)}`);
+  };
+  input.addEventListener('input', show);
+  input.addEventListener('focus', () => document.dispatchEvent(new CustomEvent('upari-hold')));
+  try { const saved = localStorage.getItem(KEY); if (saved) { input.value = saved; setTimeout(show, 8000); } } catch { /* private mode */ }
+  return box;
 }
 
 /** The sawtooth of Mauna Loa: every spring the northern forests breathe in. */

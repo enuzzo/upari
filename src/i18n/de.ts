@@ -87,6 +87,7 @@ const de: Dict = {
     realLight: 'Echtes Sonnenlicht',
     clouds: 'Wolken',
     spin: 'Langsame Drehung',
+    compare: 'Vorher und nachher vergleichen',
     groups: { planet: 'Der Planet', nature: 'Die Natur', people: 'Die Menschen', sky: 'Der Himmel' },
     layers: {
       adesso: 'Die Erde, jetzt', venti: 'Winde', correnti: 'Strömungen', mare: 'Meerestemperatur',
@@ -103,6 +104,7 @@ const de: Dict = {
       aurora: 'Polarlicht, jetzt', satelliti: 'Alle Satelliten', partenze: 'Nächste Starts', bolidi: 'Feuerkugeln seit 1988',
       citta: 'Städte, 1975 – 2030', rotte: 'Schifffahrtsrouten',
       livello: 'Meeresspiegel', onde: 'Wellen, letzte 24 Stunden',
+      migranti: 'Im Ausland geboren', co2: 'CO₂ pro Person', rifugiati: 'Geflüchtete nach Herkunftsland',
     },
   },
 
@@ -148,6 +150,8 @@ const de: Dict = {
       ['Städte', 'Europäische Kommission, JRC, GHS-BUILT-S R2023A (2025 und 2030 sind Projektionen), CC BY 4.0'],
       ['Meeresspiegel', 'NOAA CoastWatch, Meeresspiegelanomalie aus der Altimetrie (enthält AVISO+-Produkte und Copernicus-Sentinel-Daten), via ERDDAP'],
       ['Wellen', 'Modell NOAA WaveWatch III, via PacIOOS ERDDAP'],
+      ['Migration und CO₂ pro Person', 'World Bank WDI (UN DESA; EDGAR, Europäische Kommission JRC), CC BY 4.0'],
+      ['Geflüchtete nach Herkunft', 'UNHCR Refugee Data Finder, CC BY 4.0'],
       ['Die Menschen', 'World Bank, World Development Indicators (mit Daten aus UN World Population Prospects, UN IGME und ILO), CC BY 4.0; Asylanträge UNHCR Refugee Data Portal, CC BY 4.0; Grenzen Natural Earth, gemeinfrei'],
       ['Musik und Klänge', 'für Upari komponiert mit Magnific (Google Lyria, ElevenLabs)'],
       ['Ortssuche', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, Daten © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-Mitwirkende, ODbL'],
@@ -228,6 +232,7 @@ const de: Dict = {
     solarDay: 'Sonnenzeit · es ist Tag',
     solarNight: 'Sonnenzeit · es ist Nacht',
     solarDusk: 'Sonnenzeit · Dämmerung',
+    measured: (year: number) => `Wert von ${year}`,
   },
 
   data: {
@@ -270,9 +275,32 @@ const de: Dict = {
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · in ${alt} km Höhe explodiert` : ''}`,
   },
 
+  classe: {
+    open: 'Für den Unterricht',
+    kicker: 'Für den Unterricht',
+    title: 'Der Planet im Klassenzimmer',
+    lead: 'Upari funktioniert im Unterricht so, wie es ist: ohne Konto, ohne Installation, in zwölf Sprachen. Jedes Kapitel dauert etwa zwanzig Sekunden und hält mit der Leertaste an.',
+    showTitle: 'So zeigst du es',
+    show1: '<b>Am Beamer.</b> Die Leertaste hält die Erzählung an und setzt sie fort; die Pfeiltasten ← → springen zum vorigen oder nächsten Kapitel; die Taste I öffnet die Zahlen und Quellen des Kapitels.',
+    show2: '<b>Auf dem Bildschirm im Foyer.</b> Häng <code>?kiosk</code> an die Adresse an: Die vier Erzählungen laufen von selbst, ohne Menüs.',
+    show3: '<b>In einer Seite der Schulwebsite.</b> Verwende <code>&lt;iframe src="https://upari.earth/?embed" width="100%" height="600"&gt;&lt;/iframe&gt;</code>.',
+    show4: '<b>Eine Adresse für jede Entdeckung.</b> Unter „Entdecken“ merkt sich die Adresse Ebene, Ort und Jahr: Kopier sie und schick sie an die Klasse. „Vorher und nachher vergleichen“ stellt das erste und das letzte Jahr nebeneinander.',
+    askTitle: 'Fragen zum Einstieg',
+    ask1: 'Das Thermometer: In welchem Jahr bist du geboren? Schreib es unter das Diagramm und schau, wo deine Linie liegt.',
+    ask2: 'Der Atem des Kohlenstoffs: Warum steigt und fällt die Kurve jedes Jahr, und warum beginnt jedes Jahr ein Stück höher?',
+    ask3: 'Die Stürme und die Wärme des Meeres: Wo entstehen Wirbelstürme, und was hat warmes Wasser damit zu tun?',
+    ask4: 'Die Städte wachsen: Such deine Region 1975 und 2020 mit „Vorher und nachher vergleichen“. Was hat sich verändert?',
+    ask5: 'Die Routen: Wo kommen die Waren vorbei, die du jeden Tag benutzt? Welche Meerengen würden die Welt anhalten, wenn sie geschlossen würden?',
+    ask6: 'Die Satelliten: Wie viele davon nutzt das Navi deines Handys? Warum sind die geostationären so weit weg?',
+    readTitle: 'Daten ehrlich lesen',
+    read1: 'Beobachtung, Modell oder Vorhersage: Jede Ebene sagt es in ihrer Notiz unter „Entdecken“. Die Wellen sind eine Simulation; der Schnee ist der, den die Satelliten zwischen den Wolken gesehen haben.',
+    read2: 'Die Lücken sind gewollt: Wo ein Wert fehlt, blendet die Karte aus, statt etwas zu erfinden.',
+    read3: 'Jede Zahl hat ihre Quelle, offen: Unter „Quellen und Nachweise“ steht, woher sie kommt und unter welcher Lizenz.',
+  },
+
   notes: {
     livello: {
-      text: 'Wie weit die Meeresoberfläche über oder unter ihrem Mittel von 1993–2012 liegt, gemessen von Altimetrie-Satelliten. Warme Wirbel wölben sich um einige Dutzend Zentimeter auf; El Niño hebt den östlichen Pazifik an. Ein Bild pro Monat, dann der letzte Tag.',
+      text: 'Wie weit die Meeresoberfläche über oder unter ihrem Mittel von 1993–2012 liegt, gemessen von Altimetrie-Satelliten. Fast das ganze Meer liegt heute über diesem Mittel: Seit 1993 ist der mittlere Meeresspiegel um etwa zehn Zentimeter gestiegen. Warme Wirbel wölben sich um einige Dutzend Zentimeter auf; El Niño hebt den östlichen Pazifik an. Ein Bild pro Monat, dann der letzte Tag.',
       source: 'NOAA CoastWatch · Multi-Satelliten-Altimetrie (AVISO+, Copernicus Sentinel) · 0,25°',
     },
     onde: {
@@ -316,6 +344,8 @@ const de: Dict = {
     heliopause: 'Heliopause',
     au: 'Astronomische Einheiten',
     auShort: 'AE',
+    born: 'Dein Geburtsjahr',
+    bornLine: (year: number, then: string, now: string, diff: string) => `${year} lag die Erde im Mittel bei ${then} °C, in den letzten zwölf Monaten bei ${now} °C: ${diff} °C.`,
   },
 
   atlas: {
@@ -350,6 +380,18 @@ const de: Dict = {
     unemployment: {
       title: 'Arbeitslosigkeit, modellierte ILO-Schätzungen', left: '0%', right: '30%', source: 'ILO, modellierte Schätzungen, via World Bank WDI · SL.UEM.TOTL.ZS',
       format: (v: number) => `${num(v, 1)}% der Erwerbspersonen`,
+    },
+    migrants: {
+      title: 'im Ausland geborene Menschen', left: '0%', right: '50%', source: 'UN DESA, International Migrant Stock, via World Bank WDI · SM.POP.TOTL.ZS',
+      format: (v: number) => `${num(v, 1)}% der Bevölkerung sind im Ausland geboren`,
+    },
+    co2: {
+      title: 'CO₂ pro Person und Jahr', left: '0 t', right: '25 t', source: 'EDGAR (Europäische Kommission, JRC), via World Bank WDI · EN.GHG.CO2.PC.CE.AR5',
+      format: (v: number) => `${num(v, 1)} t CO₂ pro Person`,
+    },
+    refugees: {
+      title: 'Geflüchtete im Ausland, pro 1.000 Einwohner', left: '0', right: '300', source: 'UNHCR Refugee Data Finder, CC BY 4.0, mit Bevölkerungszahlen der World Bank WDI',
+      format: (v: number) => `${num(v, v < 1 ? 2 : 0)} Geflüchtete im Ausland pro 1.000 Einwohner`,
     },
   },
 
@@ -692,6 +734,21 @@ const de: Dict = {
     first: (country: string) => `Menschen ohne Strom: ${country}`,
     second: (country: string) => country,
     text: 'Zugang über das Stromnetz, Inselnetze oder eigenständige Anlagen: Über Zuverlässigkeit, Qualität oder Preis sagt das nichts. Die Reihe beginnt im Jahr 2000, weil es vorher für viele Länder keine Werte gibt.',
+  },
+  impronta: {
+    title: 'Der Fußabdruck', kicker: 'CO₂ pro Person, 1970 – 2024',
+    narrate: (p: { then: string; now: string; count: string }) => `Wie viel Kohlendioxid ein Mensch in einem Jahr erzeugt: im Mittel ${p.then} Tonnen im Jahr 1970, heute ${p.now}. Doch der Durchschnitt verdeckt alles: In ${p.count} Ländern sind es mehr als zehn Tonnen pro Kopf, in vielen anderen nicht einmal eine.`,
+    world: 'Tonnen CO₂ pro Person im Jahr 2024, Weltmittel, nach Bevölkerung gewichtet',
+    high: 'Länder mit mehr als zehn Tonnen pro Person',
+    low: 'Länder mit weniger als einer Tonne pro Person',
+    text: 'CO₂-Emissionen aus fossilen Brennstoffen, Industrie und Prozessen, ohne Landnutzung und Wälder, geteilt durch die Zahl der Einwohner. Es sind die Emissionen, die innerhalb der Grenzen entstehen, nicht die der importierten Güter.',
+  },
+  esilio: {
+    title: 'Fern der Heimat', kicker: 'Geflüchtete nach Herkunftsland, 1990 – 2024',
+    narrate: (p: { top: string; per: string }) => `Wie viele Menschen aus jedem Land anderswo als Geflüchtete leben, pro tausend, die geblieben sind. Die Farbe leuchtet auf und verblasst mit den Kriegen. Heute der höchste Wert: ${p.top}, ${p.per} pro tausend Einwohner.`,
+    top: (name: string) => `Geflüchtete im Ausland pro 1.000 Einwohner, der höchste Wert: ${name}`,
+    many: 'Länder, aus denen mindestens 1% der Bevölkerung geflohen ist',
+    text: 'Flüchtlinge unter dem Mandat des UNHCR und andere Menschen, die internationalen Schutz brauchen, nach Herkunftsland, geteilt durch die Bevölkerung, die geblieben ist. Nicht enthalten sind Binnenvertriebene und die von der UNRWA betreuten Palästinenser.',
   },
   fuga: {
     title: 'Auf der Flucht', kicker: 'Asylanträge, 2011 – 2024',

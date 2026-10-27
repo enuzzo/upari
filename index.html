@@ -65,6 +65,13 @@
     </div>
   </section>
 
+  <!-- Before and after: drag the line (src/story/explore.ts). -->
+  <div class="swipe" id="swipe" aria-hidden="true">
+    <i class="swipe-line"></i>
+    <button class="swipe-handle" id="swipe-handle" data-t-aria="explore.compare"></button>
+    <span class="swipe-label swipe-a" id="swipe-a"></span><span class="swipe-label swipe-b" id="swipe-b"></span>
+  </div>
+
   <!-- A chart beside the planet, when a number needs its history (src/story/charts.ts). -->
   <figure class="chart" id="chart" aria-hidden="true">
     <svg id="chart-svg" role="img"></svg>
@@ -132,6 +139,7 @@
       <div class="legend-bar" id="ex-legend-bar"></div>
       <div class="legend-ends"><span id="ex-legend-left"></span><span id="ex-legend-right"></span></div>
     </div>
+    <button class="more ex-compare" id="ex-compare"><span data-t="explore.compare"></span><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l-3 4 3 4M19 8l3 4-3 4"/></svg></button>
     <div class="ex-block ex-note" id="ex-note"><p id="ex-note-text"></p><p class="ex-note-source" id="ex-note-source"></p></div>
     <button class="more ex-iss" id="ex-iss"><span data-t="explore.reach"></span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
     <div class="ex-block">
@@ -202,8 +210,24 @@
       <div class="about-actions">
         <a class="cta" href="https://netmilk.ch" target="_blank" rel="noopener" data-t="about.visit"></a>
         <a class="about-link" href="https://github.com/enuzzo/upari" target="_blank" rel="noopener"><span data-t="about.source"></span> →</a>
+        <button class="about-link" id="classe-open"><span data-t="classe.open"></span> →</button>
       </div>
       <p class="about-signoff" data-t="about.signoff"></p>
+    </div>
+  </div>
+
+  <div class="credits about classe" id="classe" aria-hidden="true" role="dialog" aria-labelledby="classe-title">
+    <div class="credits-inner about-inner">
+      <button class="icon-btn drawer-close" id="classe-close" data-t-aria="page.close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <div class="about-kicker" data-t="classe.kicker"></div>
+      <h2 id="classe-title" data-t="classe.title"></h2>
+      <p class="about-lead" data-t="classe.lead"></p>
+      <h3 data-t="classe.showTitle"></h3>
+      <ul class="classe-list"><li data-t-html="classe.show1"></li><li data-t-html="classe.show2"></li><li data-t-html="classe.show3"></li><li data-t-html="classe.show4"></li></ul>
+      <h3 data-t="classe.askTitle"></h3>
+      <ol class="classe-list"><li data-t="classe.ask1"></li><li data-t="classe.ask2"></li><li data-t="classe.ask3"></li><li data-t="classe.ask4"></li><li data-t="classe.ask5"></li><li data-t="classe.ask6"></li></ol>
+      <h3 data-t="classe.readTitle"></h3>
+      <ul class="classe-list"><li data-t="classe.read1"></li><li data-t="classe.read2"></li><li data-t="classe.read3"></li></ul>
     </div>
   </div>
 

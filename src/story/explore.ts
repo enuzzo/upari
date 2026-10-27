@@ -7,7 +7,10 @@ import { NATURE } from './nature';
 import { SKY_CHAPTERS } from './sky';
 import type { Director } from './director';
 import { t } from '../i18n';
-import { num } from '../i18n/format';
+import { dayShort, monthYear, num } from '../i18n/format';
+
+/** Series that can be compared first frame against last. */
+const SERIES = new Set(['sst', 'anomaly', 'chlorophyll', 'ice', 'ndvi', 'aerosol', 'coral', 'ozone', 'no2', 'snow', 'sealevel', 'built']);
 
 // Free exploration: every layer of both stories, the year, the hour, the sky, the station,
 // and a link that remembers what is on screen.
@@ -57,6 +60,9 @@ const HUMAN: Layer[] = [
   atlasLayer('bambini', 'under5'),
   atlasLayer('elettricita', 'electricity'),
   atlasLayer('disoccupazione', 'unemployment'),
+  atlasLayer('migranti', 'migrants'),
+  atlasLayer('co2', 'co2'),
+  atlasLayer('rifugiati', 'refugees'),
   { id: 'citta', look: () => ({ ...PEOPLE.find((c) => c.id === 'citta')!.look }), legend: PEOPLE.find((c) => c.id === 'citta')!.legend },
   { id: 'rotte', look: () => ({ ...PEOPLE.find((c) => c.id === 'rotte')!.look }), legend: PEOPLE.find((c) => c.id === 'rotte')!.legend },
   {
@@ -96,7 +102,7 @@ const FROM_CHAPTER: Record<string, string> = {
   pianeta: 'adesso', respiro: 'venti', correnti: 'correnti', calore: 'mare', febbre: 'anomalia', fioritura: 'plancton', pioggia: 'pioggia',
   fuoco: 'fuochi', terremoti: 'terremoti', ghiaccio: 'ghiaccio', luci: 'luci', lassu: 'stazione', popolazione: 'popolazione', nascite: 'nascite', vita: 'vita',
   bambini: 'bambini', saldo: 'saldo', luce: 'elettricita', fuga: 'asilo', verde: 'verde', foreste: 'foreste', aria: 'aria', coralli: 'coralli',
-  citta: 'citta', rotte: 'rotte', tempeste: 'tempeste', neve: 'neve', smog: 'smog', ozono: 'ozono', petrolio: 'petrolio', aurora: 'aurora', satelliti: 'satelliti', partenze: 'partenze', bolidi: 'bolidi',
+  citta: 'citta', rotte: 'rotte', impronta: 'co2', esilio: 'rifugiati', tempeste: 'tempeste', neve: 'neve', smog: 'smog', ozono: 'ozono', petrolio: 'petrolio', aurora: 'aurora', satelliti: 'satelliti', partenze: 'partenze', bolidi: 'bolidi',
 };
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -143,6 +149,21 @@ export class Explorer {
     toggle('ex-clouds', 'clouds');
     toggle('ex-spin', 'spin');
     $('ex-iss').addEventListener('click', () => this.reachStation());
+    $('ex-compare').addEventListener('click', () => this.setComparing(!this.comparing));
+    const handle = $('swipe-handle');
+    handle.addEventListener('pointerdown', (e) => {
+      handle.setPointerCapture(e.pointerId);
+      const move = (ev: PointerEvent) => this.moveSwipe(ev.clientX);
+      const up = () => { handle.removeEventListener('pointermove', move); handle.removeEventListener('pointerup', up); };
+      handle.addEventListener('pointermove', move);
+      handle.addEventListener('pointerup', up);
+      e.stopPropagation();
+    });
+    handle.addEventListener('keydown', (e) => {
+      const x = parseFloat($('swipe').style.getPropertyValue('--x')) || innerWidth / 2;
+      if (e.key === 'ArrowLeft') this.moveSwipe(x - 30);
+      if (e.key === 'ArrowRight') this.moveSwipe(x + 30);
+    });
   }
 
   private buildLayers() {
@@ -180,6 +201,7 @@ export class Explorer {
   toggle(v = !this.open) {
     if (v === this.open) return;
     this.open = v;
+    if (!v) this.setComparing(false);
     $('explore').classList.toggle('on', v);
     $('explore').setAttribute('aria-hidden', String(!v));
     document.body.classList.toggle('exploring', v);
@@ -197,6 +219,7 @@ export class Explorer {
   }
 
   select(id: string) {
+    this.setComparing(false);
     this.layer = LAYERS.find((l) => l.id === id) ?? this.layer;
     if (this.layer.people) this.year = Math.min(this.year, this.layer.id === 'asilo' ? 2025 : 2024);
     this.apply();
@@ -221,10 +244,49 @@ export class Explorer {
 
   private playYears() {
     const last = this.layer.id === 'asilo' ? 2025 : 2024;
-    const from = this.year >= last ? (this.layer.id === 'asilo' ? 2000 : this.layer.id === 'foreste' ? 2001 : this.layer.id === 'elettricita' ? 1990 : 1960) : this.year;
+    const from = this.year >= last ? this.firstYear() : this.year;
     const look: Partial<Look> = { ...this.globe.currentLook, year: null, years: [from, last], yearSeconds: Math.max(4, (last - from) * 0.3) };
     this.globe.setLook(look);
     this.year = last;
+  }
+
+  private firstYear() {
+    const FIRST: Record<string, number> = { asilo: 2000, foreste: 2001, elettricita: 1990, migranti: 1990, rifugiati: 1990, co2: 1970 };
+    return FIRST[this.layer.id] ?? 1960;
+  }
+
+  private comparing = false;
+
+  /** Can this layer be split into before and after? */
+  private comparable() {
+    const look = this.layer.look();
+    return (!!this.layer.people && this.layer.id !== 'foreste' && this.layer.id !== 'asilo') || (!!look.data && SERIES.has(look.data));
+  }
+
+  /** Before and after, at a line that follows the hand. */
+  private setComparing(on: boolean) {
+    this.comparing = on;
+    $('swipe').classList.toggle('on', on);
+    $('ex-compare').classList.toggle('active', on);
+    if (!on) { this.globe.setCompare(null); return; }
+    this.moveSwipe((0.5 + this.globe.rig.frameShift) * innerWidth);
+  }
+
+  private moveSwipe(x: number) {
+    x = Math.max(80, Math.min(innerWidth - 80, x));
+    $('swipe').style.setProperty('--x', `${x}px`);
+    const last = this.layer.id === 'asilo' ? 2025 : 2024;
+    this.globe.setCompare({ x, from: this.firstYear(), to: last });
+    if (this.layer.people) {
+      $('swipe-a').textContent = String(this.firstYear());
+      $('swipe-b').textContent = String(last);
+    } else {
+      const f = this.globe.dataFrameTime();
+      const fmt = (iso: string) => (f?.cadence === 'year' ? iso.slice(0, 4) : f?.cadence === 'month' ? monthYear(iso) : dayShort(iso));
+      $('swipe-a').textContent = f ? fmt(f.first) : '';
+      const last = f ? this.globe.lastMeasuredTime() : null;
+      $('swipe-b').textContent = last ? fmt(last) : '';
+    }
   }
 
   private reachStation() {
@@ -260,6 +322,8 @@ export class Explorer {
     document.querySelectorAll<HTMLButtonElement>('.ex-layer').forEach((b) => b.classList.toggle('current', b.dataset.layer === this.layer.id));
     $('ex-years').classList.toggle('on', !!this.layer.people);
     $('ex-iss').classList.toggle('on', this.layer.id === 'stazione');
+    $('ex-compare').classList.toggle('on', this.comparable());
+    if (this.comparing) this.moveSwipe(parseFloat($('swipe').style.getPropertyValue('--x')) || innerWidth / 2);
     $<HTMLInputElement>('ex-year').value = String(this.year);
     const lg = this.layer.legend;
     $('ex-legend').classList.toggle('on', !!lg);
@@ -274,6 +338,8 @@ export class Explorer {
   /** Called every frame: the running year, and the link of what is on screen. */
   tick(dt: number) {
     if (!this.open) return;
+    // The dates of a series are known once its frames arrive.
+    if (this.comparing && !$('swipe-a').textContent) this.moveSwipe(parseFloat($('swipe').style.getPropertyValue('--x')) || innerWidth / 2);
     if (this.layer.people) {
       const y = Math.round(this.globe.year);
       $('ex-year-label').textContent = String(y);

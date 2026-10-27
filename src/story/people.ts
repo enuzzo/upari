@@ -220,6 +220,54 @@ export const PEOPLE: Chapter[] = titled([
     beats: async () => [{ shot: { lon: 22, lat: -2, dist: 2.9 }, drift: 0.8 }],
   },
   {
+    id: 'impronta',
+    mood: 'grave', sound: 'city',
+    look: { ...LOOK, atlas: 'co2', years: [1970, 2024], yearSeconds: 18 },
+    duration: 23, clock: 'year', legend: legend('co2'),
+    narrate: async (g) => {
+      const a = await atlas(g);
+      return t.impronta.narrate({ then: num((await mean(g, 'co2', 1970)), 1), now: num(await mean(g, 'co2', 2024), 1), count: num(a.count('co2', 2024, (v) => v > 10)) });
+    },
+    detail: async (g) => {
+      const a = await atlas(g);
+      const low = a.count('co2', 2024, (v) => v < 1);
+      return {
+        facts: [
+          { value: `${num(await mean(g, 'co2', 2024), 1)} t`, label: t.impronta.world },
+          { value: num(a.count('co2', 2024, (v) => v > 10)), label: t.impronta.high },
+          { value: num(low), label: t.impronta.low },
+        ],
+        text: noted(t.impronta.text),
+        source: atlasText('co2').source,
+      };
+    },
+    beats: async () => [{ shot: { lon: 40, lat: 35, dist: 3.1 }, drift: 0.9 }],
+  },
+  {
+    id: 'esilio',
+    mood: 'grave', sound: 'wind',
+    look: { ...LOOK, atlas: 'refugees', years: [1990, 2024], yearSeconds: 18 },
+    duration: 23, clock: 'year', legend: legend('refugees'),
+    narrate: async (g) => {
+      const a = await atlas(g);
+      const top = a.extreme('refugees', 2024, true)!;
+      return t.esilio.narrate({ top: top.name, per: num(top.value) });
+    },
+    detail: async (g) => {
+      const a = await atlas(g);
+      const top = a.extreme('refugees', 2024, true)!;
+      return {
+        facts: [
+          { value: num(top.value), label: t.esilio.top(top.name) },
+          { value: num(a.count('refugees', 2024, (v) => v >= 10)), label: t.esilio.many },
+        ],
+        text: noted(t.esilio.text),
+        source: atlasText('refugees').source,
+      };
+    },
+    beats: async () => [{ shot: { lon: 38, lat: 20, dist: 3.0 }, drift: 0.8 }],
+  },
+  {
     id: 'fuga',
     mood: 'grave', sound: 'wind',
     look: { ...LOOK, dim: 0.72, migration: 1, years: [2011, 2024], yearSeconds: 20, bloom: 1.3 },

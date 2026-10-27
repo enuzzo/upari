@@ -10,7 +10,7 @@ import { t } from '../i18n';
 import { dayShort, monthYear, num } from '../i18n/format';
 
 /** Series that can be compared first frame against last. */
-const SERIES = new Set(['sst', 'anomaly', 'chlorophyll', 'ice', 'ndvi', 'aerosol', 'coral', 'ozone', 'no2', 'snow', 'sealevel', 'built']);
+const SERIES = new Set(['sst', 'anomaly', 'chlorophyll', 'ice', 'ndvi', 'aerosol', 'coral', 'ozone', 'no2', 'snow', 'sealevel', 'built', 'mangroves', 'bii']);
 
 // Free exploration: every layer of both stories, the year, the hour, the sky, the station,
 // and a link that remembers what is on screen.
@@ -86,6 +86,8 @@ const NATURE_LAYERS: Layer[] = [
   { id: 'verde', look: () => ({ ...NATURE.find((c) => c.id === 'verde')!.look }), legend: NATURE.find((c) => c.id === 'verde')!.legend },
   { id: 'foreste', people: true, look: () => ({ ...NATURE.find((c) => c.id === 'foreste')!.look, years: null }), legend: NATURE.find((c) => c.id === 'foreste')!.legend },
   { id: 'aria', look: () => ({ ...NATURE.find((c) => c.id === 'aria')!.look }), legend: NATURE.find((c) => c.id === 'aria')!.legend },
+  natureLayer('mangrovie'),
+  natureLayer('integrita'),
   natureLayer('neve'),
   natureLayer('smog'),
   natureLayer('ozono'),
@@ -105,7 +107,7 @@ const LAYERS = [...PLANET, ...NATURE_LAYERS, ...HUMAN, ...SKY_LAYERS];
 const FROM_CHAPTER: Record<string, string> = {
   pianeta: 'adesso', respiro: 'venti', correnti: 'correnti', calore: 'mare', febbre: 'anomalia', fioritura: 'plancton', pioggia: 'pioggia',
   fuoco: 'fuochi', terremoti: 'terremoti', ghiaccio: 'ghiaccio', luci: 'luci', lassu: 'stazione', popolazione: 'popolazione', nascite: 'nascite', vita: 'vita',
-  bambini: 'bambini', saldo: 'saldo', luce: 'elettricita', fuga: 'asilo', verde: 'verde', foreste: 'foreste', aria: 'aria', coralli: 'coralli',
+  bambini: 'bambini', saldo: 'saldo', luce: 'elettricita', fuga: 'asilo', verde: 'verde', foreste: 'foreste', mangrovie: 'mangrovie', integrita: 'integrita', aria: 'aria', coralli: 'coralli',
   citta: 'citta', rotte: 'rotte', impronta: 'co2', esilio: 'rifugiati', rotte_asilo: 'asilomondo', dighe: 'dighe', tempeste: 'tempeste', neve: 'neve', smog: 'smog', ozono: 'ozono', petrolio: 'petrolio', aurora: 'aurora', satelliti: 'satelliti', partenze: 'partenze', bolidi: 'bolidi',
 };
 

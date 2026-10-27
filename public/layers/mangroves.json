@@ -1,0 +1,40 @@
+{
+ "id": "mangroves",
+ "width": 7200,
+ "height": 3600,
+ "cadence": "year",
+ "unit": "%",
+ "scale": "sqrt",
+ "min": 0,
+ "max": 1,
+ "dates": [
+  "2020-07-01"
+ ],
+ "source": "Global Mangrove Watch v3.0 \u00b7 Bunting et al. 2022 \u00b7 CC BY 4.0",
+ "frames": [
+  {
+   "file": "mangroves-1996.jpg",
+   "conf": "mangroves-1996-c.png",
+   "time": "1996-07-01",
+   "km2": 153530
+  },
+  {
+   "file": "mangroves-2010.jpg",
+   "conf": "mangroves-2010-c.png",
+   "time": "2010-07-01",
+   "km2": 147474
+  },
+  {
+   "file": "mangroves-2015.jpg",
+   "conf": "mangroves-2015-c.png",
+   "time": "2015-07-01",
+   "km2": 146594
+  },
+  {
+   "file": "mangroves-2020.jpg",
+   "conf": "mangroves-2020-c.png",
+   "time": "2020-07-01",
+   "km2": 146576
+  }
+ ]
+}

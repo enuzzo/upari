@@ -173,8 +173,9 @@ richieda un account o una chiave che l’utente non ha dato.
   quieta con il link al sito).
 - [ ] Mare che si acidifica (OceanSODA: licenza dei file da confermare). Zone morte WRI: il
   dataset non è più online.
-- [ ] Integrità della biodiversità (BII, CC BY, 100 m: file molto grandi). [ ] Mangrovie
-  1996–2020 (Global Mangrove Watch, licenza da confermare sulla fonte primaria).
+- [x] Integrità della biodiversità (Impact Observatory e Vizzuality via Planetary Computer,
+  CC BY 4.0, 2017 e 2020 a 0,05°): capitolo «Quanta natura resta». [x] Mangrovie 1996–2020
+  (Global Mangrove Watch v3.0, CC BY 4.0 verificata su Zenodo): capitolo «Le mangrovie».
 - [x] Nati all’estero (UN DESA via WDI, ogni cinque anni, il dato mostra il suo anno).
   [x] Rifugiati per paese d’origine (UNHCR, ogni mille abitanti): capitolo «Lontano da casa».
   [x] Flussi di asilo da tutte le origini (UNHCR, le trenta rotte più grandi di ogni anno,

@@ -15,6 +15,18 @@ const monthOf = (iso: string) => month(iso.slice(0, 10));
 const monthYearOf = (iso: string) => monthYear(iso.slice(0, 10));
 const LOOK = { sun: 'studio' as const, clouds: 0, night: 0, atmo: 0.8 };
 
+/** Mangrove area of each year, km², summed at full resolution when the layer was made. */
+async function mangroveArea(g: Globe) {
+  const frames = (await g.layers.get('mangroves')).meta.frames as { time: string; km2: number }[];
+  return { km2: frames.map((f) => f.km2), years: frames.map((f) => Number(f.time.slice(0, 4))) };
+}
+
+/** Land-weighted mean intactness of each year, computed when the layer was made. */
+async function biiMeans(g: Globe) {
+  const frames = (await g.layers.get('bii')).meta.frames as unknown as { time: string; mean: number }[];
+  return frames.map((f) => ({ year: Number(f.time.slice(0, 4)), mean: f.mean }));
+}
+
 /** Area-weighted scan of one frame of a series; visit gets the decoded value. */
 async function scanFrames(g: Globe, id: DataId, box: [number, number, number, number], visit: (frame: number, v: number, area: number, lon: number, lat: number) => void, step = 1) {
   const { sampler, meta } = await g.layers.get(id);
@@ -186,6 +198,49 @@ export const NATURE: Chapter[] = titled([
       };
     },
     beats: async () => [{ shot: { lon: -58, lat: -6, dist: 2.5 }, drift: 0.9, hold: 12 }, { shot: { lon: 108, lat: 2, dist: 2.6 }, seconds: 5, drift: 0.6 }],
+  },
+  {
+    id: 'mangrovie',
+    kind: 'observed',
+    mood: 'calm', sound: 'waves',
+    look: { ...LOOK, data: 'mangroves', dim: 0.62, desat: 0.75, bloom: 1.2 },
+    duration: 23, clock: 'data',
+    legend: legend(PALETTES.mangroves, 'mangroves'),
+    narrate: async (g) => {
+      const m = await mangroveArea(g);
+      return t.mangrovie.narrate({ then: num(m.km2[0]), now: num(m.km2.at(-1)!), lost: num(m.km2[0] - m.km2.at(-1)!) });
+    },
+    detail: async (g) => {
+      const m = await mangroveArea(g);
+      return {
+        facts: [
+          { value: `${num(m.km2[0])} km²`, label: t.mangrovie.in(m.years[0]) },
+          { value: `${num(m.km2.at(-1)!)} km²`, label: t.mangrovie.in(m.years.at(-1)!) },
+          { value: `−${num(((m.km2[0] - m.km2.at(-1)!) / m.km2[0]) * 100, 1)}%`, label: t.mangrovie.lost(m.years[0], m.years.at(-1)!) },
+        ],
+        text: t.mangrovie.text,
+        source: t.mangrovie.source,
+      };
+    },
+    beats: async () => [{ shot: { lon: 89.4, lat: 21.9, dist: 1.5 }, drift: 0.5, hold: 11 }, { shot: { lon: 112, lat: -3, dist: 2.0 }, seconds: 5, drift: 0.6 }],
+  },
+  {
+    id: 'integrita',
+    kind: 'model',
+    mood: 'grave', sound: 'forest',
+    look: { ...LOOK, data: 'bii', dim: 0.5, desat: 0.85, bloom: 0.9 },
+    duration: 23, clock: 'data',
+    legend: legend(PALETTES.bii, 'bii'),
+    narrate: async (g) => t.integrita.narrate(num((await biiMeans(g)).at(-1)!.mean * 100)),
+    detail: async (g) => {
+      const m = await biiMeans(g);
+      return {
+        facts: m.map((f) => ({ value: `${num(f.mean * 100)}%`, label: t.integrita.mean(f.year) })),
+        text: t.integrita.text,
+        source: t.integrita.source,
+      };
+    },
+    beats: async () => [{ shot: { lon: 15, lat: 20, dist: 2.9 }, drift: 1.2 }],
   },
   {
     id: 'neve',

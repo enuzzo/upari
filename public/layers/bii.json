@@ -1,0 +1,27 @@
+{
+ "id": "bii",
+ "width": 7200,
+ "height": 3600,
+ "cadence": "year",
+ "unit": "",
+ "min": 0,
+ "max": 1,
+ "dates": [
+  "2020-07-01"
+ ],
+ "source": "Impact Observatory, Vizzuality \u00b7 Biodiversity Intactness (io-biodiversity) \u00b7 Microsoft Planetary Computer \u00b7 CC BY 4.0",
+ "frames": [
+  {
+   "file": "bii-2017.jpg",
+   "conf": "bii-2017-c.png",
+   "time": "2017-07-01",
+   "mean": 0.8594
+  },
+  {
+   "file": "bii-2020.jpg",
+   "conf": "bii-2020-c.png",
+   "time": "2020-07-01",
+   "mean": 0.8574
+  }
+ ]
+}

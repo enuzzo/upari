@@ -186,6 +186,24 @@ export const PALETTES: Record<string, Stop[]> = {
     [0.7, '#fff0c9', 1],
     [1.0, '#ffffff', 1],
   ],
+  // Mangroves (square root of the share): thin fringes a faint green, dense forests bright.
+  mangroves: [
+    [0.0, '#5dffa0', 0.0],
+    [0.06, '#5dffa0', 0.0],
+    [0.15, '#2fd27a', 0.55],
+    [0.4, '#5dffa0', 0.9],
+    [0.75, '#c8ffd9', 1],
+    [1.0, '#ffffff', 1],
+  ],
+  // Biodiversity intactness: what is left of the original wildlife, ember to deep green.
+  bii: [
+    [0.0, '#7a2a12', 0.92],
+    [0.35, '#c4602a', 0.88],
+    [0.55, '#e0a64e', 0.8],
+    [0.72, '#c9c46a', 0.55],
+    [0.86, '#6fae5a', 0.32],
+    [1.0, '#2f8f4a', 0.22],
+  ],
   // Aurora: oxygen green, red at the top of the strongest ones.
   aurora: [
     [0.0, '#1aff8c', 0.0],

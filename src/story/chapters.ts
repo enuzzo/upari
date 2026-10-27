@@ -7,8 +7,10 @@ import { stats, formatLonLat } from './stats';
 import { seaName } from './places';
 import { loadCountries, placeBelow } from './geo';
 import { placeIt, type Quake } from '../engine/markers';
+import { climate, type ChartId } from './charts';
+import { loadSpots } from '../engine/spots';
 import { t } from '../i18n';
-import { num, dayMonth, dayMonthTime, timeLocal, timeUtc } from '../i18n/format';
+import { num, dayMonth, dayMonthTime, dayShort, timeLocal, timeUtc } from '../i18n/format';
 
 export interface Beat {
   shot: Shot;
@@ -45,6 +47,8 @@ export interface Chapter {
   mood?: Mood;
   sound?: Ambience;
   clock?: 'data' | 'year';
+  /** A chart beside the planet. */
+  chart?: ChartId;
   pin?: (g: Globe) => Promise<{ lon: number; lat: number; label: string; sub: string } | null>;
 }
 
@@ -77,6 +81,15 @@ function when(iso: string | undefined): { text: string; today: boolean } {
 /** The NASA anomaly colormap stops at ±3 °C. */
 const anomalyText = (v: number) => (v >= 2.95 ? t.febbre.over3 : `+${num(v, 1)}`);
 const facts = (list: [string, string][]) => list.map(([value, label]) => ({ value, label }));
+/** +0,95 / −0,12 */
+export const signed = (v: number, d = 1) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${num(Math.abs(v), d)}`;
+
+/** The cyclones of the last ten days, the strongest first. */
+async function storms() {
+  const d = (await loadSpots('cyclones')).data as { fetched: string; list: { name: string | null; peak: number; track: [string, number, number, number | null][] }[] };
+  const list = [...d.list].sort((a, b) => b.peak - a.peak);
+  return { count: list.length, top: list[0] ?? null, fetched: d.fetched };
+}
 
 async function meta(g: Globe, id: Parameters<Globe['layers']['get']>[0]) {
   return (await g.layers.get(id)).meta;
@@ -117,6 +130,29 @@ export const CHAPTERS: Chapter[] = titled([
     beats: async (g) => [{ shot: terminatorShot(g, 3.6), drift: 1.2 }],
   },
   {
+    id: 'termometro',
+    mood: 'curious',
+    look: { sun: 'real', clouds: 0.7, night: 0.7, dim: 0.6, desat: 0.35 },
+    duration: 24, chart: 'temperature',
+    narrate: async () => {
+      const d = await climate.temperature();
+      return t.termometro.narrate({ day: dayMonth(d.last.date), value: num(d.last.value, 1), anomaly: signed(d.last.anomaly, 2) });
+    },
+    detail: async () => {
+      const [d, s] = await Promise.all([climate.temperature(), climate.sst()]);
+      return {
+        facts: [
+          { value: `${signed(d.last.anomaly, 2)} °C`, label: t.termometro.anomaly(dayMonth(d.last.date), d.last.status === 'PRELIMINARY') },
+          { value: `${num(d.record.value, 2)} °C`, label: t.termometro.record(dayShort(d.record.date)) },
+          { value: `${signed(s.last.anomaly, 2)} °C`, label: t.termometro.sea(dayMonth(s.last.date)) },
+        ],
+        text: t.termometro.text,
+        source: t.termometro.source,
+      };
+    },
+    beats: async (g) => [{ shot: terminatorShot(g, 4.6), drift: 0.8 }],
+  },
+  {
     id: 'respiro',
     mood: 'curious', sound: 'wind',
     look: { sun: 'studio', clouds: 0.12, cloudFlow: 1, dim: 0.62, desat: 0.5, night: 0, flow: 'wind', atmo: 0.8 },
@@ -142,6 +178,34 @@ export const CHAPTERS: Chapter[] = titled([
     pin: async (g) => {
       const w = await stats.windiest(g);
       return { lon: w.lon, lat: w.lat, label: `${num(w.value)} ${t.units.kmh}`, sub: t.respiro.pin };
+    },
+  },
+  {
+    id: 'tempeste',
+    mood: 'grave', sound: 'wind',
+    look: { sun: 'studio', clouds: 0.3, cloudFlow: 1, dim: 0.6, desat: 0.5, night: 0, flow: 'wind', atmo: 0.8, spots: 'cyclones', spotReplay: 12 },
+    duration: 22,
+    legend: legend([[0, '#7fe0ff'], [0.35, '#b7a6ff'], [0.7, '#ff7ad9'], [1, '#ff3fa4']], 'cyclones'),
+    narrate: async () => {
+      const s = await storms();
+      return s.top ? t.tempeste.narrate({ count: s.count, name: s.top.name ?? t.spots.cycloneUnnamed, kmh: num(s.top.peak * 1.852) }) : t.tempeste.none;
+    },
+    detail: async () => {
+      const s = await storms();
+      return {
+        facts: [
+          { value: num(s.count), label: t.tempeste.count },
+          ...(s.top ? [{ value: `${num(s.top.peak * 1.852)} ${t.units.kmh}`, label: t.tempeste.strongest(s.top.name ?? t.spots.cycloneUnnamed) }] : []),
+          { value: '119 km/h', label: t.tempeste.threshold },
+        ],
+        text: t.tempeste.text,
+        source: t.tempeste.source(dayMonth(s.fetched)),
+      };
+    },
+    beats: async () => {
+      const s = await storms();
+      const p = s.top?.track.at(-1);
+      return [{ shot: p ? { lon: p[2] - 10, lat: p[1] * 0.8, dist: 2.6 } : { lon: 140, lat: 15, dist: 3.2 }, drift: 0.8 }];
     },
   },
   {
@@ -285,7 +349,7 @@ export const CHAPTERS: Chapter[] = titled([
   {
     id: 'terremoti',
     mood: 'grave', sound: 'quake',
-    look: { sun: 'studio', clouds: 0, dim: 0.74, desat: 0.75, night: 0, atmo: 0.65, quakes: 1, quakeReplay: 14, bloom: 1.3 },
+    look: { sun: 'studio', clouds: 0, dim: 0.74, desat: 0.75, night: 0, atmo: 0.65, quakes: 1, quakeReplay: 14, bloom: 1.3, spots: 'volcanoes' },
     duration: 24,
     legend: legend([[0, '#ffc76b'], [0.25, '#ff6b8c'], [1, '#8c73ff']], 'quakes'),
     narrate: async (g) => {
@@ -303,6 +367,7 @@ export const CHAPTERS: Chapter[] = titled([
           { value: num(list.length), label: t.terremoti.count },
           { value: num(list.filter((e) => e[3] >= 5).length), label: t.terremoti.strong },
           { value: `${num(deepest[2])} ${t.units.km}`, label: t.terremoti.deepest(placeIt(deepest[5])) },
+          ...(await loadSpots('volcanoes').then((v) => [{ value: num(v.spots.length), label: t.terremoti.volcanoes }]).catch(() => [])),
         ],
         text: t.terremoti.text,
         source: t.terremoti.source(dayMonth(q.newest.slice(0, 10))),
@@ -326,7 +391,7 @@ export const CHAPTERS: Chapter[] = titled([
   {
     id: 'ghiaccio',
     mood: 'curious', sound: 'ice',
-    look: { sun: 'studio', data: 'ice', clouds: 0.08, dim: 0.5, desat: 0.5, night: 0, atmo: 0.9 },
+    look: { sun: 'studio', data: 'ice', clouds: 0.08, dim: 0.5, desat: 0.5, night: 0, atmo: 0.9, spots: 'icebergs' },
     duration: 22, clock: 'data',
     legend: legend(PALETTES.ice, 'ice'),
     narrate: async (g) => {
@@ -340,6 +405,7 @@ export const CHAPTERS: Chapter[] = titled([
           { value: t.ghiaccio.area(num(north / 1e6, 1)), label: t.ghiaccio.arctic(when(m.dates?.[0]).text) },
           { value: t.ghiaccio.area(num(south / 1e6, 1)), label: t.ghiaccio.antarctic },
           ...facts([t.ghiaccio.decline]),
+          ...(await loadSpots('icebergs').then((b) => [{ value: num(b.spots.length), label: t.ghiaccio.icebergs }]).catch(() => [])),
         ],
         text: t.ghiaccio.text,
         source: `${t.ghiaccio.source} · ${dayMonth(m.dates![0])}`,

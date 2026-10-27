@@ -65,6 +65,12 @@
     </div>
   </section>
 
+  <!-- A chart beside the planet, when a number needs its history (src/story/charts.ts). -->
+  <figure class="chart" id="chart" aria-hidden="true">
+    <svg id="chart-svg" role="img"></svg>
+    <figcaption id="chart-cap"></figcaption>
+  </figure>
+
   <!-- The time the planet is showing, centred over it: the date moves with the scene. -->
   <div class="data-clock" id="data-clock" aria-live="off">
     <span class="dc-now" id="data-time"></span>
@@ -126,6 +132,7 @@
       <div class="legend-bar" id="ex-legend-bar"></div>
       <div class="legend-ends"><span id="ex-legend-left"></span><span id="ex-legend-right"></span></div>
     </div>
+    <div class="ex-block ex-note" id="ex-note"><p id="ex-note-text"></p><p class="ex-note-source" id="ex-note-source"></p></div>
     <button class="more ex-iss" id="ex-iss"><span data-t="explore.reach"></span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
     <div class="ex-block">
       <div class="ex-title"><span data-t="explore.hour"></span> <b id="ex-hours-label"></b> <button class="ex-now" id="ex-now" data-t="explore.backToNow"></button></div>
@@ -151,8 +158,10 @@
         <span class="break" aria-hidden="true"></span>
         <button class="cta cta-line" id="nature-btn"><span data-t="stories.natura"></span></button>
         <button class="cta cta-line" id="people-btn"><span data-t="stories.persone"></span></button>
+        <button class="cta cta-line" id="sky-btn"><span data-t="stories.cielo"></span></button>
         <button class="ghost" id="explore-btn" data-t="page.exploreAlone"></button>
       </div>
+      <button class="happening" id="happening"><i aria-hidden="true"></i><b></b><span></span></button>
       <div class="loader" id="loader"><span id="loader-bar"></span></div>
     </div>
   </div>

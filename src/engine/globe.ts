@@ -15,6 +15,8 @@ import { createFires, createQuakes, placeIt, Station, type Quake } from './marke
 import { DATA, LayerStore, Sampler, SplitSampler, loadBitmapTexture, loadTexture, type DataId, type LayerMeta } from './layers';
 import { gmst, lonLatToVec, moonBrightness, moonDirection, sunDirection, vecToLonLat } from './astro';
 import { Tiles } from './tiles';
+import { loadSpots, nearestSpot, type SpotId, type SpotSet } from './spots';
+import { loadSatellites } from './satellites';
 import { ATLAS, Atlas, atlasText, type AtlasId } from './atlas';
 import { t } from '../i18n';
 import { num } from '../i18n/format';
@@ -52,12 +54,19 @@ export interface Look {
   quakes: number;
   /** Seconds to replay the week in (0: all at once). */
   quakeReplay: number;
+  /** Events in places (cyclones, volcanoes, icebergs, slicks, launches, fireballs). */
+  spots: SpotId | null;
+  /** Seconds to reveal them in the order of their time (0: all at once). */
+  spotReplay: number;
+  /** Every active satellite, 0..1. */
+  satellites: number;
 }
 
 export const DEFAULT_LOOK: Look = {
   sun: 'real', clouds: 1, cloudFlow: 1, night: 1, dim: 0, desat: 0, data: null, flow: null,
   fires: 0, iss: 0, stars: 1, atmo: 1, exposure: 1, relief: 1, bloom: 1, pin: null,
   atlas: null, dust: 0, migration: 0, year: null, years: null, yearSeconds: 18, quakes: 0, quakeReplay: 0,
+  spots: null, spotReplay: 0, satellites: 0,
 };
 
 export interface Probe {
@@ -99,7 +108,12 @@ export class Globe {
   private clock = new Clock();
   private time = 0;
   private look: Look = { ...DEFAULT_LOOK };
-  cur = { clouds: 1, cloudFlow: 1, night: 1, dim: 0, desat: 0, fires: 0, iss: 0, stars: 1, atmo: 1, exposure: 1, relief: 1, bloom: 1, dataMix: 0, trail: 0, studio: 0, pin: 0, atlas: 0, dust: 0, migration: 0, quakes: 0 };
+  cur = { clouds: 1, cloudFlow: 1, night: 1, dim: 0, desat: 0, fires: 0, iss: 0, stars: 1, atmo: 1, exposure: 1, relief: 1, bloom: 1, dataMix: 0, trail: 0, studio: 0, pin: 0, atlas: 0, dust: 0, migration: 0, quakes: 0, spots: 0, satellites: 0 };
+  private spotSets: Partial<Record<SpotId, SpotSet>> = {};
+  private spotShown: SpotId | null = null;
+  private spotT0 = 0;
+  private sats: Awaited<ReturnType<typeof loadSatellites>> | null = null;
+  private satsLoading: Promise<void> | null = null;
   private quakes: ReturnType<typeof createQuakes> | null = null;
   private quakesLoading: Promise<void> | null = null;
   private quakeT0 = 0;
@@ -258,8 +272,25 @@ export class Globe {
     if (look.fires) jobs.push(this.loadFires());
     if (look.atlas || look.dust || look.migration) jobs.push(this.loadAtlas());
     if (look.quakes) jobs.push(this.loadQuakes());
+    if (look.spots) jobs.push(this.loadSpot(look.spots));
+    if (look.satellites) jobs.push(this.loadSats());
     await Promise.all(jobs);
   }
+
+  /** A set of events, added to the scene once. */
+  async loadSpot(id: SpotId): Promise<SpotSet> {
+    const set = await loadSpots(id);
+    if (!this.spotSets[id]) { this.spotSets[id] = set; this.scene.add(set.points); }
+    return set;
+  }
+
+  loadSats(): Promise<void> {
+    this.satsLoading ??= loadSatellites().then((s) => { this.sats = s; this.scene.add(s.points); });
+    this.satsLoading.catch(() => { this.satsLoading = null; });
+    return this.satsLoading;
+  }
+
+  get satellites() { return this.sats?.meta ?? null; }
 
   loadQuakes(): Promise<void> {
     this.quakesLoading ??= (async () => {
@@ -301,7 +332,8 @@ export class Globe {
       this.yearRun = { from: this.look.years[0], to: this.look.years[1], t0: this.time, seconds: this.look.yearSeconds };
     } else if (this.look.year != null) this.setYear(this.look.year);
     this.quakeT0 = this.time;
-    void this.prepare(this.look);
+    this.spotT0 = this.time;
+    void this.prepare(this.look).catch(() => {});
     if (this.look.pin) lonLatToVec(this.look.pin.lon, this.look.pin.lat, 1, this.pinVec);
   }
 
@@ -507,6 +539,35 @@ export class Globe {
       this.quakes.points.visible = c.quakes > 0.002;
     }
 
+    // Events in places: fade out the old set, then reveal the new one in the order of time.
+    if (L.spots !== this.spotShown) {
+      c.spots = Math.max(0, c.spots - dt * 1.6);
+      if (c.spots <= 0) {
+        if (this.spotShown) this.spotSets[this.spotShown]!.points.visible = false;
+        this.spotShown = L.spots && this.spotSets[L.spots] ? L.spots : null;
+        this.spotT0 = this.time;
+      }
+    } else if (L.spots) c.spots = Math.min(1, c.spots + dt * 0.9);
+    const spotSet = this.spotShown ? this.spotSets[this.spotShown] : null;
+    if (spotSet) {
+      const m = spotSet.material.uniforms;
+      m.uClock.value = L.spotReplay > 0 ? Math.min(1, (this.time - this.spotT0) / L.spotReplay) : 1;
+      m.uTime.value = this.time;
+      m.uOpacity.value = c.spots;
+      spotSet.points.visible = c.spots > 0.002;
+    }
+
+    // Satellites: where each one is now.
+    c.satellites = approach(c.satellites, L.satellites, dt, 1.2);
+    if (this.sats) {
+      const m = this.sats.material.uniforms;
+      m.uMinutes.value = (date.getTime() - this.sats.base) / 60e3;
+      m.uGmst.value = gmst(date);
+      m.uSun.value.copy(this.sunVec);
+      m.uOpacity.value = c.satellites;
+      this.sats.points.visible = c.satellites > 0.002;
+    }
+
     // Fires and the station.
     if (this.fires) {
       const m = this.fires.material.uniforms;
@@ -615,6 +676,11 @@ export class Globe {
           sub = t.probe.waterTo(t.probe.directions[Math.round(to / 45) % 8]);
         }
       }
+    } else if (L.spots && this.spotShown === L.spots) {
+      const set = this.spotSets[L.spots]!;
+      const clock = set.material.uniforms.uClock.value as number;
+      const s = nearestSpot(set, lon, lat, L.spots === 'cyclones' ? 220 : L.spots === 'slicks' ? 120 : 300, clock);
+      if (s) { text = s.text(); sub = s.sub(); }
     } else if (L.quakes && this.quakes) {
       // The nearest earthquake within about 300 km.
       const p = lonLatToVec(lon, lat), q = new Vector3();
@@ -667,7 +733,7 @@ export class Globe {
   flowSampler(id: FlowId) { return this.flowSamplers[id] ?? null; }
 
   /** Time and cadence of the frame on screen, while a series plays. */
-  dataFrameTime(): { time: string; first: string; last: string; cadence: 'hour' | 'day' | 'month' } | null {
+  dataFrameTime(): { time: string; first: string; last: string; cadence: 'hour' | 'day' | 'month' | 'year' } | null {
     const frames = this.dataMeta?.frames;
     if (!frames || frames.length < 2 || !this.dataShown) return null;
     const i = Math.min(frames.length - 1, Math.round(this.frame));

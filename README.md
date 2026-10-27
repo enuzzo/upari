@@ -1,12 +1,15 @@
 # Upari
 
-Il pianeta Terra raccontato dai suoi dati di oggi. Un documentario interattivo per desktop: undici capitoli brevi, una voce narrante scritta, un globo che si può trascinare, avvicinare fino a 10 m per pixel e interrogare punto per punto.
+Il pianeta Terra raccontato dai suoi dati di oggi. Un documentario interattivo per desktop: quattro racconti di capitoli brevi, una voce narrante scritta, un globo che si può trascinare, avvicinare fino a 10 m per pixel e interrogare punto per punto.
 
-## Capitoli
+## Racconti
 
-Il pianeta · Il respiro (venti GFS) · Le correnti (OSCAR) · Il calore del mare (GHRSST MUR) · La febbre (anomalie) · Il mare che fiorisce (PACE) · La pioggia (GPM IMERG, 24 ore) · Il fuoco (FIRMS) · Il ghiaccio (GAMSSA) · Le luci (Black Marble) · Lassù (ISS in tempo reale).
+- **Il pianeta, adesso**: Il pianeta · Il termometro (Climate Pulse, ogni giorno dal 1940) · Il respiro (venti GFS) · Le tempeste (cicloni IBTrACS) · Le correnti (OSCAR) · Il calore del mare e La febbre (GHRSST MUR) · Il mare che fiorisce (PACE) · La pioggia (GPM IMERG, 24 ore) · Il fuoco (FIRMS) · La Terra trema (USGS, con i vulcani GVP) · Il ghiaccio (GAMSSA, con gli iceberg) · Le luci (Black Marble) · Lassù (ISS in tempo reale).
+- **La natura**: Il respiro verde (NDVI) · Il respiro del carbonio (Mauna Loa) · Le foreste perdute (Hansen/GFW) · La neve (VIIRS) · L’aria (MERRA-2) · L’aria delle città (NO₂ TROPOMI) · Lo scudo (ozono OMPS) · Il mare ferito (SkyTruth Cerulean) · Le barriere coralline (Coral Reef Watch).
+- **Le persone**: Otto miliardi · Le città crescono (GHSL 1975–2030) · Le rotte (navi, World Bank/IMF) · natalità, speranza di vita, bambini, saldo, elettricità (World Bank WDI) · In fuga (UNHCR).
+- **Il cielo, adesso**: Il Sole (SDO) · L’aurora (NOAA SWPC) · I satelliti (CelesTrak) · In partenza (Launch Library 2) · Le stelle cadenti e Di passaggio (JPL CNEOS) · Un giorno-luce (Voyager, JPL Horizons).
 
-Le frasi con numeri (il vento più forte, il mare più caldo, la quota della Stazione Spaziale, la percentuale di oceani oltre la media) sono calcolate dai dati all'apertura.
+Le frasi con numeri sono calcolate dai dati all’apertura. I dati del giorno si aggiornano ogni mattina (`scripts/prepare-*.mjs`, nel workflow); le rotte e le città si preparano una volta a mano (`scripts/prepare-ships.py`, `scripts/prepare-built.py`). Fonti e licenze in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Lingue
 

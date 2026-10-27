@@ -4,6 +4,7 @@ import { cssGradient } from '../engine/palettes';
 import { CHAPTERS, type Chapter, type Legend } from './chapters';
 import { PEOPLE } from './people';
 import { NATURE } from './nature';
+import { SKY_CHAPTERS } from './sky';
 import type { Director } from './director';
 import { t } from '../i18n';
 import { num } from '../i18n/format';
@@ -28,6 +29,7 @@ const atlasLayer = (id: LayerId, atlas: AtlasId, extra: Partial<Look> = {}): Lay
 const PLANET: Layer[] = [
   { id: 'adesso', look: chapterLook('pianeta') },
   { id: 'venti', look: chapterLook('respiro'), legend: chapterLegend('respiro') },
+  { id: 'tempeste', look: () => ({ ...chapterLook('tempeste')(), spotReplay: 0 }), legend: chapterLegend('tempeste') },
   { id: 'correnti', look: chapterLook('correnti'), legend: chapterLegend('correnti') },
   { id: 'mare', look: chapterLook('calore'), legend: chapterLegend('calore') },
   { id: 'anomalia', look: chapterLook('febbre'), legend: chapterLegend('febbre') },
@@ -35,6 +37,7 @@ const PLANET: Layer[] = [
   { id: 'pioggia', look: chapterLook('pioggia'), legend: chapterLegend('pioggia') },
   { id: 'fuochi', look: chapterLook('fuoco') },
   { id: 'terremoti', look: () => ({ ...chapterLook('terremoti')(), quakeReplay: 0 }), legend: chapterLegend('terremoti') },
+  { id: 'vulcani', look: () => ({ sun: 'studio', clouds: 0, dim: 0.7, desat: 0.75, night: 0, atmo: 0.7, data: 'so2', spots: 'volcanoes', bloom: 1.2 }) },
   { id: 'ghiaccio', look: chapterLook('ghiaccio'), legend: chapterLegend('ghiaccio') },
   { id: 'luci', look: chapterLook('luci') },
   { id: 'stazione', look: chapterLook('lassu') },
@@ -49,25 +52,46 @@ const HUMAN: Layer[] = [
   atlasLayer('bambini', 'under5'),
   atlasLayer('elettricita', 'electricity'),
   atlasLayer('disoccupazione', 'unemployment'),
+  { id: 'citta', look: () => ({ ...PEOPLE.find((c) => c.id === 'citta')!.look }), legend: PEOPLE.find((c) => c.id === 'citta')!.legend },
+  { id: 'rotte', look: () => ({ ...PEOPLE.find((c) => c.id === 'rotte')!.look }), legend: PEOPLE.find((c) => c.id === 'rotte')!.legend },
   {
     id: 'asilo', people: true, look: () => ({ ...peopleBase, dim: 0.72, migration: 1, bloom: 1.3 }),
     legend: PEOPLE.find((c) => c.id === 'fuga')!.legend,
   },
 ];
 
+const natureLayer = (id: LayerId, chapter = id as string, extra: Partial<Look> = {}): Layer => ({
+  id, look: () => ({ ...NATURE.find((c) => c.id === chapter)!.look, ...extra }), legend: NATURE.find((c) => c.id === chapter)!.legend,
+});
+const skyLayer = (id: LayerId, extra: Partial<Look> = {}): Layer => ({
+  id, look: () => ({ ...SKY_CHAPTERS.find((c) => c.id === id)!.look, ...extra }), legend: SKY_CHAPTERS.find((c) => c.id === id)!.legend,
+});
+
 const NATURE_LAYERS: Layer[] = [
   { id: 'verde', look: () => ({ ...NATURE.find((c) => c.id === 'verde')!.look }), legend: NATURE.find((c) => c.id === 'verde')!.legend },
   { id: 'foreste', people: true, look: () => ({ ...NATURE.find((c) => c.id === 'foreste')!.look, years: null }), legend: NATURE.find((c) => c.id === 'foreste')!.legend },
   { id: 'aria', look: () => ({ ...NATURE.find((c) => c.id === 'aria')!.look }), legend: NATURE.find((c) => c.id === 'aria')!.legend },
+  natureLayer('neve'),
+  natureLayer('smog'),
+  natureLayer('ozono'),
+  natureLayer('petrolio', 'petrolio', { spotReplay: 0 }),
   { id: 'coralli', look: () => ({ ...NATURE.find((c) => c.id === 'coralli')!.look }), legend: NATURE.find((c) => c.id === 'coralli')!.legend },
 ];
 
-const LAYERS = [...PLANET, ...NATURE_LAYERS, ...HUMAN];
+const SKY_LAYERS: Layer[] = [
+  skyLayer('aurora'),
+  skyLayer('satelliti'),
+  skyLayer('partenze'),
+  skyLayer('bolidi', { spotReplay: 0 }),
+];
+
+const LAYERS = [...PLANET, ...NATURE_LAYERS, ...HUMAN, ...SKY_LAYERS];
 /** Chapter → layer, to open the panel on what the story was showing. */
 const FROM_CHAPTER: Record<string, string> = {
   pianeta: 'adesso', respiro: 'venti', correnti: 'correnti', calore: 'mare', febbre: 'anomalia', fioritura: 'plancton', pioggia: 'pioggia',
   fuoco: 'fuochi', terremoti: 'terremoti', ghiaccio: 'ghiaccio', luci: 'luci', lassu: 'stazione', popolazione: 'popolazione', nascite: 'nascite', vita: 'vita',
   bambini: 'bambini', saldo: 'saldo', luce: 'elettricita', fuga: 'asilo', verde: 'verde', foreste: 'foreste', aria: 'aria', coralli: 'coralli',
+  citta: 'citta', rotte: 'rotte', tempeste: 'tempeste', neve: 'neve', smog: 'smog', ozono: 'ozono', petrolio: 'petrolio', aurora: 'aurora', satelliti: 'satelliti', partenze: 'partenze', bolidi: 'bolidi',
 };
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -94,7 +118,7 @@ export class Explorer {
   get chapter(): Chapter | null {
     const id = Object.entries(FROM_CHAPTER).find(([, l]) => l === this.layer.id)?.[0];
     // Statistics without a chapter of their own sound like the other people layers.
-    return [...CHAPTERS, ...NATURE, ...PEOPLE].find((c) => c.id === id) ?? (this.layer.people ? PEOPLE[0] : null);
+    return [...CHAPTERS, ...NATURE, ...PEOPLE, ...SKY_CHAPTERS].find((c) => c.id === id) ?? (this.layer.people ? PEOPLE[0] : null);
   }
 
   private build() {
@@ -137,7 +161,7 @@ export class Explorer {
     const list = $('ex-layers');
     list.innerHTML = '';
     const g = t.explore.groups;
-    list.append(group(g.planet, PLANET), group(g.nature, NATURE_LAYERS), group(g.people, HUMAN));
+    list.append(group(g.planet, PLANET), group(g.nature, NATURE_LAYERS), group(g.people, HUMAN), group(g.sky, SKY_LAYERS));
   }
 
   /** The words follow the language. */
@@ -205,7 +229,22 @@ export class Explorer {
     void this.globe.rig.focusOn(() => ({ pos: s.position, fwd: s.velocity }), { dist: 0.000055, yaw: 28, pitch: 22 }, 10);
   }
 
+  /** How to read the layer: the words of its chapter, and where the data come from. */
+  private async note() {
+    const layer = this.layer;
+    const id = Object.entries(FROM_CHAPTER).find(([, l]) => l === layer.id)?.[0];
+    const c = [...CHAPTERS, ...NATURE, ...PEOPLE, ...SKY_CHAPTERS].find((ch) => ch.id === id);
+    const box = $('ex-note');
+    if (!c) { box.classList.remove('on'); return; }
+    const d = await c.detail(this.globe).catch(() => null);
+    if (!d || layer !== this.layer) return;
+    $('ex-note-text').textContent = d.text;
+    $('ex-note-source').textContent = d.source;
+    box.classList.add('on');
+  }
+
   private refresh() {
+    void this.note();
     document.querySelectorAll<HTMLButtonElement>('.ex-layer').forEach((b) => b.classList.toggle('current', b.dataset.layer === this.layer.id));
     $('ex-years').classList.toggle('on', !!this.layer.people);
     $('ex-iss').classList.toggle('on', this.layer.id === 'stazione');

@@ -114,6 +114,67 @@ export const PALETTES: Record<string, Stop[]> = {
     [1.0, '#ff4fa8', 1],
   ],
   forest: [[0, '#521210'], [0.5, '#a2321c'], [1, '#ff6a2a']],
+  // Ozone (Dobson units, 100–500): the hole a deep violet glow, the normal layer a quiet sea-glass.
+  ozone: [
+    [0.0, '#2a0a5e', 0.95],
+    [0.18, '#5b2ca8', 0.95],
+    [0.28, '#a35ee8', 0.9],
+    [0.34, '#3f6f9e', 0.7],
+    [0.5, '#6aa6b0', 0.55],
+    [0.68, '#e7d29a', 0.65],
+    [1.0, '#f28c4f', 0.85],
+  ],
+  // Nitrogen dioxide: clean air invisible, exhaust as embers over cities and roads.
+  no2: [
+    [0.0, '#3b1f0f', 0.0],
+    [0.28, '#6b3a1a', 0.0],
+    [0.42, '#b5562a', 0.45],
+    [0.6, '#f08a3c', 0.8],
+    [0.8, '#ffc46b', 1],
+    [1.0, '#fff1c9', 1],
+  ],
+  snow: [
+    [0.0, '#ffffff', 0.0],
+    [0.06, '#e3eeff', 0.0],
+    [0.15, '#e8f2ff', 0.45],
+    [0.5, '#f4f9ff', 0.85],
+    [1.0, '#ffffff', 1],
+  ],
+  // Sulphur dioxide: volcanic breath, sulphur yellow to red.
+  so2: [
+    [0.0, '#ffe066', 0.0],
+    [0.1, '#ffe066', 0.0],
+    [0.22, '#f7b32b', 0.6],
+    [0.5, '#e8590c', 0.9],
+    [1.0, '#c2255c', 1],
+  ],
+  // Shipping lanes: gold threads on the dark sea.
+  ships: [
+    [0.0, '#ffd58a', 0.0],
+    [0.3, '#ffd58a', 0.0],
+    [0.45, '#ffb35c', 0.35],
+    [0.62, '#ffd27a', 0.7],
+    [0.8, '#fff0c2', 0.95],
+    [1.0, '#ffffff', 1],
+  ],
+  // Built-up land (square root of the share): villages faint, cities white-hot.
+  built: [
+    [0.0, '#ffcf7a', 0.0],
+    [0.08, '#ffcf7a', 0.0],
+    [0.18, '#ff9f4a', 0.45],
+    [0.4, '#ffc46b', 0.85],
+    [0.7, '#fff0c9', 1],
+    [1.0, '#ffffff', 1],
+  ],
+  // Aurora: oxygen green, red at the top of the strongest ones.
+  aurora: [
+    [0.0, '#1aff8c', 0.0],
+    [0.18, '#1aff8c', 0.0],
+    [0.32, '#2bff9a', 0.22],
+    [0.58, '#6dffaa', 0.5],
+    [0.85, '#c8ff9a', 0.75],
+    [1.0, '#ff6fb5', 0.9],
+  ],
   ice: [
     [0.0, '#cfe8ff', 0.0],
     [0.15, '#d8eeff', 0.35],

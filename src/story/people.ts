@@ -1,6 +1,7 @@
 import type { Globe } from '../engine/globe';
 import { ATLAS, ORIGINS, atlasText, type AtlasId } from '../engine/atlas';
 import { legend as legendOf, titled, type Chapter, type Legend } from './chapters';
+import { PALETTES } from '../engine/palettes';
 import { t } from '../i18n';
 import { num } from '../i18n/format';
 
@@ -20,6 +21,17 @@ async function atlas(g: Globe) {
 }
 
 const mean = async (g: Globe, id: AtlasId, year: number) => (await atlas(g)).worldMean(id, year) ?? 0;
+
+/** Built-up land in each epoch of GHSL, km², summed at full resolution when the layer was made. */
+async function builtArea(g: Globe) {
+  const { meta } = await g.layers.get('built');
+  const frames = meta.frames as { time: string; km2: number }[];
+  const km2 = frames.map((f) => f.km2);
+  const years = frames.map((f) => Number(f.time.slice(0, 4)));
+  // The latest epoch that is a measurement, not a projection (GHSL projects 2025 and 2030).
+  const nowIndex = Math.max(0, years.filter((y) => y <= 2020).length - 1);
+  return { km2, years, nowIndex };
+}
 
 export const PEOPLE: Chapter[] = titled([
   {
@@ -46,6 +58,44 @@ export const PEOPLE: Chapter[] = titled([
       };
     },
     beats: async () => [{ shot: { lon: 48, lat: 18, dist: 3.3 }, drift: 0.9 }],
+  },
+  {
+    id: 'citta',
+    mood: 'curious', sound: 'city',
+    look: { ...LOOK, data: 'built', dim: 0.74, desat: 0.75, bloom: 1.3 },
+    duration: 23, clock: 'data',
+    legend: legendOf(PALETTES.built, 'built'),
+    narrate: async (g) => {
+      const b = await builtArea(g);
+      return t.citta.narrate({ then: num(b.km2[0] / 1e3), now: num(b.km2[b.nowIndex] / 1e3), future: num(b.km2.at(-1)! / 1e3) });
+    },
+    detail: async (g) => {
+      const b = await builtArea(g);
+      return {
+        facts: [
+          { value: t.citta.thousand(num(b.km2[0] / 1e3)), label: t.citta.in(b.years[0]) },
+          { value: t.citta.thousand(num(b.km2[b.nowIndex] / 1e3)), label: t.citta.in(b.years[b.nowIndex]) },
+          { value: t.citta.thousand(num(b.km2.at(-1)! / 1e3)), label: t.citta.projected(b.years.at(-1)!) },
+        ],
+        text: t.citta.text,
+        source: t.citta.source,
+      };
+    },
+    beats: async () => [{ shot: { lon: 95, lat: 28, dist: 2.7 }, drift: 0.9 }],
+  },
+  {
+    id: 'rotte',
+    mood: 'open', sound: 'waves',
+    look: { ...LOOK, data: 'ships', dim: 0.8, desat: 0.8, bloom: 0.9 },
+    duration: 21,
+    legend: legendOf(PALETTES.ships, 'ships'),
+    narrate: async () => t.rotte.narrate,
+    detail: async () => ({
+      facts: t.rotte.facts.map(([value, label]) => ({ value, label })),
+      text: t.rotte.text,
+      source: t.rotte.source,
+    }),
+    beats: async () => [{ shot: { lon: 70, lat: 8, dist: 3.0 }, drift: 1.2 }],
   },
   {
     id: 'nascite',

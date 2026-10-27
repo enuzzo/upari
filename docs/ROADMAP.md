@@ -113,16 +113,72 @@ Fatto e pubblicato il 26 ottobre 2026, sera:
 - **Grafica**: nuvole con rilievo, luci delle città nitide, oceano più azzurro, riflesso del
   Sole più netto; corretta una linea sul lato notturno.
 
-## Prossimi passi
+Fatto il 27 ottobre 2026 (rapporto «Nuove fonti e proposte per Upari»):
 
-1. **Il tuo luogo**: dopo una ricerca, un racconto breve sul luogo (ora solare, alba e
-   tramonto, vento, pioggia e mare intorno, prossimo passaggio visibile della ISS).
-2. **Scheda del paese**: al clic, la curva dal 1960 di ogni indicatore.
-3. **Un giorno sulla Terra**: ventiquattro ore in un minuto.
-4. **Cartolina**: salva l'inquadratura con titolo, data e fonti.
-5. **Dati nuovi**: cicloni attivi, neve, lunghe serie (CO₂, ghiaccio artico, temperatura
-   globale); in La natura, un capitolo sul mare (plastica o ipossia) se si trova un dato aperto
-   e affidabile.
-6. **Grafica**: nuvole volumetriche vere da vicino, oceano con onde normali, atmosfera
-   multi-scattering, transizione notte–giorno al crepuscolo con la luce cinerea della Luna.
-7. **Piattaforma**: tablet e telefono, accessibilità, inglese, dominio upari.netmilk.dev.
+- **Il cielo, adesso**, quarto racconto: il Sole di stamattina (SDO), l’aurora della prossima
+  mezz’ora con il Kp (NOAA SWPC, chiesta dal vivo), tutti i satelliti attivi mossi sulla GPU
+  (CelesTrak), i prossimi lanci, i bolidi dal 1988, gli asteroidi dei prossimi 60 giorni, le
+  Voyager a un giorno-luce (JPL).
+- **Il pianeta**: «Il termometro» (ogni giorno dal 1940, Climate Pulse), «Le tempeste»
+  (cicloni IBTrACS con le tracce), vulcani in eruzione dentro «La Terra trema», iceberg dentro
+  «Il ghiaccio».
+- **La natura**: «Il respiro del carbonio» (curva di Keeling), «La neve», «L’aria delle città»
+  (NO₂), «Lo scudo» (ozono), «Il mare ferito» (chiazze di petrolio SkyTruth, CC BY-SA).
+- **Le persone**: «Le città crescono» (GHSL 1975–2030), «Le rotte» (navi 2015–2021).
+- **Esplora**: tutti gli strati nuovi, il gruppo «Il cielo», una nota su come leggere ogni
+  strato con la sua fonte. **Accade adesso** sul titolo, con soglie alte. La data del
+  fotogramma sta sopra il pianeta.
+
+## Piano dal rapporto, con lo stato
+
+Licenze: per decisione dell’utente (27 ottobre) Upari è un progetto gratuito; le licenze non
+commerciali e share-alike si usano con i crediti richiesti, i dati a pagamento no, e nulla che
+richieda un account o una chiave che l’utente non ha dato.
+
+### Subito
+- [x] Nota «come leggere» e fonte per ogni strato in Esplora (dal testo del capitolo).
+- [~] Etichette osservato / modello / inventario / provvisorio: nei testi, non ancora come
+  etichetta separata.
+- [x] Il pianeta oggi: temperatura (Climate Pulse), CO₂ (NOAA GML), ghiaccio NSIDC v4
+  (scaricato ogni giorno in `public/climate/seaice.json`, non ancora mostrato).
+- [x] Ozono OMPS. [x] NO₂ TROPOMI. [x] SO₂ TROPOMI (in Esplora, con i vulcani).
+  [ ] OMPS Aerosol Index (c’è già MERRA-2).
+- [x] Neve VIIRS NDSI mensile. [ ] IMS senza nuvole (solo emisfero nord).
+- [x] Cicloni IBTrACS ACTIVE. [ ] Coni di previsione NHC.
+- [x] Rotte delle navi (World Bank/IMF). [x] Aurora e Kp.
+
+### Dopo
+- [x] Il cielo, adesso. [x] Lanci. [x] Iceberg. [x] Città 1975–2030. [x] Accade adesso.
+- [ ] Altezza del mare (CoastWatch ERDDAP). [ ] Onde (GFS-Wave). [ ] Allagamenti, gelo e
+  disgelo (MODIS Flood, SMAP).
+- [ ] Mare che si acidifica (OceanSODA: licenza dei file da confermare). Zone morte WRI: il
+  dataset non è più online.
+- [ ] Integrità della biodiversità (BII, CC BY). [ ] Mangrovie 1996–2020.
+- [ ] Migranti per origine e destinazione (UN DESA). [ ] Asilo da tutte le origini (UNHCR).
+- [ ] Gas serra 1970–2024 (EDGAR, non IEA-EDGAR CO₂) e dighe nel tempo.
+- [ ] Tendina prima/dopo sul cursore degli anni. [ ] Il tuo luogo con l’anno di nascita.
+- [ ] `/embed`, pagina «Per la classe», modalità insegnante e chiosco.
+- [ ] Riserva per gli elementi orbitali: SatNOGS rimanda dati Space-Track, la cui
+  ridistribuzione non è chiara; per ora resta l’ultimo file buono del giorno.
+
+### Da valutare
+- [x] Chiazze di petrolio SkyTruth Cerulean (CC BY-SA, crediti e nota sulle immagini derivate).
+- [x] Vulcani Smithsonian GVP (termini «non commercial», accettati per un progetto gratuito).
+- [ ] Area bruciata MCD64A1: serve un account Earthdata gratuito come secret del workflow.
+- [ ] Pesca e navi buie (Global Fishing Watch): serve un token personale.
+- [ ] Aree protette WDPA: niente download, permesso scritto per usi commerciali.
+- [ ] GBIF / OBIS (licenze miste, distorsione del campionamento). [ ] Climate TRACE (API beta).
+- [ ] Ember, Global Energy Monitor: chiave o modulo. [ ] CAMS, Copernicus Marine: account.
+- [ ] HYDE 3.5 (licenza da confermare, protezione anti-bot). [ ] Luci notturne 1992–2024.
+- [ ] Conflitti UCDP: scelta editoriale dell’utente.
+- [ ] Plastica come storia lenta (solo modelli o campioni, licenze da verificare).
+- [ ] Ondate di calore marine, fulmini GLM, CO₂ ODIAC: sforzo grande.
+
+### Esclusi
+ACLED, OpenSky, TeleGeography, Ookla, WHO GHO, NHM BII (NC-SA, sostituito da quello CC BY),
+Blitzortung, dati SOS presi direttamente dal catalogo.
+
+### Ancora dalla roadmap
+1. **Il tuo luogo**. 2. **Scheda del paese**. 3. **Un giorno sulla Terra**. 4. **Cartolina**.
+5. **Grafica**: nuvole volumetriche, onde, multi-scattering. 6. **Piattaforma**: telefono,
+accessibilità.

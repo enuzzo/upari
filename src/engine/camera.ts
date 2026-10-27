@@ -14,7 +14,7 @@ export interface Shot {
 }
 
 const MIN_DIST = 0.0035;
-const MAX_DIST = 9;
+const MAX_DIST = 26;
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const easeSine = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
 

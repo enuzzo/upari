@@ -4,6 +4,7 @@ import { loadCountries, placeBelow, type Country } from './geo';
 import { cssGradient } from '../engine/palettes';
 import type { Chapter } from './chapters';
 import { STORIES, type Story } from './stories';
+import { showChart } from './charts';
 import { t, lang } from '../i18n';
 import { dayMonthShort, dayShort, monthYear, num, timeUtc } from '../i18n/format';
 
@@ -50,6 +51,8 @@ export class Director {
   get chapter(): Chapter | null { return this.chapters[this.index] ?? null; }
 
   /** Switch documentary: the rail shows its chapters; call go() to start it. */
+  storyById(id: string) { return STORIES.find((s) => s.id === id) ?? null; }
+
   setStory(id: string) {
     const story = STORIES.find((s) => s.id === id);
     if (!story || story === this.story) return;
@@ -103,6 +106,7 @@ export class Director {
     $('cap-kicker').textContent = c.kicker;
     $('cap-title').textContent = c.title;
     this.legend(c);
+    if (!this.detour && c.chart) showChart(c.chart);
     const token = this.token;
     if (this.lineReady) void c.narrate(this.globe).catch(() => '').then((text) => { if (token === this.token && text) this.speak(text); });
     if (!this.detour) {
@@ -153,6 +157,7 @@ export class Director {
     this.globe.setLook({ ...c.look });
     const ready = this.globe.prepare(c.look);
     this.legend(c);
+    showChart(c.chart ?? null);
     await new Promise((r) => setTimeout(r, 650));
     if (token !== this.token) return;
 
@@ -255,6 +260,7 @@ export class Director {
     this.clearAnchors();
     $('legend').classList.remove('on');
     $('caption').classList.add('hidden');
+    showChart(null);
   }
 
   /** Leave the story to show a place the viewer looked for. */
@@ -265,6 +271,7 @@ export class Director {
     this.clearAnchors();
     $('legend').classList.remove('on');
     $('caption').classList.add('hidden');
+    showChart(null);
     this.globe.setLook({ sun: 'real', clouds: 1, night: 1, pin: { lon, lat } });
     const el = document.createElement('div');
     const b = document.createElement('b'), small = document.createElement('small');
@@ -422,8 +429,8 @@ export class Director {
       dc.classList.add('on');
     } else if (frame) {
       const time = frame.time;
-      const fmt = (iso: string) => (frame.cadence === 'hour' ? `${timeUtc(iso)} UTC` : frame.cadence === 'month' ? monthYear(iso) : dayShort(iso));
-      $('data-time').textContent = frame.cadence === 'month' ? monthYear(time)
+      const fmt = (iso: string) => (frame.cadence === 'hour' ? `${timeUtc(iso)} UTC` : frame.cadence === 'year' ? iso.slice(0, 4) : frame.cadence === 'month' ? monthYear(iso) : dayShort(iso));
+      $('data-time').textContent = frame.cadence === 'year' ? time.slice(0, 4) : frame.cadence === 'month' ? monthYear(time)
         : frame.cadence === 'day' ? dayShort(time)
         : `${dayMonthShort(time)} · ${timeUtc(time)} UTC`;
       $('data-from').textContent = fmt(frame.first);

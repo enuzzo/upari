@@ -5,6 +5,7 @@ import { sunDirection, vecToLonLat } from './engine/astro';
 import { framing, initSearch, type Place } from './story/search';
 import { Sound, type Ambience, type Mood } from './engine/audio';
 import { Explorer } from './story/explore';
+import { happenings, type Happening } from './story/now';
 import { LANGS, NATIVE, detect, lang, onLang, setLang, t, type Lang } from './i18n';
 import { dayMonth, timeUtc } from './i18n/format';
 
@@ -55,6 +56,7 @@ async function boot() {
   $('people-btn').setAttribute('disabled', '');
   $('nature-btn').setAttribute('disabled', '');
   $('explore-btn').setAttribute('disabled', '');
+  $('sky-btn').setAttribute('disabled', '');
   await globe.init((p) => (bar.style.width = `${Math.round(p * 100)}%`));
   // The planet is already where it will stay: it does not slide in, it comes out of the dark,
   // while the sharper textures arrive. Shaders are compiled first, behind the black.
@@ -76,6 +78,7 @@ async function boot() {
     $('people-btn').removeAttribute('disabled');
     $('nature-btn').removeAttribute('disabled');
     $('explore-btn').removeAttribute('disabled');
+    $('sky-btn').removeAttribute('disabled');
   }, 900);
   // A shared link opens the explorer on what it showed.
   if (/^#[a-z]+/.test(location.hash)) setTimeout(() => { begin(null); explorer.restore(location.hash); }, 700);
@@ -83,7 +86,7 @@ async function boot() {
   void globe.prepare({ flow: 'wind' });
 }
 
-function begin(story: string | null) {
+function begin(story: string | null, chapter = 0) {
   if (started) return;
   started = true;
   sound.start();
@@ -92,7 +95,7 @@ function begin(story: string | null) {
   globe.rig.setFrameShift(0.14);
   if (story) {
     director.setStory(story);
-    director.go(0);
+    director.go(chapter);
   } else {
     director.setPlaying(false);
     globe.rig.drift = 0;
@@ -105,8 +108,33 @@ function begin(story: string | null) {
 }
 
 $('start-btn').addEventListener('click', () => begin('pianeta'));
+
+// "Happening now" on the opening title: one line, the strongest event of today, with its chapter.
+let news: Happening[] = [];
+const showNews = (k = 0) => {
+  const el = $('happening');
+  if (!news.length) { el.classList.remove('on'); return; }
+  const h = news[k % news.length];
+  el.querySelector('b')!.textContent = t.now.title;
+  el.querySelector('span')!.textContent = h.text();
+  el.dataset.k = String(k % news.length);
+  el.classList.add('on');
+};
+void happenings().then((list) => {
+  news = list;
+  showNews();
+  if (news.length > 1) setInterval(() => { if (!started) showNews(Number($('happening').dataset.k ?? 0) + 1); }, 7000);
+});
+onLang(() => showNews(Number($('happening').dataset.k ?? 0)));
+$('happening').addEventListener('click', () => {
+  const h = news[Number($('happening').dataset.k ?? 0)];
+  if (!h) return;
+  const story = director.storyById(h.story);
+  begin(h.story, Math.max(0, story?.chapters.findIndex((c) => c.id === h.chapter) ?? 0));
+});
 $('people-btn').addEventListener('click', () => begin('persone'));
 $('nature-btn').addEventListener('click', () => begin('natura'));
+$('sky-btn').addEventListener('click', () => begin('cielo'));
 $('explore-btn').addEventListener('click', () => begin(null));
 $('brand').addEventListener('click', () => { if (started) director.go(0); });
 $('zoom-in').addEventListener('click', () => globe.rig.zoomBy(0.5));

@@ -1,10 +1,13 @@
 import type { Globe } from '../engine/globe';
 import { DATA, type DataId } from '../engine/layers';
 import { PALETTES } from '../engine/palettes';
-import { legend, titled, type Chapter } from './chapters';
+import { legend, signed, titled, type Chapter } from './chapters';
 import { loadCountries, placeBelow } from './geo';
+import { climate } from './charts';
+import { loadSpots } from '../engine/spots';
+import { seaName } from './places';
 import { t } from '../i18n';
-import { month, monthYear, num } from '../i18n/format';
+import { dayMonth, month, monthYear, num } from '../i18n/format';
 
 // The third story: the living planet, from monthly satellite series and the forest record.
 
@@ -62,6 +65,49 @@ async function reefStress(g: Globe) {
   return { meta, last: n - 1, alertNow: share(alert, n - 1), severeNow: share(severe, n - 1), peak, alertPeak: share(alert, peak) };
 }
 
+/** One degree of latitude, in km. */
+const KM_DEG = 111.32;
+
+/** Snow seen on the northern lands (30°–75° N), month by month, in million km². */
+async function snowSeasons(g: Globe) {
+  const area = new Float64Array(16);
+  const meta = await scanFrames(g, 'snow', [-180, 30, 180, 75], (f, v, a) => { if (v > 20) area[f] += a * KM_DEG * KM_DEG; }, 1);
+  const mkm2 = Array.from(meta.frames!, (_, f) => area[f] / 1e6);
+  const hi = mkm2.indexOf(Math.max(...mkm2));
+  return { meta, mkm2, hi, now: mkm2.length - 1 };
+}
+
+/** The ozone hole: area below 220 Dobson units south of 40° S, and the thinnest point. */
+async function ozoneHole(g: Globe) {
+  const area = new Float64Array(16), low = Array.from({ length: 16 }, () => Infinity);
+  const meta = await scanFrames(g, 'ozone', [-180, -90, 180, -40], (f, v, a) => {
+    if (v < 220) area[f] += a * KM_DEG * KM_DEG;
+    low[f] = Math.min(low[f], v);
+  }, 1);
+  const mkm2 = Array.from(meta.frames!, (_, f) => area[f] / 1e6);
+  const peak = mkm2.indexOf(Math.max(...mkm2));
+  return { meta, mkm2, low, peak, now: mkm2.length - 1 };
+}
+
+/** Where the air carries the most nitrogen dioxide in the latest frame. */
+async function dirtiest(g: Globe) {
+  const per: { v: number; lon: number; lat: number }[] = [];
+  const meta = await scanFrames(g, 'no2', [-180, -60, 180, 72], (f, v, _a, lon, lat) => {
+    if (v > (per[f]?.v ?? 0)) per[f] = { v, lon, lat };
+  }, 0.5);
+  return { meta, best: per[meta.frames!.length - 1] ?? { v: 0, lon: 0, lat: 0 } };
+}
+
+async function slickStats() {
+  const d = (await loadSpots('slicks')).data as { list: [number, number, number, string][]; fetched: string };
+  const km2 = d.list.reduce((s, x) => s + x[2], 0);
+  // The sea with the most slicks.
+  const seas = new Map<string, number>();
+  for (const s of d.list) { const k = seaName(s[1], s[0]); seas.set(k, (seas.get(k) ?? 0) + 1); }
+  const top = [...seas.entries()].sort((a, b) => b[1] - a[1])[0];
+  return { count: d.list.length, km2, top: top?.[0] ?? '', topCount: top?.[1] ?? 0, fetched: d.fetched };
+}
+
 async function forestMeta() {
   return (await fetch('layers/forest.json')).json() as Promise<{ peak: number; share: number[]; first: number; last: number }>;
 }
@@ -94,6 +140,29 @@ export const NATURE: Chapter[] = titled([
     beats: async () => [{ shot: { lon: 20, lat: 35, dist: 3.2 }, drift: 1.4 }],
   },
   {
+    id: 'carbonio',
+    mood: 'curious',
+    look: { ...LOOK, dim: 0.62, desat: 0.6 },
+    duration: 24, chart: 'co2',
+    narrate: async () => {
+      const d = await climate.co2();
+      return t.carbonio.narrate({ then: num(d.first.ppm, 0), now: num(d.last.ppm, 1) });
+    },
+    detail: async () => {
+      const d = await climate.co2();
+      return {
+        facts: [
+          { value: `${num(d.last.ppm, 1)} ppm`, label: t.carbonio.now(dayMonth(d.last.date)) },
+          { value: `${signed(d.last.ppm - d.yearAgo.ppm, 1)} ppm`, label: t.carbonio.year },
+          { value: '≈ 280 ppm', label: t.carbonio.preindustrial },
+        ],
+        text: t.carbonio.text,
+        source: t.carbonio.source,
+      };
+    },
+    beats: async () => [{ shot: { lon: 30, lat: 48, dist: 4.4 }, drift: 1.0 }],
+  },
+  {
     id: 'foreste',
     mood: 'grave', sound: 'forest',
     look: { ...LOOK, data: 'forest', dim: 0.55, desat: 0.85, years: [2001, 2024], yearSeconds: 18, bloom: 1.3 },
@@ -114,6 +183,31 @@ export const NATURE: Chapter[] = titled([
       };
     },
     beats: async () => [{ shot: { lon: -58, lat: -6, dist: 2.5 }, drift: 0.9, hold: 12 }, { shot: { lon: 108, lat: 2, dist: 2.6 }, seconds: 5, drift: 0.6 }],
+  },
+  {
+    id: 'neve',
+    mood: 'calm', sound: 'ice',
+    look: { ...LOOK, data: 'snow', dim: 0.5, desat: 0.55, clouds: 0 },
+    duration: 23, clock: 'data',
+    legend: legend(PALETTES.snow, 'snow'),
+    narrate: async (g) => {
+      const s = await snowSeasons(g);
+      const f = s.meta.frames!;
+      return t.neve.narrate({ hi: num(s.mkm2[s.hi], 0), hiMonth: monthOf(f[s.hi].time), now: num(s.mkm2[s.now], 0) });
+    },
+    detail: async (g) => {
+      const s = await snowSeasons(g);
+      const f = s.meta.frames!;
+      return {
+        facts: [
+          { value: t.neve.area(num(s.mkm2[s.hi], 0)), label: t.neve.most(monthYearOf(f[s.hi].time)) },
+          { value: t.neve.area(num(s.mkm2[s.now], 0)), label: t.neve.latest(monthYearOf(f[s.now].time)) },
+        ],
+        text: t.neve.text,
+        source: t.neve.source,
+      };
+    },
+    beats: async () => [{ shot: { lon: 60, lat: 58, dist: 3.0 }, drift: 1.6 }],
   },
   {
     id: 'aria',
@@ -140,6 +234,78 @@ export const NATURE: Chapter[] = titled([
       };
     },
     beats: async () => [{ shot: { lon: -10, lat: 18, dist: 3.1 }, drift: 1.2 }],
+  },
+  {
+    id: 'smog',
+    mood: 'grave', sound: 'city',
+    look: { ...LOOK, data: 'no2', dim: 0.66, desat: 0.75, night: 0.4, sun: 'real' as const },
+    duration: 22, clock: 'data',
+    legend: legend(PALETTES.no2, 'no2'),
+    narrate: async (g) => {
+      const { best } = await dirtiest(g);
+      return t.smog.narrate(placeBelow(await loadCountries().catch(() => null), best.lon, best.lat));
+    },
+    detail: async (g) => {
+      const { best, meta } = await dirtiest(g);
+      return {
+        facts: [
+          { value: `${num(best.v / 1e15, 0)} ×10¹⁵`, label: t.smog.highest(placeBelow(await loadCountries().catch(() => null), best.lon, best.lat)) },
+          { value: '3,5 km', label: t.smog.pixel },
+          { value: t.smog.days, label: t.smog.daysLabel(monthYearOf(meta.frames!.at(-1)!.time)) },
+        ],
+        text: t.smog.text,
+        source: t.smog.source,
+      };
+    },
+    beats: async () => [{ shot: { lon: 70, lat: 30, dist: 2.6 }, drift: 1.4 }],
+  },
+  {
+    id: 'ozono',
+    mood: 'curious', sound: 'ice',
+    look: { ...LOOK, data: 'ozone', dim: 0.55, desat: 0.6 },
+    duration: 23, clock: 'data',
+    legend: legend(PALETTES.ozone, 'ozone'),
+    narrate: async (g) => {
+      const o = await ozoneHole(g);
+      return t.ozono.narrate({ now: num(o.mkm2[o.now], 0), peak: num(o.mkm2[o.peak], 0), peakMonth: o.peak === o.now ? null : monthOf(o.meta.frames![o.peak].time) });
+    },
+    detail: async (g) => {
+      const o = await ozoneHole(g);
+      return {
+        facts: [
+          { value: t.ozono.area(num(o.mkm2[o.now], 0)), label: t.ozono.hole(monthYearOf(o.meta.frames![o.now].time)) },
+          { value: `${num(o.low[o.now])} DU`, label: t.ozono.thinnest },
+          { value: '1987', label: t.ozono.montreal },
+        ],
+        text: t.ozono.text,
+        source: t.ozono.source,
+      };
+    },
+    beats: async () => [{ shot: { lon: 20, lat: -62, dist: 3.0 }, drift: 1.2 }],
+  },
+  {
+    id: 'petrolio',
+    mood: 'grave', sound: 'waves',
+    look: { ...LOOK, dim: 0.72, desat: 0.75, spots: 'slicks', spotReplay: 12, bloom: 1.2 },
+    duration: 22,
+    legend: legend([[0, '#7fd6d0'], [1, '#d48bff']], 'slicks'),
+    narrate: async () => {
+      const s = await slickStats();
+      return t.petrolio.narrate({ count: num(s.count), km2: num(s.km2), top: s.top });
+    },
+    detail: async () => {
+      const s = await slickStats();
+      return {
+        facts: [
+          { value: num(s.count), label: t.petrolio.count },
+          { value: `${num(s.km2)} km²`, label: t.petrolio.area },
+          { value: num(s.topCount), label: t.petrolio.top(s.top) },
+        ],
+        text: t.petrolio.text,
+        source: t.petrolio.source(dayMonth(s.fetched)),
+      };
+    },
+    beats: async () => [{ shot: { lon: 50, lat: 22, dist: 3.0 }, drift: 0.9 }],
   },
   {
     id: 'coralli',

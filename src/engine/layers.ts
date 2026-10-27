@@ -1,9 +1,10 @@
-import { LinearFilter, LinearMipmapLinearFilter, RepeatWrapping, Texture, TextureLoader, ClampToEdgeWrapping } from 'three';
+import { DataTexture, LinearFilter, LinearMipmapLinearFilter, RGBAFormat, RepeatWrapping, Texture, TextureLoader, ClampToEdgeWrapping } from 'three';
 import { PALETTES, paletteTexture, type Stop } from './palettes';
 import { t } from '../i18n';
 import { num } from '../i18n/format';
 
-export type DataId = 'chlorophyll' | 'sst' | 'anomaly' | 'rain' | 'ice' | 'ndvi' | 'aerosol' | 'coral' | 'forest';
+export type DataId = 'chlorophyll' | 'sst' | 'anomaly' | 'rain' | 'ice' | 'ndvi' | 'aerosol' | 'coral' | 'forest'
+  | 'ozone' | 'no2' | 'snow' | 'so2' | 'aurora' | 'ships' | 'built';
 
 export interface LayerMeta {
   id: string;
@@ -16,15 +17,15 @@ export interface LayerMeta {
   dates?: string[];
   source?: string;
   /** A time series: each frame is a value image, with its coverage apart when `conf` is set. */
-  frames?: { file: string; time: string; conf?: string }[];
-  cadence?: 'hour' | 'day' | 'month';
+  frames?: { file: string; time: string; conf?: string; km2?: number }[];
+  cadence?: 'hour' | 'day' | 'month' | 'year';
 }
 
 export interface DataDef {
   palette: Stop[];
   /** x: lit by the sun, y: glow (emissive), z: mask (0 any, 1 ocean, 2 land), w: drawn above clouds. */
   style: [number, number, number, number];
-  /** Surface effect: 1 draws rain as falling streaks. */
+  /** Surface effect: 1 draws rain as falling streaks, 2 forest loss by year, 3 aurora (only in the dark). */
   fx?: number;
   /** Frames per second of a series, and seconds to rest on the last frame. */
   fps?: number;
@@ -73,6 +74,35 @@ export const DATA: Record<DataId, DataDef> = {
   aerosol: {
     palette: PALETTES.aerosol, style: [0.2, 0.08, 0, 1], fps: 0.9, hold: 2.5,
     decode: lin, format: (x) => t.data.aerosol(num(x, 2)),
+  },
+  ozone: {
+    palette: PALETTES.ozone, style: [0.35, 0.3, 0, 1], fps: 0.9, hold: 2.5,
+    decode: lin, format: (x) => t.data.ozone(num(x)),
+  },
+  no2: {
+    palette: PALETTES.no2, style: [0.15, 0.9, 0, 1], fps: 0.9, hold: 2.5,
+    decode: (v, m) => Math.pow(10, lin(v, m)), format: (x) => t.data.no2(num(x / 1e15, 1)),
+  },
+  snow: {
+    palette: PALETTES.snow, style: [0.95, 0.04, 2, 0], fps: 0.9, hold: 2.5,
+    decode: lin, format: (x) => (x < 5 ? t.data.noSnow : t.data.snow(num(x))),
+  },
+  so2: {
+    palette: PALETTES.so2, style: [0.1, 1.0, 0, 1],
+    decode: lin, format: (x) => t.data.so2(num(x, 1)),
+  },
+  ships: {
+    palette: PALETTES.ships, style: [0.0, 0.55, 1, 0],
+    // log10 of the AIS positions in a cell over six years: told in words, not as a count.
+    decode: lin, format: (x) => (x < 3 ? t.data.shipsLow : x < 5 ? t.data.shipsMid : t.data.shipsHigh),
+  },
+  built: {
+    palette: PALETTES.built, style: [0.0, 1.0, 2, 0], fps: 0.8, hold: 3,
+    decode: (v) => v * v * 100, format: (x) => (x < 1 ? t.data.notBuilt : t.data.built(num(x))),
+  },
+  aurora: {
+    palette: PALETTES.aurora, style: [0.0, 0.9, 0, 1], fx: 3,
+    decode: lin, format: (x) => t.data.aurora(num(x)),
   },
 };
 
@@ -156,7 +186,7 @@ export class LayerStore {
   get(id: DataId) {
     let p = this.cache.get(id);
     if (!p) {
-      p = (async () => {
+      p = id === 'aurora' ? this.aurora() : (async () => {
         const meta: LayerMeta = await (await fetch(`layers/${id}.json`)).json();
         const files = meta.frames ? meta.frames.map((f) => f.file) : [`${id}.png`];
         const split = !!meta.frames?.[0]?.conf;
@@ -180,5 +210,36 @@ export class LayerStore {
       this.cache.set(id, p);
     }
     return p;
+  }
+
+  /**
+   * The aurora changes within the hour: ask NOAA for the newest forecast (a public service
+   * with no cookies), and fall back to the copy of this morning when it does not answer.
+   */
+  private async aurora() {
+    const meta: LayerMeta & { kp?: { now: number; max24h: number } | null } = await (await fetch('layers/aurora.json')).json();
+    try {
+      const res = await fetch('https://services.swpc.noaa.gov/json/ovation_aurora_latest.json', { signal: AbortSignal.timeout(8000), credentials: 'omit', referrerPolicy: 'no-referrer' });
+      const d = await res.json() as { 'Forecast Time': string; coordinates: [number, number, number][] };
+      const W = 360, H = 181, c = new OffscreenCanvas(W, H), ctx = c.getContext('2d')!;
+      // North up for the probe; south first for the texture (data textures start at the bottom).
+      const img = ctx.createImageData(W, H), rows = new Uint8Array(W * H * 4);
+      for (const [lon, lat, v] of d.coordinates) {
+        const x = (Math.round(lon) + 180) % 360, y = 90 - Math.round(lat);
+        if (y < 0 || y >= H) continue;
+        const r = Math.round(Math.min(1, v / 50) * 255);
+        for (const [buf, k] of [[img.data, (y * W + x) * 4], [rows, ((H - 1 - y) * W + x) * 4]] as const) { buf[k] = r; buf[k + 1] = 255; buf[k + 3] = 255; }
+      }
+      ctx.putImageData(img, 0, 0);
+      const tex = new DataTexture(rows, W, H, RGBAFormat);
+      tex.wrapS = RepeatWrapping; tex.wrapT = ClampToEdgeWrapping; tex.minFilter = tex.magFilter = LinearFilter;
+      tex.needsUpdate = true;
+      const sc = c;
+      meta.dates = [d['Forecast Time']];
+      return { tex: [tex as Texture], conf: null, meta: { ...meta, width: W, height: H }, sampler: [Sampler.fromImage(sc, W)] };
+    } catch {
+      const tex = await loadTexture('layers/aurora.png', { mipmaps: false });
+      return { tex: [tex], conf: null, meta, sampler: [Sampler.fromImage(tex.image as HTMLImageElement, 360)] };
+    }
   }
 }

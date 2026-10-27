@@ -496,3 +496,62 @@ body:not(.started) .footer { right: calc(var(--gutter) * 1.6); bottom: calc(var(
 @media (max-width: 1000px) { .clock { display: none; } }
 /* Values ("> 32 °C", "−1,8 °C", "102 km/h") take their direction from their own first letter, even inside Arabic blocks. */
 :is(.anchor b, .fact b, .probe-text b, .telemetry dd, .data-clock) { unicode-bidi: plaintext; }
+
+/* ——— Charts beside the planet (src/story/charts.ts) ——— */
+.chart {
+  position: fixed; right: calc(var(--gutter) * 1.4); top: 50%; z-index: 5; margin: 0;
+  width: min(640px, 44vw); padding: 22px 24px 18px; border-radius: 4px;
+  background: rgba(3, 4, 7, 0.74); box-shadow: 0 0 60px 20px rgba(3, 4, 7, 0.45);
+  opacity: 0; transform: translateY(-46%); transition: opacity 0.9s var(--ease), transform 0.9s var(--ease); pointer-events: none;
+}
+.chart.on { opacity: 1; transform: translateY(-50%); }
+body.exploring .chart, body.reading .chart { opacity: 0; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart figcaption { margin-top: 10px; font-size: 12.5px; line-height: 1.5; color: var(--ink-2); display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.chart .ch-grid line { stroke: rgba(255, 255, 255, 0.07); }
+.chart .ch-tick { fill: var(--ink-3); font-size: 13px; font-family: var(--sans); letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+.chart .ch-label { fill: var(--ink); font-size: 17px; font-family: var(--serif); }
+.chart .ch-year { fill: none; stroke-width: 1; opacity: 0; animation: chIn 0.8s var(--ease) forwards; }
+.chart .ch-clim { fill: none; stroke: rgba(255, 255, 255, 0.45); stroke-width: 1; stroke-dasharray: 3 4; }
+.chart .ch-now { fill: none; stroke: #fff1d6; stroke-width: 2.6; opacity: 0; filter: drop-shadow(0 0 6px rgba(255, 217, 160, 0.8)); animation: chIn 0.9s var(--ease) forwards; }
+.chart .ch-keeling { fill: none; stroke: var(--warm); stroke-width: 1.4; stroke-dasharray: 1; stroke-dashoffset: 1; animation: chDraw 6.2s cubic-bezier(0.4, 0, 0.6, 1) forwards; }
+.chart .ch-dot { fill: #fff1d6; filter: drop-shadow(0 0 6px rgba(255, 217, 160, 0.9)); }
+.chart .ch-dot, .chart .ch-label, .chart .ch-neo { opacity: 0; animation: chIn 0.8s var(--ease) forwards; }
+.chart .ch-axis { stroke: rgba(255, 255, 255, 0.3); stroke-width: 1; }
+.chart .ch-earth { fill: #3f7fd0; filter: drop-shadow(0 0 8px rgba(120, 180, 255, 0.6)); }
+.chart .ch-moon, .chart .ch-rock { fill: #cfd6e0; }
+.chart .ch-geo { stroke: #ff9f6b; stroke-width: 1.5; }
+.chart .ch-stem { stroke: rgba(255, 255, 255, 0.25); stroke-width: 1; }
+.chart .ch-first { stroke: var(--warm); }
+.chart .ch-helio { stroke: rgba(160, 200, 255, 0.5); stroke-width: 1; stroke-dasharray: 2 4; }
+.chart .ch-sunpt { fill: #ffd27a; filter: drop-shadow(0 0 10px rgba(255, 210, 122, 0.9)); }
+.chart .ch-sun-glow { fill: none; stroke: rgba(255, 196, 90, 0.35); stroke-width: 10; filter: blur(8px); }
+.chart[data-chart=sun] { width: min(440px, 32vw); background: transparent; box-shadow: none; }
+.chart[data-chart=sun] figcaption { background: rgba(3, 4, 7, 0.72); padding: 8px 12px; border-radius: 4px; }
+.ch-swatch { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; color: var(--ink-3); }
+.ch-swatch b { width: 90px; height: 3px; border-radius: 2px; background: linear-gradient(90deg, rgb(43, 74, 122), rgb(79, 134, 198), rgb(201, 164, 107), rgb(240, 138, 60), rgb(255, 84, 60)); }
+@keyframes chIn { to { opacity: 1; } }
+@keyframes chDraw { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .chart .ch-year, .chart .ch-now, .chart .ch-dot, .chart .ch-label, .chart .ch-neo { animation: none; opacity: 1; }
+  .chart .ch-keeling { animation: none; stroke-dashoffset: 0; }
+}
+
+/* How to read the layer, in Esplora. */
+.ex-note { display: none; }
+.ex-note.on { display: block; }
+.ex-note p { margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--ink-2); }
+.ex-note .ex-note-source { margin-top: 8px; font-size: 11px; letter-spacing: 0.04em; color: var(--ink-3); }
+
+/* "Happening now", on the opening title. */
+.happening {
+  display: none; align-items: baseline; gap: 12px; margin-top: 34px; max-width: 560px; text-align: start;
+  font-size: 13px; line-height: 1.5; color: var(--ink-2); text-shadow: var(--halo-soft);
+  opacity: 0; transition: opacity 1.6s var(--ease) 2.4s, color 0.3s;
+}
+.happening.on { display: flex; }
+.veil.shown .happening.on { opacity: 1; }
+.happening:hover { color: var(--ink); }
+.happening i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--warm); box-shadow: 0 0 10px rgba(255, 217, 160, 0.8); animation: dotPulse 2.4s ease-in-out infinite; align-self: center; }
+@keyframes dotPulse { 50% { opacity: 0.35; } }
+.happening b { flex: none; font-weight: 600; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--warm); }

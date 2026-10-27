@@ -59,7 +59,7 @@ uniform float uDataSplit;
 uniform float uDataMix;
 uniform vec4 uDataStyle; // x: lit, y: glow, z: mask (0 any, 1 ocean, 2 land), w: above clouds
 uniform vec2 uDataRange;
-uniform float uDataFx;   // 1: rain, drawn as falling streaks; 2: forest loss, year by year
+uniform float uDataFx;   // 1: rain, drawn as falling streaks; 2: forest loss, year by year; 3: aurora, only in the dark
 uniform float uLossYear; // forest loss: years since 2000 on screen, fractional
 
 // Atlas: countries coloured by a statistic, year by year.
@@ -254,7 +254,13 @@ void main() {
     pal.rgb *= pal.rgb;
     float mask = uDataStyle.z < 0.5 ? 1.0 : (uDataStyle.z < 1.5 ? 1.0 - land : land);
     float a = clamp(d.g * 1.15, 0.0, 1.0) * pal.a * mask * uDataMix;
-    if (uDataFx > 1.5) {
+    if (uDataFx > 2.5) {
+      // Aurora: light of its own, seen only where it is dark, with curtains that shimmer.
+      float night = smoothstep(0.1, -0.14, NL);
+      // It breathes slowly along the oval.
+      float sheet = 0.85 + 0.15 * sin(uTime * 0.6 + uv.x * 12.0 + sin(uTime * 0.21) * 2.0);
+      a *= night * sheet * 0.8;
+    } else if (uDataFx > 1.5) {
       // Forest loss: the year of loss is a code, never blended between neighbours.
       vec4 f = texelFetch(uData, ivec2(uv * uDataSize), 0);
       float year = floor(f.r * 25.5 + 0.5);

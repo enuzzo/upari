@@ -101,6 +101,7 @@ const en: Dict = {
       smog: 'Nitrogen dioxide (NO₂)', ozono: 'The ozone layer', petrolio: 'Oil slicks, 30 days',
       aurora: 'Aurora, right now', satelliti: 'Every satellite', partenze: 'Next launches', bolidi: 'Fireballs since 1988',
       citta: 'Cities, 1975 – 2030', rotte: 'Shipping lanes',
+      asilomondo: 'Asylum, every route', dighe: 'The world’s dams',
       livello: 'Sea level', onde: 'Waves, last 24 hours',
       migranti: 'Born abroad', co2: 'CO₂ per person', rifugiati: 'Refugees by country of origin',
     },
@@ -150,6 +151,8 @@ const en: Dict = {
       ['Waves', 'NOAA WaveWatch III model, via PacIOOS ERDDAP'],
       ['Migrants and CO₂ per person', 'World Bank WDI (UN DESA; EDGAR, European Commission JRC), CC BY 4.0'],
       ['Refugees by origin', 'UNHCR Refugee Data Finder, CC BY 4.0'],
+      ['Dams', 'Global Dam Watch v1.0, Lehner et al. 2024, CC BY 4.0'],
+      ['Asylum routes', 'UNHCR Refugee Data Finder, asylum applications from every origin, CC BY 4.0; World Bank regions, CC BY 4.0'],
       ['People', 'World Bank, World Development Indicators (with data from UN World Population Prospects, UN IGME and ILO), CC BY 4.0; asylum applications UNHCR Refugee Data Portal, CC BY 4.0; Natural Earth borders, public domain'],
       ['Music and sounds', 'composed for Upari with Magnific (Google Lyria, ElevenLabs)'],
       ['Place search', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, ODbL'],
@@ -271,6 +274,9 @@ const en: Dict = {
     launch: (day: string, place: string) => `${day} · ${place}`,
     fireball: (kt: string) => `${kt} kilotons`,
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · burst at ${alt} km altitude` : ''}`,
+    dam: (year: number) => `dam completed in ${year}`,
+    damUndated: 'dam, year unknown',
+    damSub: (cap: string, height: string | null) => `reservoir of ${cap} million m³${height ? ` · ${height} m high` : ''}`,
   },
 
   classe: {
@@ -294,6 +300,12 @@ const en: Dict = {
     read1: 'Observed, model or forecast: every layer says which in its note in Explore. The waves are a simulation; the snow is what satellites saw between the clouds.',
     read2: 'The gaps are deliberate: where data are missing, the map fades instead of inventing.',
     read3: 'Every number has its source, open: “Sources and credits” says where it comes from and under which licence.',
+  },
+
+  /** What kind of data a chapter or layer shows, in a chip beside its title. */
+  kinds: {
+    observed: 'measured', model: 'model', forecast: 'forecast', reanalysis: 'reanalysis', estimate: 'estimate',
+    statistics: 'official statistics', inventory: 'inventory', computed: 'computed', projection: 'with projections',
   },
 
   notes: {
@@ -687,6 +699,15 @@ const en: Dict = {
     text: 'Surface covered by buildings in every square kilometre, estimated from Landsat and Sentinel-2 imagery by the Global Human Settlement Layer of the European Commission. 2025 and 2030 are projections, not measurements. The map shows the square root of the built share, so villages stay visible next to the megacities.',
     source: 'European Commission, JRC · GHS-BUILT-S R2023A · CC BY 4.0',
   },
+  dighe: {
+    title: 'The dams', kicker: 'Rivers held back, 1900 to today',
+    narrate: (p: { total: string; dated: string; peak: number }) => `${p.total} dams, catalogued one by one. For ${p.dated} we know the year: watch them light up in the order they were completed. The decade that finished the most began in ${p.peak}. Those without a date appear at the end, fainter.`,
+    total: 'dams and barriers in the inventory',
+    peak: (n: string) => `the decade with the most dams completed: ${n}`,
+    storage: 'of water they can hold, all the reservoirs together',
+    text: 'Global Dam Watch brings the world’s main dam surveys together into one inventory, compiled from national records and satellite images: it is a list, not a measurement. The size of each dot follows the volume of its reservoir. For more than half the dams, mostly the small ones, the year is not known.',
+    source: 'Global Dam Watch v1.0 (Lehner et al. 2024) · CC BY 4.0',
+  },
   rotte: {
     title: 'The lanes', kicker: 'Ship traffic, 2015 – 2021',
     narrate: 'Every golden thread is a lane: billions of positions broadcast by ships over six years. The world’s goods squeeze through a few passages, Malacca, Suez, Gibraltar, Panama, and from there spread over every ocean.',
@@ -760,6 +781,14 @@ const en: Dict = {
     peak: (origin: string, year: number) => `applications from ${origin}, in ${year} (peak year)`,
     text: 'New individual applications lodged with government authorities, by country of application. Only three origins: this is not all migration, nor unique people. Since 2022 most people leaving Ukraine have received temporary protection in the European Union, which is not counted here. The arcs join the capitals: they are schematic, not observed journeys.',
     source: 'UNHCR, Refugee Data Portal · AsylumApplications, CC BY 4.0',
+  },
+  rotte_asilo: {
+    title: 'The routes of asylum', kicker: 'Asylum from every country, 2000 – 2024',
+    narrate: (p: { from: string; to: string; n: string }) => `Each thread is a route: people flee one country and ask for asylum in another. The colour tells the region they leave from. In 2024 the largest route is ${p.from} → ${p.to}: ${p.n} applications in a single year.`,
+    routes: 'routes drawn, the thirty largest of each year',
+    sum: 'applications on the routes drawn, in 2024',
+    text: 'New individual applications for international protection, from every country of origin to the country where they were lodged; only the thirty largest routes of each year are drawn. The colour is the region of departure (World Bank): amber sub-Saharan Africa, teal Middle East and North Africa, blue Europe and Central Asia, pink Latin America, violet East Asia and Pacific, yellow South Asia, white North America. These are not unique people, nor all migration; the arcs join the capitals and are schematic.',
+    source: 'UNHCR, Refugee Data Finder · CC BY 4.0 · World Bank regions',
   },
 
   sole: {

@@ -10,7 +10,12 @@ import { t, lang } from '../i18n';
 import { dayMonthShort, dayShort, monthYear, num, timeUtc } from '../i18n/format';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
-const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+/** Chapter numerals, 0 → I (stories run past twelve chapters). */
+const roman = (i: number) => {
+  let n = i + 1, out = '';
+  for (const [v, r] of [[10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']] as [number, string][]) for (; n >= v; n -= v) out += r;
+  return out;
+};
 
 interface Anchor { el: HTMLElement; lon: number; lat: number; alt: number; follow?: 'iss' }
 
@@ -108,6 +113,7 @@ export class Director {
       (li.querySelector('.fill') as HTMLElement).style.transform = k < index ? 'scaleX(1)' : k === index ? `scaleX(${Math.min(1, this.elapsed / c.duration)})` : 'scaleX(0)';
     });
     $('cap-kicker').textContent = c.kicker;
+    $('cap-kind').textContent = c.kind ? t.kinds[c.kind] : '';
     $('cap-title').textContent = c.title;
     this.legend(c);
     if (!this.detour && c.chart) showChart(c.chart);
@@ -165,8 +171,9 @@ export class Director {
     await new Promise((r) => setTimeout(r, 650));
     if (token !== this.token) return;
 
-    $('cap-num').textContent = roman[i];
+    $('cap-num').textContent = roman(i);
     $('cap-kicker').textContent = c.kicker;
+    $('cap-kind').textContent = c.kind ? t.kinds[c.kind] : '';
     $('cap-title').textContent = c.title;
     $('cap-line').innerHTML = '';
     cap.classList.remove('out', 'hidden');
@@ -344,7 +351,7 @@ export class Director {
     if (!c) return;
     const d = await c.detail(this.globe).catch(() => null);
     if (!d) return;
-    $('drawer-kicker').textContent = `${roman[this.index]} · ${c.kicker}`;
+    $('drawer-kicker').textContent = `${roman(this.index)} · ${c.kicker}`;
     $('drawer-title').textContent = c.title;
     $('drawer-facts').innerHTML = '';
     for (const f of d.facts) {
@@ -454,6 +461,7 @@ export class Director {
     const frame = c?.clock === 'data' ? this.globe.dataFrameTime() : null;
     const dc = $('data-clock');
     const run = c?.clock === 'year' ? this.globe.yearRunning : null;
+    const replay = c?.clock === 'replay' && c.replay ? this.globe.spotProgress() : null;
     // Over the planet, wherever the framing puts it.
     dc.style.setProperty('--globe-x', `${((0.5 + this.globe.rig.frameShift) * 100).toFixed(2)}%`);
     if (run) {
@@ -461,6 +469,13 @@ export class Director {
       $('data-from').textContent = String(run.from);
       $('data-to').textContent = String(run.to);
       $('data-dot').style.left = `${(((this.globe.year - run.from) / Math.max(1, run.to - run.from)) * 100).toFixed(2)}%`;
+      dc.classList.add('on');
+    } else if (replay != null) {
+      const [from, to] = c!.replay!;
+      $('data-time').textContent = String(Math.round(from + replay * (to - from)));
+      $('data-from').textContent = String(from);
+      $('data-to').textContent = String(to);
+      $('data-dot').style.left = `${(replay * 100).toFixed(2)}%`;
       dc.classList.add('on');
     } else if (frame) {
       const time = frame.time;

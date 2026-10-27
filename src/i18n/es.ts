@@ -130,6 +130,7 @@ const es: Dict = {
       smog: 'Dióxido de nitrógeno (NO₂)', ozono: 'La capa de ozono', petrolio: 'Manchas de petróleo, 30 días',
       aurora: 'Aurora, ahora', satelliti: 'Todos los satélites', partenze: 'Próximos lanzamientos', bolidi: 'Bólidos desde 1988',
       citta: 'Ciudades, 1975 – 2030', rotte: 'Rutas de los barcos',
+      asilomondo: 'Asilo, todas las rutas', dighe: 'Las presas del mundo',
       livello: 'Nivel del mar', onde: 'Olas, últimas 24 horas',
       migranti: 'Nacidos en el extranjero', co2: 'CO₂ por persona', rifugiati: 'Refugiados por país de origen',
     },
@@ -179,6 +180,8 @@ const es: Dict = {
       ['Olas', 'modelo NOAA WaveWatch III, vía PacIOOS ERDDAP'],
       ['Migrantes y CO₂ por persona', 'World Bank WDI (DAES de la ONU; EDGAR, Comisión Europea JRC), CC BY 4.0'],
       ['Refugiados por origen', 'UNHCR Refugee Data Finder, CC BY 4.0'],
+      ['Presas', 'Global Dam Watch v1.0, Lehner et al. 2024, CC BY 4.0'],
+      ['Rutas del asilo', 'UNHCR Refugee Data Finder, solicitudes de asilo de todos los orígenes, CC BY 4.0; regiones del Banco Mundial, CC BY 4.0'],
       ['Las personas', 'World Bank, World Development Indicators (con datos de World Population Prospects de la ONU, UN IGME e ILO), CC BY 4.0; solicitudes de asilo de UNHCR Refugee Data Portal, CC BY 4.0; fronteras de Natural Earth, dominio público'],
       ['Música y sonidos', 'compuestos para Upari con Magnific (Google Lyria, ElevenLabs)'],
       ['Búsqueda de lugares', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, datos © colaboradores de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>, ODbL'],
@@ -280,6 +283,9 @@ const es: Dict = {
     launch: (day: string, place: string) => `${day} · ${place}`,
     fireball: (kt: string) => `${kt} kilotones`,
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · estalló a ${alt} km de altura` : ''}`,
+    dam: (year: number) => `presa terminada en ${year}`,
+    damUndated: 'presa, año desconocido',
+    damSub: (cap: string, height: string | null) => `embalse de ${cap} millones de m³${height ? ` · ${height} m de altura` : ''}`,
   },
 
   classe: {
@@ -303,6 +309,12 @@ const es: Dict = {
     read1: 'Observación, modelo o previsión: cada capa lo dice en su nota, en Explorar. Las olas son una simulación; la nieve es la que los satélites han visto entre las nubes.',
     read2: 'Los huecos son intencionados: donde falta un dato, el mapa se desvanece en lugar de inventar.',
     read3: 'Cada número tiene su fuente, abierta: en «Fuentes y créditos» se dice de dónde viene y con qué licencia.',
+  },
+
+  /** What kind of data a chapter or layer shows, in a chip beside its title. */
+  kinds: {
+    observed: 'medido', model: 'modelo', forecast: 'previsión', reanalysis: 'reanálisis', estimate: 'estimación',
+    statistics: 'estadística oficial', inventory: 'inventario', computed: 'calculado', projection: 'con proyecciones',
   },
 
   notes: {
@@ -696,6 +708,15 @@ const es: Dict = {
     text: 'Superficie cubierta por edificios en cada kilómetro cuadrado, estimada a partir de las imágenes Landsat y Sentinel-2 por el Global Human Settlement Layer de la Comisión Europea. 2025 y 2030 son proyecciones, no medidas. El mapa muestra la raíz cuadrada de la fracción construida, para que también los pueblos se vean junto a las metrópolis.',
     source: 'Comisión Europea, JRC · GHS-BUILT-S R2023A · CC BY 4.0',
   },
+  dighe: {
+    title: 'Las presas', kicker: 'Ríos detenidos, de 1900 a hoy',
+    narrate: (p: { total: string; dated: string; peak: number }) => `${p.total} presas, censadas una a una. De ${p.dated} se conoce el año: míralas encenderse en el orden en que se terminaron. La década que más presas terminó empezó en ${p.peak}. Las que no tienen fecha aparecen al final, más tenues.`,
+    total: 'presas y barreras en el inventario',
+    peak: (n: string) => `la década con más presas terminadas: ${n}`,
+    storage: 'de agua que pueden retener, todos los embalses juntos',
+    text: 'Global Dam Watch reúne los principales censos de presas del mundo en un solo inventario, compilado a partir de registros nacionales e imágenes de satélite: es una lista, no una medición. El tamaño de cada punto sigue el volumen de su embalse. De más de la mitad de las presas, sobre todo las pequeñas, no se conoce el año.',
+    source: 'Global Dam Watch v1.0 (Lehner et al. 2024) · CC BY 4.0',
+  },
   rotte: {
     title: 'Las rutas', kicker: 'El tráfico de los barcos, 2015 – 2021',
     narrate: 'Cada hilo de oro es una ruta: miles de millones de posiciones transmitidas por los barcos en seis años. Las mercancías del mundo se aprietan en unos pocos pasos, Malaca, Suez, Gibraltar, Panamá, y desde ahí se abren por todos los océanos.',
@@ -769,6 +790,14 @@ const es: Dict = {
     peak: (origin: string, year: number) => `solicitudes procedentes de ${origin}, en ${year} (año del pico)`,
     text: 'Solicitudes individuales nuevas presentadas ante las autoridades de cada gobierno, por país de presentación. Solo tres orígenes: no son todas las migraciones ni personas únicas. Desde 2022, la mayoría de quienes salían de Ucrania obtuvo en la Unión Europea la protección temporal, que aquí no se cuenta. Los arcos unen las capitales: son esquemáticos, no viajes observados.',
     source: 'UNHCR, Refugee Data Portal · AsylumApplications, CC BY 4.0',
+  },
+  rotte_asilo: {
+    title: 'Las rutas del asilo', kicker: 'Asilo desde cada país, 2000 – 2024',
+    narrate: (p: { from: string; to: string; n: string }) => `Cada hilo es una ruta: se huye de un país y se pide asilo en otro. El color indica la región de partida. En 2024 la ruta más grande es ${p.from} → ${p.to}: ${p.n} solicitudes en un solo año.`,
+    routes: 'rutas dibujadas, las treinta mayores de cada año',
+    sum: 'solicitudes en las rutas dibujadas, en 2024',
+    text: 'Solicitudes individuales nuevas de protección internacional, desde cada país de origen hasta el país donde se presentaron; solo se dibujan las treinta rutas más grandes de cada año. El color es la región de partida (Banco Mundial): ámbar África subsahariana, turquesa Oriente Medio y Norte de África, azul Europa y Asia central, rosa América Latina, violeta Asia oriental y Pacífico, amarillo Asia meridional, blanco Norteamérica. No son personas únicas ni toda la migración; los arcos unen las capitales y son esquemáticos.',
+    source: 'UNHCR, Refugee Data Finder · CC BY 4.0 · regiones del Banco Mundial',
   },
 
   // ——— El cielo, ahora ———

@@ -32,6 +32,7 @@ async function aurora(g: Globe) {
 export const SKY_CHAPTERS: Chapter[] = titled([
   {
     id: 'sole',
+    kind: 'observed',
     mood: 'open',
     // The Sun as a body beside the Earth: to scale in size, much nearer than it really is.
     look: { ...SKY, solar: 1, reach: 1400, clouds: 1, bloom: 0.45 },
@@ -68,6 +69,7 @@ export const SKY_CHAPTERS: Chapter[] = titled([
   },
   {
     id: 'aurora',
+    kind: 'forecast',
     mood: 'open', sound: 'night',
     look: { ...SKY, data: 'aurora', clouds: 0.5, bloom: 1.4 },
     duration: 22,
@@ -98,6 +100,7 @@ export const SKY_CHAPTERS: Chapter[] = titled([
   },
   {
     id: 'satelliti',
+    kind: 'computed',
     mood: 'curious', sound: 'station',
     look: { ...SKY, satellites: 1, clouds: 0.6, dim: 0.25 },
     duration: 24,
@@ -128,6 +131,7 @@ export const SKY_CHAPTERS: Chapter[] = titled([
   },
   {
     id: 'partenze',
+    kind: 'observed',
     mood: 'open',
     look: { sun: 'studio', clouds: 0.1, night: 0, dim: 0.55, desat: 0.6, atmo: 0.8, rockets: 1 },
     duration: 30,
@@ -170,6 +174,7 @@ export const SKY_CHAPTERS: Chapter[] = titled([
   },
   {
     id: 'bolidi',
+    kind: 'observed',
     mood: 'curious', sound: 'night',
     look: { sun: 'studio', clouds: 0, night: 0, dim: 0.72, desat: 0.8, atmo: 0.7, spots: 'fireballs', spotReplay: 13, bloom: 1.3 },
     duration: 22,
@@ -193,6 +198,7 @@ export const SKY_CHAPTERS: Chapter[] = titled([
   },
   {
     id: 'passaggi',
+    kind: 'computed',
     mood: 'curious',
     // The real path of the pass around the Earth, and the Moon's orbit for scale.
     look: { ...SKY, flyby: 1, reach: 400, clouds: 1 },
@@ -233,6 +239,7 @@ export const SKY_CHAPTERS: Chapter[] = titled([
   },
   {
     id: 'voyager',
+    kind: 'computed',
     mood: 'open', sound: 'station',
     look: { ...SKY, dim: 0.5 },
     duration: 27,

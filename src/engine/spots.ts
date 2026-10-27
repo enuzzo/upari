@@ -9,7 +9,7 @@ import { fresh } from './fresh';
 // oil slicks, launch pads and fireballs. Each set is a cloud of glowing dots on the globe,
 // revealed in the order of their time when the story replays them; the cursor reads them.
 
-export type SpotId = 'cyclones' | 'volcanoes' | 'icebergs' | 'slicks' | 'launches' | 'launchyear' | 'fireballs';
+export type SpotId = 'cyclones' | 'volcanoes' | 'icebergs' | 'slicks' | 'launches' | 'launchyear' | 'fireballs' | 'dams';
 
 export interface Spot {
   lon: number;
@@ -83,6 +83,19 @@ const BUILD: Record<SpotId, (d: any) => Spot[]> = {
       text: () => l.name, sub: () => t.spots.launch(dayShort(l.net), l.place || l.pad),
     }));
   },
+  dams(d) {
+    // Every dam of Global Dam Watch; those with a known year rise in the order they were built
+    // (1900 on), those without one light up, dimmer, at the end.
+    return d.list.map((x: [number, number, number, number, number]) => {
+      const [lon, lat, year, cap, height] = x;
+      return {
+        lon, lat, size: 3 + Math.log10(1 + cap) * 2.6, color: !year ? '#5b6b7c' : cap > 1000 ? '#7fe0ff' : '#a9d4ea',
+        order: year ? Math.min(1, Math.max(0, (year - 1900) / 122)) : 1,
+        text: () => (year ? t.spots.dam(year) : t.spots.damUndated),
+        sub: () => t.spots.damSub(num(cap), height ? num(height) : null),
+      };
+    });
+  },
   launchyear(d) {
     // Every launch of the last twelve months, flashing on its pad in the order they flew.
     const list = d.past as { lat: number; lon: number; name: string; net: string; place: string; pad: string }[];
@@ -104,6 +117,7 @@ const BUILD: Record<SpotId, (d: any) => Spot[]> = {
 const FILES: Record<SpotId, string> = {
   cyclones: 'layers/cyclones.json', volcanoes: 'layers/volcanoes.json', icebergs: 'layers/icebergs.json',
   slicks: 'layers/slicks.json', launches: 'sky/launches.json', launchyear: 'sky/launches.json', fireballs: 'sky/fireballs.json',
+  dams: 'statistics/dams.json',
 };
 
 function createSet(id: SpotId, spots: Spot[], data: any): SpotSet {

@@ -147,6 +147,7 @@ const ko: Dict = {
       smog: '이산화질소 (NO₂)', ozono: '오존층', petrolio: '바다의 기름띠, 30일',
       aurora: '지금의 오로라', satelliti: '모든 위성', partenze: '다음 발사', bolidi: '1988년 이후의 화구',
       citta: '도시, 1975 – 2030', rotte: '배의 항로',
+      asilomondo: '망명, 모든 경로', dighe: '세계의 댐',
       livello: '해수면 높이', onde: '파도, 최근 24시간',
       migranti: '외국 출생', co2: '1인당 CO₂', rifugiati: '출신국별 난민',
     },
@@ -196,6 +197,8 @@ const ko: Dict = {
       ['파도', 'NOAA WaveWatch III 모델, PacIOOS ERDDAP 경유'],
       ['이주민과 1인당 CO₂', 'World Bank WDI (UN DESA; EDGAR, 유럽연합 집행위원회 JRC), CC BY 4.0'],
       ['출신국별 난민', 'UNHCR Refugee Data Finder, CC BY 4.0'],
+      ['댐', 'Global Dam Watch v1.0, Lehner et al. 2024, CC BY 4.0'],
+      ['망명 경로', 'UNHCR Refugee Data Finder, 모든 출신국의 망명 신청, CC BY 4.0; 세계은행 지역 구분, CC BY 4.0'],
       ['사람들', 'World Bank, World Development Indicators (UN World Population Prospects, UN IGME, ILO 데이터 포함), CC BY 4.0; 망명 신청 UNHCR Refugee Data Portal, CC BY 4.0; Natural Earth 국경, 퍼블릭 도메인'],
       ['음악과 소리', 'Magnific (Google Lyria, ElevenLabs)으로 Upari를 위해 만듦'],
       ['장소 검색', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, 데이터 © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, ODbL'],
@@ -319,6 +322,9 @@ const ko: Dict = {
     launch: (day: string, place: string) => `${day} · ${place}`,
     fireball: (kt: string) => `${kt}킬로톤`,
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · 고도 ${alt} km에서 폭발` : ''}`,
+    dam: (year: number) => `${year}년에 완공된 댐`,
+    damUndated: '댐, 연도 미상',
+    damSub: (cap: string, height: string | null) => `저수지 용량 ${millions(cap)} m³${height ? ` · 높이 ${height} m` : ''}`,
   },
 
   classe: {
@@ -342,6 +348,12 @@ const ko: Dict = {
     read1: '관측인지, 모델인지, 예보인지: 모든 레이어가 탐색의 설명에서 밝힌다. 파도는 시뮬레이션이고, 눈은 위성이 구름 사이로 본 것이다.',
     read2: '빈자리는 일부러 남긴 것이다: 데이터가 없는 곳에서는 지도가 무언가를 지어내는 대신 흐려진다.',
     read3: '모든 숫자에는 공개된 출처가 있다: ‘출처와 크레딧’에 어디서 왔는지, 어떤 라이선스인지 적혀 있다.',
+  },
+
+  /** What kind of data a chapter or layer shows, in a chip beside its title. */
+  kinds: {
+    observed: '측정', model: '모델', forecast: '예보', reanalysis: '재분석', estimate: '추정',
+    statistics: '공식 통계', inventory: '목록', computed: '계산값', projection: '전망 포함',
   },
 
   notes: {
@@ -735,6 +747,15 @@ const ko: Dict = {
     text: '제곱킬로미터마다 건물이 덮은 면적으로, 유럽연합 집행위원회의 Global Human Settlement Layer가 Landsat과 Sentinel-2 영상으로 추정했다. 2025년과 2030년은 측정이 아니라 예측이다. 지도는 건물 비율의 제곱근을 보여 준다: 그래야 대도시 옆의 마을도 눈에 보인다.',
     source: '유럽연합 집행위원회, JRC · GHS-BUILT-S R2023A · CC BY 4.0',
   },
+  dighe: {
+    title: '댐', kicker: '막힌 강, 1900년부터 오늘까지',
+    narrate: (p: { total: string; dated: string; peak: number }) => `댐 ${p.total}개를 하나하나 집계했다. 그중 ${p.dated}개는 완공 연도를 안다. 완공된 순서대로 불이 켜지는 것을 보자. 가장 많이 완공된 10년은 ${p.peak}년에 시작됐다. 연도가 없는 댐은 맨 끝에 더 흐리게 나타난다.`,
+    total: '목록에 오른 댐과 둑',
+    peak: (n: string) => `가장 많은 댐이 완공된 10년: ${n}개`,
+    storage: '저장할 수 있는 물, 모든 저수지를 합쳐서',
+    text: 'Global Dam Watch는 세계 주요 댐 조사를 하나의 목록으로 모은 것으로, 각국 기록과 위성 영상을 바탕으로 만들었다: 측정이 아니라 목록이다. 점의 크기는 저수지의 용량을 따른다. 댐의 절반 넘게, 특히 작은 댐은 완공 연도를 알 수 없다.',
+    source: 'Global Dam Watch v1.0 (Lehner et al. 2024) · CC BY 4.0',
+  },
   rotte: {
     title: '항로', kicker: '배의 통행, 2015 – 2021',
     narrate: '금빛 실 한 가닥 한 가닥이 항로다: 6년 동안 배들이 보낸 수십억 개의 위치. 세계의 화물은 말라카, 수에즈, 지브롤터, 파나마, 몇 안 되는 길목으로 몰렸다가, 거기서 모든 대양으로 퍼져 나간다.',
@@ -808,6 +829,14 @@ const ko: Dict = {
     peak: (origin: string, year: number) => `${origin}에서 온 신청, ${year}년 (정점)`,
     text: '정부 당국에 새로 접수된 개인 신청을, 신청한 나라별로 센 것이다. 출신지는 셋뿐이다: 모든 이주도, 중복 없는 개인의 수도 아니다. 2022년부터 우크라이나를 떠난 사람 대부분은 유럽연합에서 임시 보호를 받았고, 이는 여기에 포함되지 않는다. 호는 수도와 수도를 잇는 도식일 뿐, 관측된 여정이 아니다.',
     source: 'UNHCR, Refugee Data Portal · AsylumApplications, CC BY 4.0',
+  },
+  rotte_asilo: {
+    title: '망명의 경로', kicker: '모든 나라에서의 망명, 2000 – 2024',
+    narrate: (p: { from: string; to: string; n: string }) => `실 한 가닥이 경로 하나다: 사람들은 한 나라를 떠나 다른 나라에서 망명을 신청한다. 색은 떠나온 지역을 말해 준다. 2024년에 가장 큰 경로: ${p.from} → ${p.to}, 한 해에 신청 ${p.n}건.`,
+    routes: '그려진 경로, 해마다 가장 큰 서른 개',
+    sum: '2024년, 그려진 경로의 신청 건수',
+    text: '국제 보호를 구하는 새 개인 신청을, 출신국에서 신청한 나라로 이은 것이다. 해마다 가장 큰 서른 경로만 그린다. 색은 출발 지역(세계은행 구분)이다: 호박색은 사하라 이남 아프리카, 청록색은 중동·북아프리카, 파란색은 유럽·중앙아시아, 분홍색은 라틴아메리카, 보라색은 동아시아·태평양, 노란색은 남아시아, 흰색은 북아메리카. 중복 없는 개인의 수도, 모든 이주도 아니다. 호는 수도와 수도를 잇는 도식이다.',
+    source: 'UNHCR, Refugee Data Finder · CC BY 4.0 · 세계은행 지역 구분',
   },
 
   // ——— 지금, 이 하늘 ———

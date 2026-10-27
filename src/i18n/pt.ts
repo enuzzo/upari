@@ -142,6 +142,7 @@ const pt: Dict = {
       smog: 'Dióxido de nitrogênio (NO₂)', ozono: 'A camada de ozônio', petrolio: 'Manchas de petróleo, 30 dias',
       aurora: 'Aurora, agora', satelliti: 'Todos os satélites', partenze: 'Próximos lançamentos', bolidi: 'Bólidos desde 1988',
       citta: 'Cidades, 1975 – 2030', rotte: 'Rotas dos navios',
+      asilomondo: 'Asilo, todas as rotas', dighe: 'As barragens do mundo',
       livello: 'Nível do mar', onde: 'Ondas, últimas 24 horas',
       migranti: 'Nascidos no exterior', co2: 'CO₂ por pessoa', rifugiati: 'Refugiados por país de origem',
     },
@@ -191,6 +192,8 @@ const pt: Dict = {
       ['Ondas', 'modelo NOAA WaveWatch III, via PacIOOS ERDDAP'],
       ['Migrantes e CO₂ por pessoa', 'World Bank WDI (DESA da ONU; EDGAR, Comissão Europeia JRC), CC BY 4.0'],
       ['Refugiados por origem', 'UNHCR Refugee Data Finder, CC BY 4.0'],
+      ['Barragens', 'Global Dam Watch v1.0, Lehner et al. 2024, CC BY 4.0'],
+      ['Rotas do asilo', 'UNHCR Refugee Data Finder, pedidos de asilo de todas as origens, CC BY 4.0; regiões do Banco Mundial, CC BY 4.0'],
       ['As pessoas', 'World Bank, World Development Indicators (com dados do World Population Prospects da ONU, do UN IGME e da OIT), CC BY 4.0; pedidos de asilo UNHCR Refugee Data Portal, CC BY 4.0; fronteiras Natural Earth, domínio público'],
       ['Música e sons', 'compostos para o Upari com Magnific (Google Lyria, ElevenLabs)'],
       ['Busca de lugares', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, dados © colaboradores do <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>, ODbL'],
@@ -312,6 +315,9 @@ const pt: Dict = {
     launch: (day: string, place: string) => `${day} · ${place}`,
     fireball: (kt: string) => `${kt} quilotons`,
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · explodiu a ${alt} km de altitude` : ''}`,
+    dam: (year: number) => `barragem concluída em ${year}`,
+    damUndated: 'barragem, ano desconhecido',
+    damSub: (cap: string, height: string | null) => `reservatório de ${cap} ${milhoes(cap)} de m³${height ? ` · ${height} m de altura` : ''}`,
   },
 
   classe: {
@@ -335,6 +341,12 @@ const pt: Dict = {
     read1: 'Observação, modelo ou previsão: cada camada diz isso na sua nota em Explorar. As ondas são uma simulação; a neve é a que os satélites viram entre as nuvens.',
     read2: 'Os vazios são de propósito: onde falta um dado, o mapa se apaga em vez de inventar.',
     read3: 'Cada número tem a sua fonte, aberta: em “Fontes e créditos” está de onde vem e com qual licença.',
+  },
+
+  /** What kind of data a chapter or layer shows, in a chip beside its title. */
+  kinds: {
+    observed: 'medido', model: 'modelo', forecast: 'previsão', reanalysis: 'reanálise', estimate: 'estimativa',
+    statistics: 'estatística oficial', inventory: 'inventário', computed: 'calculado', projection: 'com projeções',
   },
 
   notes: {
@@ -735,6 +747,15 @@ const pt: Dict = {
     text: 'Superfície coberta por edifícios em cada quilômetro quadrado, estimada a partir das imagens Landsat e Sentinel-2 pelo Global Human Settlement Layer da Comissão Europeia. 2025 e 2030 são projeções, não medições. O mapa mostra a raiz quadrada da fração construída, para que os vilarejos também fiquem visíveis ao lado das metrópoles.',
     source: 'Comissão Europeia, JRC · GHS-BUILT-S R2023A · CC BY 4.0',
   },
+  dighe: {
+    title: 'As barragens', kicker: 'Rios represados, de 1900 até hoje',
+    narrate: (p: { total: string; dated: string; peak: number }) => `${p.total} barragens, recenseadas uma a uma. De ${p.dated} sabe-se o ano: veja-as acender na ordem em que foram concluídas. A década que mais barragens concluiu começou em ${p.peak}. As que não têm data aparecem no fim, mais tênues.`,
+    total: 'barragens e represas no inventário',
+    peak: (n: string) => `a década com mais barragens concluídas: ${n}`,
+    storage: 'de água que podem reter, todos os reservatórios somados',
+    text: 'O Global Dam Watch reúne os principais censos de barragens do mundo num só inventário, compilado a partir de registros nacionais e imagens de satélite: é uma lista, não uma medição. O tamanho de cada ponto acompanha o volume do seu reservatório. De mais da metade das barragens, sobretudo as pequenas, o ano não é conhecido.',
+    source: 'Global Dam Watch v1.0 (Lehner et al. 2024) · CC BY 4.0',
+  },
   rotte: {
     title: 'As rotas', kicker: 'O tráfego dos navios, 2015 – 2021',
     narrate: 'Cada fio de ouro é uma rota: bilhões de posições transmitidas pelos navios em seis anos. As mercadorias do mundo se apertam em poucas passagens, Malaca, Suez, Gibraltar, Panamá, e dali se espalham por todos os oceanos.',
@@ -808,6 +829,14 @@ const pt: Dict = {
     peak: (origin: string, year: number) => `pedidos vindos ${de(origin)}, em ${year} (ano de pico)`,
     text: 'Novos pedidos individuais apresentados às autoridades governamentais, por país de apresentação. Só três origens: não são todas as migrações, nem pessoas únicas. Desde 2022, a maior parte de quem deixou a Ucrânia recebeu na União Europeia a proteção temporária, que não é contada aqui. Os arcos ligam as capitais: são esquemáticos, não viagens observadas.',
     source: 'UNHCR, Refugee Data Portal · AsylumApplications, CC BY 4.0',
+  },
+  rotte_asilo: {
+    title: 'As rotas do asilo', kicker: 'Asilo de cada país, 2000 – 2024',
+    narrate: (p: { from: string; to: string; n: string }) => `Cada fio é uma rota: foge-se de um país e pede-se asilo em outro. A cor indica a região de partida. Em 2024 a maior rota é ${p.from} → ${p.to}: ${p.n} pedidos num único ano.`,
+    routes: 'rotas desenhadas, as trinta maiores de cada ano',
+    sum: 'pedidos nas rotas desenhadas, em 2024',
+    text: 'Novos pedidos individuais de proteção internacional, de cada país de origem para o país onde foram apresentados; só as trinta maiores rotas de cada ano são desenhadas. A cor é a região de partida (Banco Mundial): âmbar África Subsaariana, turquesa Oriente Médio e Norte da África, azul Europa e Ásia Central, rosa América Latina, violeta Ásia Oriental e Pacífico, amarelo Sul da Ásia, branco América do Norte. Não são pessoas únicas nem toda a migração; os arcos ligam as capitais e são esquemáticos.',
+    source: 'UNHCR, Refugee Data Finder · CC BY 4.0 · regiões do Banco Mundial',
   },
 
   // ——— O céu, agora ———

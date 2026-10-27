@@ -20,6 +20,8 @@ interface Layer { id: LayerId; look: () => Partial<Look>; legend?: Legend; peopl
 /** Layers without a chapter carry their own note on how to read them. */
 type NoteId = keyof typeof t.notes;
 const SEA = { sun: 'studio' as const, clouds: 0, night: 0, atmo: 0.8 };
+/** The kind of data of the layers with their own note. */
+const OWN_KIND: Record<NoteId, keyof typeof t.kinds> = { livello: 'observed', onde: 'model', vulcani: 'inventory' };
 
 const chapterLook = (id: string) => () => ({ ...CHAPTERS.find((c) => c.id === id)!.look });
 const chapterLegend = (id: string) => CHAPTERS.find((c) => c.id === id)?.legend;
@@ -63,7 +65,9 @@ const HUMAN: Layer[] = [
   atlasLayer('migranti', 'migrants'),
   atlasLayer('co2', 'co2'),
   atlasLayer('rifugiati', 'refugees'),
+  { id: 'asilomondo', people: true, look: () => ({ ...peopleBase, dim: 0.74, migrationAll: 1, bloom: 1.3 }) },
   { id: 'citta', look: () => ({ ...PEOPLE.find((c) => c.id === 'citta')!.look }), legend: PEOPLE.find((c) => c.id === 'citta')!.legend },
+  { id: 'dighe', look: () => ({ ...PEOPLE.find((c) => c.id === 'dighe')!.look, spotReplay: 0 }) },
   { id: 'rotte', look: () => ({ ...PEOPLE.find((c) => c.id === 'rotte')!.look }), legend: PEOPLE.find((c) => c.id === 'rotte')!.legend },
   {
     id: 'asilo', people: true, look: () => ({ ...peopleBase, dim: 0.72, migration: 1, bloom: 1.3 }),
@@ -102,7 +106,7 @@ const FROM_CHAPTER: Record<string, string> = {
   pianeta: 'adesso', respiro: 'venti', correnti: 'correnti', calore: 'mare', febbre: 'anomalia', fioritura: 'plancton', pioggia: 'pioggia',
   fuoco: 'fuochi', terremoti: 'terremoti', ghiaccio: 'ghiaccio', luci: 'luci', lassu: 'stazione', popolazione: 'popolazione', nascite: 'nascite', vita: 'vita',
   bambini: 'bambini', saldo: 'saldo', luce: 'elettricita', fuga: 'asilo', verde: 'verde', foreste: 'foreste', aria: 'aria', coralli: 'coralli',
-  citta: 'citta', rotte: 'rotte', impronta: 'co2', esilio: 'rifugiati', tempeste: 'tempeste', neve: 'neve', smog: 'smog', ozono: 'ozono', petrolio: 'petrolio', aurora: 'aurora', satelliti: 'satelliti', partenze: 'partenze', bolidi: 'bolidi',
+  citta: 'citta', rotte: 'rotte', impronta: 'co2', esilio: 'rifugiati', rotte_asilo: 'asilomondo', dighe: 'dighe', tempeste: 'tempeste', neve: 'neve', smog: 'smog', ozono: 'ozono', petrolio: 'petrolio', aurora: 'aurora', satelliti: 'satelliti', partenze: 'partenze', bolidi: 'bolidi',
 };
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -251,7 +255,7 @@ export class Explorer {
   }
 
   private firstYear() {
-    const FIRST: Record<string, number> = { asilo: 2000, foreste: 2001, elettricita: 1990, migranti: 1990, rifugiati: 1990, co2: 1970 };
+    const FIRST: Record<string, number> = { asilo: 2000, asilomondo: 2000, foreste: 2001, elettricita: 1990, migranti: 1990, rifugiati: 1990, co2: 1970 };
     return FIRST[this.layer.id] ?? 1960;
   }
 
@@ -260,7 +264,7 @@ export class Explorer {
   /** Can this layer be split into before and after? */
   private comparable() {
     const look = this.layer.look();
-    return (!!this.layer.people && this.layer.id !== 'foreste' && this.layer.id !== 'asilo') || (!!look.data && SERIES.has(look.data));
+    return (!!this.layer.people && !['foreste', 'asilo', 'asilomondo'].includes(this.layer.id)) || (!!look.data && SERIES.has(look.data));
   }
 
   /** Before and after, at a line that follows the hand. */
@@ -304,6 +308,7 @@ export class Explorer {
     const box = $('ex-note');
     const own = (t.notes as Record<string, { text: string; source: string }>)[layer.id as NoteId];
     if (!c && own) {
+      $('ex-note-kind').textContent = t.kinds[OWN_KIND[layer.id as NoteId]];
       $('ex-note-text').textContent = own.text;
       $('ex-note-source').textContent = own.source;
       box.classList.add('on');
@@ -312,6 +317,7 @@ export class Explorer {
     if (!c) { box.classList.remove('on'); return; }
     const d = await c.detail(this.globe).catch(() => null);
     if (!d || layer !== this.layer) return;
+    $('ex-note-kind').textContent = c.kind ? t.kinds[c.kind] : '';
     $('ex-note-text').textContent = d.text;
     $('ex-note-source').textContent = d.source;
     box.classList.add('on');

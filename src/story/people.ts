@@ -2,6 +2,7 @@ import type { Globe } from '../engine/globe';
 import { ATLAS, ORIGINS, atlasText, type AtlasId } from '../engine/atlas';
 import { legend as legendOf, titled, type Chapter, type Legend } from './chapters';
 import { PALETTES } from '../engine/palettes';
+import { loadSpots } from '../engine/spots';
 import { t } from '../i18n';
 import { num } from '../i18n/format';
 
@@ -22,6 +23,19 @@ async function atlas(g: Globe) {
 
 const mean = async (g: Globe, id: AtlasId, year: number) => (await atlas(g)).worldMean(id, year) ?? 0;
 
+/** Dams: how many, how many dated, the busiest decade, the water they hold. */
+async function dams() {
+  const d = (await loadSpots('dams')).data as { list: [number, number, number, number, number][] };
+  const decades = new Map<number, number>();
+  let km3 = 0, dated = 0;
+  for (const [, , year, cap] of d.list) {
+    km3 += cap / 1000;
+    if (year) { dated++; const k = Math.floor(year / 10) * 10; decades.set(k, (decades.get(k) ?? 0) + 1); }
+  }
+  const [peakDecade, peakCount] = [...decades.entries()].sort((a, b) => b[1] - a[1])[0];
+  return { total: d.list.length, dated, peakDecade, peakCount, km3: Math.round(km3) };
+}
+
 /** Built-up land in each epoch of GHSL, km², summed at full resolution when the layer was made. */
 async function builtArea(g: Globe) {
   const { meta } = await g.layers.get('built');
@@ -36,6 +50,7 @@ async function builtArea(g: Globe) {
 export const PEOPLE: Chapter[] = titled([
   {
     id: 'popolazione',
+    kind: 'statistics',
     mood: 'calm', sound: 'city',
     look: { ...LOOK, dim: 0.76, atlas: 'population', dust: 1, years: [1960, 2025], yearSeconds: 20, bloom: 1.2 },
     duration: 24, clock: 'year',
@@ -61,6 +76,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'citta',
+    kind: 'projection',
     mood: 'curious', sound: 'city',
     look: { ...LOOK, data: 'built', dim: 0.74, desat: 0.75, bloom: 1.3 },
     duration: 23, clock: 'data',
@@ -84,7 +100,32 @@ export const PEOPLE: Chapter[] = titled([
     beats: async () => [{ shot: { lon: 95, lat: 28, dist: 2.7 }, drift: 0.9 }],
   },
   {
+    id: 'dighe',
+    kind: 'inventory',
+    mood: 'curious', sound: 'waves',
+    look: { ...LOOK, dim: 0.66, desat: 0.7, spots: 'dams', spotReplay: 16, bloom: 1.1 },
+    duration: 24, clock: 'replay', replay: [1900, 2022],
+    narrate: async () => {
+      const d = await dams();
+      return t.dighe.narrate({ total: num(d.total), dated: num(d.dated), peak: d.peakDecade });
+    },
+    detail: async () => {
+      const d = await dams();
+      return {
+        facts: [
+          { value: num(d.total), label: t.dighe.total },
+          { value: `${d.peakDecade}`, label: t.dighe.peak(num(d.peakCount)) },
+          { value: `${num(d.km3)} km³`, label: t.dighe.storage },
+        ],
+        text: t.dighe.text,
+        source: t.dighe.source,
+      };
+    },
+    beats: async () => [{ shot: { lon: 40, lat: 30, dist: 3.1 }, drift: 1.4 }],
+  },
+  {
     id: 'rotte',
+    kind: 'observed',
     mood: 'open', sound: 'waves',
     look: { ...LOOK, data: 'ships', dim: 0.8, desat: 0.8, bloom: 0.9 },
     duration: 21,
@@ -99,6 +140,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'nascite',
+    kind: 'statistics',
     mood: 'curious', sound: 'city',
     look: { ...LOOK, atlas: 'birth', years: [1960, 2024], yearSeconds: 18 },
     duration: 22, clock: 'year', legend: legend('birth'),
@@ -123,6 +165,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'vita',
+    kind: 'statistics',
     mood: 'open', sound: 'city',
     look: { ...LOOK, atlas: 'life', years: [1960, 2024], yearSeconds: 18 },
     duration: 21, clock: 'year', legend: legend('life'),
@@ -144,6 +187,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'bambini',
+    kind: 'estimate',
     mood: 'grave', sound: 'city',
     look: { ...LOOK, atlas: 'under5', years: [1960, 2024], yearSeconds: 18 },
     duration: 22, clock: 'year', legend: legend('under5'),
@@ -170,6 +214,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'saldo',
+    kind: 'statistics',
     mood: 'curious', sound: 'city',
     look: { ...LOOK, atlas: 'balance', years: [1960, 2024], yearSeconds: 18 },
     duration: 21, clock: 'year', legend: legend('balance'),
@@ -190,6 +235,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'luce',
+    kind: 'statistics',
     mood: 'calm', sound: 'night',
     look: { ...LOOK, atlas: 'electricity', years: [2000, 2024], yearSeconds: 16 },
     duration: 21, clock: 'year', legend: legend('electricity'),
@@ -221,6 +267,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'impronta',
+    kind: 'estimate',
     mood: 'grave', sound: 'city',
     look: { ...LOOK, atlas: 'co2', years: [1970, 2024], yearSeconds: 18 },
     duration: 23, clock: 'year', legend: legend('co2'),
@@ -245,6 +292,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'esilio',
+    kind: 'statistics',
     mood: 'grave', sound: 'wind',
     look: { ...LOOK, atlas: 'refugees', years: [1990, 2024], yearSeconds: 18 },
     duration: 23, clock: 'year', legend: legend('refugees'),
@@ -269,6 +317,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'fuga',
+    kind: 'statistics',
     mood: 'grave', sound: 'wind',
     look: { ...LOOK, dim: 0.72, migration: 1, years: [2011, 2024], yearSeconds: 20, bloom: 1.3 },
     duration: 24, clock: 'year',
@@ -287,5 +336,31 @@ export const PEOPLE: Chapter[] = titled([
       };
     },
     beats: async () => [{ shot: { lon: 32, lat: 42, dist: 2.4 }, drift: 0.5 }],
+  },
+  {
+    id: 'rotte_asilo',
+    kind: 'statistics',
+    mood: 'grave', sound: 'wind',
+    look: { ...LOOK, dim: 0.74, migrationAll: 1, years: [2000, 2024], yearSeconds: 18, bloom: 1.3 },
+    duration: 24, clock: 'year',
+    narrate: async (g) => {
+      const top = (await atlas(g)).allRelations.map((r) => ({ r, v: r.values[2024 - 1960] ?? 0 })).sort((a, b) => b.v - a.v)[0];
+      const a = await atlas(g);
+      return t.rotte_asilo.narrate({ from: a.places.get(top.r.origin)?.name ?? top.r.origin, to: a.places.get(top.r.destination)?.name ?? top.r.destination, n: num(top.v) });
+    },
+    detail: async (g) => {
+      const a = await atlas(g);
+      const y = 2024 - a.years[0];
+      const live = a.allRelations.filter((r) => r.values[y]);
+      return {
+        facts: [
+          { value: num(a.allRelations.length), label: t.rotte_asilo.routes },
+          { value: num(live.reduce((s, r) => s + (r.values[y] ?? 0), 0)), label: t.rotte_asilo.sum },
+        ],
+        text: t.rotte_asilo.text,
+        source: t.rotte_asilo.source,
+      };
+    },
+    beats: async () => [{ shot: { lon: 25, lat: 30, dist: 2.9 }, drift: 0.6 }],
   },
 ]);

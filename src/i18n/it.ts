@@ -106,6 +106,7 @@ const it = {
       smog: 'Biossido di azoto (NO₂)', ozono: 'Lo strato di ozono', petrolio: 'Chiazze di petrolio, 30 giorni',
       aurora: 'Aurora, adesso', satelliti: 'Tutti i satelliti', partenze: 'Prossimi lanci', bolidi: 'Bolidi dal 1988',
       citta: 'Città, 1975 – 2030', rotte: 'Rotte delle navi',
+      asilomondo: 'Asilo, tutte le rotte', dighe: 'Dighe del mondo',
       livello: 'Altezza del mare', onde: 'Onde, ultime 24 ore',
       migranti: 'Nati all’estero', co2: 'CO₂ per persona', rifugiati: 'Rifugiati per paese d’origine',
     },
@@ -156,6 +157,8 @@ const it = {
       ['Onde', 'modello NOAA WaveWatch III, via PacIOOS ERDDAP'],
       ['Migranti e CO₂ per persona', 'World Bank WDI (ONU DESA; EDGAR, Commissione europea JRC), CC BY 4.0'],
       ['Rifugiati per origine', 'UNHCR Refugee Data Finder, CC BY 4.0'],
+      ['Dighe', 'Global Dam Watch v1.0, Lehner et al. 2024, CC BY 4.0'],
+      ['Rotte dell’asilo', 'UNHCR Refugee Data Finder, domande di asilo da ogni origine, CC BY 4.0; regioni della Banca Mondiale, CC BY 4.0'],
       ['Le persone', 'World Bank, World Development Indicators (con dati ONU World Population Prospects, UN IGME e ILO), CC BY 4.0; domande di asilo UNHCR Refugee Data Portal, CC BY 4.0; confini Natural Earth, pubblico dominio'],
       ['Musica e suoni', 'composti per Upari con Magnific (Google Lyria, ElevenLabs)'],
       ['Ricerca dei luoghi', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, dati © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, ODbL'],
@@ -282,6 +285,9 @@ const it = {
     launch: (day: string, place: string) => `${day} · ${place}`,
     fireball: (kt: string) => `${kt} chilotoni`,
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · esploso a ${alt} km di quota` : ''}`,
+    dam: (year: number) => `diga finita nel ${year}`,
+    damUndated: 'diga, anno non noto',
+    damSub: (cap: string, height: string | null) => `serbatoio di ${cap} milioni di m³${height ? ` · alta ${height} m` : ''}`,
   },
 
   /** For the classroom, opened from "Why Upari". */
@@ -306,6 +312,12 @@ const it = {
     read1: 'Osservato, modello o previsione: ogni strato lo dice nella sua nota in Esplora. Le onde sono una simulazione; la neve è quella che i satelliti hanno visto fra le nuvole.',
     read2: 'Gli spazi vuoti sono voluti: dove un dato manca, la mappa sfuma invece di inventare.',
     read3: 'Ogni numero ha la sua fonte, aperta: in «Fonti e crediti» c’è da dove viene e con quale licenza.',
+  },
+
+  /** What kind of data a chapter or layer shows, in a chip beside its title. */
+  kinds: {
+    observed: 'misurato', model: 'modello', forecast: 'previsione', reanalysis: 'rianalisi', estimate: 'stima',
+    statistics: 'statistica ufficiale', inventory: 'inventario', computed: 'calcolato', projection: 'con proiezioni',
   },
 
   /** How to read the layers of Esplora that have no chapter of their own. */
@@ -711,6 +723,15 @@ const it = {
     text: 'Superficie coperta da edifici in ogni chilometro quadrato, stimata dalle immagini Landsat e Sentinel-2 dal Global Human Settlement Layer della Commissione europea. Il 2025 e il 2030 sono proiezioni, non misure. La mappa mostra la radice della quota costruita, perché anche i villaggi restino visibili accanto alle metropoli.',
     source: 'Commissione europea, JRC · GHS-BUILT-S R2023A · CC BY 4.0',
   },
+  dighe: {
+    title: 'Le dighe', kicker: 'Fiumi fermati, dal 1900 a oggi',
+    narrate: (p: { total: string; dated: string; peak: number }) => `${p.total} dighe, censite una per una. Di ${p.dated} si conosce l’anno: guardale accendersi nell’ordine in cui sono state finite. Il decennio con più cantieri chiusi è quello dal ${p.peak}. Quelle senza data compaiono alla fine, più tenui.`,
+    total: 'dighe e sbarramenti nell’inventario',
+    peak: (n: string) => `il decennio con più dighe finite: ${n}`,
+    storage: 'd’acqua che possono trattenere, tutti i serbatoi insieme',
+    text: 'Global Dam Watch riunisce i grandi censimenti delle dighe del mondo in un solo inventario, compilato da archivi nazionali e immagini satellitari: è un elenco, non una misura. La grandezza del punto segue il volume del serbatoio. Per più di metà delle dighe, soprattutto le piccole, l’anno non è noto.',
+    source: 'Global Dam Watch v1.0 (Lehner et al. 2024) · CC BY 4.0',
+  },
   rotte: {
     title: 'Le rotte', kicker: 'Il traffico delle navi, 2015 – 2021',
     narrate: 'Ogni filo d’oro è una rotta: miliardi di posizioni trasmesse dalle navi in sei anni. Le merci del mondo si stringono in pochi passaggi, Malacca, Suez, Gibilterra, Panama, e da lì si allargano su tutti gli oceani.',
@@ -785,6 +806,14 @@ const it = {
     peak: (origin: string, year: number) => `domande dall’origine ${origin}, nel ${year} (anno di picco)`,
     text: 'Domande individuali nuove presentate alle autorità di governo, per paese di presentazione. Solo tre origini: non sono tutte le migrazioni né persone uniche. Dal 2022 la maggior parte di chi lasciava l’Ucraina ha ottenuto nell’Unione europea la protezione temporanea, che non è contata qui. Gli archi uniscono le capitali: sono schematici, non viaggi osservati.',
     source: 'UNHCR, Refugee Data Portal · AsylumApplications, CC BY 4.0',
+  },
+  rotte_asilo: {
+    title: 'Le rotte dell’asilo', kicker: 'Asilo da ogni paese, 2000 – 2024',
+    narrate: (p: { from: string; to: string; n: string }) => `Ogni filo è una rotta: da un paese si fugge, in un altro si chiede asilo. Il colore dice la regione di partenza. Nel 2024 la rotta più grande è ${p.from} → ${p.to}: ${p.n} domande in un solo anno.`,
+    routes: 'rotte disegnate, le trenta più grandi di ogni anno',
+    sum: 'domande sulle rotte disegnate, nel 2024',
+    text: 'Domande individuali nuove di protezione internazionale, da ogni paese d’origine verso il paese dove sono presentate; sono disegnate solo le trenta rotte più grandi di ogni anno. Il colore è la regione di partenza (Banca Mondiale): ambra Africa subsahariana, turchese Medio Oriente e Nord Africa, azzurro Europa e Asia centrale, rosa America Latina, viola Asia orientale e Pacifico, giallo Asia meridionale, bianco Nord America. Non sono persone uniche né tutte le migrazioni; gli archi uniscono le capitali e sono schematici.',
+    source: 'UNHCR, Refugee Data Finder · CC BY 4.0 · regioni della Banca Mondiale',
   },
 
   // ——— Il cielo, adesso ———

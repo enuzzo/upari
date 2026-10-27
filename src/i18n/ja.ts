@@ -120,6 +120,7 @@ const ja: Dict = {
       smog: '二酸化窒素（NO₂）', ozono: 'オゾン層', petrolio: '海の油膜（過去30日間）',
       aurora: 'いまのオーロラ', satelliti: 'すべての人工衛星', partenze: '次の打ち上げ', bolidi: '1988年以降の火球',
       citta: '都市（1975–2030年）', rotte: '船の航路',
+      asilomondo: '庇護、すべての経路', dighe: '世界のダム',
       livello: '海面の高さ', onde: '波（過去24時間）',
       migranti: '外国生まれ', co2: '1人あたりのCO₂', rifugiati: '出身国別の難民',
     },
@@ -169,6 +170,8 @@ const ja: Dict = {
       ['波', 'NOAA WaveWatch IIIモデル、PacIOOS ERDDAP経由'],
       ['移民と1人あたりのCO₂', 'World Bank WDI（UN DESA、EDGAR・欧州委員会JRC）、CC BY 4.0'],
       ['出身国別の難民', 'UNHCR Refugee Data Finder、CC BY 4.0'],
+      ['ダム', 'Global Dam Watch v1.0、Lehner et al. 2024、CC BY 4.0'],
+      ['庇護の経路', 'UNHCR Refugee Data Finder、すべての出身国からの庇護申請、CC BY 4.0。世界銀行の地域区分、CC BY 4.0'],
       ['人々', 'World Bank、World Development Indicators（UN World Population Prospects、UN IGME、ILOのデータを含む）、CC BY 4.0。庇護申請はUNHCR Refugee Data Portal、CC BY 4.0。国境はNatural Earth、パブリックドメイン'],
       ['音楽と効果音', 'Magnific（Google Lyria、ElevenLabs）を使い、Upariのために作曲'],
       ['場所の検索', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>、データ © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors、ODbL'],
@@ -290,6 +293,9 @@ const ja: Dict = {
     launch: (day: string, place: string) => `${day} · ${place}`,
     fireball: (kt: string) => `${kt}キロトン`,
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · 高度${alt} kmで爆発` : ''}`,
+    dam: (year: number) => `${year}年に完成したダム`,
+    damUndated: 'ダム（完成年は不明）',
+    damSub: (cap: string, height: string | null) => `貯水池の容量${cap}百万m³${height ? ` · 高さ${height} m` : ''}`,
   },
 
   classe: {
@@ -313,6 +319,12 @@ const ja: Dict = {
     read1: '観測か、モデルか、予報か：どのレイヤーも「探索」の注記にそれを書いている。波はシミュレーション。雪は、衛星が雲の切れ間から見たものだ。',
     read2: '空白はわざとだ：データのないところでは、地図は何かをこしらえる代わりに薄れていく。',
     read3: 'どの数値にも、公開された出典がある：「データの出典とクレジット」に、どこから来たか、どのライセンスかが書いてある。',
+  },
+
+  /** What kind of data a chapter or layer shows, in a chip beside its title. */
+  kinds: {
+    observed: '実測', model: 'モデル', forecast: '予報', reanalysis: '再解析', estimate: '推計',
+    statistics: '公式統計', inventory: '台帳', computed: '計算値', projection: '予測を含む',
   },
 
   notes: {
@@ -706,6 +718,15 @@ const ja: Dict = {
     text: '1平方キロメートルごとに、建物に覆われた面積。欧州委員会のGlobal Human Settlement Layerが、LandsatとSentinel-2の画像から推計したもの。2025年と2030年は予測で、測定値ではない。村も大都市と並んで見えるよう、地図は建物の割合の平方根で描いている。',
     source: '欧州委員会、JRC · GHS-BUILT-S R2023A · CC BY 4.0',
   },
+  dighe: {
+    title: 'ダム', kicker: '堰き止められた川、1900年から今日まで',
+    narrate: (p: { total: string; dated: string; peak: number }) => `${p.total}基のダムを、ひとつずつ数え上げた。${p.dated}基は完成した年が分かっている。完成した順に灯っていくのを見てほしい。最も多く完成した10年間は${p.peak}年に始まった。年のないものは、最後に、うすく現れる。`,
+    total: '台帳に載るダムと堰',
+    peak: (n: string) => `完成したダムが最も多い10年間：${n}基`,
+    storage: '貯められる水の量。すべての貯水池の合計',
+    text: 'Global Dam Watchは、世界の主なダム調査をひとつの台帳にまとめたもので、各国の記録と衛星画像から作られている。これは一覧であり、測定ではない。点の大きさは貯水池の容量に従う。半数以上のダム、とくに小さなものは、完成した年が分かっていない。',
+    source: 'Global Dam Watch v1.0（Lehner et al. 2024）· CC BY 4.0',
+  },
   rotte: {
     title: '航路', kicker: '船の交通、2015–2021年',
     narrate: '金色の糸の一本一本が航路だ。6年のあいだに船が発信した、何十億もの位置。世界の物資は、マラッカ、スエズ、ジブラルタル、パナマといった数少ない通り道に集まり、そこからすべての大洋へ広がっていく。',
@@ -779,6 +800,14 @@ const ja: Dict = {
     peak: (origin: string, year: number) => `${origin}からの申請、${year}年（ピークの年）`,
     text: '政府当局に新たに提出された個人の申請を、申請先の国ごとに数えたもの。出身国は三つだけで、移住のすべてでも、重複のない人数でもない。2022年以降、ウクライナを離れた人の大半はEUで一時的保護を受けており、ここには含まれていない。弧は首都どうしを結んだ模式的なもので、実際に観測された移動経路ではない。',
     source: 'UNHCR, Refugee Data Portal · AsylumApplications, CC BY 4.0',
+  },
+  rotte_asilo: {
+    title: '庇護の経路', kicker: 'すべての国からの庇護、2000–2024年',
+    narrate: (p: { from: string; to: string; n: string }) => `糸の一本一本が経路だ。人々はある国から逃れ、別の国で庇護を求める。色は出発した地域を表す。2024年に最大の経路は${p.from} → ${p.to}で、一年で${p.n}件の申請があった。`,
+    routes: '描かれた経路（各年の上位30本）',
+    sum: '2024年、描かれた経路の申請件数',
+    text: '国際的保護を求める新規の個人申請を、出身国から申請先の国へと結んだもの。描くのは各年の上位30経路のみ。色は出発地域（世界銀行の区分）で、琥珀色はサハラ以南アフリカ、青緑は中東・北アフリカ、青はヨーロッパ・中央アジア、ピンクはラテンアメリカ、紫は東アジア・太平洋、黄色は南アジア、白は北アメリカ。重複のない人数でも、移住のすべてでもない。弧は首都どうしを結んだ模式的なものである。',
+    source: 'UNHCR, Refugee Data Finder · CC BY 4.0 · 世界銀行の地域区分',
   },
 
   // ——— いまの空 ———

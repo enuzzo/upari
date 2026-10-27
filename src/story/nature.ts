@@ -115,6 +115,7 @@ async function forestMeta() {
 export const NATURE: Chapter[] = titled([
   {
     id: 'verde',
+    kind: 'observed',
     mood: 'open', sound: 'forest',
     look: { ...LOOK, data: 'ndvi', dim: 0.35, desat: 0.65 },
     duration: 23, clock: 'data',
@@ -141,6 +142,7 @@ export const NATURE: Chapter[] = titled([
   },
   {
     id: 'carbonio',
+    kind: 'observed',
     mood: 'curious',
     look: { ...LOOK, dim: 0.62, desat: 0.6 },
     duration: 24, chart: 'co2',
@@ -164,6 +166,7 @@ export const NATURE: Chapter[] = titled([
   },
   {
     id: 'foreste',
+    kind: 'observed',
     mood: 'grave', sound: 'forest',
     look: { ...LOOK, data: 'forest', dim: 0.55, desat: 0.85, years: [2001, 2024], yearSeconds: 18, bloom: 1.3 },
     duration: 24, clock: 'year',
@@ -186,6 +189,7 @@ export const NATURE: Chapter[] = titled([
   },
   {
     id: 'neve',
+    kind: 'observed',
     mood: 'calm', sound: 'ice',
     look: { ...LOOK, data: 'snow', dim: 0.5, desat: 0.55, clouds: 0 },
     duration: 23, clock: 'data',
@@ -211,6 +215,7 @@ export const NATURE: Chapter[] = titled([
   },
   {
     id: 'aria',
+    kind: 'reanalysis',
     mood: 'curious', sound: 'desert',
     look: { ...LOOK, data: 'aerosol', dim: 0.45, desat: 0.6, clouds: 0.1 },
     duration: 22, clock: 'data',
@@ -237,6 +242,7 @@ export const NATURE: Chapter[] = titled([
   },
   {
     id: 'smog',
+    kind: 'observed',
     mood: 'grave', sound: 'city',
     look: { ...LOOK, data: 'no2', dim: 0.66, desat: 0.75, night: 0.4, sun: 'real' as const },
     duration: 22, clock: 'data',
@@ -261,6 +267,7 @@ export const NATURE: Chapter[] = titled([
   },
   {
     id: 'ozono',
+    kind: 'observed',
     mood: 'curious', sound: 'ice',
     look: { ...LOOK, data: 'ozone', dim: 0.55, desat: 0.6 },
     duration: 23, clock: 'data',
@@ -285,6 +292,7 @@ export const NATURE: Chapter[] = titled([
   },
   {
     id: 'petrolio',
+    kind: 'observed',
     mood: 'grave', sound: 'waves',
     look: { ...LOOK, dim: 0.72, desat: 0.75, spots: 'slicks', spotReplay: 12, bloom: 1.2 },
     duration: 22,
@@ -309,6 +317,7 @@ export const NATURE: Chapter[] = titled([
   },
   {
     id: 'coralli',
+    kind: 'observed',
     mood: 'grave', sound: 'reef',
     look: { ...LOOK, data: 'coral', dim: 0.6, desat: 0.7, bloom: 1.2 },
     duration: 24, clock: 'data',

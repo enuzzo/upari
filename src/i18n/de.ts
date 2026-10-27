@@ -103,6 +103,7 @@ const de: Dict = {
       smog: 'Stickstoffdioxid (NO₂)', ozono: 'Die Ozonschicht', petrolio: 'Ölteppiche, 30 Tage',
       aurora: 'Polarlicht, jetzt', satelliti: 'Alle Satelliten', partenze: 'Nächste Starts', bolidi: 'Feuerkugeln seit 1988',
       citta: 'Städte, 1975 – 2030', rotte: 'Schifffahrtsrouten',
+      asilomondo: 'Asyl, alle Routen', dighe: 'Die Staudämme der Welt',
       livello: 'Meeresspiegel', onde: 'Wellen, letzte 24 Stunden',
       migranti: 'Im Ausland geboren', co2: 'CO₂ pro Person', rifugiati: 'Geflüchtete nach Herkunftsland',
     },
@@ -152,6 +153,8 @@ const de: Dict = {
       ['Wellen', 'Modell NOAA WaveWatch III, via PacIOOS ERDDAP'],
       ['Migration und CO₂ pro Person', 'World Bank WDI (UN DESA; EDGAR, Europäische Kommission JRC), CC BY 4.0'],
       ['Geflüchtete nach Herkunft', 'UNHCR Refugee Data Finder, CC BY 4.0'],
+      ['Staudämme', 'Global Dam Watch v1.0, Lehner et al. 2024, CC BY 4.0'],
+      ['Asylrouten', 'UNHCR Refugee Data Finder, Asylanträge aus allen Herkunftsländern, CC BY 4.0; Regionen der Weltbank, CC BY 4.0'],
       ['Die Menschen', 'World Bank, World Development Indicators (mit Daten aus UN World Population Prospects, UN IGME und ILO), CC BY 4.0; Asylanträge UNHCR Refugee Data Portal, CC BY 4.0; Grenzen Natural Earth, gemeinfrei'],
       ['Musik und Klänge', 'für Upari komponiert mit Magnific (Google Lyria, ElevenLabs)'],
       ['Ortssuche', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, Daten © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-Mitwirkende, ODbL'],
@@ -273,6 +276,9 @@ const de: Dict = {
     launch: (day: string, place: string) => `${day} · ${place}`,
     fireball: (kt: string) => `${kt} Kilotonnen`,
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · in ${alt} km Höhe explodiert` : ''}`,
+    dam: (year: number) => `Staudamm, fertiggestellt ${year}`,
+    damUndated: 'Staudamm, Jahr unbekannt',
+    damSub: (cap: string, height: string | null) => `Stausee mit ${cap} Millionen m³${height ? ` · ${height} m hoch` : ''}`,
   },
 
   classe: {
@@ -296,6 +302,12 @@ const de: Dict = {
     read1: 'Beobachtung, Modell oder Vorhersage: Jede Ebene sagt es in ihrer Notiz unter „Entdecken“. Die Wellen sind eine Simulation; der Schnee ist der, den die Satelliten zwischen den Wolken gesehen haben.',
     read2: 'Die Lücken sind gewollt: Wo ein Wert fehlt, blendet die Karte aus, statt etwas zu erfinden.',
     read3: 'Jede Zahl hat ihre Quelle, offen: Unter „Quellen und Nachweise“ steht, woher sie kommt und unter welcher Lizenz.',
+  },
+
+  /** What kind of data a chapter or layer shows, in a chip beside its title. */
+  kinds: {
+    observed: 'gemessen', model: 'Modell', forecast: 'Vorhersage', reanalysis: 'Reanalyse', estimate: 'Schätzung',
+    statistics: 'amtliche Statistik', inventory: 'Inventar', computed: 'berechnet', projection: 'mit Prognosen',
   },
 
   notes: {
@@ -689,6 +701,15 @@ const de: Dict = {
     text: 'Von Gebäuden bedeckte Fläche in jedem Quadratkilometer, geschätzt aus Landsat- und Sentinel-2-Aufnahmen vom Global Human Settlement Layer der Europäischen Kommission. 2025 und 2030 sind Projektionen, keine Messungen. Die Karte zeigt die Wurzel des bebauten Anteils, damit auch Dörfer neben den Megastädten sichtbar bleiben.',
     source: 'Europäische Kommission, JRC · GHS-BUILT-S R2023A · CC BY 4.0',
   },
+  dighe: {
+    title: 'Die Staudämme', kicker: 'Aufgestaute Flüsse, 1900 bis heute',
+    narrate: (p: { total: string; dated: string; peak: number }) => `${p.total} Staudämme, einzeln erfasst. Bei ${p.dated} kennen wir das Jahr: Sieh zu, wie sie in der Reihenfolge ihrer Fertigstellung aufleuchten. Das Jahrzehnt mit den meisten fertiggestellten Staudämmen begann ${p.peak}. Die ohne Datum erscheinen am Ende, blasser.`,
+    total: 'Staudämme und Sperrwerke im Inventar',
+    peak: (n: string) => `das Jahrzehnt mit den meisten fertiggestellten Staudämmen: ${n}`,
+    storage: 'Wasser, das sie fassen können, alle Stauseen zusammen',
+    text: 'Global Dam Watch führt die wichtigsten Staudamm-Erhebungen der Welt in einem einzigen Inventar zusammen, zusammengestellt aus nationalen Registern und Satellitenbildern: Es ist eine Liste, keine Messung. Die Größe jedes Punkts folgt dem Volumen seines Stausees. Bei mehr als der Hälfte der Staudämme, meist den kleinen, ist das Jahr nicht bekannt.',
+    source: 'Global Dam Watch v1.0 (Lehner et al. 2024) · CC BY 4.0',
+  },
   rotte: {
     title: 'Die Routen', kicker: 'Der Schiffsverkehr, 2015 – 2021',
     narrate: 'Jeder goldene Faden ist eine Route: Milliarden Positionen, die Schiffe in sechs Jahren gesendet haben. Die Waren der Welt drängen sich durch wenige Engstellen, Malakka, Suez, Gibraltar, Panama, und verteilen sich von dort über alle Ozeane.',
@@ -762,6 +783,14 @@ const de: Dict = {
     peak: (origin: string, year: number) => `Anträge mit Herkunft ${origin}, ${year} (Spitzenjahr)`,
     text: 'Neue Einzelanträge bei staatlichen Behörden, nach Land der Antragstellung. Nur drei Herkunftsländer: Das sind weder alle Migrationsbewegungen noch einzeln gezählte Personen. Seit 2022 haben die meisten Menschen, die die Ukraine verlassen haben, in der Europäischen Union vorübergehenden Schutz erhalten, der hier nicht gezählt wird. Die Bögen verbinden die Hauptstädte: Sie sind schematisch, keine beobachteten Reisewege.',
     source: 'UNHCR, Refugee Data Portal · AsylumApplications, CC BY 4.0',
+  },
+  rotte_asilo: {
+    title: 'Die Routen des Asyls', kicker: 'Asyl aus jedem Land, 2000 – 2024',
+    narrate: (p: { from: string; to: string; n: string }) => `Jeder Faden ist eine Route: Menschen fliehen aus einem Land und beantragen Asyl in einem anderen. Die Farbe zeigt die Herkunftsregion. 2024 ist die größte Route ${p.from} → ${p.to}: ${p.n} Anträge in einem einzigen Jahr.`,
+    routes: 'gezeichnete Routen, jeweils die dreißig größten eines Jahres',
+    sum: 'Anträge auf den gezeichneten Routen, 2024',
+    text: 'Neue Einzelanträge auf internationalen Schutz, aus jedem Herkunftsland in das Land, in dem sie gestellt wurden; gezeichnet werden nur die dreißig größten Routen jedes Jahres. Die Farbe ist die Herkunftsregion (Weltbank): Bernstein Subsahara-Afrika, Türkis Naher Osten und Nordafrika, Blau Europa und Zentralasien, Rosa Lateinamerika, Violett Ostasien und Pazifik, Gelb Südasien, Weiß Nordamerika. Das sind weder einzeln gezählte Personen noch alle Migrationsbewegungen; die Bögen verbinden die Hauptstädte und sind schematisch.',
+    source: 'UNHCR, Refugee Data Finder · CC BY 4.0 · Regionen der Weltbank',
   },
 
   // ——— Der Himmel, jetzt ———

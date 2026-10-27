@@ -150,8 +150,9 @@ richieda un account o una chiave che l’utente non ha dato.
 
 ### Subito
 - [x] Nota «come leggere» e fonte per ogni strato in Esplora (dal testo del capitolo).
-- [~] Etichette osservato / modello / inventario / provvisorio: nei testi, non ancora come
-  etichetta separata.
+- [x] Etichette del tipo di dato (misurato, modello, previsione, rianalisi, stima, statistica
+  ufficiale, inventario, calcolato, con proiezioni): accanto al titolo di ogni capitolo e
+  nella nota di Esplora.
 - [x] Il pianeta oggi: temperatura (Climate Pulse), CO₂ (NOAA GML), ghiaccio NSIDC v4
   (scaricato ogni giorno in `public/climate/seaice.json`, non ancora mostrato).
 - [x] Ozono OMPS. [x] NO₂ TROPOMI. [x] SO₂ TROPOMI (in Esplora, con i vulcani).
@@ -176,9 +177,11 @@ richieda un account o una chiave che l’utente non ha dato.
   1996–2020 (Global Mangrove Watch, licenza da confermare sulla fonte primaria).
 - [x] Nati all’estero (UN DESA via WDI, ogni cinque anni, il dato mostra il suo anno).
   [x] Rifugiati per paese d’origine (UNHCR, ogni mille abitanti): capitolo «Lontano da casa».
-  [ ] Flussi origine–destinazione di tutte le origini (le scie oggi restano tre).
+  [x] Flussi di asilo da tutte le origini (UNHCR, le trenta rotte più grandi di ogni anno,
+  colore per regione di partenza): capitolo «Le rotte dell’asilo» e strato in Esplora.
 - [x] CO₂ per persona 1970–2024 (EDGAR via WDI, non IEA-EDGAR): capitolo «L’impronta».
-  [ ] Dighe nel tempo.
+  [x] Dighe nel tempo (Global Dam Watch v1.0, CC BY 4.0): capitolo «Le dighe», accese
+  nell’ordine dell’anno di costruzione, e strato in Esplora.
 - [x] Tendina prima/dopo in Esplora (atlante e serie). [x] Anno di nascita nel «Termometro».
 - [x] Pagina «Per la classe» (da «Perché Upari»).
 - [ ] Riserva per gli elementi orbitali: SatNOGS rimanda dati Space-Track, la cui

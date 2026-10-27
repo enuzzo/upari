@@ -619,3 +619,9 @@ button.about-link:hover { color: var(--ink); border-color: var(--ink-3); }
 /* A label near the right edge reads to the left of its point. */
 .anchor.left .a-in { left: auto; right: 44px; padding-left: 0; padding-right: 14px; border-left: 0; border-right: 1px solid rgba(255, 255, 255, 0.6); text-align: right; }
 .anchor.left .a-in::before { left: -12px; right: 0; }
+
+/* What kind of data a chapter shows, beside its kicker. */
+.kicker { flex-wrap: wrap; row-gap: 8px; }
+.kicker .num, .kicker .kind { flex: none; white-space: nowrap; }
+.kicker .kind:not(:empty) { padding: 2px 7px; border: 1px solid var(--ink-4); border-radius: 3px; font-size: 9.5px; letter-spacing: 0.18em; color: var(--ink-2); }
+.ex-note .kind:not(:empty) { display: inline-block; margin-bottom: 8px; padding: 2px 7px; border: 1px solid var(--ink-4); border-radius: 3px; font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-2); }

@@ -27,6 +27,7 @@ export interface Beat {
   clear?: boolean;
 }
 export interface Fact { value: string; label: string }
+export type Kind = keyof typeof t.kinds;
 export interface Detail { facts: Fact[]; text: string; source: string }
 export interface Legend { stops: Stop[]; readonly left: string; readonly right: string; readonly title: string }
 
@@ -51,9 +52,13 @@ export interface Chapter {
   /** The feeling of the score, and the sound of the place. */
   mood?: Mood;
   sound?: Ambience;
-  clock?: 'data' | 'year';
+  clock?: 'data' | 'year' | 'replay';
+  /** The years a replay of spots runs through, for the clock. */
+  replay?: [number, number];
   /** A chart beside the planet. */
   chart?: ChartId;
+  /** What kind of data the chapter shows: measured, model, forecast, statistics... */
+  kind?: Kind;
   /** Labels on the globe (lon, lat, height in km), shown once the words are on screen. */
   badges?: (g: Globe) => Promise<{ lon: number; lat: number; altKm: number; title: string; sub: string }[]>;
   pin?: (g: Globe) => Promise<{ lon: number; lat: number; label: string; sub: string } | null>;
@@ -136,6 +141,7 @@ function nightSide(g: Globe): Shot {
 export const CHAPTERS: Chapter[] = titled([
   {
     id: 'pianeta',
+    kind: 'observed',
     mood: 'calm',
     look: { sun: 'real', clouds: 1, night: 1 },
     duration: 19,
@@ -149,6 +155,7 @@ export const CHAPTERS: Chapter[] = titled([
   },
   {
     id: 'termometro',
+    kind: 'reanalysis',
     mood: 'curious',
     look: { sun: 'real', clouds: 0.7, night: 0.7, dim: 0.6, desat: 0.35 },
     duration: 24, chart: 'temperature',
@@ -172,6 +179,7 @@ export const CHAPTERS: Chapter[] = titled([
   },
   {
     id: 'respiro',
+    kind: 'model',
     mood: 'curious', sound: 'wind',
     look: { sun: 'studio', clouds: 0.12, cloudFlow: 1, dim: 0.62, desat: 0.5, night: 0, flow: 'wind', atmo: 0.8 },
     duration: 22,
@@ -200,6 +208,7 @@ export const CHAPTERS: Chapter[] = titled([
   },
   {
     id: 'tempeste',
+    kind: 'observed',
     mood: 'grave', sound: 'wind',
     look: { sun: 'studio', clouds: 0.3, cloudFlow: 1, dim: 0.6, desat: 0.5, night: 0, flow: 'wind', atmo: 0.8, spots: 'cyclones', spotReplay: 12 },
     duration: 22,
@@ -228,6 +237,7 @@ export const CHAPTERS: Chapter[] = titled([
   },
   {
     id: 'correnti',
+    kind: 'estimate',
     mood: 'curious', sound: 'ocean',
     look: { sun: 'studio', clouds: 0, dim: 0.62, desat: 0.5, night: 0, flow: 'currents', atmo: 0.75 },
     duration: 21,
@@ -240,6 +250,7 @@ export const CHAPTERS: Chapter[] = titled([
   },
   {
     id: 'calore',
+    kind: 'observed',
     mood: 'calm', sound: 'waves',
     look: { sun: 'studio', data: 'sst', clouds: 0.06, dim: 0.3, desat: 0.4, night: 0, atmo: 0.85 },
     duration: 22, clock: 'data',
@@ -270,6 +281,7 @@ export const CHAPTERS: Chapter[] = titled([
   },
   {
     id: 'febbre',
+    kind: 'observed',
     mood: 'grave', sound: 'waves',
     look: { sun: 'studio', data: 'anomaly', clouds: 0.06, dim: 0.55, desat: 0.75, night: 0, atmo: 0.85 },
     duration: 22, clock: 'data',
@@ -302,6 +314,7 @@ export const CHAPTERS: Chapter[] = titled([
   },
   {
     id: 'fioritura',
+    kind: 'observed',
     mood: 'open', sound: 'reef',
     look: { sun: 'studio', data: 'chlorophyll', clouds: 0.04, dim: 0.66, desat: 0.5, night: 0, atmo: 0.8, bloom: 1.3 },
     duration: 23, clock: 'data',
@@ -323,6 +336,7 @@ export const CHAPTERS: Chapter[] = titled([
   },
   {
     id: 'pioggia',
+    kind: 'estimate',
     mood: 'calm', sound: 'rain',
     look: { sun: 'studio', data: 'rain', clouds: 0.18, dim: 0.62, desat: 0.55, night: 0, atmo: 0.8, bloom: 0.8 },
     duration: 22,
@@ -346,6 +360,7 @@ export const CHAPTERS: Chapter[] = titled([
   },
   {
     id: 'fuoco',
+    kind: 'observed',
     mood: 'grave', sound: 'fire',
     look: { sun: 'studio', clouds: 0, dim: 0.78, desat: 0.75, night: 0.35, fires: 1, atmo: 0.6, bloom: 1.4 },
     duration: 20,
@@ -366,6 +381,7 @@ export const CHAPTERS: Chapter[] = titled([
   },
   {
     id: 'terremoti',
+    kind: 'observed',
     mood: 'grave', sound: 'quake',
     look: { sun: 'studio', clouds: 0, dim: 0.74, desat: 0.75, night: 0, atmo: 0.65, quakes: 1, quakeReplay: 14, bloom: 1.3, spots: 'volcanoes' },
     duration: 24,
@@ -408,6 +424,7 @@ export const CHAPTERS: Chapter[] = titled([
   },
   {
     id: 'ghiaccio',
+    kind: 'observed',
     mood: 'curious', sound: 'ice',
     look: { sun: 'studio', data: 'ice', clouds: 0.08, dim: 0.5, desat: 0.5, night: 0, atmo: 0.9, spots: 'icebergs' },
     duration: 22, clock: 'data',
@@ -434,6 +451,7 @@ export const CHAPTERS: Chapter[] = titled([
   },
   {
     id: 'luci',
+    kind: 'observed',
     mood: 'open', sound: 'night',
     look: { sun: 'real', clouds: 0.45, night: 0.85, atmo: 1, bloom: 0.9 },
     duration: 19,
@@ -443,6 +461,7 @@ export const CHAPTERS: Chapter[] = titled([
   },
   {
     id: 'lassu',
+    kind: 'computed',
     mood: 'open', sound: 'station',
     look: { sun: 'real', clouds: 1, night: 1.1, iss: 1, atmo: 1 },
     duration: 62,

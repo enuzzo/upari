@@ -111,6 +111,7 @@ const zh: Dict = {
       smog: '二氧化氮（NO₂）', ozono: '臭氧层', petrolio: '海上油污，30 天',
       aurora: '此刻的极光', satelliti: '所有卫星', partenze: '即将到来的发射', bolidi: '1988 年以来的火流星',
       citta: '城市，1975 – 2030', rotte: '船舶航线',
+      asilomondo: '庇护，所有路线', dighe: '世界的水坝',
       livello: '海平面', onde: '海浪，过去 24 小时',
       migranti: '出生在国外', co2: '人均 CO₂', rifugiati: '按原籍国统计的难民',
     },
@@ -160,6 +161,8 @@ const zh: Dict = {
       ['海浪', 'NOAA WaveWatch III 模型，来自 PacIOOS ERDDAP'],
       ['移民与人均 CO₂', 'World Bank WDI（UN DESA；EDGAR，欧盟委员会 JRC），CC BY 4.0'],
       ['按原籍统计的难民', 'UNHCR Refugee Data Finder，CC BY 4.0'],
+      ['水坝', 'Global Dam Watch v1.0，Lehner et al. 2024，CC BY 4.0'],
+      ['庇护路线', 'UNHCR Refugee Data Finder，来自所有来源国的庇护申请，CC BY 4.0；世界银行区域划分，CC BY 4.0'],
       ['人类', 'World Bank，World Development Indicators（含 UN World Population Prospects、UN IGME 与 ILO 的数据），CC BY 4.0；庇护申请来自 UNHCR Refugee Data Portal，CC BY 4.0；Natural Earth 边界，公有领域'],
       ['音乐与音效', '借助 Magnific（Google Lyria、ElevenLabs）为 Upari 创作'],
       ['地点搜索', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>，数据 © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors，ODbL'],
@@ -281,6 +284,9 @@ const zh: Dict = {
     launch: (day: string, place: string) => `${day} · ${place}`,
     fireball: (kt: string) => `${kt} 千吨`,
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · 在 ${alt} km 高空爆炸` : ''}`,
+    dam: (year: number) => `${year} 年建成的水坝`,
+    damUndated: '水坝，年份不详',
+    damSub: (cap: string, height: string | null) => `水库库容 ${wan(cap)} m³${height ? ` · 坝高 ${height} 米` : ''}`,
   },
 
   classe: {
@@ -304,6 +310,12 @@ const zh: Dict = {
     read1: '观测、模型还是预报：每个图层都在“探索”里的说明中写明。海浪是模拟结果；积雪是卫星在云层间隙中看到的。',
     read2: '空白是有意为之：缺少数据的地方，地图会淡出，而不是凭空编造。',
     read3: '每个数字都有公开的来源：在“来源与致谢”中可以看到它来自哪里、采用什么许可。',
+  },
+
+  /** What kind of data a chapter or layer shows, in a chip beside its title. */
+  kinds: {
+    observed: '实测', model: '模型', forecast: '预报', reanalysis: '再分析', estimate: '估算',
+    statistics: '官方统计', inventory: '名录', computed: '计算', projection: '含预测',
   },
 
   notes: {
@@ -697,6 +709,15 @@ const zh: Dict = {
     text: '每平方公里内被建筑覆盖的面积，由欧盟委员会的 Global Human Settlement Layer 根据 Landsat 和 Sentinel-2 影像估算。2025 年和 2030 年是预测，不是测量。地图显示的是建成比例的平方根，好让村庄在大都市旁边也看得见。',
     source: '欧盟委员会，JRC · GHS-BUILT-S R2023A · CC BY 4.0',
   },
+  dighe: {
+    title: '水坝', kicker: '被拦住的河流，1900 年至今',
+    narrate: (p: { total: string; dated: string; peak: number }) => `${p.total} 座水坝，逐一登记。其中 ${p.dated} 座知道建成的年份：看它们按建成的先后依次亮起。建成最多的十年始于 ${p.peak} 年。没有年份的在最后出现，更暗淡。`,
+    total: '名录中的水坝和拦河坝',
+    peak: (n: string) => `建成水坝最多的十年：${n} 座`,
+    storage: '它们能蓄的水，所有水库加在一起',
+    text: 'Global Dam Watch 把世界上主要的水坝普查汇成一份名录，由各国记录和卫星影像编成：这是一份清单，不是测量。每个点的大小对应其水库的容量。超过一半的水坝（多数是小坝）不知道建成年份。',
+    source: 'Global Dam Watch v1.0（Lehner et al. 2024）· CC BY 4.0',
+  },
   rotte: {
     title: '航线', kicker: '船舶交通，2015 – 2021',
     narrate: '每一根金线都是一条航线：六年间船只发出的数十亿个位置。世界的货物挤过少数几个通道，马六甲、苏伊士、直布罗陀、巴拿马，再从那里散向所有大洋。',
@@ -770,6 +791,14 @@ const zh: Dict = {
     peak: (origin: string, year: number) => `来自${origin}的申请，${year} 年（峰值年份）`,
     text: '向政府当局提交的新个人申请，按申请所在国统计。只有三个来源国：这不是全部迁移，也不是去重后的人数。自 2022 年起，离开乌克兰的人大多在欧盟获得了临时保护，这里不计入。弧线连接各国首都：只是示意，而非观测到的路线。',
     source: 'UNHCR，Refugee Data Portal · AsylumApplications，CC BY 4.0',
+  },
+  rotte_asilo: {
+    title: '庇护路线', kicker: '来自各国的庇护，2000 – 2024',
+    narrate: (p: { from: string; to: string; n: string }) => `每一条线是一条路线：人们逃离一个国家，到另一个国家申请庇护。颜色表示出发的地区。2024 年最大的路线是 ${p.from} → ${p.to}：一年之内 ${p.n} 份申请。`,
+    routes: '已绘制的路线，每年最大的三十条',
+    sum: '2024 年已绘制路线上的申请',
+    text: '新提交的个人国际保护申请，从每个来源国到提交申请的国家；每年只绘制最大的三十条路线。颜色是出发地区（世界银行划分）：琥珀色为撒哈拉以南非洲，青绿色为中东和北非，蓝色为欧洲和中亚，粉色为拉丁美洲，紫色为东亚和太平洋，黄色为南亚，白色为北美。这不是去重后的人数，也不是全部迁移；弧线连接各国首都，只是示意。',
+    source: 'UNHCR，Refugee Data Finder · CC BY 4.0 · 世界银行区域划分',
   },
 
   // ——— 此刻的天空 ———

@@ -77,6 +77,11 @@ export const ATLAS: Record<AtlasId, AtlasDef> = {
   },
 };
 
+/** World Bank regions of origin, for the routes from every origin: colour and order. */
+export const REGION_COLORS: [number, number, number][] = [
+  [1.0, 0.7, 0.36], [0.35, 0.95, 0.9], [0.56, 0.71, 1.0], [1.0, 0.55, 0.8], [0.78, 0.64, 1.0], [1.0, 0.88, 0.4], [0.95, 0.95, 0.95],
+];
+
 /** Asylum applications from three origins (UNHCR), as streams of light. */
 export const ORIGINS: Record<string, { readonly name: string; color: [number, number, number] }> = {
   SYR: { get name() { return countryName('SYR', 'Siria'); }, color: [0.35, 0.95, 0.9] },
@@ -107,6 +112,11 @@ export class Atlas {
   flows: Points | null = null;
   /** The faint arcs the streams follow. */
   arcs: LineSegments | null = null;
+  /** The largest routes from every origin, coloured by region (null when the file is missing). */
+  flowsAll: Points | null = null;
+  arcsAll: LineSegments | null = null;
+  regionOf: Record<string, number> = {};
+  allRelations: Relation[] = [];
   private loading: Promise<void> | null = null;
 
   load(): Promise<void> {
@@ -143,7 +153,16 @@ export class Atlas {
     countries.forEach((c, i) => { if (c.stat) this.slots.set(c.stat, i + 1); });
     this.idMap = this.drawIdMap();
     this.dust = this.makeDust(dust);
-    this.flows = this.makeFlows();
+    const three = this.makeFlows(this.relations, (r) => ORIGINS[r.origin]?.color ?? [1, 1, 1]);
+    this.flows = three.points; this.arcs = three.arcs;
+    // Every origin: optional, the atlas works without it.
+    const all = await get('asylum-all.json').catch(() => null);
+    if (all) {
+      this.regionOf = all.region;
+      this.allRelations = all.relations;
+      const made = this.makeFlows(all.relations, (r) => REGION_COLORS[all.region[r.origin]] ?? [0.9, 0.9, 0.9]);
+      this.flowsAll = made.points; this.arcsAll = made.arcs;
+    }
   }
 
   /** Each country painted with its slot in red; outlines in black mark the borders. */
@@ -332,16 +351,16 @@ export class Atlas {
   }
 
   /** One faint arc per relation, as bright as the year's applications. */
-  private makeArcs(countTex: DataTexture): LineSegments {
+  private makeArcs(relations: Relation[], countTex: DataTexture, tintOf: (r: Relation) => [number, number, number]): LineSegments {
     const a: number[] = [], b: number[] = [], rel: number[] = [], t: number[] = [], tint: number[] = [];
     const va = new Vector3(), vb = new Vector3();
     const SEG = 32;
-    this.relations.forEach((r, i) => {
+    relations.forEach((r, i) => {
       const o = this.places.get(r.origin), d = this.places.get(r.destination);
       if (!o || !d || i >= 512) return;
       lonLatToVec(o.lon, o.lat, 1, va);
       lonLatToVec(d.lon, d.lat, 1, vb);
-      const c = ORIGINS[r.origin]?.color ?? [1, 1, 1];
+      const c = tintOf(r);
       for (let j = 0; j < SEG; j++) for (const k of [j, j + 1]) {
         a.push(va.x, va.y, va.z); b.push(vb.x, vb.y, vb.z); rel.push(i); t.push(k / SEG); tint.push(...c);
       }
@@ -390,22 +409,22 @@ export class Atlas {
    * lodged: one particle stream per relation, as many particles as the square root of the
    * year's applications allows. Schematic arcs between capitals, not observed journeys.
    */
-  private makeFlows(): Points {
-    const max = Math.max(...this.relations.flatMap((r) => r.values.map((x) => x ?? 0)));
+  private makeFlows(relations: Relation[], tintOf: (r: Relation) => [number, number, number]): { points: Points; arcs: LineSegments } {
+    const max = Math.max(...relations.flatMap((r) => r.values.map((x) => x ?? 0)));
     const perParticle = Math.sqrt(max) / 110;
     const counts = new Float32Array(512 * this.years.length);
     const a: number[] = [], b: number[] = [], rel: number[] = [], k: number[] = [], phase: number[] = [], color: number[] = [];
     let seed = 11;
     const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
     const va = new Vector3(), vb = new Vector3();
-    this.relations.forEach((r, i) => {
+    relations.forEach((r, i) => {
       const o = this.places.get(r.origin), d = this.places.get(r.destination);
       if (!o || !d || i >= 512) return;
       r.values.forEach((v, y) => { counts[y * 512 + i] = v ? Math.max(1, Math.sqrt(v) / perParticle) : 0; });
       const n = Math.ceil(Math.max(...r.values.map((x) => (x ? Math.sqrt(x) / perParticle : 0))));
       lonLatToVec(o.lon, o.lat, 1, va);
       lonLatToVec(d.lon, d.lat, 1, vb);
-      const c = ORIGINS[r.origin]?.color ?? [1, 1, 1];
+      const c = tintOf(r);
       for (let j = 0; j < n; j++) {
         a.push(va.x, va.y, va.z); b.push(vb.x, vb.y, vb.z);
         rel.push(i); k.push(j); phase.push(rnd()); color.push(...c);
@@ -414,7 +433,7 @@ export class Atlas {
     const countTex = new DataTexture(counts, 512, this.years.length, RedFormat, FloatType);
     countTex.magFilter = countTex.minFilter = NearestFilter;
     countTex.needsUpdate = true;
-    this.arcs = this.makeArcs(countTex);
+    const arcs = this.makeArcs(relations, countTex, tintOf);
     const g = new BufferGeometry();
     g.setAttribute('position', new BufferAttribute(new Float32Array(a), 3));
     g.setAttribute('dest', new BufferAttribute(new Float32Array(b), 3));
@@ -463,6 +482,6 @@ export class Atlas {
     points.frustumCulled = false;
     points.renderOrder = 4;
     points.visible = false;
-    return points;
+    return { points, arcs };
   }
 }

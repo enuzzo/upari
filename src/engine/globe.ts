@@ -52,6 +52,8 @@ export interface Look {
   dust: number;
   /** Asylum applications as streams, 0..1. */
   migration: number;
+  /** The largest routes of asylum from every origin, coloured by region, 0..1. */
+  migrationAll: number;
   /** The year to show; with `years`, the years run from the first to the second. */
   year: number | null;
   years: [number, number] | null;
@@ -79,7 +81,7 @@ export interface Look {
 export const DEFAULT_LOOK: Look = {
   sun: 'real', clouds: 1, cloudFlow: 1, night: 1, dim: 0, desat: 0, data: null, flow: null,
   fires: 0, iss: 0, stars: 1, atmo: 1, exposure: 1, relief: 1, bloom: 1, pin: null,
-  atlas: null, dust: 0, migration: 0, year: null, years: null, yearSeconds: 18, quakes: 0, quakeReplay: 0,
+  atlas: null, dust: 0, migration: 0, migrationAll: 0, year: null, years: null, yearSeconds: 18, quakes: 0, quakeReplay: 0,
   spots: null, spotReplay: 0, satellites: 0, solar: 0, reach: 26, rockets: 0, flyby: 0,
 };
 
@@ -122,7 +124,7 @@ export class Globe {
   private clock = new Clock();
   private time = 0;
   private look: Look = { ...DEFAULT_LOOK };
-  cur = { clouds: 1, cloudFlow: 1, night: 1, dim: 0, desat: 0, fires: 0, iss: 0, stars: 1, atmo: 1, exposure: 1, relief: 1, bloom: 1, dataMix: 0, trail: 0, studio: 0, pin: 0, atlas: 0, dust: 0, migration: 0, quakes: 0, spots: 0, satellites: 0, solar: 0, rockets: 0, flyby: 0 };
+  cur = { clouds: 1, cloudFlow: 1, night: 1, dim: 0, desat: 0, fires: 0, iss: 0, stars: 1, atmo: 1, exposure: 1, relief: 1, bloom: 1, dataMix: 0, trail: 0, studio: 0, pin: 0, atlas: 0, dust: 0, migration: 0, migrationAll: 0, quakes: 0, spots: 0, satellites: 0, solar: 0, rockets: 0, flyby: 0 };
   private flybyScene: ReturnType<typeof createFlyby> | null = null;
   private earthRing = createEarthRing();
   private flybyLoading: Promise<void> | null = null;
@@ -293,7 +295,7 @@ export class Globe {
     if (look.data) jobs.push(this.layers.get(look.data));
     if (look.flow) jobs.push(this.loadFlow(look.flow));
     if (look.fires) jobs.push(this.loadFires());
-    if (look.atlas || look.dust || look.migration) jobs.push(this.loadAtlas());
+    if (look.atlas || look.dust || look.migration || look.migrationAll) jobs.push(this.loadAtlas());
     if (look.quakes) jobs.push(this.loadQuakes());
     if (look.spots) jobs.push(this.loadSpot(look.spots));
     if (look.satellites) jobs.push(this.loadSats());
@@ -362,6 +364,7 @@ export class Globe {
       if (this.atlasAdded) return;
       this.atlasAdded = true;
       this.scene.add(this.atlas.dust!, this.atlas.flows!, this.atlas.arcs!);
+      if (this.atlas.flowsAll) this.scene.add(this.atlas.flowsAll, this.atlas.arcsAll!);
     });
   }
 
@@ -725,6 +728,13 @@ export class Globe {
     fm.uniforms.uYear.value = yi;
     fm.uniforms.uOpacity.value = c.migration;
     fm.uniforms.uTime.value = this.time;
+    c.migrationAll = approach(c.migrationAll, L.migrationAll, dt, 1.4);
+    if (this.atlas.flowsAll && this.atlas.arcsAll) {
+      const fa = this.atlas.flowsAll.material as ShaderMaterial, aa = this.atlas.arcsAll.material as ShaderMaterial;
+      this.atlas.flowsAll.visible = this.atlas.arcsAll.visible = c.migrationAll > 0.002;
+      fa.uniforms.uYear.value = yi; fa.uniforms.uOpacity.value = c.migrationAll; fa.uniforms.uTime.value = this.time;
+      aa.uniforms.uYear.value = this.year - this.atlas.years[0]; aa.uniforms.uOpacity.value = c.migrationAll;
+    }
   }
 
   /** What is under the cursor. */
@@ -855,6 +865,12 @@ export class Globe {
   }
 
   /** How far through the series the frame on screen is, 0..1. */
+  /** How far the replay of the spots on show has gone, 0..1 (null: no replay running). */
+  spotProgress(): number | null {
+    const set = this.spotShown ? this.spotSets[this.spotShown] : null;
+    return set && this.look.spotReplay > 0 && this.cur.spots > 0.05 ? (set.material.uniforms.uClock.value as number) : null;
+  }
+
   dataFrameProgress(): number {
     const n = this.dataFrames.length;
     return n > 1 ? Math.min(1, this.frame / (n - 1)) : 0;

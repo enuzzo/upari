@@ -45,9 +45,11 @@ export function createSunBody() {
         if (uHasImage > 0.5 && facing > 0.0) {
           vec2 uv = vec2(dot(vN, x), dot(vN, y)) * 0.47 + 0.5;
           float img = texture2D(uImage, uv).r;
-          // HMI already holds the limb darkening; keep its spots, lend it the cells.
-          float shown = img * 1.15 * (0.92 + 0.16 * smoothstep(0.35, 0.75, g));
-          I = mix(I, shown, smoothstep(0.05, 0.25, facing));
+          // HMI holds the limb darkening as seen from the Earth: divide it out and apply the
+          // one of this view, so the photo meets the drawn surface without a dark seam.
+          float seen = 0.22 + 0.78 * pow(facing, 0.55) + 0.12 * pow(facing, 6.0);
+          float shown = 0.9 * img / max(seen, 0.3) * limb * cells;
+          I = mix(I, shown, smoothstep(0.2, 0.5, facing));
         }
         vec3 white = vec3(1.0, 0.9, 0.7), edge = vec3(1.0, 0.5, 0.2);
         vec3 col = mix(edge, white, smoothstep(0.0, 0.8, mu)) * I * 1.05;

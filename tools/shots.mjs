@@ -62,7 +62,8 @@ try {
   };
   await send('Runtime.enable');
   await send('Page.enable');
-  await send('Emulation.setDeviceMetricsOverride', { width: 1600, height: 1000, deviceScaleFactor: Number(process.env.DPR || 1), mobile: false });
+  // W and H set another viewport (a phone: W=390 H=844 DPR=3 MOBILE=1).
+  await send('Emulation.setDeviceMetricsOverride', { width: Number(process.env.W || 1600), height: Number(process.env.H || 1000), deviceScaleFactor: Number(process.env.DPR || 1), mobile: !!process.env.MOBILE });
   // Frame gaps from the very first frame (read with eval:JSON.stringify(__gaps)).
   await send('Page.addScriptToEvaluateOnNewDocument', { source: `window.__gaps = []; (() => { let last = 0; const f = (t) => { if (last && t - last > 40) __gaps.push([Math.round(last), Math.round(t - last)]); last = t; requestAnimationFrame(f); }; requestAnimationFrame(f); })();` });
   await send('Page.navigate', { url });

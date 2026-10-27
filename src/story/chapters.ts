@@ -25,6 +25,8 @@ export interface Beat {
   look?: Partial<Look>;
   /** Remove the labels on the globe when this beat starts. */
   clear?: boolean;
+  /** On a phone held upright, how far up the planet sits for this shot (default 0.14). */
+  portraitShift?: number;
 }
 export interface Fact { value: string; label: string }
 export type Kind = keyof typeof t.kinds;

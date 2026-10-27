@@ -336,10 +336,12 @@ export class Station {
       const [omm] = await r.json();
       return omm as { EPOCH: string };
     };
-    let omm = await read(fresh('sky/iss.json')).catch(() => null);
+    const use = (omm: { EPOCH: string } | null) => { if (omm) this.satrec = json2satrec(omm as Parameters<typeof json2satrec>[0]); };
+    // The local copy is used at once; a fresher one, when needed, replaces it when it arrives.
+    const omm = await read(fresh('sky/iss.json')).catch(() => null);
+    use(omm);
     const age = omm ? Date.now() - Date.parse(omm.EPOCH + 'Z') : Infinity;
-    if (age > 2 * 86400e3) omm = (await read('https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=JSON').catch(() => null)) ?? omm;
-    if (omm) this.satrec = json2satrec(omm as Parameters<typeof json2satrec>[0]);
+    if (age > 2 * 86400e3) use(await read('https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=JSON').catch(() => null));
   }
 
   private at(date: Date, out: Vector3): { lon: number; lat: number; alt: number } | null {
@@ -366,6 +368,31 @@ export class Station {
       if (this.at(d, p) && (sunlit(p, sun(d)) > 0.5) !== day) return { day, minutes: s / 60 };
     }
     return { day, minutes: Infinity };
+  }
+
+  /**
+   * The next pass a person at a place could see in the next days: the station at least 10° above
+   * the horizon, lit by the Sun, while the sky there is dark (the Sun 6° below the horizon).
+   */
+  nextPass(lon: number, lat: number, from: Date, sun: (d: Date) => Vector3, days = 3): { start: Date; minutes: number; maxEl: number } | null {
+    if (!this.satrec) return null;
+    const o = lonLatToVec(lon, lat, 1), p = new Vector3(), rel = new Vector3();
+    const sinMin = Math.sin(10 * Math.PI / 180), dusk = Math.sin(-6 * Math.PI / 180);
+    let start: Date | null = null, maxEl = 0, end = 0;
+    for (let s = 0; s <= days * 86400; s += 20) {
+      const d = new Date(from.getTime() + s * 1000);
+      if (!this.at(d, p)) continue;
+      rel.copy(p).sub(o);
+      const sinEl = rel.dot(o) / rel.length();
+      const sv = sun(d);
+      const seen = sinEl > sinMin && o.dot(sv) < dusk && sunlit(p, sv) > 0.5;
+      if (seen) {
+        start ??= d;
+        maxEl = Math.max(maxEl, Math.asin(sinEl) * 180 / Math.PI);
+        end = s;
+      } else if (start) break;
+    }
+    return start ? { start, minutes: Math.max(1, Math.round((end * 1000 + from.getTime() - start.getTime()) / 60000)), maxEl } : null;
   }
 
   /** Orbits flown since midnight UTC, from the mean motion. */

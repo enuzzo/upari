@@ -347,6 +347,8 @@ const zh: Dict = {
     polarNight: '今天太阳不升',
     wind: (kmh: string, dir: string) => `${dir}风 ${kmh} km/h`,
     sea: (temp: string) => `海水 ${temp} °C`,
+    iss: (day: string, time: string, minutes: string, el: string) => `国际空间站将于 ${day} 地方太阳时 ${time} 过境可见，持续 ${minutes} 分钟，最高仰角 ${el}°`,
+    issNone: '未来三天内，这里看不到国际空间站过境',
   },
 
   now: {

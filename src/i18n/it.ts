@@ -351,6 +351,8 @@ const it = {
     polarNight: 'oggi il Sole non sorge',
     wind: (kmh: string, dir: string) => `vento ${kmh} km/h da ${dir}`,
     sea: (temp: string) => `mare ${temp} °C`,
+    iss: (day: string, time: string, minutes: string, el: string) => `la Stazione Spaziale passa visibile il ${day} alle ${time} ora solare, per ${minutes === '1' ? 'un minuto' : `${minutes} minuti`}, alta fino a ${el}°`,
+    issNone: 'nei prossimi tre giorni la Stazione Spaziale non passa visibile da qui',
   },
 
   /** "Happening now", on the opening title. */
@@ -672,7 +674,7 @@ const it = {
   },
   integrita: {
     title: 'Quanta natura resta', kicker: 'Integrità della biodiversità, 2017 – 2020',
-    narrate: (mean: string) => `Quanta della vita selvatica originale resta in ogni luogo delle terre emerse: in media il ${mean}%, secondo un modello. Il verde scuro è quasi intatto; dove la mappa vira all’ambra, campi, pascoli e città hanno preso il posto delle specie che c’erano.`,
+    narrate: (mean: string) => `Quanta della vita selvatica originale resta in ogni luogo delle terre emerse: in media ${mean} parti su cento, secondo un modello. Il verde scuro è quasi intatto; dove la mappa vira all’ambra, campi, pascoli e città hanno preso il posto delle specie che c’erano.`,
     mean: (year: number) => `natura rimasta, media delle terre emerse nel ${year}`,
     text: 'Il Biodiversity Intactness Index stima quanta parte dell’abbondanza originale delle specie sopravvive in un luogo, da 100% (intatto) in giù. È un modello, non una misura: incrocia l’uso del suolo visto dai satelliti con migliaia di studi sul campo. Qui è la media di celle di circa 5 km; due anni così vicini non bastano per leggere una tendenza.',
     source: 'Impact Observatory, Vizzuality · Biodiversity Intactness · Microsoft Planetary Computer · CC BY 4.0',

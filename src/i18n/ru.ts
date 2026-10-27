@@ -348,6 +348,8 @@ const ru: Dict = {
     polarNight: 'сегодня Солнце не восходит',
     wind: (kmh: string, dir: string) => `ветер ${kmh} км/ч с ${dir}а`,
     sea: (temp: string) => `море ${temp} °C`,
+    iss: (day: string, time: string, minutes: string, el: string) => `${day} в ${time} по местному солнечному времени Космическая станция будет видна ${minutes} ${pl(minutes, 'минуту', 'минуты', 'минут')}, поднимаясь до ${el}°`,
+    issNone: 'в ближайшие три дня Космическая станция отсюда не видна',
   },
 
   now: {

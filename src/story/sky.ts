@@ -57,7 +57,11 @@ export const SKY_CHAPTERS: Chapter[] = titled([
       const s = vecToLonLat(sunDirection(g.now));
       return [
         // From afar: the Sun, and beside it a speck that is the Earth.
-        { shot: { lon: s.lon - 90, lat: 12, dist: 1150 }, seconds: 7, hold: 7 },
+        // On a phone held upright the Sun goes above the Earth instead of beside it: the camera
+        // looks from 90° away along the Sun's meridian, over the pole, with that pole up.
+        g.rig.portrait
+          ? { shot: s.lat <= 0 ? { lon: s.lon + 180, lat: -90 - s.lat, dist: 1400, heading: 180 } : { lon: s.lon + 180, lat: 90 - s.lat, dist: 1400 }, seconds: 7, hold: 7, portraitShift: 0 }
+          : { shot: { lon: s.lon - 90, lat: 12, dist: 1150 }, seconds: 7, hold: 7 },
         // Then close, with the Sun behind the planet as a measure.
         { shot: { lon: s.lon + 180 - 18, lat: -s.lat * 0.5 + 8, dist: 4.2 }, seconds: 6, drift: 0.4 },
       ];

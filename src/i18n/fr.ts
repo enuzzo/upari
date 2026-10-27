@@ -394,6 +394,8 @@ const fr: Dict = {
     polarNight: 'aujourd’hui le Soleil ne se lève pas',
     wind: (kmh: string, dir: string) => (vowel(dir) ? `vent de ${kmh} km/h de l’${dir}` : `vent de ${kmh} km/h du ${dir}`),
     sea: (temp: string) => `mer à ${temp} °C`,
+    iss: (day: string, time: string, minutes: string, el: string) => `la Station spatiale passe, visible, le ${first(day)} à ${time} heure solaire locale, pendant ${minutes} ${plural(minutes, 'minute')}, jusqu’à ${el}° de hauteur`,
+    issNone: 'dans les trois prochains jours, la Station spatiale ne passe pas visible d’ici',
   },
 
   now: {

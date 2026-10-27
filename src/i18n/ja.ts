@@ -356,6 +356,8 @@ const ja: Dict = {
     polarNight: '今日は太陽が昇らない',
     wind: (kmh: string, dir: string) => `${dir}の風、風速${kmh} km/h`,
     sea: (temp: string) => `海水温${temp} °C`,
+    iss: (day: string, time: string, minutes: string, el: string) => `宇宙ステーションは${day}の現地の太陽時${time}に空を横切り、${minutes}分間見え、最大${el}°の高さに達する`,
+    issNone: '今後3日間、ここから宇宙ステーションは見えない',
   },
 
   now: {

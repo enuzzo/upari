@@ -1,8 +1,8 @@
 import type { Globe } from '../engine/globe';
 import { DATA } from '../engine/layers';
-import { subsolarPoint } from '../engine/astro';
+import { subsolarPoint, sunDirection } from '../engine/astro';
 import { t } from '../i18n';
-import { num } from '../i18n/format';
+import { dayMonth, num } from '../i18n/format';
 
 // A searched place, now: its solar time, its sunrise and sunset, the wind and the sea around it.
 // Everything comes from layers Upari already has; nothing is asked about the place elsewhere.
@@ -43,5 +43,12 @@ export async function placeFacts(g: Globe, lon: number, lat: number): Promise<st
       if (c > 0.6) { lines.push(t.place.sea(num(DATA.sst.decode(v, sst.meta), 1))); break; }
     }
   }
+  // The next time the Space Station can be seen from here, computed on this device (SGP4).
+  const pass = g.station.nextPass(lon, lat, g.now, (d) => sunDirection(d));
+  if (pass) {
+    const local = new Date(pass.start.getTime() + (lon / 15) * 3600e3);
+    const solar = 12 + (lon - subsolarPoint(pass.start).lon) / 15;
+    lines.push(t.place.iss(dayMonth(local), hhmm(solar), num(pass.minutes), num(Math.round(pass.maxEl))));
+  } else lines.push(t.place.issNone);
   return lines;
 }

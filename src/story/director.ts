@@ -211,6 +211,7 @@ export class Director {
       this.globe.rig.drift = 0;
       if (b.look) this.globe.setLook({ ...c.look, ...b.look });
       if (b.clear) this.clearAnchors();
+      if (this.globe.rig.portrait && !this.drawerOpen) this.globe.rig.setFrameShift(b.portraitShift ?? 0.14);
       await this.globe.rig.flyTo(b.shot, b.seconds);
       if (token !== this.token || !this.playing) return;
       this.globe.rig.drift = b.drift ?? 0;
@@ -448,9 +449,10 @@ export class Director {
       }
       const v = lonLatToVec(a.lon, a.lat, 1 + a.alt / 6371);
       const p = this.globe.screenOf(v);
-      a.el.style.transform = `translate(${p.x}px, ${p.y}px)`;
+      a.el.style.transform = `translate(${p.x}px, ${Math.max(76, p.y)}px)`;
       // Near the right edge the words go on the other side of the point, so they stay on screen.
-      a.el.classList.toggle('left', p.x > innerWidth * 0.76);
+      const w = (a.el.firstElementChild as HTMLElement | null)?.offsetWidth ?? 0;
+      a.el.classList.toggle('left', p.x > innerWidth * 0.76 || p.x + w > innerWidth - 12);
       // Within about 50 km the station itself is on screen: the label would sit on it.
       const onTop = a.follow === 'iss' && s.range < 0.008;
       a.el.style.visibility = p.visible && !onTop ? 'visible' : 'hidden';
@@ -464,7 +466,7 @@ export class Director {
     const replay = c?.clock === 'replay' && c.replay ? this.globe.spotProgress() : null;
     const lapse = c?.clock === 'lapse' ? this.globe.timeOffset : null;
     // Over the planet, wherever the framing puts it.
-    dc.style.setProperty('--globe-x', `${((0.5 + this.globe.rig.frameShift) * 100).toFixed(2)}%`);
+    dc.style.setProperty('--globe-x', this.globe.rig.portrait ? '50%' : `${((0.5 + this.globe.rig.frameShift) * 100).toFixed(2)}%`);
     if (run) {
       $('data-time').textContent = String(Math.round(this.globe.year));
       $('data-from').textContent = String(run.from);

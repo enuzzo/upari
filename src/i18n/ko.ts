@@ -385,6 +385,8 @@ const ko: Dict = {
     polarNight: '오늘은 해가 뜨지 않는다',
     wind: (kmh: string, dir: string) => `${dir}풍 ${kmh} km/h`,
     sea: (temp: string) => `수온 ${temp} °C`,
+    iss: (day: string, time: string, minutes: string, el: string) => `${day} 현지 태양시 ${time}에 우주정거장이 보이며, ${minutes}분 동안 최대 ${el}°까지 올라간다`,
+    issNone: '앞으로 3일 동안 여기서는 우주정거장이 보이지 않는다',
   },
 
   now: {

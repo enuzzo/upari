@@ -343,6 +343,8 @@ const hi: Dict = {
     polarNight: 'आज सूरज नहीं उगता',
     wind: (kmh: string, dir: string) => `${dir} से ${kmh} km/h की हवा`,
     sea: (temp: string) => `समुद्र ${temp} °C`,
+    iss: (day: string, time: string, minutes: string, el: string) => `${day} को स्थानीय सौर समय ${time} पर अंतरिक्ष स्टेशन दिखाई देता है, ${minutes} मिनट तक, ${el}° की ऊँचाई तक`,
+    issNone: 'अगले तीन दिनों में यहाँ से अंतरिक्ष स्टेशन दिखाई नहीं देता',
   },
 
   now: {

@@ -92,6 +92,10 @@ export class CameraRig {
   resize(w: number, h: number) {
     this.width = w; this.height = h;
     this.camera.aspect = w / h;
+    // A narrow screen widens the view upwards, so the planet keeps about the width it has on a
+    // square one instead of being cut at the sides.
+    const k = this.camera.aspect < 0.9 ? Math.min(2, 0.9 / this.camera.aspect) : 1;
+    this.camera.fov = (2 * Math.atan(Math.tan((15 * Math.PI) / 180) * k) * 180) / Math.PI;
     this.applyOffset();
   }
 
@@ -104,10 +108,15 @@ export class CameraRig {
     if (now) { this.frameShift = v; this.applyOffset(); }
   }
 
+  /** A phone held upright: the words go under the planet, not beside it. */
+  get portrait() { return this.width < this.height * 0.8; }
+
   private applyOffset() {
-    const off = -this.frameShift * this.width;
-    if (Math.abs(off) < 0.5) this.camera.clearViewOffset();
-    else this.camera.setViewOffset(this.width, this.height, off, 0, this.width, this.height);
+    // Upright, the planet moves up by as much as it would move sideways, to make room below.
+    const off = this.portrait ? 0 : -this.frameShift * this.width;
+    const up = this.portrait ? Math.abs(this.frameShift) * 1.25 * this.height : 0;
+    if (Math.abs(off) < 0.5 && up < 0.5) this.camera.clearViewOffset();
+    else this.camera.setViewOffset(this.width, this.height, off, up, this.width, this.height);
     this.camera.updateProjectionMatrix();
   }
 

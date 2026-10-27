@@ -76,7 +76,8 @@ export function openCountry(globe: Globe, code: string, name: string, shown: Atl
   card.classList.add('on');
   const r = card.getBoundingClientRect();
   const left = Math.min(innerWidth - r.width - 16, Math.max(16, x + 24));
-  const top = Math.min(innerHeight - r.height - 16, Math.max(16, y - r.height / 2));
+  // Under the top bar on a phone, where the card takes the whole width.
+  const top = Math.min(innerHeight - r.height - 16, Math.max(innerWidth <= 720 ? 64 : 16, y - r.height / 2));
   card.style.transform = `translate(${left}px, ${top}px)`;
 }
 

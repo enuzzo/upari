@@ -362,6 +362,8 @@ const ar: Dict = {
     polarNight: 'الشمس لا تشرق اليوم',
     wind: (kmh: string, dir: string) => `رياح بسرعة ${kmh} كم/س من ${dir}`,
     sea: (temp: string) => `حرارة البحر ${ltr(`${temp} °C`)}`,
+    iss: (day: string, time: string, min: string, el: string) => `تمر محطة الفضاء مرئيةً في ${day} عند ${time} بالتوقيت الشمسي المحلي، لمدة ${minutes(min)}، وترتفع حتى ${ltr(`${el}°`)}`,
+    issNone: 'في الأيام الثلاثة القادمة لا تمر محطة الفضاء مرئيةً من هنا',
   },
 
   now: {

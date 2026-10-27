@@ -339,6 +339,8 @@ const de: Dict = {
     polarNight: 'heute geht die Sonne nicht auf',
     wind: (kmh: string, dir: string) => `Wind ${kmh} km/h aus ${dir}`,
     sea: (temp: string) => `Meer ${temp} °C`,
+    iss: (day: string, time: string, minutes: string, el: string) => `die Raumstation zieht am ${day} um ${time} lokaler Sonnenzeit sichtbar vorbei, ${minutes} Minuten lang, bis ${el}° hoch`,
+    issNone: 'in den nächsten drei Tagen zieht die Raumstation nicht sichtbar über uns hinweg',
   },
 
   now: {

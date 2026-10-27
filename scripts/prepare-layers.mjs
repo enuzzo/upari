@@ -412,6 +412,28 @@ function writePoints(id, list, meta, min = 1) {
 
 async function getJson(url) { return JSON.parse((await fetchBuffer(url)).toString()); }
 
+/**
+ * A grid from ERDDAP drawn as a grey image (BlackWhite colour bar: grey level = value), placed
+ * on the global W × H grid. `rows` is the latitude span of the source image, north first.
+ */
+async function erddapGrey(url, file, srcW, srcH, [north, south], W, H, shiftLon = 0) {
+  writeFileSync(file, await fetchBuffer(url));
+  const buf = rgba(file);
+  if (buf.length !== srcW * srcH * 4) throw new Error(`unexpected size ${buf.length / 4} px`);
+  const val = new Float32Array(W * H), w = new Float32Array(W * H);
+  for (let y = 0; y < H; y++) {
+    const lat = 90 - ((y + 0.5) * 180) / H;
+    if (lat > north + 0.3 || lat < south - 0.3) continue;
+    const sy = Math.min(srcH - 1, Math.max(0, Math.round(((north - lat) / (north - south)) * (srcH - 1))));
+    for (let x = 0; x < W; x++) {
+      const sx = (Math.floor((x * srcW) / W) + shiftLon) % srcW;
+      const k = (sy * srcW + sx) * 4;
+      if (buf[k + 3] > 128) { val[y * W + x] = buf[k + 1] / 255; w[y * W + x] = 1; }
+    }
+  }
+  return { val, w };
+}
+
 const layers = {
   async chlorophyll() {
     // Phytoplankton through the year: each month is a composite of six days (clouds hide the
@@ -639,6 +661,45 @@ const layers = {
       if ((page.features?.length ?? 0) < 1000) break;
     }
     writePoints('slicks', list, { days: 30, fields: ['lat', 'lon', 'km2', 'date'], source: 'SkyTruth Cerulean · Sentinel-1 · CC BY-SA 4.0' }, 100);
+  },
+  async sealevel() {
+    // Sea level anomaly, month by month: El Niño, eddies and the bulge of warm water, in metres
+    // above or below the 1993-2012 mean (NOAA CoastWatch blended altimetry, 0.25°).
+    const W = 1440, H = 720, LO = -0.5, HI = 0.5;
+    const steps = [...months(12, 15), { key: 'latest', time: iso(new Date(Date.now() - 2 * 86400e3)), live: true }];
+    await series('sealevel', steps, async (step) => {
+      for (const day of daysBack(4, new Date(`${step.time}T00:00:00Z`))) {
+        try {
+          const url = 'https://coastwatch.noaa.gov/erddap/griddap/noaacwBLENDEDsshDaily.transparentPng?'
+            + `sla%5B(${day}T00:00:00Z)%5D%5B(89.875):1:(-89.875)%5D%5B(-179.875):1:(179.875)%5D&.colorBar=BlackWhite%7CC%7CLinear%7C${LO}%7C${HI}%7C&.draw=surface`;
+          const { val, w } = await erddapGrey(url, join(TMP, `sla_${day}.png`), 1440, 720, [89.875, -89.875], W, H);
+          if (coverageOf(w, W, H) < 0.3) continue;
+          return { val: pushPull(val, w, W, H), conf: blurCoverage(w, W, H, 1), dates: [day], time: day };
+        } catch { /* the day before */ }
+      }
+      return null;
+    }, { unit: 'm', scale: 'linear', min: LO, max: HI, source: 'NOAA CoastWatch · blended sea level anomaly · ERDDAP', layer: 'noaacwBLENDEDsshDaily' },
+    { W, H, minFrames: 10, cadence: 'day' });
+  },
+  async waves() {
+    // The waves of the last day, hour by hour: significant wave height from the WaveWatch III
+    // model (NOAA, via PacIOOS ERDDAP, 0.5°). A model run, not a measurement.
+    const W = 720, H = 360, MAX = 12;
+    const end = new Date(); end.setUTCMinutes(0, 0, 0);
+    const steps = [];
+    for (let k = 23; k >= 0; k -= 1) {
+      const t = new Date(end.getTime() - k * 3600e3).toISOString().replace('.000', '');
+      steps.push({ key: `h${String(23 - k).padStart(2, '0')}`, time: t, live: true });
+    }
+    await series('waves', steps, async (step) => {
+      const url = 'https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ww3_global.transparentPng?'
+        + `Thgt%5B(${step.time})%5D%5B(0.0)%5D%5B(77.5):1:(-77.5)%5D%5B(0.0):1:(359.5)%5D&.colorBar=BlackWhite%7CC%7CLinear%7C0%7C${MAX}%7C&.draw=surface`;
+      // The source starts at 0° E: shift by half a turn to start at 180° W like every layer.
+      const { val, w } = await erddapGrey(url, join(TMP, `waves_${step.key}.png`), 720, 311, [77.5, -77.5], W, H, 360);
+      if (coverageOf(w, W, H) < 0.3) return null;
+      return { val, conf: w, dates: [step.time], time: step.time };
+    }, { unit: 'm', scale: 'linear', min: 0, max: MAX, source: 'NOAA WaveWatch III · PacIOOS ERDDAP', layer: 'ww3_global Thgt' },
+    { W, H, minFrames: 18, confScale: 1, cadence: 'hour' });
   },
   async rain() {
     // Last 24 hours of global rain, one frame per hour, promoted only as a complete set.

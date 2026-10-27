@@ -1,0 +1,137 @@
+{
+ "id": "waves",
+ "width": 720,
+ "height": 360,
+ "cadence": "hour",
+ "unit": "m",
+ "scale": "linear",
+ "min": 0,
+ "max": 12,
+ "source": "NOAA WaveWatch III · PacIOOS ERDDAP",
+ "layer": "ww3_global Thgt",
+ "dates": [
+  "2026-10-27T16:00:00Z"
+ ],
+ "frames": [
+  {
+   "file": "waves-h00.jpg",
+   "conf": "waves-h00-c.png",
+   "time": "2026-10-26T17:00:00Z"
+  },
+  {
+   "file": "waves-h01.jpg",
+   "conf": "waves-h01-c.png",
+   "time": "2026-10-26T18:00:00Z"
+  },
+  {
+   "file": "waves-h02.jpg",
+   "conf": "waves-h02-c.png",
+   "time": "2026-10-26T19:00:00Z"
+  },
+  {
+   "file": "waves-h03.jpg",
+   "conf": "waves-h03-c.png",
+   "time": "2026-10-26T20:00:00Z"
+  },
+  {
+   "file": "waves-h04.jpg",
+   "conf": "waves-h04-c.png",
+   "time": "2026-10-26T21:00:00Z"
+  },
+  {
+   "file": "waves-h05.jpg",
+   "conf": "waves-h05-c.png",
+   "time": "2026-10-26T22:00:00Z"
+  },
+  {
+   "file": "waves-h06.jpg",
+   "conf": "waves-h06-c.png",
+   "time": "2026-10-26T23:00:00Z"
+  },
+  {
+   "file": "waves-h07.jpg",
+   "conf": "waves-h07-c.png",
+   "time": "2026-10-27T00:00:00Z"
+  },
+  {
+   "file": "waves-h08.jpg",
+   "conf": "waves-h08-c.png",
+   "time": "2026-10-27T01:00:00Z"
+  },
+  {
+   "file": "waves-h09.jpg",
+   "conf": "waves-h09-c.png",
+   "time": "2026-10-27T02:00:00Z"
+  },
+  {
+   "file": "waves-h10.jpg",
+   "conf": "waves-h10-c.png",
+   "time": "2026-10-27T03:00:00Z"
+  },
+  {
+   "file": "waves-h11.jpg",
+   "conf": "waves-h11-c.png",
+   "time": "2026-10-27T04:00:00Z"
+  },
+  {
+   "file": "waves-h12.jpg",
+   "conf": "waves-h12-c.png",
+   "time": "2026-10-27T05:00:00Z"
+  },
+  {
+   "file": "waves-h13.jpg",
+   "conf": "waves-h13-c.png",
+   "time": "2026-10-27T06:00:00Z"
+  },
+  {
+   "file": "waves-h14.jpg",
+   "conf": "waves-h14-c.png",
+   "time": "2026-10-27T07:00:00Z"
+  },
+  {
+   "file": "waves-h15.jpg",
+   "conf": "waves-h15-c.png",
+   "time": "2026-10-27T08:00:00Z"
+  },
+  {
+   "file": "waves-h16.jpg",
+   "conf": "waves-h16-c.png",
+   "time": "2026-10-27T09:00:00Z"
+  },
+  {
+   "file": "waves-h17.jpg",
+   "conf": "waves-h17-c.png",
+   "time": "2026-10-27T10:00:00Z"
+  },
+  {
+   "file": "waves-h18.jpg",
+   "conf": "waves-h18-c.png",
+   "time": "2026-10-27T11:00:00Z"
+  },
+  {
+   "file": "waves-h19.jpg",
+   "conf": "waves-h19-c.png",
+   "time": "2026-10-27T12:00:00Z"
+  },
+  {
+   "file": "waves-h20.jpg",
+   "conf": "waves-h20-c.png",
+   "time": "2026-10-27T13:00:00Z"
+  },
+  {
+   "file": "waves-h21.jpg",
+   "conf": "waves-h21-c.png",
+   "time": "2026-10-27T14:00:00Z"
+  },
+  {
+   "file": "waves-h22.jpg",
+   "conf": "waves-h22-c.png",
+   "time": "2026-10-27T15:00:00Z"
+  },
+  {
+   "file": "waves-h23.jpg",
+   "conf": "waves-h23-c.png",
+   "time": "2026-10-27T16:00:00Z"
+  }
+ ]
+}

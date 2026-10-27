@@ -149,15 +149,19 @@ richieda un account o una chiave che l’utente non ha dato.
 
 ### Dopo
 - [x] Il cielo, adesso. [x] Lanci. [x] Iceberg. [x] Città 1975–2030. [x] Accade adesso.
-- [ ] Altezza del mare (CoastWatch ERDDAP). [ ] Onde (GFS-Wave). [ ] Allagamenti, gelo e
-  disgelo (MODIS Flood, SMAP).
+- [x] Altezza del mare (CoastWatch ERDDAP, 12 mesi). [x] Onde (WaveWatch III via PacIOOS,
+  ultime 24 ore). [ ] Allagamenti, gelo e disgelo (MODIS Flood, SMAP).
+- [x] Ghiaccio NSIDC v4 dentro «Il ghiaccio» (oggi contro la media 1981–2010 dello stesso giorno).
+- [x] Il tuo luogo, prima parte: un luogo cercato mostra ora solare, alba e tramonto, vento e
+  mare intorno. [ ] La parte con l’anno di nascita.
+- [x] Modalità `?kiosk` (i quattro racconti in ciclo, cursore nascosto) e `?embed` (cornice
+  quieta con il link al sito). [ ] Pagina «Per la classe».
 - [ ] Mare che si acidifica (OceanSODA: licenza dei file da confermare). Zone morte WRI: il
   dataset non è più online.
 - [ ] Integrità della biodiversità (BII, CC BY). [ ] Mangrovie 1996–2020.
 - [ ] Migranti per origine e destinazione (UN DESA). [ ] Asilo da tutte le origini (UNHCR).
 - [ ] Gas serra 1970–2024 (EDGAR, non IEA-EDGAR CO₂) e dighe nel tempo.
 - [ ] Tendina prima/dopo sul cursore degli anni. [ ] Il tuo luogo con l’anno di nascita.
-- [ ] `/embed`, pagina «Per la classe», modalità insegnante e chiosco.
 - [ ] Riserva per gli elementi orbitali: SatNOGS rimanda dati Space-Track, la cui
   ridistribuzione non è chiara; per ora resta l’ultimo file buono del giorno.
 

@@ -80,8 +80,9 @@ export async function loadSatellites() {
         vColor = tint;
         vec4 mv = modelViewMatrix * vec4(pos, 1.0);
         gl_Position = projectionMatrix * mv;
-        float big = el1.w > 4.5 ? 3.0 : 1.0;
-        gl_PointSize = clamp(5.0 * big / max(-mv.z, 1.0) * 3.0, 1.2, 7.0 * big) * uPixelRatio;
+        // Stations largest; the few navigation and geostationary satellites a little larger than the crowd.
+        float big = el1.w > 4.5 ? 3.0 : el1.w > 2.5 ? 1.8 : 1.0;
+        gl_PointSize = clamp(5.0 * big / max(-mv.z, 1.0) * 3.0, 1.5 * big, 7.0 * big) * uPixelRatio;
       }`,
     fragmentShader: /* glsl */ `
       uniform float uOpacity;

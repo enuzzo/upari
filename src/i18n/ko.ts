@@ -91,6 +91,7 @@ const ko: Dict = {
     noWebgl: '행성을 보려면 WebGL 2를 지원하는 브라우저가 필요합니다.',
     clock: (day: string, time: string) => `${day} · ${time} UTC`,
     about: '왜 Upari인가',
+    embedOpen: 'Upari 열기',
   },
 
   stories: { pianeta: '지금, 이 행성', natura: '자연', persone: '사람들', cielo: '지금, 이 하늘' },
@@ -145,6 +146,7 @@ const ko: Dict = {
       smog: '이산화질소 (NO₂)', ozono: '오존층', petrolio: '바다의 기름띠, 30일',
       aurora: '지금의 오로라', satelliti: '모든 위성', partenze: '다음 발사', bolidi: '1988년 이후의 화구',
       citta: '도시, 1975 – 2030', rotte: '배의 항로',
+      livello: '해수면 높이', onde: '파도, 최근 24시간',
     },
   },
 
@@ -188,6 +190,8 @@ const ko: Dict = {
       ['보이저', 'NASA/JPL Horizons'],
       ['배의 항로', 'World Bank / IMF, Global Shipping Traffic Density (AIS 2015–2021), CC BY 4.0'],
       ['도시', '유럽연합 집행위원회, JRC, GHS-BUILT-S R2023A (2025년과 2030년은 예측), CC BY 4.0'],
+      ['해수면 높이', 'NOAA CoastWatch, 위성 고도계로 잰 해수면 편차 (AVISO+ 산출물과 Copernicus Sentinel 데이터 포함), ERDDAP 경유'],
+      ['파도', 'NOAA WaveWatch III 모델, PacIOOS ERDDAP 경유'],
       ['사람들', 'World Bank, World Development Indicators (UN World Population Prospects, UN IGME, ILO 데이터 포함), CC BY 4.0; 망명 신청 UNHCR Refugee Data Portal, CC BY 4.0; Natural Earth 국경, 퍼블릭 도메인'],
       ['음악과 소리', 'Magnific (Google Lyria, ElevenLabs)으로 Upari를 위해 만듦'],
       ['장소 검색', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, 데이터 © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, ODbL'],
@@ -294,6 +298,8 @@ const ko: Dict = {
     shipsHigh: '큰 항로 가운데 하나',
     built: (v: string) => `건물이 덮은 땅 ${v}%`,
     notBuilt: '건물이 거의 없음',
+    sealevel: (cm: string) => `평균 해수면보다 ${cm} cm`,
+    waves: (m: string) => `파고 ${m} m`,
   },
 
   spots: {
@@ -308,6 +314,30 @@ const ko: Dict = {
     launch: (day: string, place: string) => `${day} · ${place}`,
     fireball: (kt: string) => `${kt}킬로톤`,
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · 고도 ${alt} km에서 폭발` : ''}`,
+  },
+
+  notes: {
+    livello: {
+      text: '해수면이 1993–2012년 평균보다 얼마나 높거나 낮은지를 위성 고도계로 잰 값이다. 따뜻한 소용돌이는 수십 센티미터 솟아오르고, El Niño는 동태평양을 끌어올린다. 한 달에 한 장면, 그다음은 가장 최근의 하루.',
+      source: 'NOAA CoastWatch · 다중 위성 고도계 (AVISO+, Copernicus Sentinel) · 0.25°',
+    },
+    onde: {
+      text: '최근 스물네 시간 동안의 유의파고를 한 시간 단위로 보여 준다: 가장 높은 3분의 1 파도의 평균으로, 뱃사람이 눈으로 어림하는 높이다. 바람으로 파도를 계산하는 WaveWatch III 모델이다: 측정이 아니라 시뮬레이션이다.',
+      source: 'NOAA WaveWatch III · PacIOOS ERDDAP · 0.5°',
+    },
+    vulcani: {
+      text: '주황색 점은 Smithsonian이 집계한 지금 분화 중인 화산이고, 노란 구름은 Sentinel-5P가 본 최근 나흘간의 이산화황이다. 이 기체는 화산에서 나오지만, 일부 제련소와 석탄 발전소에서도 나온다.',
+      source: 'Smithsonian Global Volcanism Program · Copernicus Sentinel-5P TROPOMI, NASA GIBS 경유',
+    },
+  },
+
+  place: {
+    solar: (time: string) => `현지 태양시 ${time}`,
+    sun: (rise: string, set: string) => `일출 ${rise} · 일몰 ${set}, 현지 태양시`,
+    polarDay: '오늘은 해가 지지 않는다',
+    polarNight: '오늘은 해가 뜨지 않는다',
+    wind: (kmh: string, dir: string) => `${dir}풍 ${kmh} km/h`,
+    sea: (temp: string) => `수온 ${temp} °C`,
   },
 
   now: {
@@ -391,6 +421,8 @@ const ko: Dict = {
     aurora: { title: '오로라를 볼 확률', left: '5%', right: '50%' },
     ships: { title: '선박 통행량, 2015–2021', left: '드묾', right: '많음' },
     built: { title: '건물이 덮은 땅', left: '마을', right: '도시' },
+    sealevel: { title: '평소보다 높거나 낮은 바다', left: '−50 cm', right: '+50 cm' },
+    waves: { title: '파도의 높이', left: '잔잔함', right: '12 m' },
   },
 
   // ——— 지금, 이 행성 ———
@@ -521,6 +553,8 @@ const ko: Dict = {
     text: '면적은 얼음이 15% 이상인 해역의 넓이를 농도로 가중해 더한 값이다. 얼음은 햇빛을 되비춘다: 얼음이 물러나면 어두운 바다가 더 많은 열을 흡수한다.',
     source: 'GHRSST GAMSSA, Bureau of Meteorology · 해빙 농도',
     icebergs: 'U.S. National Ice Center가 추적하는 남극의 큰 빙산, 옅은 색 점',
+    nsidc: (day: string, diff: string) => `NSIDC 기준 ${day} 북극 해빙: 같은 날 1981–2010년 평균보다 ${diff.replace(/^([+−-]?)([\d.,]+) 백만/, (_, s: string, n: string) => `${s}${millions(n)}`)}`,
+    millionKm2: '백만 km²',
   },
   luci: {
     title: '불빛', kicker: '지금, 밤',

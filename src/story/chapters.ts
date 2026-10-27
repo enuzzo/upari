@@ -84,6 +84,17 @@ const facts = (list: [string, string][]) => list.map(([value, label]) => ({ valu
 /** +0,95 / −0,12 */
 export const signed = (v: number, d = 1) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${num(Math.abs(v), d)}`;
 
+/** Arctic sea ice extent of the latest day (NSIDC), and its 1981–2010 mean for the same day. */
+async function seaIceToday() {
+  const d = (await climate.seaice()).north as { last: { date: string; value: number }; years: Record<string, (number | null)[]> };
+  const [y, m, day] = d.last.date.split('-').map(Number);
+  const start = Date.UTC(y, 0, 1);
+  let k = Math.round((Date.UTC(y, m - 1, day) - start) / 86400e3);
+  if (((y % 4 === 0 && y % 100 !== 0) || y % 400 === 0) && k >= 59) k--;
+  const base = Array.from({ length: 30 }, (_, i) => d.years[1981 + i]?.[k]).filter((v): v is number => v != null);
+  return { date: d.last.date, value: d.last.value, normal: base.reduce((a, b) => a + b, 0) / base.length };
+}
+
 /** The cyclones of the last ten days, the strongest first. */
 async function storms() {
   const d = (await loadSpots('cyclones')).data as { fetched: string; list: { name: string | null; peak: number; track: [string, number, number, number | null][] }[] };
@@ -405,6 +416,7 @@ export const CHAPTERS: Chapter[] = titled([
           { value: t.ghiaccio.area(num(north / 1e6, 1)), label: t.ghiaccio.arctic(when(m.dates?.[0]).text) },
           { value: t.ghiaccio.area(num(south / 1e6, 1)), label: t.ghiaccio.antarctic },
           ...facts([t.ghiaccio.decline]),
+          ...(await seaIceToday().then((s) => [{ value: t.ghiaccio.area(num(s.value, 1)), label: t.ghiaccio.nsidc(dayMonth(s.date), `${signed(s.value - s.normal, 1)} ${t.ghiaccio.millionKm2}`) }]).catch(() => [])),
           ...(await loadSpots('icebergs').then((b) => [{ value: num(b.spots.length), label: t.ghiaccio.icebergs }]).catch(() => [])),
         ],
         text: t.ghiaccio.text,

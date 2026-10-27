@@ -102,6 +102,7 @@ const fr: Dict = {
     noWebgl: 'Il faut un navigateur compatible WebGL 2 pour voir la planète.',
     clock: (day: string, time: string) => `${first(day)} · ${time} UTC`,
     about: 'Pourquoi Upari',
+    embedOpen: 'Ouvrir Upari',
   },
 
   stories: { pianeta: 'La planète, en ce moment', natura: 'La nature', persone: 'Les humains', cielo: 'Le ciel, en ce moment' },
@@ -156,6 +157,7 @@ const fr: Dict = {
       smog: 'Dioxyde d’azote (NO₂)', ozono: 'La couche d’ozone', petrolio: 'Nappes de pétrole, 30 jours',
       aurora: 'Aurore, en ce moment', satelliti: 'Tous les satellites', partenze: 'Prochains lancements', bolidi: 'Bolides depuis 1988',
       citta: 'Villes, 1975 – 2030', rotte: 'Routes maritimes',
+      livello: 'Niveau de la mer', onde: 'Vagues, dernières 24 heures',
     },
   },
 
@@ -199,6 +201,8 @@ const fr: Dict = {
       ['Voyager', 'NASA/JPL Horizons'],
       ['Routes maritimes', 'World Bank / IMF, Global Shipping Traffic Density (AIS 2015–2021), CC BY 4.0'],
       ['Villes', 'Commission européenne, JRC, GHS-BUILT-S R2023A (2025 et 2030 sont des projections), CC BY 4.0'],
+      ['Niveau de la mer', 'NOAA CoastWatch, anomalie du niveau de la mer par altimétrie (contient des produits AVISO+ et des données Copernicus Sentinel), via ERDDAP'],
+      ['Vagues', 'modèle NOAA WaveWatch III, via PacIOOS ERDDAP'],
       ['Les humains', 'World Bank, World Development Indicators (avec des données ONU World Population Prospects, UN IGME et ILO), CC BY 4.0 ; demandes d’asile UNHCR Refugee Data Portal, CC BY 4.0 ; frontières Natural Earth, domaine public'],
       ['Musique et sons', 'composés pour Upari avec Magnific (Google Lyria, ElevenLabs)'],
       ['Recherche de lieux', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, données © les contributeurs d’<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>, ODbL'],
@@ -303,6 +307,8 @@ const fr: Dict = {
     shipsHigh: 'l’une des grandes routes',
     built: (v: string) => `sol bâti : ${v} %`,
     notBuilt: 'presque aucun bâtiment',
+    sealevel: (cm: string) => `${cm} cm par rapport au niveau moyen`,
+    waves: (m: string) => `vagues de ${m} m`,
   },
 
   spots: {
@@ -317,6 +323,30 @@ const fr: Dict = {
     launch: (day: string, place: string) => `${first(day)} · ${place}`,
     fireball: (kt: string) => `${kt} kilotonnes`,
     fireballSub: (day: string, alt: string | null) => `${first(day)}${alt ? ` · explosé à ${alt} km d’altitude` : ''}`,
+  },
+
+  notes: {
+    livello: {
+      text: 'De combien la surface de la mer se tient au-dessus ou au-dessous de sa moyenne 1993–2012, mesuré par les satellites altimétriques. Les tourbillons chauds se bombent de quelques dizaines de centimètres ; El Niño soulève le Pacifique oriental. Une image par mois, puis le dernier jour.',
+      source: 'NOAA CoastWatch · altimétrie multisatellite (AVISO+, Copernicus Sentinel) · 0,25°',
+    },
+    onde: {
+      text: 'Hauteur significative des vagues sur les dernières vingt-quatre heures, heure par heure : la moyenne du tiers le plus haut des vagues, celle qu’un marin estime à l’œil. C’est le modèle WaveWatch III, qui calcule les vagues à partir des vents : une simulation, pas une mesure.',
+      source: 'NOAA WaveWatch III · PacIOOS ERDDAP · 0,5°',
+    },
+    vulcani: {
+      text: 'Les points orange sont les éruptions en cours selon le Smithsonian ; le nuage jaune est le dioxyde de soufre des quatre derniers jours, vu par Sentinel-5P. Le gaz vient des volcans, mais aussi de certaines fonderies et centrales à charbon.',
+      source: 'Smithsonian Global Volcanism Program · Copernicus Sentinel-5P TROPOMI via NASA GIBS',
+    },
+  },
+
+  place: {
+    solar: (time: string) => `${time} heure solaire locale`,
+    sun: (rise: string, set: string) => `lever ${rise} · coucher ${set}, heure solaire locale`,
+    polarDay: 'aujourd’hui le Soleil ne se couche pas',
+    polarNight: 'aujourd’hui le Soleil ne se lève pas',
+    wind: (kmh: string, dir: string) => (vowel(dir) ? `vent de ${kmh} km/h de l’${dir}` : `vent de ${kmh} km/h du ${dir}`),
+    sea: (temp: string) => `mer à ${temp} °C`,
   },
 
   now: {
@@ -404,6 +434,8 @@ const fr: Dict = {
     aurora: { title: 'probabilité de voir l’aurore', left: '5 %', right: '50 %' },
     ships: { title: 'trafic maritime, 2015–2021', left: 'rare', right: 'intense' },
     built: { title: 'sol couvert de bâtiments', left: 'villages', right: 'villes' },
+    sealevel: { title: 'mer plus haute ou plus basse que la normale', left: '−50 cm', right: '+50 cm' },
+    waves: { title: 'hauteur des vagues', left: 'calme', right: '12 m' },
   },
 
   // ——— La planète, en ce moment ———
@@ -534,6 +566,8 @@ const fr: Dict = {
     text: 'La superficie est la somme des zones couvertes d’au moins 15 % de glace, pondérée par la concentration. La glace renvoie la lumière du Soleil : quand elle recule, la mer sombre absorbe davantage de chaleur.',
     source: 'GHRSST GAMSSA, Bureau of Meteorology · concentration de la glace',
     icebergs: 'grands icebergs antarctiques suivis par l’U.S. National Ice Center, les points clairs',
+    nsidc: (day: string, diff: string) => `banquise arctique le ${first(day)} selon le NSIDC : ${diff} par rapport à la moyenne 1981–2010 du même jour`,
+    millionKm2: 'M km²',
   },
   luci: {
     title: 'Les lumières', kicker: 'La nuit, en ce moment',

@@ -1,7 +1,7 @@
 import type { Globe, Look } from '../engine/globe';
 import { ATLAS, atlasText, type AtlasId } from '../engine/atlas';
-import { cssGradient } from '../engine/palettes';
-import { CHAPTERS, type Chapter, type Legend } from './chapters';
+import { PALETTES, cssGradient } from '../engine/palettes';
+import { CHAPTERS, legend, type Chapter, type Legend } from './chapters';
 import { PEOPLE } from './people';
 import { NATURE } from './nature';
 import { SKY_CHAPTERS } from './sky';
@@ -14,6 +14,9 @@ import { num } from '../i18n/format';
 
 type LayerId = keyof typeof t.explore.layers;
 interface Layer { id: LayerId; look: () => Partial<Look>; legend?: Legend; people?: boolean }
+/** Layers without a chapter carry their own note on how to read them. */
+type NoteId = keyof typeof t.notes;
+const SEA = { sun: 'studio' as const, clouds: 0, night: 0, atmo: 0.8 };
 
 const chapterLook = (id: string) => () => ({ ...CHAPTERS.find((c) => c.id === id)!.look });
 const chapterLegend = (id: string) => CHAPTERS.find((c) => c.id === id)?.legend;
@@ -32,6 +35,8 @@ const PLANET: Layer[] = [
   { id: 'tempeste', look: () => ({ ...chapterLook('tempeste')(), spotReplay: 0 }), legend: chapterLegend('tempeste') },
   { id: 'correnti', look: chapterLook('correnti'), legend: chapterLegend('correnti') },
   { id: 'mare', look: chapterLook('calore'), legend: chapterLegend('calore') },
+  { id: 'livello', look: () => ({ ...SEA, data: 'sealevel', dim: 0.55, desat: 0.7 }), legend: legend(PALETTES.sealevel, 'sealevel') },
+  { id: 'onde', look: () => ({ ...SEA, data: 'waves', dim: 0.6, desat: 0.6 }), legend: legend(PALETTES.waves, 'waves') },
   { id: 'anomalia', look: chapterLook('febbre'), legend: chapterLegend('febbre') },
   { id: 'plancton', look: chapterLook('fioritura'), legend: chapterLegend('fioritura') },
   { id: 'pioggia', look: chapterLook('pioggia'), legend: chapterLegend('pioggia') },
@@ -235,6 +240,13 @@ export class Explorer {
     const id = Object.entries(FROM_CHAPTER).find(([, l]) => l === layer.id)?.[0];
     const c = [...CHAPTERS, ...NATURE, ...PEOPLE, ...SKY_CHAPTERS].find((ch) => ch.id === id);
     const box = $('ex-note');
+    const own = (t.notes as Record<string, { text: string; source: string }>)[layer.id as NoteId];
+    if (!c && own) {
+      $('ex-note-text').textContent = own.text;
+      $('ex-note-source').textContent = own.source;
+      box.classList.add('on');
+      return;
+    }
     if (!c) { box.classList.remove('on'); return; }
     const d = await c.detail(this.globe).catch(() => null);
     if (!d || layer !== this.layer) return;

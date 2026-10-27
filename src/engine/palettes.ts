@@ -148,6 +148,26 @@ export const PALETTES: Record<string, Stop[]> = {
     [0.5, '#e8590c', 0.9],
     [1.0, '#c2255c', 1],
   ],
+  // Sea level anomaly: lower seas in deep blue, higher seas warm (centre transparent).
+  sealevel: [
+    [0.0, '#3b6fd6', 1],
+    [0.25, '#5b8fe0', 0.85],
+    [0.42, '#9cc1f0', 0.4],
+    [0.5, '#9aa7b8', 0.18],
+    [0.58, '#f5c48a', 0.4],
+    [0.75, '#f08a4b', 0.85],
+    [1.0, '#e0475b', 1],
+  ],
+  // Waves: calm seas stay dark, storm seas foam white, the highest turn amber.
+  waves: [
+    [0.0, '#0b3d5c', 0.0],
+    [0.12, '#1d6f8f', 0.0],
+    [0.22, '#2f8fae', 0.4],
+    [0.35, '#7cc8dc', 0.75],
+    [0.5, '#e6f7fb', 0.95],
+    [0.75, '#ffffff', 1],
+    [1.0, '#ffd27a', 1],
+  ],
   // Shipping lanes: gold threads on the dark sea.
   ships: [
     [0.0, '#ffd58a', 0.0],

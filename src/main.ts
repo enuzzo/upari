@@ -80,6 +80,7 @@ async function boot() {
     $('explore-btn').removeAttribute('disabled');
     $('sky-btn').removeAttribute('disabled');
   }, 900);
+  if (kiosk) setTimeout(() => begin('pianeta'), 9000);
   // A shared link opens the explorer on what it showed.
   if (/^#[a-z]+/.test(location.hash)) setTimeout(() => { begin(null); explorer.restore(location.hash); }, 700);
   // Warm the first chapters while the title is on screen.
@@ -108,6 +109,19 @@ function begin(story: string | null, chapter = 0) {
 }
 
 $('start-btn').addEventListener('click', () => begin('pianeta'));
+
+// ?kiosk: the four stories one after the other, forever, for a screen in a hall or a classroom.
+// ?embed: a quiet frame for other pages, with a link to the full site.
+const mode = new URLSearchParams(location.search);
+const kiosk = mode.has('kiosk'), embedded = mode.has('embed');
+document.body.classList.toggle('kiosk', kiosk);
+document.body.classList.toggle('embed', embedded);
+if (kiosk) {
+  director.onEnd = (next) => setTimeout(() => { if (!director.playing) { director.setStory(next.id); void director.go(0); } }, 9000);
+  // The cursor hides when nobody moves it.
+  let idle = 0;
+  addEventListener('pointermove', () => { document.body.classList.remove('idle'); clearTimeout(idle); idle = window.setTimeout(() => document.body.classList.add('idle'), 3000); });
+}
 
 // "Happening now" on the opening title: one line, the strongest event of today, with its chapter.
 let news: Happening[] = [];

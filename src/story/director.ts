@@ -5,6 +5,7 @@ import { cssGradient } from '../engine/palettes';
 import type { Chapter } from './chapters';
 import { STORIES, type Story } from './stories';
 import { showChart } from './charts';
+import { placeFacts } from './place';
 import { t, lang } from '../i18n';
 import { dayMonthShort, dayShort, monthYear, num, timeUtc } from '../i18n/format';
 
@@ -51,6 +52,9 @@ export class Director {
   get chapter(): Chapter | null { return this.chapters[this.index] ?? null; }
 
   /** Switch documentary: the rail shows its chapters; call go() to start it. */
+  /** Called when the last chapter of a story ends, with the story that would follow. */
+  onEnd: (next: Story) => void = () => {};
+
   storyById(id: string) { return STORIES.find((s) => s.id === id) ?? null; }
 
   setStory(id: string) {
@@ -278,7 +282,18 @@ export class Director {
     b.textContent = name;
     small.textContent = context;
     el.append(b, small);
-    setTimeout(() => this.addAnchor(lon, lat, 0, el.innerHTML), 900);
+    // The place now: solar time, sunrise and sunset, wind and sea, from the layers at hand.
+    const token = this.token;
+    const facts = placeFacts(this.globe, lon, lat).catch(() => []);
+    setTimeout(async () => {
+      for (const line of await facts) {
+        const i = document.createElement('i');
+        i.className = 'a-fact';
+        i.textContent = line;
+        el.appendChild(i);
+      }
+      if (token === this.token && this.detour) this.addAnchor(lon, lat, 0, el.innerHTML);
+    }, 900);
   }
 
   private anchorStation() {
@@ -382,6 +397,7 @@ export class Director {
           }
           document.getElementById('hint')!.classList.add('on');
           setTimeout(() => document.getElementById('hint')!.classList.remove('on'), 7000);
+          this.onEnd(next);
         } else this.next();
       }
     }

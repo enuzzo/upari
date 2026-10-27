@@ -45,6 +45,7 @@ const en: Dict = {
     noWebgl: 'You need a browser with WebGL 2 to see the planet.',
     clock: (day: string, time: string) => `${day} · ${time} UTC`,
     about: 'Why Upari',
+    embedOpen: 'Open Upari',
   },
 
   stories: { pianeta: 'The planet, right now', natura: 'Nature', persone: 'People', cielo: 'The sky, right now' },
@@ -99,6 +100,7 @@ const en: Dict = {
       smog: 'Nitrogen dioxide (NO₂)', ozono: 'The ozone layer', petrolio: 'Oil slicks, 30 days',
       aurora: 'Aurora, right now', satelliti: 'Every satellite', partenze: 'Next launches', bolidi: 'Fireballs since 1988',
       citta: 'Cities, 1975 – 2030', rotte: 'Shipping lanes',
+      livello: 'Sea level', onde: 'Waves, last 24 hours',
     },
   },
 
@@ -142,6 +144,8 @@ const en: Dict = {
       ['Voyager', 'NASA/JPL Horizons'],
       ['Shipping lanes', 'World Bank / IMF, Global Shipping Traffic Density (AIS 2015–2021), CC BY 4.0'],
       ['Cities', 'European Commission, JRC, GHS-BUILT-S R2023A (2025 and 2030 are projections), CC BY 4.0'],
+      ['Sea level', 'NOAA CoastWatch, sea level anomaly from altimetry (contains AVISO+ products and Copernicus Sentinel data), via ERDDAP'],
+      ['Waves', 'NOAA WaveWatch III model, via PacIOOS ERDDAP'],
       ['People', 'World Bank, World Development Indicators (with data from UN World Population Prospects, UN IGME and ILO), CC BY 4.0; asylum applications UNHCR Refugee Data Portal, CC BY 4.0; Natural Earth borders, public domain'],
       ['Music and sounds', 'composed for Upari with Magnific (Google Lyria, ElevenLabs)'],
       ['Place search', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, ODbL'],
@@ -246,6 +250,8 @@ const en: Dict = {
     shipsHigh: 'one of the great lanes',
     built: (v: string) => `built-up land: ${v}%`,
     notBuilt: 'hardly any buildings',
+    sealevel: (cm: string) => `${cm} cm against the mean level`,
+    waves: (m: string) => `waves of ${m} m`,
   },
 
   spots: {
@@ -260,6 +266,30 @@ const en: Dict = {
     launch: (day: string, place: string) => `${day} · ${place}`,
     fireball: (kt: string) => `${kt} kilotons`,
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · burst at ${alt} km altitude` : ''}`,
+  },
+
+  notes: {
+    livello: {
+      text: 'How far the sea surface stands above or below its 1993–2012 mean, measured by altimetry satellites. Warm eddies bulge by a few tens of centimetres; El Niño lifts the eastern Pacific. One frame a month, then the latest day.',
+      source: 'NOAA CoastWatch · multi-satellite altimetry (AVISO+, Copernicus Sentinel) · 0.25°',
+    },
+    onde: {
+      text: 'Significant wave height over the last twenty-four hours, hour by hour: the mean of the highest third of the waves, what a sailor estimates by eye. It is the WaveWatch III model, which computes waves from the winds: a simulation, not a measurement.',
+      source: 'NOAA WaveWatch III · PacIOOS ERDDAP · 0.5°',
+    },
+    vulcani: {
+      text: 'The orange dots are the ongoing eruptions according to the Smithsonian; the yellow cloud is the sulphur dioxide of the last four days, seen by Sentinel-5P. The gas comes from volcanoes, but also from some smelters and coal plants.',
+      source: 'Smithsonian Global Volcanism Program · Copernicus Sentinel-5P TROPOMI via NASA GIBS',
+    },
+  },
+
+  place: {
+    solar: (time: string) => `${time} solar time`,
+    sun: (rise: string, set: string) => `sunrise ${rise} · sunset ${set}, solar time`,
+    polarDay: 'the Sun does not set today',
+    polarNight: 'the Sun does not rise today',
+    wind: (kmh: string, dir: string) => `wind ${kmh} km/h from the ${dir}`,
+    sea: (temp: string) => `sea ${temp} °C`,
   },
 
   now: {
@@ -343,6 +373,8 @@ const en: Dict = {
     aurora: { title: 'chance of seeing the aurora', left: '5%', right: '50%' },
     ships: { title: 'ship traffic, 2015–2021', left: 'rare', right: 'busy' },
     built: { title: 'land covered by buildings', left: 'villages', right: 'cities' },
+    sealevel: { title: 'sea higher or lower than normal', left: '−50 cm', right: '+50 cm' },
+    waves: { title: 'wave height', left: 'calm', right: '12 m' },
   },
 
   // ——— The planet, right now ———
@@ -473,6 +505,8 @@ const en: Dict = {
     text: 'The extent is the sum of the areas with at least 15% ice, weighted by concentration. Ice reflects sunlight: when it retreats, the dark sea absorbs more heat.',
     source: 'GHRSST GAMSSA, Bureau of Meteorology · ice concentration',
     icebergs: 'large Antarctic icebergs tracked by the U.S. National Ice Center, the pale dots',
+    nsidc: (day: string, diff: string) => `Arctic ice on ${day} according to NSIDC: ${diff} against the 1981–2010 mean for the same day`,
+    millionKm2: 'M km²',
   },
   luci: {
     title: 'Lights', kicker: 'The night, right now',

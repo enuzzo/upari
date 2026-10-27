@@ -86,6 +86,7 @@ const pt: Dict = {
     noWebgl: 'É preciso um navegador com WebGL 2 para ver o planeta.',
     clock: (day: string, time: string) => `${day} · ${time} UTC`,
     about: 'Por que Upari',
+    embedOpen: 'Abrir o Upari',
   },
 
   stories: { pianeta: 'O planeta, agora', natura: 'A natureza', persone: 'As pessoas', cielo: 'O céu, agora' },
@@ -140,6 +141,7 @@ const pt: Dict = {
       smog: 'Dióxido de nitrogênio (NO₂)', ozono: 'A camada de ozônio', petrolio: 'Manchas de petróleo, 30 dias',
       aurora: 'Aurora, agora', satelliti: 'Todos os satélites', partenze: 'Próximos lançamentos', bolidi: 'Bólidos desde 1988',
       citta: 'Cidades, 1975 – 2030', rotte: 'Rotas dos navios',
+      livello: 'Nível do mar', onde: 'Ondas, últimas 24 horas',
     },
   },
 
@@ -183,6 +185,8 @@ const pt: Dict = {
       ['Voyager', 'NASA/JPL Horizons'],
       ['Rotas dos navios', 'World Bank / IMF, Global Shipping Traffic Density (AIS 2015–2021), CC BY 4.0'],
       ['Cidades', 'Comissão Europeia, JRC, GHS-BUILT-S R2023A (2025 e 2030 são projeções), CC BY 4.0'],
+      ['Nível do mar', 'NOAA CoastWatch, anomalia do nível do mar por altimetria (contém produtos AVISO+ e dados do Copernicus Sentinel), via ERDDAP'],
+      ['Ondas', 'modelo NOAA WaveWatch III, via PacIOOS ERDDAP'],
       ['As pessoas', 'World Bank, World Development Indicators (com dados do World Population Prospects da ONU, do UN IGME e da OIT), CC BY 4.0; pedidos de asilo UNHCR Refugee Data Portal, CC BY 4.0; fronteiras Natural Earth, domínio público'],
       ['Música e sons', 'compostos para o Upari com Magnific (Google Lyria, ElevenLabs)'],
       ['Busca de lugares', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, dados © colaboradores do <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>, ODbL'],
@@ -287,6 +291,8 @@ const pt: Dict = {
     shipsHigh: 'uma das grandes rotas',
     built: (v: string) => `terra construída: ${v}%`,
     notBuilt: 'quase nenhum edifício',
+    sealevel: (cm: string) => `${cm} cm em relação ao nível médio`,
+    waves: (m: string) => `ondas de ${m} m`,
   },
 
   spots: {
@@ -301,6 +307,30 @@ const pt: Dict = {
     launch: (day: string, place: string) => `${day} · ${place}`,
     fireball: (kt: string) => `${kt} quilotons`,
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · explodiu a ${alt} km de altitude` : ''}`,
+  },
+
+  notes: {
+    livello: {
+      text: 'Quanto a superfície do mar está acima ou abaixo da sua média de 1993–2012, medido pelos satélites altimétricos. Os vórtices quentes se elevam algumas dezenas de centímetros; o El Niño ergue o Pacífico oriental. Um quadro por mês, depois o último dia.',
+      source: 'NOAA CoastWatch · altimetria multissatélite (AVISO+, Copernicus Sentinel) · 0,25°',
+    },
+    onde: {
+      text: 'Altura significativa das ondas nas últimas vinte e quatro horas, hora a hora: a média do terço mais alto das ondas, aquela que um marinheiro estima a olho. É o modelo WaveWatch III, que calcula as ondas a partir dos ventos: uma simulação, não uma medição.',
+      source: 'NOAA WaveWatch III · PacIOOS ERDDAP · 0,5°',
+    },
+    vulcani: {
+      text: 'Os pontos laranja são as erupções em curso segundo o Smithsonian; a nuvem amarela é o dióxido de enxofre dos últimos quatro dias, visto pelo Sentinel-5P. O gás vem dos vulcões, mas também de algumas fundições e usinas a carvão.',
+      source: 'Smithsonian Global Volcanism Program · Copernicus Sentinel-5P TROPOMI via NASA GIBS',
+    },
+  },
+
+  place: {
+    solar: (time: string) => `${time} hora solar local`,
+    sun: (rise: string, set: string) => `nascer do sol ${rise} · pôr do sol ${set}, hora solar local`,
+    polarDay: 'hoje o Sol não se põe',
+    polarNight: 'hoje o Sol não nasce',
+    wind: (kmh: string, dir: string) => `vento de ${kmh} km/h do ${dir}`,
+    sea: (temp: string) => `mar a ${temp} °C`,
   },
 
   now: {
@@ -388,6 +418,8 @@ const pt: Dict = {
     aurora: { title: 'probabilidade de ver a aurora', left: '5%', right: '50%' },
     ships: { title: 'tráfego marítimo, 2015–2021', left: 'raro', right: 'intenso' },
     built: { title: 'terra coberta por edifícios', left: 'vilarejos', right: 'cidades' },
+    sealevel: { title: 'mar mais alto ou mais baixo que o normal', left: '−50 cm', right: '+50 cm' },
+    waves: { title: 'altura das ondas', left: 'calmaria', right: '12 m' },
   },
 
   // ——— O planeta, agora ———
@@ -518,6 +550,8 @@ const pt: Dict = {
     text: 'A extensão é a soma das áreas com pelo menos 15% de gelo, ponderada pela concentração. O gelo reflete a luz do Sol: quando ele recua, o mar escuro absorve mais calor.',
     source: 'GHRSST GAMSSA, Bureau of Meteorology · concentração do gelo',
     icebergs: 'grandes icebergs antárticos acompanhados pelo U.S. National Ice Center, os pontos claros',
+    nsidc: (day: string, diff: string) => `gelo do Ártico em ${day} segundo o NSIDC: ${diff} em relação à média de 1981–2010 para o mesmo dia`,
+    millionKm2: 'mi km²',
   },
   luci: {
     title: 'As luzes', kicker: 'A noite, agora',

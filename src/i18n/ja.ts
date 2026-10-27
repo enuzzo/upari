@@ -64,6 +64,7 @@ const ja: Dict = {
     noWebgl: '地球を表示するには、WebGL 2に対応したブラウザが必要です。',
     clock: (day: string, time: string) => `${day} · ${time} UTC`,
     about: 'なぜUpariなのか',
+    embedOpen: 'Upariを開く',
   },
 
   stories: { pianeta: 'いまの地球', natura: '自然', persone: '人々', cielo: 'いまの空' },
@@ -118,6 +119,7 @@ const ja: Dict = {
       smog: '二酸化窒素（NO₂）', ozono: 'オゾン層', petrolio: '海の油膜（過去30日間）',
       aurora: 'いまのオーロラ', satelliti: 'すべての人工衛星', partenze: '次の打ち上げ', bolidi: '1988年以降の火球',
       citta: '都市（1975–2030年）', rotte: '船の航路',
+      livello: '海面の高さ', onde: '波（過去24時間）',
     },
   },
 
@@ -161,6 +163,8 @@ const ja: Dict = {
       ['ボイジャー', 'NASA/JPL Horizons'],
       ['船の航路', 'World Bank / IMF、Global Shipping Traffic Density（AIS 2015–2021）、CC BY 4.0'],
       ['都市', '欧州委員会、JRC、GHS-BUILT-S R2023A（2025年と2030年は予測）、CC BY 4.0'],
+      ['海面の高さ', 'NOAA CoastWatch、衛星高度計による海面高度偏差（AVISO+のプロダクトとCopernicus Sentinelのデータを含む）、ERDDAP経由'],
+      ['波', 'NOAA WaveWatch IIIモデル、PacIOOS ERDDAP経由'],
       ['人々', 'World Bank、World Development Indicators（UN World Population Prospects、UN IGME、ILOのデータを含む）、CC BY 4.0。庇護申請はUNHCR Refugee Data Portal、CC BY 4.0。国境はNatural Earth、パブリックドメイン'],
       ['音楽と効果音', 'Magnific（Google Lyria、ElevenLabs）を使い、Upariのために作曲'],
       ['場所の検索', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>、データ © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors、ODbL'],
@@ -265,6 +269,8 @@ const ja: Dict = {
     shipsHigh: '大航路のひとつ',
     built: (v: string) => `建物に覆われた土地${v}%`,
     notBuilt: '建物はほとんどない',
+    sealevel: (cm: string) => `平均海面から${cm} cm`,
+    waves: (m: string) => `波の高さ${m} m`,
   },
 
   spots: {
@@ -279,6 +285,30 @@ const ja: Dict = {
     launch: (day: string, place: string) => `${day} · ${place}`,
     fireball: (kt: string) => `${kt}キロトン`,
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · 高度${alt} kmで爆発` : ''}`,
+  },
+
+  notes: {
+    livello: {
+      text: '海面が1993–2012年の平均よりどれだけ高いか低いかを、衛星高度計で測ったもの。暖かい渦は数十センチ盛り上がり、El Niñoは東太平洋を押し上げる。月に1コマ、最後に最新の日。',
+      source: 'NOAA CoastWatch · 複数衛星の高度計（AVISO+、Copernicus Sentinel）· 0.25°',
+    },
+    onde: {
+      text: '過去24時間の有義波高を、1時間ごとに。高いほうから3分の1の波の平均で、船乗りが目で見積もる波の高さにあたる。WaveWatch IIIモデルが風から計算した波で、測定ではなくシミュレーションだ。',
+      source: 'NOAA WaveWatch III · PacIOOS ERDDAP · 0.5°',
+    },
+    vulcani: {
+      text: 'オレンジ色の点はSmithsonianによる現在噴火中の火山、黄色の雲はSentinel-5Pがとらえた過去4日間の二酸化硫黄。このガスは火山から出るが、一部の製錬所や石炭火力発電所からも出る。',
+      source: 'Smithsonian Global Volcanism Program · Copernicus Sentinel-5P TROPOMI、NASA GIBS経由',
+    },
+  },
+
+  place: {
+    solar: (time: string) => `現地の太陽時で${time}`,
+    sun: (rise: string, set: string) => `日の出${rise} · 日の入り${set}（現地の太陽時）`,
+    polarDay: '今日は太陽が沈まない',
+    polarNight: '今日は太陽が昇らない',
+    wind: (kmh: string, dir: string) => `${dir}の風、風速${kmh} km/h`,
+    sea: (temp: string) => `海水温${temp} °C`,
   },
 
   now: {
@@ -362,6 +392,8 @@ const ja: Dict = {
     aurora: { title: 'オーロラが見える確率', left: '5%', right: '50%' },
     ships: { title: '船の交通量（2015–2021年）', left: '少ない', right: '多い' },
     built: { title: '建物に覆われた土地', left: '村', right: '都市' },
+    sealevel: { title: '海面が平常より高いか低いか', left: '−50 cm', right: '+50 cm' },
+    waves: { title: '波の高さ', left: '穏やか', right: '12 m' },
   },
 
   // ——— いまの地球 ———
@@ -492,6 +524,8 @@ const ja: Dict = {
     text: '面積は、海氷が15%以上ある海域を、密接度で重みづけして合計したもの。氷は太陽の光を跳ね返す。氷が退くと、暗い海がより多くの熱を吸収する。',
     source: 'GHRSST GAMSSA、Bureau of Meteorology · 海氷密接度',
     icebergs: 'U.S. National Ice Centerが追跡している南極の大きな氷山、淡い色の点',
+    nsidc: (day: string, diff: string) => `NSIDCによる${day}の北極の海氷：1981–2010年の同じ日の平均と比べて${diff.replace(/^([+−-]?)([\d.,]+) 百万/, (_, s: string, n: string) => `${s}${num(value(n) * 100)}万`)}`,
+    millionKm2: '百万km²',
   },
   luci: {
     title: '灯り', kicker: 'いまの夜',

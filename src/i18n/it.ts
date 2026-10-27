@@ -47,6 +47,7 @@ const it = {
     /** The clock in the top bar. */
     clock: (day: string, time: string) => `${day} · ${time} UTC`,
     about: 'Perché Upari',
+    embedOpen: 'Apri Upari',
   },
 
   stories: { pianeta: 'Il pianeta, adesso', natura: 'La natura', persone: 'Le persone', cielo: 'Il cielo, adesso' },
@@ -104,6 +105,7 @@ const it = {
       smog: 'Biossido di azoto (NO₂)', ozono: 'Lo strato di ozono', petrolio: 'Chiazze di petrolio, 30 giorni',
       aurora: 'Aurora, adesso', satelliti: 'Tutti i satelliti', partenze: 'Prossimi lanci', bolidi: 'Bolidi dal 1988',
       citta: 'Città, 1975 – 2030', rotte: 'Rotte delle navi',
+      livello: 'Altezza del mare', onde: 'Onde, ultime 24 ore',
     },
   },
 
@@ -148,6 +150,8 @@ const it = {
       ['Voyager', 'NASA/JPL Horizons'],
       ['Rotte delle navi', 'World Bank / IMF, Global Shipping Traffic Density (AIS 2015–2021), CC BY 4.0'],
       ['Città', 'Commissione europea, JRC, GHS-BUILT-S R2023A (2025 e 2030 sono proiezioni), CC BY 4.0'],
+      ['Altezza del mare', 'NOAA CoastWatch, anomalia del livello del mare da altimetria (contiene prodotti AVISO+ e dati Copernicus Sentinel), via ERDDAP'],
+      ['Onde', 'modello NOAA WaveWatch III, via PacIOOS ERDDAP'],
       ['Le persone', 'World Bank, World Development Indicators (con dati ONU World Population Prospects, UN IGME e ILO), CC BY 4.0; domande di asilo UNHCR Refugee Data Portal, CC BY 4.0; confini Natural Earth, pubblico dominio'],
       ['Musica e suoni', 'composti per Upari con Magnific (Google Lyria, ElevenLabs)'],
       ['Ricerca dei luoghi', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, dati © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, ODbL'],
@@ -256,6 +260,8 @@ const it = {
     shipsHigh: 'una delle grandi rotte',
     built: (v: string) => `terra costruita: ${v}%`,
     notBuilt: 'quasi nessun edificio',
+    sealevel: (cm: string) => `${cm} cm rispetto al livello medio`,
+    waves: (m: string) => `onde di ${m} m`,
   },
 
   /** Events in places, under the cursor. */
@@ -271,6 +277,32 @@ const it = {
     launch: (day: string, place: string) => `${day} · ${place}`,
     fireball: (kt: string) => `${kt} chilotoni`,
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · esploso a ${alt} km di quota` : ''}`,
+  },
+
+  /** How to read the layers of Esplora that have no chapter of their own. */
+  notes: {
+    livello: {
+      text: 'Di quanto la superficie del mare è più alta o più bassa della sua media 1993–2012, misurato dai satelliti altimetrici. I vortici caldi sporgono di qualche decina di centimetri; El Niño solleva il Pacifico orientale. Un fotogramma al mese, poi l’ultimo giorno.',
+      source: 'NOAA CoastWatch · altimetria multi-satellite (AVISO+, Copernicus Sentinel) · 0,25°',
+    },
+    onde: {
+      text: 'Altezza significativa delle onde nelle ultime ventiquattro ore, ora per ora: la media del terzo più alto delle onde, quella che un marinaio stima a occhio. È il modello WaveWatch III, che calcola le onde dai venti: una simulazione, non una misura.',
+      source: 'NOAA WaveWatch III · PacIOOS ERDDAP · 0,5°',
+    },
+    vulcani: {
+      text: 'I punti arancioni sono le eruzioni in corso secondo lo Smithsonian; la nube gialla è il biossido di zolfo degli ultimi quattro giorni, visto da Sentinel-5P. Il gas viene dai vulcani, ma anche da alcune fonderie e centrali a carbone.',
+      source: 'Smithsonian Global Volcanism Program · Copernicus Sentinel-5P TROPOMI via NASA GIBS',
+    },
+  },
+
+  /** A searched place, now. */
+  place: {
+    solar: (time: string) => `${time} ora solare`,
+    sun: (rise: string, set: string) => `alba ${rise} · tramonto ${set}, ora solare`,
+    polarDay: 'oggi il Sole non tramonta',
+    polarNight: 'oggi il Sole non sorge',
+    wind: (kmh: string, dir: string) => `vento ${kmh} km/h da ${dir}`,
+    sea: (temp: string) => `mare ${temp} °C`,
   },
 
   /** "Happening now", on the opening title. */
@@ -358,6 +390,8 @@ const it = {
     aurora: { title: 'probabilità di vedere l’aurora', left: '5%', right: '50%' },
     ships: { title: 'traffico navale, 2015–2021', left: 'raro', right: 'intenso' },
     built: { title: 'terra coperta da edifici', left: 'villaggi', right: 'città' },
+    sealevel: { title: 'mare più alto o più basso del normale', left: '−50 cm', right: '+50 cm' },
+    waves: { title: 'altezza delle onde', left: 'calma', right: '12 m' },
   },
 
   // ——— Il pianeta, adesso ———
@@ -490,6 +524,8 @@ const it = {
     text: 'La superficie è la somma delle aree con almeno il 15% di ghiaccio, pesata per la concentrazione. Il ghiaccio riflette la luce del Sole: quando si ritira, il mare scuro assorbe più calore.',
     source: 'GHRSST GAMSSA, Bureau of Meteorology · concentrazione del ghiaccio',
     icebergs: 'grandi iceberg antartici seguiti dallo U.S. National Ice Center, i punti chiari',
+    nsidc: (day: string, diff: string) => `ghiaccio artico il ${day} secondo NSIDC: ${diff} rispetto alla media 1981–2010 dello stesso giorno`,
+    millionKm2: 'mln km²',
   },
   luci: {
     title: 'Le luci', kicker: 'La notte, adesso',

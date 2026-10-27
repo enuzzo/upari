@@ -47,6 +47,7 @@ const de: Dict = {
     noWebgl: 'Um den Planeten zu sehen, brauchst du einen Browser mit WebGL 2.',
     clock: (day: string, time: string) => `${day} · ${time} UTC`,
     about: 'Warum Upari',
+    embedOpen: 'Upari öffnen',
   },
 
   stories: { pianeta: 'Der Planet, jetzt', natura: 'Die Natur', persone: 'Die Menschen', cielo: 'Der Himmel, jetzt' },
@@ -101,6 +102,7 @@ const de: Dict = {
       smog: 'Stickstoffdioxid (NO₂)', ozono: 'Die Ozonschicht', petrolio: 'Ölteppiche, 30 Tage',
       aurora: 'Polarlicht, jetzt', satelliti: 'Alle Satelliten', partenze: 'Nächste Starts', bolidi: 'Feuerkugeln seit 1988',
       citta: 'Städte, 1975 – 2030', rotte: 'Schifffahrtsrouten',
+      livello: 'Meeresspiegel', onde: 'Wellen, letzte 24 Stunden',
     },
   },
 
@@ -144,6 +146,8 @@ const de: Dict = {
       ['Voyager', 'NASA/JPL Horizons'],
       ['Schifffahrtsrouten', 'World Bank / IMF, Global Shipping Traffic Density (AIS 2015–2021), CC BY 4.0'],
       ['Städte', 'Europäische Kommission, JRC, GHS-BUILT-S R2023A (2025 und 2030 sind Projektionen), CC BY 4.0'],
+      ['Meeresspiegel', 'NOAA CoastWatch, Meeresspiegelanomalie aus der Altimetrie (enthält AVISO+-Produkte und Copernicus-Sentinel-Daten), via ERDDAP'],
+      ['Wellen', 'Modell NOAA WaveWatch III, via PacIOOS ERDDAP'],
       ['Die Menschen', 'World Bank, World Development Indicators (mit Daten aus UN World Population Prospects, UN IGME und ILO), CC BY 4.0; Asylanträge UNHCR Refugee Data Portal, CC BY 4.0; Grenzen Natural Earth, gemeinfrei'],
       ['Musik und Klänge', 'für Upari komponiert mit Magnific (Google Lyria, ElevenLabs)'],
       ['Ortssuche', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, Daten © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-Mitwirkende, ODbL'],
@@ -248,6 +252,8 @@ const de: Dict = {
     shipsHigh: 'eine der großen Routen',
     built: (v: string) => `bebaute Fläche: ${v}%`,
     notBuilt: 'kaum Gebäude',
+    sealevel: (cm: string) => `${cm} cm gegenüber dem mittleren Niveau`,
+    waves: (m: string) => `Wellen von ${m} m`,
   },
 
   spots: {
@@ -262,6 +268,30 @@ const de: Dict = {
     launch: (day: string, place: string) => `${day} · ${place}`,
     fireball: (kt: string) => `${kt} Kilotonnen`,
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · in ${alt} km Höhe explodiert` : ''}`,
+  },
+
+  notes: {
+    livello: {
+      text: 'Wie weit die Meeresoberfläche über oder unter ihrem Mittel von 1993–2012 liegt, gemessen von Altimetrie-Satelliten. Warme Wirbel wölben sich um einige Dutzend Zentimeter auf; El Niño hebt den östlichen Pazifik an. Ein Bild pro Monat, dann der letzte Tag.',
+      source: 'NOAA CoastWatch · Multi-Satelliten-Altimetrie (AVISO+, Copernicus Sentinel) · 0,25°',
+    },
+    onde: {
+      text: 'Signifikante Wellenhöhe der letzten vierundzwanzig Stunden, Stunde für Stunde: der Mittelwert des höchsten Drittels der Wellen, das, was ein Seemann mit bloßem Auge schätzt. Es ist das Modell WaveWatch III, das die Wellen aus den Winden berechnet: eine Simulation, keine Messung.',
+      source: 'NOAA WaveWatch III · PacIOOS ERDDAP · 0,5°',
+    },
+    vulcani: {
+      text: 'Die orangefarbenen Punkte sind die laufenden Ausbrüche laut Smithsonian; die gelbe Wolke ist das Schwefeldioxid der letzten vier Tage, gesehen von Sentinel-5P. Das Gas stammt von Vulkanen, aber auch von einigen Schmelzhütten und Kohlekraftwerken.',
+      source: 'Smithsonian Global Volcanism Program · Copernicus Sentinel-5P TROPOMI via NASA GIBS',
+    },
+  },
+
+  place: {
+    solar: (time: string) => `${time} lokale Sonnenzeit`,
+    sun: (rise: string, set: string) => `Sonnenaufgang ${rise} · Sonnenuntergang ${set}, lokale Sonnenzeit`,
+    polarDay: 'heute geht die Sonne nicht unter',
+    polarNight: 'heute geht die Sonne nicht auf',
+    wind: (kmh: string, dir: string) => `Wind ${kmh} km/h aus ${dir}`,
+    sea: (temp: string) => `Meer ${temp} °C`,
   },
 
   now: {
@@ -345,6 +375,8 @@ const de: Dict = {
     aurora: { title: 'Wahrscheinlichkeit, Polarlicht zu sehen', left: '5%', right: '50%' },
     ships: { title: 'Schiffsverkehr, 2015–2021', left: 'selten', right: 'dicht' },
     built: { title: 'von Gebäuden bedeckte Fläche', left: 'Dörfer', right: 'Städte' },
+    sealevel: { title: 'Meer höher oder tiefer als normal', left: '−50 cm', right: '+50 cm' },
+    waves: { title: 'Wellenhöhe', left: 'ruhig', right: '12 m' },
   },
 
   // ——— Der Planet, jetzt ———
@@ -475,6 +507,8 @@ const de: Dict = {
     text: 'Die Ausdehnung ist die Summe der Flächen mit mindestens 15 Prozent Eis, gewichtet nach der Konzentration. Eis wirft das Sonnenlicht zurück: Wo es sich zurückzieht, nimmt das dunkle Meer mehr Wärme auf.',
     source: 'GHRSST GAMSSA, Bureau of Meteorology · Eiskonzentration',
     icebergs: 'große antarktische Eisberge, verfolgt vom U.S. National Ice Center: die hellen Punkte',
+    nsidc: (day: string, diff: string) => `arktisches Eis am ${day} laut NSIDC: ${diff} gegenüber dem Mittel 1981–2010 für denselben Tag`,
+    millionKm2: 'Mio. km²',
   },
   luci: {
     title: 'Die Lichter', kicker: 'Die Nacht, jetzt',

@@ -51,6 +51,7 @@ const hi: Dict = {
     noWebgl: 'ग्रह देखने के लिए WebGL 2 वाला ब्राउज़र चाहिए।',
     clock: (day: string, time: string) => `${day} · ${time} UTC`,
     about: 'Upari क्यों',
+    embedOpen: 'Upari खोलें',
   },
 
   stories: { pianeta: 'यह ग्रह, इस वक़्त', natura: 'प्रकृति', persone: 'लोग', cielo: 'आसमान, इस वक़्त' },
@@ -105,6 +106,7 @@ const hi: Dict = {
       smog: 'नाइट्रोजन डाइऑक्साइड (NO₂)', ozono: 'ओज़ोन परत', petrolio: 'तेल के धब्बे, 30 दिन',
       aurora: 'ध्रुवीय ज्योति, इस वक़्त', satelliti: 'सारे उपग्रह', partenze: 'अगले प्रक्षेपण', bolidi: '1988 से आग के गोले',
       citta: 'शहर, 1975 – 2030', rotte: 'जहाज़ों के रास्ते',
+      livello: 'समुद्र का स्तर', onde: 'लहरें, पिछले 24 घंटे',
     },
   },
 
@@ -148,6 +150,8 @@ const hi: Dict = {
       ['Voyager', 'NASA/JPL Horizons'],
       ['जहाज़ों के रास्ते', 'World Bank / IMF, Global Shipping Traffic Density (AIS 2015–2021), CC BY 4.0'],
       ['शहर', 'यूरोपीय आयोग, JRC, GHS-BUILT-S R2023A (2025 और 2030 अनुमान हैं), CC BY 4.0'],
+      ['समुद्र का स्तर', 'NOAA CoastWatch, अल्टीमेट्री से समुद्र-स्तर विसंगति (इसमें AVISO+ उत्पाद और Copernicus Sentinel डेटा शामिल हैं), ERDDAP के ज़रिए'],
+      ['लहरें', 'NOAA WaveWatch III मॉडल, PacIOOS ERDDAP के ज़रिए'],
       ['लोग', 'World Bank, World Development Indicators (UN World Population Prospects, UN IGME और ILO के आँकड़ों सहित), CC BY 4.0; शरण के आवेदन UNHCR Refugee Data Portal से, CC BY 4.0; Natural Earth सीमाएँ, सार्वजनिक डोमेन'],
       ['संगीत और ध्वनियाँ', 'Upari के लिए Magnific (Google Lyria, ElevenLabs) के साथ रचे गए'],
       ['जगहों की खोज', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, डेटा © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> योगदानकर्ता, ODbL'],
@@ -252,6 +256,8 @@ const hi: Dict = {
     shipsHigh: 'बड़े समुद्री रास्तों में से एक',
     built: (v: string) => `बनी हुई ज़मीन: ${v}%`,
     notBuilt: 'लगभग कोई इमारत नहीं',
+    sealevel: (cm: string) => `औसत स्तर से ${cm} cm`,
+    waves: (m: string) => `${m} m ऊँची लहरें`,
   },
 
   spots: {
@@ -266,6 +272,30 @@ const hi: Dict = {
     launch: (day: string, place: string) => `${day} · ${place}`,
     fireball: (kt: string) => `${kt} किलोटन`,
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · ${alt} km की ऊँचाई पर फटा` : ''}`,
+  },
+
+  notes: {
+    livello: {
+      text: 'समुद्र की सतह अपने 1993–2012 के औसत से कितनी ऊपर या नीचे है, जैसा अल्टीमेट्री उपग्रह मापते हैं। गर्म भँवर कुछ दसियों सेंटीमीटर उभर आते हैं; El Niño पूर्वी प्रशांत को ऊपर उठा देता है। हर महीने एक फ़्रेम, फिर सबसे ताज़ा दिन।',
+      source: 'NOAA CoastWatch · बहु-उपग्रह अल्टीमेट्री (AVISO+, Copernicus Sentinel) · 0.25°',
+    },
+    onde: {
+      text: 'पिछले चौबीस घंटों में लहरों की सार्थक ऊँचाई, घंटे-दर-घंटे: सबसे ऊँची एक-तिहाई लहरों का औसत, जिसका अंदाज़ा नाविक आँख से लगाता है। यह WaveWatch III मॉडल है, जो हवाओं से लहरों की गणना करता है: एक सिमुलेशन, माप नहीं।',
+      source: 'NOAA WaveWatch III · PacIOOS ERDDAP · 0.5°',
+    },
+    vulcani: {
+      text: 'नारंगी बिंदु Smithsonian के अनुसार अभी चल रहे विस्फोट हैं; पीला बादल पिछले चार दिनों की सल्फ़र डाइऑक्साइड है, जिसे Sentinel-5P ने देखा। यह गैस ज्वालामुखियों से आती है, पर कुछ धातु गलाने वाले कारख़ानों और कोयला बिजलीघरों से भी।',
+      source: 'Smithsonian Global Volcanism Program · Copernicus Sentinel-5P TROPOMI, NASA GIBS के ज़रिए',
+    },
+  },
+
+  place: {
+    solar: (time: string) => `स्थानीय सौर समय ${time}`,
+    sun: (rise: string, set: string) => `सूर्योदय ${rise} · सूर्यास्त ${set}, स्थानीय सौर समय`,
+    polarDay: 'आज सूरज नहीं डूबता',
+    polarNight: 'आज सूरज नहीं उगता',
+    wind: (kmh: string, dir: string) => `${dir} से ${kmh} km/h की हवा`,
+    sea: (temp: string) => `समुद्र ${temp} °C`,
   },
 
   now: {
@@ -349,6 +379,8 @@ const hi: Dict = {
     aurora: { title: 'ध्रुवीय ज्योति दिखने की संभावना', left: '5%', right: '50%' },
     ships: { title: 'जहाज़ों की आवाजाही, 2015–2021', left: 'कम', right: 'भारी' },
     built: { title: 'इमारतों से ढकी ज़मीन', left: 'गाँव', right: 'शहर' },
+    sealevel: { title: 'सामान्य से ऊँचा या नीचा समुद्र', left: '−50 cm', right: '+50 cm' },
+    waves: { title: 'लहरों की ऊँचाई', left: 'शांत', right: '12 m' },
   },
 
   // ——— यह ग्रह, इस वक़्त ———
@@ -479,6 +511,8 @@ const hi: Dict = {
     text: 'कुल विस्तार उन सभी इलाक़ों का जोड़ है जहाँ कम से कम 15% बर्फ़ है, सांद्रता के हिसाब से भारित। बर्फ़ सूरज की रोशनी लौटा देती है: जब वह पीछे हटती है, तो गहरा समुद्र ज़्यादा गर्मी सोखता है।',
     source: 'GHRSST GAMSSA, Bureau of Meteorology · बर्फ़ की सांद्रता',
     icebergs: 'अंटार्कटिका के बड़े हिमशैल, जिन पर U.S. National Ice Center नज़र रखता है, हल्के बिंदु',
+    nsidc: (day: string, diff: string) => `NSIDC के अनुसार ${day} को आर्कटिक की बर्फ़: उसी दिन के 1981–2010 के औसत की तुलना में ${diff}`,
+    millionKm2: 'मिलियन km²',
   },
   luci: {
     title: 'रोशनियाँ', kicker: 'रात, इस वक़्त',

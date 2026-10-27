@@ -55,6 +55,7 @@ const zh: Dict = {
     noWebgl: '需要支持 WebGL 2 的浏览器才能看到地球。',
     clock: (day: string, time: string) => `${day} · ${time} UTC`,
     about: '为什么是 Upari',
+    embedOpen: '打开 Upari',
   },
 
   stories: { pianeta: '此刻的地球', natura: '自然', persone: '人类', cielo: '此刻的天空' },
@@ -109,6 +110,7 @@ const zh: Dict = {
       smog: '二氧化氮（NO₂）', ozono: '臭氧层', petrolio: '海上油污，30 天',
       aurora: '此刻的极光', satelliti: '所有卫星', partenze: '即将到来的发射', bolidi: '1988 年以来的火流星',
       citta: '城市，1975 – 2030', rotte: '船舶航线',
+      livello: '海平面', onde: '海浪，过去 24 小时',
     },
   },
 
@@ -152,6 +154,8 @@ const zh: Dict = {
       ['旅行者号', 'NASA/JPL Horizons'],
       ['船舶航线', 'World Bank / IMF，Global Shipping Traffic Density（AIS 2015–2021），CC BY 4.0'],
       ['城市', '欧盟委员会，JRC，GHS-BUILT-S R2023A（2025 年与 2030 年为预测），CC BY 4.0'],
+      ['海平面', 'NOAA CoastWatch，基于卫星测高的海平面异常（含 AVISO+ 产品与 Copernicus Sentinel 数据），来自 ERDDAP'],
+      ['海浪', 'NOAA WaveWatch III 模型，来自 PacIOOS ERDDAP'],
       ['人类', 'World Bank，World Development Indicators（含 UN World Population Prospects、UN IGME 与 ILO 的数据），CC BY 4.0；庇护申请来自 UNHCR Refugee Data Portal，CC BY 4.0；Natural Earth 边界，公有领域'],
       ['音乐与音效', '借助 Magnific（Google Lyria、ElevenLabs）为 Upari 创作'],
       ['地点搜索', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>，数据 © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors，ODbL'],
@@ -256,6 +260,8 @@ const zh: Dict = {
     shipsHigh: '主要航线之一',
     built: (v: string) => `建成区占比 ${v}%`,
     notBuilt: '几乎没有建筑',
+    sealevel: (cm: string) => `较平均海平面 ${cm} 厘米`,
+    waves: (m: string) => `浪高 ${m} 米`,
   },
 
   spots: {
@@ -270,6 +276,30 @@ const zh: Dict = {
     launch: (day: string, place: string) => `${day} · ${place}`,
     fireball: (kt: string) => `${kt} 千吨`,
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · 在 ${alt} km 高空爆炸` : ''}`,
+  },
+
+  notes: {
+    livello: {
+      text: '海面比 1993–2012 年平均值高出或低出多少，由测高卫星测得。暖涡会隆起几十厘米；El Niño 会抬高东太平洋。每月一帧，最后是最新的一天。',
+      source: 'NOAA CoastWatch · 多卫星测高（AVISO+、Copernicus Sentinel）· 0.25°',
+    },
+    onde: {
+      text: '过去二十四小时的有效波高，逐小时显示：最高三分之一海浪的平均高度，也就是水手凭肉眼估计的浪高。这是 WaveWatch III 模型根据风计算出的海浪：是模拟，不是测量。',
+      source: 'NOAA WaveWatch III · PacIOOS ERDDAP · 0.5°',
+    },
+    vulcani: {
+      text: '橙色的点是 Smithsonian 记录的正在进行的喷发；黄色的云是过去四天的二氧化硫，由 Sentinel-5P 观测。这些气体来自火山，也来自一些冶炼厂和燃煤电厂。',
+      source: 'Smithsonian Global Volcanism Program · Copernicus Sentinel-5P TROPOMI，来自 NASA GIBS',
+    },
+  },
+
+  place: {
+    solar: (time: string) => `地方太阳时 ${time}`,
+    sun: (rise: string, set: string) => `日出 ${rise} · 日落 ${set}（地方太阳时）`,
+    polarDay: '今天太阳不落',
+    polarNight: '今天太阳不升',
+    wind: (kmh: string, dir: string) => `${dir}风 ${kmh} km/h`,
+    sea: (temp: string) => `海水 ${temp} °C`,
   },
 
   now: {
@@ -353,6 +383,8 @@ const zh: Dict = {
     aurora: { title: '看到极光的概率', left: '5%', right: '50%' },
     ships: { title: '船舶交通，2015–2021', left: '稀少', right: '繁忙' },
     built: { title: '被建筑覆盖的土地', left: '村庄', right: '城市' },
+    sealevel: { title: '海面高于或低于常年', left: '−50 厘米', right: '+50 厘米' },
+    waves: { title: '浪高', left: '平静', right: '12 米' },
   },
 
   // ——— 此刻的地球 ———
@@ -483,6 +515,8 @@ const zh: Dict = {
     text: '面积是海冰密集度至少 15% 的区域之和，按密集度加权。冰会反射阳光：冰退去时，深色的海面会吸收更多热量。',
     source: 'GHRSST GAMSSA，Bureau of Meteorology · 海冰密集度',
     icebergs: 'U.S. National Ice Center 追踪的南极大冰山，即浅色的点',
+    nsidc: (day: string, diff: string) => `据 NSIDC，${day}北极海冰较 1981–2010 年同日平均 ${diff.replace(/^([+−-]?)([\d.,]+) 百万 /, (_, s: string, n: string) => `${s}${num(value(n) * 100)} 万 `)}`,
+    millionKm2: '百万 km²',
   },
   luci: {
     title: '灯光', kicker: '此刻的夜',

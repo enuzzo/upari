@@ -54,6 +54,7 @@ const ru: Dict = {
     noWebgl: 'Чтобы увидеть планету, нужен браузер с WebGL 2.',
     clock: (day: string, time: string) => `${day} · ${time} UTC`,
     about: 'Почему Upari',
+    embedOpen: 'Открыть Upari',
   },
 
   stories: { pianeta: 'Планета прямо сейчас', natura: 'Природа', persone: 'Люди', cielo: 'Небо прямо сейчас' },
@@ -108,6 +109,7 @@ const ru: Dict = {
       smog: 'Диоксид азота (NO₂)', ozono: 'Озоновый слой', petrolio: 'Нефтяные пятна, 30 дней',
       aurora: 'Полярное сияние прямо сейчас', satelliti: 'Все спутники', partenze: 'Ближайшие запуски', bolidi: 'Болиды с 1988 года',
       citta: 'Города, 1975 – 2030', rotte: 'Пути судов',
+      livello: 'Уровень моря', onde: 'Волны, последние 24 часа',
     },
   },
 
@@ -151,6 +153,8 @@ const ru: Dict = {
       ['Voyager', 'NASA/JPL Horizons'],
       ['Пути судов', 'World Bank / IMF, Global Shipping Traffic Density (AIS 2015–2021), CC BY 4.0'],
       ['Города', 'Европейская комиссия, JRC, GHS-BUILT-S R2023A (2025 и 2030 — прогнозы), CC BY 4.0'],
+      ['Уровень моря', 'NOAA CoastWatch, аномалия уровня моря по данным альтиметрии (содержит продукты AVISO+ и данные Copernicus Sentinel), через ERDDAP'],
+      ['Волны', 'модель NOAA WaveWatch III, через PacIOOS ERDDAP'],
       ['Люди', 'World Bank, World Development Indicators (с данными UN World Population Prospects, UN IGME и ILO), CC BY 4.0; заявления об убежище — UNHCR Refugee Data Portal, CC BY 4.0; границы Natural Earth, общественное достояние'],
       ['Музыка и звуки', 'созданы для Upari с помощью Magnific (Google Lyria, ElevenLabs)'],
       ['Поиск мест', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>, данные © участники <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>, ODbL'],
@@ -257,6 +261,8 @@ const ru: Dict = {
     shipsHigh: 'один из великих морских путей',
     built: (v: string) => `застроенная земля: ${v}%`,
     notBuilt: 'почти никаких зданий',
+    sealevel: (cm: string) => `${cm} см относительно среднего уровня`,
+    waves: (m: string) => `волны высотой ${m} м`,
   },
 
   spots: {
@@ -271,6 +277,30 @@ const ru: Dict = {
     launch: (day: string, place: string) => `${day} · ${place}`,
     fireball: (kt: string) => `${kt} ${pl(kt, 'килотонна', 'килотонны', 'килотонн')}`,
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · взорвался на высоте ${alt} км` : ''}`,
+  },
+
+  notes: {
+    livello: {
+      text: 'Насколько поверхность моря выше или ниже своего среднего уровня за 1993–2012 годы, по измерениям спутников-альтиметров. Тёплые вихри выпирают на несколько десятков сантиметров; El Niño поднимает восточную часть Тихого океана. Один кадр в месяц, затем последний день.',
+      source: 'NOAA CoastWatch · многоспутниковая альтиметрия (AVISO+, Copernicus Sentinel) · 0,25°',
+    },
+    onde: {
+      text: 'Значительная высота волн за последние двадцать четыре часа, час за часом: средняя высота самой высокой трети волн — та, что моряк оценивает на глаз. Это модель WaveWatch III, которая рассчитывает волны по ветрам: симуляция, а не измерение.',
+      source: 'NOAA WaveWatch III · PacIOOS ERDDAP · 0,5°',
+    },
+    vulcani: {
+      text: 'Оранжевые точки — идущие сейчас извержения по данным Smithsonian; жёлтое облако — диоксид серы за последние четыре дня, каким его видит Sentinel-5P. Газ идёт от вулканов, но также от некоторых плавильных заводов и угольных электростанций.',
+      source: 'Smithsonian Global Volcanism Program · Copernicus Sentinel-5P TROPOMI через NASA GIBS',
+    },
+  },
+
+  place: {
+    solar: (time: string) => `${time} по местному солнечному времени`,
+    sun: (rise: string, set: string) => `восход ${rise} · закат ${set}, местное солнечное время`,
+    polarDay: 'сегодня Солнце не заходит',
+    polarNight: 'сегодня Солнце не восходит',
+    wind: (kmh: string, dir: string) => `ветер ${kmh} км/ч с ${dir}а`,
+    sea: (temp: string) => `море ${temp} °C`,
   },
 
   now: {
@@ -354,6 +384,8 @@ const ru: Dict = {
     aurora: { title: 'вероятность увидеть сияние', left: '5%', right: '50%' },
     ships: { title: 'судоходство, 2015–2021', left: 'редкое', right: 'оживлённое' },
     built: { title: 'земля под зданиями', left: 'деревни', right: 'города' },
+    sealevel: { title: 'море выше или ниже обычного', left: '−50 см', right: '+50 см' },
+    waves: { title: 'высота волн', left: 'штиль', right: '12 м' },
   },
 
   // ——— Планета прямо сейчас ———
@@ -484,6 +516,8 @@ const ru: Dict = {
     text: 'Площадь — сумма участков, где льда не меньше 15%, взвешенная по концентрации. Лёд отражает солнечный свет: когда он отступает, тёмное море поглощает больше тепла.',
     source: 'GHRSST GAMSSA, Bureau of Meteorology · концентрация льда',
     icebergs: 'крупные антарктические айсберги, за которыми следит U.S. National Ice Center, — светлые точки',
+    nsidc: (day: string, diff: string) => `арктический лёд на ${day} по данным NSIDC: ${diff} относительно среднего за 1981–2010 годы для того же дня`,
+    millionKm2: 'млн км²',
   },
   luci: {
     title: 'Огни', kicker: 'Ночь прямо сейчас',

@@ -4,7 +4,7 @@ import { t } from '../i18n';
 import { num } from '../i18n/format';
 
 export type DataId = 'chlorophyll' | 'sst' | 'anomaly' | 'rain' | 'ice' | 'ndvi' | 'aerosol' | 'coral' | 'forest'
-  | 'ozone' | 'no2' | 'snow' | 'so2' | 'aurora' | 'ships' | 'built';
+  | 'ozone' | 'no2' | 'snow' | 'so2' | 'aurora' | 'ships' | 'built' | 'sealevel' | 'waves';
 
 export interface LayerMeta {
   id: string;
@@ -90,6 +90,14 @@ export const DATA: Record<DataId, DataDef> = {
   so2: {
     palette: PALETTES.so2, style: [0.1, 1.0, 0, 1],
     decode: lin, format: (x) => t.data.so2(num(x, 1)),
+  },
+  sealevel: {
+    palette: PALETTES.sealevel, style: [0.4, 0.3, 1, 0], fps: 0.9, hold: 2.5,
+    decode: lin, format: (x) => t.data.sealevel(`${x > 0 ? '+' : x < 0 ? '−' : ''}${num(Math.abs(x * 100))}`),
+  },
+  waves: {
+    palette: PALETTES.waves, style: [0.5, 0.2, 1, 0], fps: 3, hold: 1.5,
+    decode: lin, format: (x) => t.data.waves(num(x, 1)),
   },
   ships: {
     palette: PALETTES.ships, style: [0.0, 0.55, 1, 0],

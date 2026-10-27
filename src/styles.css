@@ -555,3 +555,18 @@ body.exploring .chart, body.reading .chart { opacity: 0; }
 .happening i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--warm); box-shadow: 0 0 10px rgba(255, 217, 160, 0.8); animation: dotPulse 2.4s ease-in-out infinite; align-self: center; }
 @keyframes dotPulse { 50% { opacity: 0.35; } }
 .happening b { flex: none; font-weight: 600; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--warm); }
+
+/* A searched place, now. */
+.anchor .a-fact { display: block; font-style: normal; font-size: 11.5px; letter-spacing: 0.04em; color: var(--ink-2); margin-top: 3px; font-variant-numeric: tabular-nums; }
+.anchor .a-fact:first-of-type { margin-top: 8px; }
+
+/* ?kiosk and ?embed */
+body.kiosk.idle, body.kiosk.idle * { cursor: none !important; }
+body.kiosk :is(.lang, .footer, #search, #search-btn), body.embed :is(.lang, .footer, #search, #search-btn, #credits-btn) { display: none !important; }
+.embed-link { display: none; }
+body.embed .embed-link {
+  display: block; position: fixed; right: var(--gutter); bottom: 9px; z-index: 26;
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-2); text-decoration: none; text-shadow: var(--halo-soft);
+}
+body.embed .embed-link::after { content: ' ↗'; }
+body.embed .embed-link:hover { color: var(--ink); }

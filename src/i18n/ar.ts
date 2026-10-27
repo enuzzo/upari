@@ -70,6 +70,7 @@ const ar: Dict = {
     noWebgl: 'تحتاج إلى متصفح يدعم WebGL 2 لترى الكوكب.',
     clock: (day: string, time: string) => `${day} · ${time} UTC`,
     about: 'لماذا Upari',
+    embedOpen: 'افتح Upari',
   },
 
   stories: { pianeta: 'الكوكب، الآن', natura: 'الطبيعة', persone: 'البشر', cielo: 'السماء، الآن' },
@@ -124,6 +125,7 @@ const ar: Dict = {
       smog: 'ثاني أكسيد النيتروجين (NO₂)', ozono: 'طبقة الأوزون', petrolio: 'بقع النفط، 30 يومًا',
       aurora: 'الشفق القطبي، الآن', satelliti: 'كل الأقمار الصناعية', partenze: 'عمليات الإطلاق القادمة', bolidi: 'الكرات النارية منذ 1988',
       citta: 'المدن، 1975 – 2030', rotte: 'طرق السفن',
+      livello: 'مستوى البحر', onde: 'الأمواج، آخر 24 ساعة',
     },
   },
 
@@ -167,6 +169,8 @@ const ar: Dict = {
       ['Voyager', 'NASA/JPL Horizons'],
       ['طرق السفن', 'World Bank / IMF، Global Shipping Traffic Density (AIS 2015–2021)، CC BY 4.0'],
       ['المدن', 'المفوضية الأوروبية، JRC، GHS-BUILT-S R2023A (عاما 2025 و2030 توقعات)، CC BY 4.0'],
+      ['مستوى البحر', 'NOAA CoastWatch، شذوذ مستوى سطح البحر من قياسات الارتفاع (يتضمن منتجات AVISO+ وبيانات Copernicus Sentinel)، عبر ERDDAP'],
+      ['الأمواج', 'نموذج NOAA WaveWatch III، عبر PacIOOS ERDDAP'],
       ['البشر', 'World Bank، World Development Indicators (مع بيانات UN World Population Prospects وUN IGME وILO)، CC BY 4.0؛ طلبات اللجوء من UNHCR Refugee Data Portal، CC BY 4.0؛ الحدود من Natural Earth، ملكية عامة'],
       ['الموسيقى والأصوات', 'أُلِّفت خصيصًا لـUpari باستخدام Magnific (Google Lyria وElevenLabs)'],
       ['البحث عن الأماكن', '<a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>، البيانات © المساهمون في <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>، ODbL'],
@@ -271,6 +275,8 @@ const ar: Dict = {
     shipsHigh: 'أحد الطرق البحرية الكبرى',
     built: (v: string) => `أرض مبنية: ${v}%`,
     notBuilt: 'لا مبانٍ تقريبًا',
+    sealevel: (cm: string) => `${ltr(cm)} سم عن المستوى المتوسط`,
+    waves: (m: string) => `أمواج بارتفاع ${m} م`,
   },
 
   spots: {
@@ -285,6 +291,30 @@ const ar: Dict = {
     launch: (day: string, place: string) => `${day} · ${place}`,
     fireball: (kt: string) => counted(kt, ['كيلوطن واحد', 'كيلوطنان', 'كيلوطنات', 'كيلوطنًا', 'كيلوطن']),
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · انفجر على ارتفاع ${alt} كم` : ''}`,
+  },
+
+  notes: {
+    livello: {
+      text: 'كم يرتفع سطح البحر أو ينخفض عن متوسطه في الفترة 1993–2012، كما تقيسه أقمار قياس الارتفاع. تنتفخ الدوامات الدافئة بضع عشرات من السنتيمترات؛ وترفع ظاهرة El Niño شرق المحيط الهادئ. صورة واحدة كل شهر، ثم اليوم الأخير.',
+      source: 'NOAA CoastWatch · قياس الارتفاع بعدة أقمار صناعية (AVISO+، Copernicus Sentinel) · 0.25°',
+    },
+    onde: {
+      text: 'الارتفاع المميَّز للأمواج خلال الساعات الأربع والعشرين الأخيرة، ساعةً بساعة: متوسط الثلث الأعلى من الأمواج، وهو ما يقدّره البحّار بعينه. إنه نموذج WaveWatch III الذي يحسب الأمواج من الرياح: محاكاة، لا قياس.',
+      source: 'NOAA WaveWatch III · PacIOOS ERDDAP · 0.5°',
+    },
+    vulcani: {
+      text: 'النقاط البرتقالية هي الثورانات الجارية بحسب Smithsonian؛ والسحابة الصفراء هي ثاني أكسيد الكبريت في الأيام الأربعة الأخيرة، كما رصده Sentinel-5P. يأتي الغاز من البراكين، ولكن أيضًا من بعض مصاهر المعادن ومحطات الكهرباء العاملة بالفحم.',
+      source: 'Smithsonian Global Volcanism Program · Copernicus Sentinel-5P TROPOMI عبر NASA GIBS',
+    },
+  },
+
+  place: {
+    solar: (time: string) => `${time} بالتوقيت الشمسي المحلي`,
+    sun: (rise: string, set: string) => `الشروق ${rise} · الغروب ${set}، بالتوقيت الشمسي المحلي`,
+    polarDay: 'الشمس لا تغرب اليوم',
+    polarNight: 'الشمس لا تشرق اليوم',
+    wind: (kmh: string, dir: string) => `رياح بسرعة ${kmh} كم/س من ${dir}`,
+    sea: (temp: string) => `حرارة البحر ${ltr(`${temp} °C`)}`,
   },
 
   now: {
@@ -368,6 +398,8 @@ const ar: Dict = {
     aurora: { title: 'احتمال رؤية الشفق', left: '5%', right: '50%' },
     ships: { title: 'حركة السفن، 2015–2021', left: 'نادرة', right: 'كثيفة' },
     built: { title: 'أرض تغطيها المباني', left: 'قرى', right: 'مدن' },
+    sealevel: { title: 'بحر أعلى أو أدنى من المعتاد', left: `${ltr('−50')} سم`, right: `${ltr('+50')} سم` },
+    waves: { title: 'ارتفاع الأمواج', left: 'هدوء', right: '12 م' },
   },
 
   // ——— الكوكب، الآن ———
@@ -498,6 +530,8 @@ const ar: Dict = {
     text: 'المساحة هي مجموع المناطق التي يغطي الجليد 15% منها على الأقل، مرجّحةً بالتركيز. يعكس الجليد ضوء الشمس: وحين ينحسر، يمتص البحر الداكن مزيدًا من الحرارة.',
     source: 'GHRSST GAMSSA، Bureau of Meteorology · تركيز الجليد',
     icebergs: 'جبال جليدية كبيرة في القارة القطبية الجنوبية يتتبعها U.S. National Ice Center، النقاط الفاتحة',
+    nsidc: (day: string, diff: string) => `الجليد القطبي الشمالي في ${day} بحسب NSIDC: ${diff.replace(/^\S+/, (n) => ltr(n))} مقارنةً بمتوسط 1981–2010 لليوم نفسه`,
+    millionKm2: 'مليون كم²',
   },
   luci: {
     title: 'الأضواء', kicker: 'الليل، الآن',

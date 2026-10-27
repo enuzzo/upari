@@ -109,7 +109,8 @@ export const DATA: Record<DataId, DataDef> = {
     decode: (v) => v * v * 100, format: (x) => (x < 1 ? t.data.notBuilt : t.data.built(num(x))),
   },
   aurora: {
-    palette: PALETTES.aurora, style: [0.0, 0.9, 0, 1], fx: 3,
+    // The curtains (aurora.ts) carry the light; on the ground only a faint footprint.
+    palette: PALETTES.aurora, style: [0.0, 0.25, 0, 1], fx: 3,
     decode: lin, format: (x) => t.data.aurora(num(x)),
   },
 };

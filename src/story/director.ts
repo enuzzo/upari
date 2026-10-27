@@ -179,6 +179,21 @@ export class Director {
     this.lineReady = true;
     if (c.follow === 'iss') this.anchorStation();
     void this.pin(c, token);
+    void this.badges(c, token);
+  }
+
+  /** The labels a chapter puts on the globe. */
+  private async badges(c: Chapter, token: number) {
+    const list = await c.badges?.(this.globe).catch(() => []) ?? [];
+    if (token !== this.token) return;
+    for (const b of list) {
+      const el = document.createElement('div');
+      const title = document.createElement('b'), small = document.createElement('small');
+      title.textContent = b.title;
+      small.textContent = b.sub;
+      el.append(title, small);
+      this.addAnchor(b.lon, b.lat, b.altKm, el.innerHTML);
+    }
   }
 
   /** Camera choreography for a chapter. */
@@ -187,6 +202,8 @@ export class Director {
     if (token !== this.token) return;
     for (const b of beats) {
       this.globe.rig.drift = 0;
+      if (b.look) this.globe.setLook({ ...c.look, ...b.look });
+      if (b.clear) this.clearAnchors();
       await this.globe.rig.flyTo(b.shot, b.seconds);
       if (token !== this.token || !this.playing) return;
       this.globe.rig.drift = b.drift ?? 0;

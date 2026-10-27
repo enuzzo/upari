@@ -108,20 +108,33 @@ export async function createSky(): Promise<{ group: Group; setOpacity: (v: numbe
   };
 }
 
-/** A sun disc with a soft corona; occluded by the planet through the depth test. */
-export function createSun(): { mesh: Mesh; place: (dir: Vector3) => void } {
+/**
+ * A sun disc with a soft corona, far away in its true direction. The planet hides it by an
+ * exact ray test per pixel (not by the depth buffer), so it sets behind the limb as a disc,
+ * reddened and dimmed through the atmosphere, never as a clipped square.
+ */
+export function createSun(): { mesh: Mesh; place: (dir: Vector3, camera?: Vector3) => void } {
   const mat = new ShaderMaterial({
     uniforms: {},
-    vertexShader: /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    vertexShader: /* glsl */ `
+      varying vec2 vUv; varying vec3 vWorld;
+      void main(){ vUv = uv; vec4 w = modelMatrix * vec4(position, 1.0); vWorld = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
     fragmentShader: /* glsl */ `
-      varying vec2 vUv;
+      varying vec2 vUv; varying vec3 vWorld;
       void main() {
         float r = length(vUv - 0.5) * 2.0;
-        float disc = smoothstep(0.12, 0.10, r) * 40.0;
-        float corona = exp(-r * 7.0) * 3.0 + exp(-r * 2.2) * 0.25;
-        gl_FragColor = vec4(vec3(1.0, 0.93, 0.82) * (disc + corona) * smoothstep(1.0, 0.55, r), 1.0);
+        // Closest approach of the line of sight to the centre of the Earth, in planet radii.
+        vec3 d = normalize(vWorld - cameraPosition);
+        float t = -dot(cameraPosition, d);
+        float miss = t > 0.0 ? length(cameraPosition + d * t) : length(cameraPosition);
+        float clear = smoothstep(1.0, 1.035, miss);
+        // Grazing the atmosphere the light reddens before it goes.
+        vec3 tint = mix(vec3(1.0, 0.45, 0.18), vec3(1.0, 0.94, 0.84), smoothstep(1.0, 1.05, miss));
+        float disc = smoothstep(0.12, 0.10, r) * 14.0;
+        float corona = exp(-r * 7.0) * 1.6 + exp(-r * 2.6) * 0.18;
+        gl_FragColor = vec4(tint * (disc + corona) * smoothstep(1.0, 0.6, r) * clear, 1.0);
       }`,
-    blending: AdditiveBlending, depthWrite: false, transparent: true,
+    blending: AdditiveBlending, depthWrite: false, depthTest: false, transparent: true,
   });
   // A camera-facing quad.
   const geo = new BufferGeometry();
@@ -132,8 +145,10 @@ export function createSun(): { mesh: Mesh; place: (dir: Vector3) => void } {
   mesh.renderOrder = -1;
   return {
     mesh,
-    place(dir: Vector3) {
+    /** In its direction from wherever the camera is: the Sun is at infinity. */
+    place(dir: Vector3, camera?: Vector3) {
       mesh.position.copy(dir).multiplyScalar(150);
+      if (camera) mesh.position.add(camera);
       mesh.scale.setScalar(9);
     },
   };

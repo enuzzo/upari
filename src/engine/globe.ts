@@ -17,6 +17,10 @@ import { gmst, lonLatToVec, moonBrightness, moonDirection, sunDirection, vecToLo
 import { Tiles } from './tiles';
 import { loadSpots, nearestSpot, type SpotId, type SpotSet } from './spots';
 import { loadSatellites } from './satellites';
+import { createSunBody } from './sunbody';
+import { createAuroraCurtains } from './aurora';
+import { createTrajectories, type Launch } from './trajectories';
+import { createFlyby } from './flyby';
 import { ATLAS, Atlas, atlasText, type AtlasId } from './atlas';
 import { t } from '../i18n';
 import { num } from '../i18n/format';
@@ -60,13 +64,21 @@ export interface Look {
   spotReplay: number;
   /** Every active satellite, 0..1. */
   satellites: number;
+  /** The Sun as a body beside the Earth, to scale in size, 0..1. */
+  solar: number;
+  /** How far the camera may go for this look, planet radii. */
+  reach: number;
+  /** The ascents set with showRockets, 0..1. */
+  rockets: number;
+  /** The next asteroid's pass with the Moon's orbit, 0..1. */
+  flyby: number;
 }
 
 export const DEFAULT_LOOK: Look = {
   sun: 'real', clouds: 1, cloudFlow: 1, night: 1, dim: 0, desat: 0, data: null, flow: null,
   fires: 0, iss: 0, stars: 1, atmo: 1, exposure: 1, relief: 1, bloom: 1, pin: null,
   atlas: null, dust: 0, migration: 0, year: null, years: null, yearSeconds: 18, quakes: 0, quakeReplay: 0,
-  spots: null, spotReplay: 0, satellites: 0,
+  spots: null, spotReplay: 0, satellites: 0, solar: 0, reach: 26, rockets: 0, flyby: 0,
 };
 
 export interface Probe {
@@ -108,7 +120,13 @@ export class Globe {
   private clock = new Clock();
   private time = 0;
   private look: Look = { ...DEFAULT_LOOK };
-  cur = { clouds: 1, cloudFlow: 1, night: 1, dim: 0, desat: 0, fires: 0, iss: 0, stars: 1, atmo: 1, exposure: 1, relief: 1, bloom: 1, dataMix: 0, trail: 0, studio: 0, pin: 0, atlas: 0, dust: 0, migration: 0, quakes: 0, spots: 0, satellites: 0 };
+  cur = { clouds: 1, cloudFlow: 1, night: 1, dim: 0, desat: 0, fires: 0, iss: 0, stars: 1, atmo: 1, exposure: 1, relief: 1, bloom: 1, dataMix: 0, trail: 0, studio: 0, pin: 0, atlas: 0, dust: 0, migration: 0, quakes: 0, spots: 0, satellites: 0, solar: 0, rockets: 0, flyby: 0 };
+  private flybyScene: ReturnType<typeof createFlyby> | null = null;
+  private flybyLoading: Promise<void> | null = null;
+  private rocketTrails: ReturnType<typeof createTrajectories> | null = null;
+  private sunBody = createSunBody();
+  private curtains: ReturnType<typeof createAuroraCurtains> | null = null;
+  private curtainsFrom: unknown = null;
   private spotSets: Partial<Record<SpotId, SpotSet>> = {};
   private spotShown: SpotId | null = null;
   private spotT0 = 0;
@@ -213,7 +231,7 @@ export class Globe {
       createSky(),
     ]);
     this.u = earthUniforms({ day, night, clouds, relief });
-    this.scene.add(createEarth(this.u), createAtmosphere(this.u), this.sun.mesh, this.station.group);
+    this.scene.add(createEarth(this.u), createAtmosphere(this.u), this.sun.mesh, this.station.group, this.sunBody.group);
     this.sky = sky;
     this.scene.add(sky.group);
     this.tiles = new Tiles(this.u);
@@ -276,6 +294,8 @@ export class Globe {
     if (look.quakes) jobs.push(this.loadQuakes());
     if (look.spots) jobs.push(this.loadSpot(look.spots));
     if (look.satellites) jobs.push(this.loadSats());
+    if (look.solar) jobs.push(this.sunBody.load());
+    if (look.flyby) jobs.push(this.loadFlyby());
     await Promise.all(jobs);
   }
 
@@ -293,6 +313,26 @@ export class Globe {
   }
 
   get satellites() { return this.sats?.meta ?? null; }
+
+  loadFlyby(): Promise<void> {
+    this.flybyLoading ??= fetch('sky/neo.json').then((r) => r.json()).then((d) => {
+      if (!d.path || !d.moon) throw new Error('no path');
+      this.flybyScene = createFlyby(d.path, d.moon);
+      this.scene.add(this.flybyScene.group);
+    });
+    this.flybyLoading.catch(() => { this.flybyLoading = null; });
+    return this.flybyLoading;
+  }
+
+  /** The Moon now and the closest point of the pass, Earth-fixed (for labels). */
+  flybyPoints() { return this.flybyScene?.fixed(this.now) ?? null; }
+
+  /** Draw the ascents of these launches (shown while the look asks for rockets). */
+  showRockets(list: Launch[]) {
+    if (this.rocketTrails) { this.scene.remove(this.rocketTrails.points); this.rocketTrails.points.geometry.dispose(); }
+    this.rocketTrails = list.length ? createTrajectories(list) : null;
+    if (this.rocketTrails) this.scene.add(this.rocketTrails.points);
+  }
 
   /** Compare two years (atlas) or the first and last frame (series) across a line; null stops. */
   setCompare(c: { x: number; from: number; to: number } | null) { this.compare = c; }
@@ -446,12 +486,18 @@ export class Globe {
     const d = this.dawn * this.dawn * (3 - 2 * this.dawn);
     this.renderer.toneMappingExposure = c.exposure * d * d;
     this.bloom.strength = this.tune.bloom * c.bloom;
-    this.sun.place(this.sunVec);
+    this.sun.place(this.sunVec, cam.position);
     this.sun.mesh.quaternion.copy(cam.quaternion);
-    this.sun.mesh.visible = c.studio < 0.5;
+    // The comparison Sun takes the place of the distant one.
+    c.solar = approach(c.solar, L.solar, dt, 1.2);
+    this.sunBody.update(this.sunVec, cam, c.solar, this.time);
+    this.sun.mesh.visible = c.studio < 0.5 && c.solar < 0.3;
+    this.rig.reach = L.reach;
     this.grain.uniforms.uTime.value = this.time;
     if (this.sky) {
       this.sky.group.rotation.y = -gmst(date);
+      // The stars are at infinity: they travel with the camera, however far it goes.
+      this.sky.group.position.copy(cam.position);
       this.sky.setOpacity(c.stars);
     }
 
@@ -519,6 +565,23 @@ export class Globe {
       u.uDataBlend.value = Math.max(blend, 1e-3);
     }
 
+    // The aurora's curtains stand on the oval of the forecast on screen.
+    if (this.dataShown === 'aurora' && this.dataSamplers[0] && this.curtainsFrom !== this.dataSamplers[0]) {
+      const s = this.dataSamplers[0];
+      if (this.curtains) { this.scene.remove(this.curtains.mesh); this.curtains.mesh.geometry.dispose(); }
+      this.curtains = createAuroraCurtains((lon, lat) => s.read(lon, lat)[0]);
+      this.curtainsFrom = s;
+      this.scene.add(this.curtains.mesh);
+    }
+    if (this.curtains) {
+      const m = this.curtains.material.uniforms;
+      const k = this.dataShown === 'aurora' ? u.uDataMix.value as number : 0;
+      m.uOpacity.value = k;
+      m.uTime.value = this.time;
+      m.uSun.value.copy(this.sunVec);
+      this.curtains.mesh.visible = k > 0.002;
+    }
+
     // Flow trails.
     const wantFlow = L.flow;
     if (wantFlow !== this.flowShown) {
@@ -567,6 +630,19 @@ export class Globe {
       m.uTime.value = this.time;
       m.uOpacity.value = c.spots;
       spotSet.points.visible = c.spots > 0.002;
+    }
+
+    // An asteroid's pass, replayed in twelve seconds.
+    c.flyby = approach(c.flyby, L.flyby, dt, 1.4);
+    this.flybyScene?.update(date, this.sunVec, c.flyby, (this.time % 12) / 12);
+
+    // Rockets climbing from their pads.
+    c.rockets = approach(c.rockets, L.rockets, dt, 1.6);
+    if (this.rocketTrails) {
+      const m = this.rocketTrails.material.uniforms;
+      m.uTime.value = this.time;
+      m.uOpacity.value = c.rockets;
+      this.rocketTrails.points.visible = c.rockets > 0.002;
     }
 
     // Satellites: where each one is now.
@@ -775,8 +851,14 @@ export class Globe {
   }
   screenOf(v: Vector3): { x: number; y: number; visible: boolean } {
     const p = v.clone().project(this.rig.camera);
-    const toCam = this.rig.camera.position.clone().sub(v);
-    const visible = v.clone().normalize().dot(toCam.normalize()) > 0 && p.z < 1;
-    return { x: (p.x * 0.5 + 0.5) * innerWidth, y: (-p.y * 0.5 + 0.5) * innerHeight, visible };
+    // Hidden when the line of sight meets the planet before it reaches the point: this holds
+    // for places on the ground and for things far out in space alike.
+    const cam = this.rig.camera.position;
+    const d = v.clone().sub(cam), len = d.length();
+    d.divideScalar(len);
+    const b = cam.dot(d), disc = b * b - (cam.lengthSq() - 1);
+    const occluded = disc > 0 && -b - Math.sqrt(disc) > 0 && -b - Math.sqrt(disc) < len * (1 - 1e-3) - 1e-4;
+    const inFront = v.clone().sub(cam).dot(this.rig.camera.getWorldDirection(new Vector3())) > 0;
+    return { x: (p.x * 0.5 + 0.5) * innerWidth, y: (-p.y * 0.5 + 0.5) * innerHeight, visible: inFront && !occluded && p.z < 1 };
   }
 }

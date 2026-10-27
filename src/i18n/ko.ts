@@ -377,6 +377,12 @@ const ko: Dict = {
     voyager: (day: string) => `${day}, 보이저 1호는 우리에게서 1광일 거리에 있다`,
   },
 
+  orbits: {
+    LEO: '저궤도', SSO: '태양 동기 궤도', PO: '극궤도', MEO: '중궤도', GTO: '정지 궤도로',
+    GEO: '정지 궤도', 'Direct-GEO': '정지 궤도', GSTO: '지구 동기 궤도로', Sub: '준궤도 비행',
+    Elliptical: '타원 궤도', Mars: '화성으로', 'Lunar flyby': '달로', TLI: '달로', L2: 'L2 지점으로',
+  } as Record<string, string>,
+
   charts: {
     temperature: (day: string, anomaly: string) => `행성 전체의 평균 기온, 하루하루: 선 하나가 한 해다. ${day}: 1991–2020년 대비 ${anomaly} °C.`,
     co2: (day: string) => `Mauna Loa (하와이) 공기 속 이산화탄소, 1958년 이후 월평균. 마지막 측정: ${day}.`,
@@ -807,13 +813,15 @@ const ko: Dict = {
   // ——— 지금, 이 하늘 ———
 
   sole: {
-    title: '태양', kicker: '오늘 아침, 자외선으로',
-    narrate: (time: string) => `오늘의 태양이다. SDO 위성이 ${time} UTC에, 100만 도의 철이 내는 빛으로 찍었다. 밝은 아치는 자기장이고, 어두운 부분은 태양풍이 우리를 향해 빠져나가는 구멍이다.`,
+    title: '태양', kicker: '지구와 같은 축척으로',
+    narrate: (time: string) => `이것이 태양이다. 한쪽 끝에서 다른 쪽 끝까지 지구 109개가 나란히 들어간다. 그 옆의 작은 점이 우리 행성이다. 우리를 향한 면은 오늘의 모습으로, SDO 위성이 ${time} UTC에 찍었고 진짜 흑점이 그대로 보인다. 크기는 축척에 맞췄지만 거리는 아니다: 실제로는 이보다 80배나 더 멀리 있다.`,
+    earth: '지구',
+    earthSub: '태양과 같은 축척',
     taken: (day: string) => `영상을 찍은 시각, ${day}`,
     light: '그 빛이 여기까지 오는 데 걸리는 시간',
     corona: '코로나의 온도, 지금 보이는 기체',
-    text: '태양 활동 관측 위성(SDO)은 지구 동기 궤도에서 몇 초마다 영상 한 장씩, 쉬지 않고 태양을 지켜본다. 171옹스트롬에서는 코로나와 그 자기 고리가 보인다. 여기서 떠난 태양풍이 며칠 뒤 오로라를 밝힌다.',
-    source: 'NASA/SDO와 AIA, EVE, HMI 과학 팀',
+    text: '지구를 향한 면은 SDO의 HMI 장비가 오늘 아침 찍은 가시광선 영상이다: 어두운 반점은 열을 붙잡아 두는 자기장이다. 구의 나머지는 그린 것이다: 쌀알 무늬, 가장자리로 갈수록 어두워지는 주연 감광, 코로나. 여기서 떠난 태양풍이 며칠 뒤 오로라를 밝힌다.',
+    source: 'NASA/SDO, HMI(가시광선) · AIA, EVE, HMI 과학 팀',
   },
   aurora: {
     title: '오로라', kicker: '앞으로 30분 예보',
@@ -838,12 +846,13 @@ const ko: Dict = {
     source: (day: string) => `CelesTrak · 활동 중인 위성의 궤도 요소 · ${day}`,
   },
   partenze: {
-    title: '출발', kicker: '다음 발사들',
-    narrate: (p: { year: number; count: string | null; name: string; day: string; place: string }) => `${p.count ? `${p.year}년에 이미 로켓 ${p.count}기가 날아올랐다. ` : ''}점 하나하나가 발사대이며, 앞으로 몇 주 안에 그곳에서 또 한 기가 떠난다. 다음은 ${p.name}: ${p.day}, ${p.place}에서.`,
+    title: '출발', kicker: '어제, 그리고 1년',
+    narrate: (p: { count: number; yesterday: boolean; year: string }) => `${p.yesterday ? (p.count === 1 ? '어제 로켓 한 기가 날아올랐다' : `어제부터 오늘까지 로켓 ${p.count}기가 날아올랐다`) : '최근의 발사들이다'}: 그 상승 궤적과 저마다의 목적지. 이어서 지난 1년 동안의 발사 ${p.year}번이, 떠난 순서대로 각자의 발사대에서 번쩍인다.`,
+    yearCount: '지난 12개월 동안의 발사',
     done: (year: number) => `${year}년의 발사, 지금까지`,
     next: '앞으로 45일 동안 예정된 발사',
     first: (day: string) => `다음 발사, ${day}`,
-    text: '날짜와 발사대는 The Space Devs의 공개 일정표에서 가져온다: 발사 날짜는 마지막 순간에도 자주 바뀐다. 발사대를 누르면 그곳의 다음 발사를 읽을 수 있다.',
+    text: '상승 궤적은 그린 것이다: 발사대와 목적지는 진짜이고, 방향은 궤도의 종류를 따르며(저궤도와 정지 궤도는 동쪽으로, 극궤도는 남쪽으로) 곡선은 대략적인 모양이다. 날짜, 발사대, 목적지는 The Space Devs의 공개 일정표에서 가져온다.',
     source: (day: string) => `Launch Library 2 · The Space Devs · ${day} 업데이트`,
   },
   bolidi: {
@@ -857,7 +866,10 @@ const ko: Dict = {
   },
   passaggi: {
     title: '스쳐 가는 것들', kicker: '앞으로 60일 동안의 소행성',
-    narrate: (p: { name: string; day: string; km: string; ld: string }) => `${p.day}에 지나갈 소행성 ${p.name}: 우리에게서 약 ${shifted(p.km, 0) ?? p.km}킬로미터, 달까지 거리의 ${p.ld}배다. 우리와 부딪히지는 않는다: 그 궤도는 수백 번의 관측으로 계산되었다.`,
+    narrate: (p: { name: string; day: string; km: string; ld: string }) => `${p.day}에 지나갈 소행성 ${p.name}: 우리에게서 약 ${shifted(p.km, 0) ?? p.km}킬로미터, 달까지 거리의 ${p.ld}배다. 주황색 선은 실제 경로로, 엿새를 몇 초로 줄였다. 옅은 선은 달의 궤도, 가운데의 작은 점은 지구다. 우리와 부딪히지는 않는다.`,
+    moon: '달',
+    moonSub: '지금 있는 곳',
+    closest: (day: string, km: string) => `가장 가까운 지점, ${day} · ${km} km`,
     count: '앞으로 60일 동안 달 거리 20배 안쪽을 지나가는 횟수',
     speed: (name: string) => `지구에 대한 ${name}의 속도`,
     distance: '달 거리, 가장 가까운 통과',
@@ -870,6 +882,7 @@ const ko: Dict = {
     v1: '오늘, 지구에서 보이저 1호까지',
     v2: '지구에서 보이저 2호까지',
     launched: '떠난 해',
+    there: (au: string) => `우리에게서 ${au} AU, 이 방향으로`,
     text: '지구로부터의 거리는 JPL Horizons 천체력으로 계산한다. 1천문단위(AU)는 지구와 태양 사이의 거리, 1억 5,000만 km다. 태양권계면은 태양풍이 별과 별 사이의 기체에 자리를 내주는 경계다: 보이저 1호는 2012년에, 보이저 2호는 2018년에 그곳을 넘었다.',
     source: 'NASA/JPL Horizons',
   },

@@ -329,6 +329,12 @@ const en: Dict = {
     voyager: (day: string) => `on ${day} Voyager 1 is one light-day from us`,
   },
 
+  orbits: {
+    LEO: 'low orbit', SSO: 'sun-synchronous orbit', PO: 'polar orbit', MEO: 'medium orbit', GTO: 'towards geostationary orbit',
+    GEO: 'geostationary orbit', 'Direct-GEO': 'geostationary orbit', GSTO: 'towards geosynchronous orbit', Sub: 'suborbital flight',
+    Elliptical: 'elliptical orbit', Mars: 'towards Mars', 'Lunar flyby': 'towards the Moon', TLI: 'towards the Moon', L2: 'towards the L2 point',
+  } as Record<string, string>,
+
   charts: {
     temperature: (day: string, anomaly: string) => `Average air temperature over the whole planet, day by day: each line is a year. On ${day}: ${anomaly} °C against 1991–2020.`,
     co2: (day: string) => `Carbon dioxide in the air at Mauna Loa (Hawaii), monthly mean since 1958. Latest measurement: ${day}.`,
@@ -757,13 +763,15 @@ const en: Dict = {
   },
 
   sole: {
-    title: 'The Sun', kicker: 'This morning, in ultraviolet',
-    narrate: (time: string) => `This is today’s Sun, photographed at ${time} UTC by the SDO satellite, in the light of iron at a million degrees. The bright arches are magnetic fields; the dark patches are holes through which the solar wind escapes towards us.`,
+    title: 'The Sun', kicker: 'To scale with the Earth',
+    narrate: (time: string) => `This is the Sun: a hundred and nine Earths side by side from edge to edge. That speck beside it is our planet. The face turned to us is today’s, photographed by the SDO satellite at ${time} UTC, with its real sunspots. To scale in size, not in distance: it is really eighty times farther than this.`,
+    earth: 'the Earth',
+    earthSub: 'to scale with the Sun',
     taken: (day: string) => `the time of the image, ${day}`,
     light: 'the time its light takes to get here',
     corona: 'the temperature of the corona, the gas you see',
-    text: 'The Solar Dynamics Observatory watches the Sun without pause from a geosynchronous orbit, an image every few seconds. At 171 ångström you see the corona and its magnetic loops. The solar wind that leaves from here lights the auroras days later.',
-    source: 'NASA/SDO and the AIA, EVE and HMI science teams',
+    text: 'The face turned to the Earth is this morning’s visible-light image from SDO’s HMI instrument: the dark spots are magnetic fields that hold the heat back. The rest of the sphere is drawn: the granulation, the darkening towards the edge, the corona. The solar wind that leaves from here lights the auroras days later.',
+    source: 'NASA/SDO, HMI (visible light) · AIA, EVE and HMI science teams',
   },
   aurora: {
     title: 'The aurora', kicker: 'Forecast for the next half hour',
@@ -788,12 +796,13 @@ const en: Dict = {
     source: (day: string) => `CelesTrak · orbital elements of active satellites · ${day}`,
   },
   partenze: {
-    title: 'Departures', kicker: 'The next launches',
-    narrate: (p: { year: number; count: string | null; name: string; day: string; place: string }) => `${p.count ? `In ${p.year}, ${p.count} rockets have already flown. ` : ''}Each dot is a pad from which another will leave in the coming weeks. The next: ${p.name}, on ${p.day}, from ${p.place}.`,
+    title: 'Departures', kicker: 'Yesterday, and in a year',
+    narrate: (p: { count: number; yesterday: boolean; year: string }) => `${p.yesterday ? (p.count === 1 ? 'Yesterday one rocket flew' : `Since yesterday ${p.count} rockets have flown`) : 'Here are the latest launches'}: their ascents, each with where it is going. Then the whole last year, ${p.year} launches, each flash on its pad, in the order they flew.`,
+    yearCount: 'launches in the last twelve months',
     done: (year: number) => `launches in ${year}, so far`,
     next: 'launches planned in the next 45 days',
     first: (day: string) => `the next one, on ${day}`,
-    text: 'Dates and pads from the open calendar of The Space Devs: launch dates change often, even at the last minute. Touch a pad to read its next launch.',
+    text: 'The ascents are drawn: the pad and the destination are real; the direction follows the kind of orbit (eastwards for low and geostationary orbits, southwards for polar ones) and the curve is a sketch. Dates, pads and destinations from the open calendar of The Space Devs.',
     source: (day: string) => `Launch Library 2 · The Space Devs · updated ${day}`,
   },
   bolidi: {
@@ -807,7 +816,10 @@ const en: Dict = {
   },
   passaggi: {
     title: 'Passing by', kicker: 'Asteroids in the next 60 days',
-    narrate: (p: { name: string; day: string; km: string; ld: string }) => `On ${p.day} asteroid ${p.name} will pass about ${p.km} kilometres from us: ${p.ld} times the distance of the Moon. It will not hit us: its orbit is computed from hundreds of observations.`,
+    narrate: (p: { name: string; day: string; km: string; ld: string }) => `On ${p.day} asteroid ${p.name} will pass about ${p.km} kilometres from us, ${p.ld} times the distance of the Moon. The orange line is its real path, six days in a few seconds; the pale one is the Moon’s orbit; the speck in the middle is the Earth. It will not hit us.`,
+    moon: 'the Moon',
+    moonSub: 'where it is now',
+    closest: (day: string, km: string) => `the closest point, ${day} · ${km} km`,
     count: 'passes within 20 lunar distances in the next 60 days',
     speed: (name: string) => `the speed of ${name} relative to the Earth`,
     distance: 'lunar distances, the closest pass',
@@ -820,6 +832,7 @@ const en: Dict = {
     v1: 'Voyager 1 from the Earth, today',
     v2: 'Voyager 2 from the Earth',
     launched: 'the year they left',
+    there: (au: string) => `${au} AU from us, in this direction`,
     text: 'Distances from the Earth computed with the JPL Horizons ephemerides; an astronomical unit (AU) is the Earth–Sun distance, 150 million km. The heliopause is the border beyond which the Sun’s wind gives way to the gas between the stars: Voyager 1 crossed it in 2012, Voyager 2 in 2018.',
     source: 'NASA/JPL Horizons',
   },

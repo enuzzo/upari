@@ -331,6 +331,12 @@ const de: Dict = {
     voyager: (day: string) => `am ${day} ist Voyager 1 einen Lichttag von uns entfernt`,
   },
 
+  orbits: {
+    LEO: 'niedrige Umlaufbahn', SSO: 'sonnensynchrone Umlaufbahn', PO: 'polare Umlaufbahn', MEO: 'mittlere Umlaufbahn', GTO: 'auf dem Weg zur geostationären Bahn',
+    GEO: 'geostationäre Umlaufbahn', 'Direct-GEO': 'geostationäre Umlaufbahn', GSTO: 'auf dem Weg zur geosynchronen Bahn', Sub: 'suborbitaler Flug',
+    Elliptical: 'elliptische Umlaufbahn', Mars: 'zum Mars', 'Lunar flyby': 'zum Mond', TLI: 'zum Mond', L2: 'zum Punkt L2',
+  } as Record<string, string>,
+
   charts: {
     temperature: (day: string, anomaly: string) => `Mittlere Lufttemperatur über den ganzen Planeten, Tag für Tag: Jede Linie ist ein Jahr. Am ${day}: ${anomaly} °C gegenüber 1991–2020.`,
     co2: (day: string) => `Kohlendioxid in der Luft am Mauna Loa (Hawaii), Monatsmittel seit 1958. Letzte Messung: ${day}.`,
@@ -761,13 +767,15 @@ const de: Dict = {
   // ——— Der Himmel, jetzt ———
 
   sole: {
-    title: 'Die Sonne', kicker: 'Heute Morgen, im Ultraviolett',
-    narrate: (time: string) => `Das ist die Sonne von heute, um ${time} UTC fotografiert vom Satelliten SDO, im Licht von Eisen bei einer Million Grad. Die hellen Bögen sind Magnetfelder; die dunklen Flächen sind Löcher, durch die der Sonnenwind zu uns entweicht.`,
+    title: 'Die Sonne', kicker: 'Im Maßstab der Erde',
+    narrate: (time: string) => `Das ist die Sonne: hundertneun Erden nebeneinander, von Rand zu Rand. Der kleine Punkt daneben ist unser Planet. Die uns zugewandte Seite ist die von heute, um ${time} UTC vom Satelliten SDO fotografiert, mit ihren echten Sonnenflecken. Maßstabsgetreu in der Größe, nicht im Abstand: In Wirklichkeit ist sie achtzigmal weiter weg als hier.`,
+    earth: 'die Erde',
+    earthSub: 'im selben Maßstab wie die Sonne',
     taken: (day: string) => `die Aufnahmezeit, am ${day}`,
     light: 'so lange braucht ihr Licht bis zu uns',
     corona: 'die Temperatur der Korona, des Gases, das du siehst',
-    text: 'Das Solar Dynamics Observatory beobachtet die Sonne ohne Unterbrechung aus einer geosynchronen Umlaufbahn, mit einem Bild alle paar Sekunden. Bei 171 Ångström sieht man die Korona und ihre magnetischen Schleifen. Der Sonnenwind, der von hier ausgeht, entzündet Tage später die Polarlichter.',
-    source: 'NASA/SDO und die Wissenschaftsteams von AIA, EVE und HMI',
+    text: 'Die der Erde zugewandte Seite ist das Bild von heute Morgen im sichtbaren Licht, aufgenommen vom Instrument HMI auf SDO: Die dunklen Flecken sind Magnetfelder, die die Wärme bremsen. Der Rest der Kugel ist gezeichnet: die Granulation, die Verdunkelung zum Rand hin, die Korona. Der Sonnenwind, der von hier ausgeht, entzündet Tage später die Polarlichter.',
+    source: 'NASA/SDO, HMI (sichtbares Licht) · Wissenschaftsteams von AIA, EVE und HMI',
   },
   aurora: {
     title: 'Das Polarlicht', kicker: 'Vorhersage für die nächste halbe Stunde',
@@ -792,12 +800,13 @@ const de: Dict = {
     source: (day: string) => `CelesTrak · Bahnelemente der aktiven Satelliten · ${day}`,
   },
   partenze: {
-    title: 'Abflug', kicker: 'Die nächsten Starts',
-    narrate: (p: { year: number; count: string | null; name: string; day: string; place: string }) => `${p.count ? `Im Jahr ${p.year} sind schon ${p.count} Raketen gestartet. ` : ''}Jeder Punkt ist eine Startrampe, von der in den nächsten Wochen eine weitere abhebt. Der nächste Start: ${p.name}, am ${p.day}, von ${p.place}.`,
+    title: 'Abflug', kicker: 'Gestern, und in einem Jahr',
+    narrate: (p: { count: number; yesterday: boolean; year: string }) => `${p.yesterday ? (p.count === 1 ? 'Gestern ist eine Rakete gestartet' : `Seit gestern sind ${p.count} Raketen gestartet`) : 'Hier sind die letzten Starts'}: ihre Aufstiege, jeder mit seinem Ziel. Dann das ganze letzte Jahr, ${p.year} Starts, jeder Blitz auf seiner Rampe, in der Reihenfolge, in der sie gestartet sind.`,
+    yearCount: 'Starts in den letzten zwölf Monaten',
     done: (year: number) => `Starts im Jahr ${year}, bisher`,
     next: 'geplante Starts in den nächsten 45 Tagen',
     first: (day: string) => `der nächste, am ${day}`,
-    text: 'Termine und Rampen aus dem offenen Kalender von The Space Devs: Starttermine ändern sich oft, auch in letzter Minute. Tippe auf eine Rampe, um ihren nächsten Start zu sehen.',
+    text: 'Die Aufstiege sind gezeichnet: Rampe und Ziel sind echt; die Richtung folgt der Art der Umlaufbahn (nach Osten für niedrige und geostationäre Bahnen, nach Süden für polare), und die Kurve ist nur angedeutet. Termine, Rampen und Ziele aus dem offenen Kalender von The Space Devs.',
     source: (day: string) => `Launch Library 2 · The Space Devs · Stand: ${day}`,
   },
   bolidi: {
@@ -811,7 +820,10 @@ const de: Dict = {
   },
   passaggi: {
     title: 'Im Vorbeiflug', kicker: 'Asteroiden in den nächsten 60 Tagen',
-    narrate: (p: { name: string; day: string; km: string; ld: string }) => `Am ${p.day} fliegt der Asteroid ${p.name} in etwa ${p.km} Kilometern Entfernung an uns vorbei: ${p.ld}-mal so weit wie der Mond. Er wird uns nicht treffen: Seine Bahn ist aus Hunderten von Beobachtungen berechnet.`,
+    narrate: (p: { name: string; day: string; km: string; ld: string }) => `Am ${p.day} fliegt der Asteroid ${p.name} in etwa ${p.km} Kilometern Entfernung an uns vorbei: ${p.ld}-mal so weit wie der Mond. Die orange Linie ist seine echte Bahn, sechs Tage in wenigen Sekunden; die helle ist die Bahn des Mondes; der Punkt in der Mitte ist die Erde. Er wird uns nicht treffen.`,
+    moon: 'der Mond',
+    moonSub: 'wo er gerade steht',
+    closest: (day: string, km: string) => `die größte Annäherung, ${day} · ${km} km`,
     count: 'Vorbeiflüge innerhalb von 20 Mondabständen in den nächsten 60 Tagen',
     speed: (name: string) => `die Geschwindigkeit von ${name} relativ zur Erde`,
     distance: 'Mondabstände, der nächste Vorbeiflug',
@@ -824,6 +836,7 @@ const de: Dict = {
     v1: 'Abstand von Voyager 1 zur Erde, heute',
     v2: 'Abstand von Voyager 2 zur Erde',
     launched: 'das Jahr des Starts',
+    there: (au: string) => `${au} AE von uns, in dieser Richtung`,
     text: 'Abstände zur Erde, berechnet mit den Ephemeriden von JPL Horizons; eine Astronomische Einheit (AE) ist der Abstand Erde–Sonne, 150 Millionen km. Die Heliopause ist die Grenze, hinter der der Sonnenwind dem Gas zwischen den Sternen weicht: Voyager 1 hat sie 2012 überquert, Voyager 2 im Jahr 2018.',
     source: 'NASA/JPL Horizons',
   },

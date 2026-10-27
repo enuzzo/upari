@@ -370,6 +370,12 @@ const pt: Dict = {
     voyager: (day: string) => `em ${day}, a Voyager 1 está a um dia-luz de nós`,
   },
 
+  orbits: {
+    LEO: 'órbita baixa', SSO: 'órbita heliossíncrona', PO: 'órbita polar', MEO: 'órbita média', GTO: 'rumo à órbita geoestacionária',
+    GEO: 'órbita geoestacionária', 'Direct-GEO': 'órbita geoestacionária', GSTO: 'rumo à órbita geossíncrona', Sub: 'voo suborbital',
+    Elliptical: 'órbita elíptica', Mars: 'rumo a Marte', 'Lunar flyby': 'rumo à Lua', TLI: 'rumo à Lua', L2: 'rumo ao ponto L2',
+  } as Record<string, string>,
+
   charts: {
     temperature: (day: string, anomaly: string) => `Temperatura média do ar em todo o planeta, dia a dia: cada linha é um ano. Em ${day}: ${anomaly} °C em relação a 1991–2020.`,
     co2: (day: string) => `Dióxido de carbono no ar de Mauna Loa (Havaí), média mensal desde 1958. Última medição: ${day}.`,
@@ -807,13 +813,15 @@ const pt: Dict = {
   // ——— O céu, agora ———
 
   sole: {
-    title: 'O Sol', kicker: 'Hoje de manhã, em ultravioleta',
-    narrate: (time: string) => `Este é o Sol de hoje, fotografado às ${time} UTC pelo satélite SDO, na luz do ferro a um milhão de graus. Os arcos brilhantes são campos magnéticos; as áreas escuras são buracos por onde o vento solar escapa em nossa direção.`,
+    title: 'O Sol', kicker: 'Em escala com a Terra',
+    narrate: (time: string) => `Este é o Sol: cento e nove Terras enfileiradas de uma borda à outra. Aquele pontinho ao lado é o nosso planeta. A face voltada para nós é a de hoje, fotografada pelo satélite SDO às ${time} UTC, com as suas manchas reais. Em escala de tamanho, não de distância: na verdade, ele está oitenta vezes mais longe do que isso.`,
+    earth: 'a Terra',
+    earthSub: 'em escala com o Sol',
     taken: (day: string) => `a hora da imagem, em ${day}`,
     light: 'o tempo que a sua luz leva para chegar até aqui',
     corona: 'a temperatura da coroa, o gás que você vê',
-    text: 'O Solar Dynamics Observatory observa o Sol sem parar a partir de uma órbita geossíncrona, com uma imagem a cada poucos segundos. A 171 ångström, veem-se a coroa e os seus arcos magnéticos. O vento solar que parte daqui acende as auroras dias depois.',
-    source: 'NASA/SDO e as equipes científicas do AIA, EVE e HMI',
+    text: 'A face voltada para a Terra é a imagem em luz visível do instrumento HMI do SDO, desta manhã: as manchas escuras são campos magnéticos que seguram o calor. O resto da esfera é desenhado: a granulação, o escurecimento em direção à borda, a coroa. O vento solar que parte daqui acende as auroras dias depois.',
+    source: 'NASA/SDO, HMI (luz visível) · equipes científicas do AIA, EVE e HMI',
   },
   aurora: {
     title: 'A aurora', kicker: 'Previsão para a próxima meia hora',
@@ -838,12 +846,13 @@ const pt: Dict = {
     source: (day: string) => `CelesTrak · elementos orbitais dos satélites ativos · ${day}`,
   },
   partenze: {
-    title: 'Partidas', kicker: 'Os próximos lançamentos',
-    narrate: (p: { year: number; count: string | null; name: string; day: string; place: string }) => `${p.count ? `Em ${p.year}, já partiram ${p.count} foguetes. ` : ''}Cada ponto é uma plataforma de onde outro vai partir nas próximas semanas. O próximo: ${p.name}, em ${p.day}, de ${p.place}.`,
+    title: 'Partidas', kicker: 'Ontem, e em um ano',
+    narrate: (p: { count: number; yesterday: boolean; year: string }) => `${p.yesterday ? (p.count === 1 ? 'Ontem partiu um foguete' : `Entre ontem e hoje partiram ${p.count} foguetes`) : 'Aqui estão os últimos lançamentos'}: as suas subidas, cada uma com o seu destino. Depois, todo o último ano, ${p.year} lançamentos, cada clarão na sua plataforma, na ordem em que partiram.`,
+    yearCount: 'lançamentos nos últimos doze meses',
     done: (year: number) => `lançamentos em ${year}, até agora`,
     next: 'lançamentos previstos nos próximos 45 dias',
     first: (day: string) => `o próximo, em ${day}`,
-    text: 'Datas e plataformas do calendário aberto do The Space Devs: as datas dos lançamentos mudam com frequência, até no último minuto. Toque numa plataforma para ler o seu próximo lançamento.',
+    text: 'As subidas são desenhadas: a plataforma e o destino são reais; a direção segue o tipo de órbita (para leste nas órbitas baixas e geoestacionárias, para o sul nas polares) e a curva é indicativa. Datas, plataformas e destinos do calendário aberto do The Space Devs.',
     source: (day: string) => `Launch Library 2 · The Space Devs · atualizado em ${day}`,
   },
   bolidi: {
@@ -857,7 +866,10 @@ const pt: Dict = {
   },
   passaggi: {
     title: 'De passagem', kicker: 'Asteroides nos próximos 60 dias',
-    narrate: (p: { name: string; day: string; km: string; ld: string }) => `Em ${p.day}, o asteroide ${p.name} vai passar a cerca de ${p.km} quilômetros de nós: ${p.ld} vezes a distância da Lua. Ele não vai nos atingir: a sua órbita é calculada a partir de centenas de observações.`,
+    narrate: (p: { name: string; day: string; km: string; ld: string }) => `Em ${p.day}, o asteroide ${p.name} vai passar a cerca de ${p.km} quilômetros de nós: ${p.ld} vezes a distância da Lua. A linha laranja é o seu caminho real, seis dias em poucos segundos; a clara é a órbita da Lua; o pontinho no centro é a Terra. Ele não vai nos atingir.`,
+    moon: 'a Lua',
+    moonSub: 'onde ela está agora',
+    closest: (day: string, km: string) => `o ponto mais próximo, ${day} · ${km} km`,
     count: 'passagens a menos de 20 distâncias lunares nos próximos 60 dias',
     speed: (name: string) => `a velocidade de ${name} em relação à Terra`,
     distance: 'distâncias lunares, a passagem mais próxima',
@@ -870,6 +882,7 @@ const pt: Dict = {
     v1: 'da Terra à Voyager 1, hoje',
     v2: 'da Terra à Voyager 2',
     launched: 'o ano da partida',
+    there: (au: string) => `${au} UA de nós, nesta direção`,
     text: 'Distâncias da Terra calculadas com as efemérides JPL Horizons; uma unidade astronômica (UA) é a distância Terra–Sol, 150 milhões de km. A heliopausa é a fronteira além da qual o vento do Sol dá lugar ao gás entre as estrelas: a Voyager 1 a cruzou em 2012, a Voyager 2 em 2018.',
     source: 'NASA/JPL Horizons',
   },

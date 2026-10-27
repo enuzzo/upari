@@ -348,6 +348,12 @@ const ja: Dict = {
     voyager: (day: string) => `${day}、ボイジャー1号が私たちから1光日の距離に`,
   },
 
+  orbits: {
+    LEO: '低軌道', SSO: '太陽同期軌道', PO: '極軌道', MEO: '中軌道', GTO: '静止軌道へ',
+    GEO: '静止軌道', 'Direct-GEO': '静止軌道', GSTO: '対地同期軌道へ', Sub: 'サブオービタル飛行',
+    Elliptical: '楕円軌道', Mars: '火星へ', 'Lunar flyby': '月へ', TLI: '月へ', L2: 'L2点へ',
+  } as Record<string, string>,
+
   charts: {
     temperature: (day: string, anomaly: string) => `地球全体の平均気温を一日ずつ。線の一本一本が一年だ。${day}：1991–2020年との差${anomaly} °C。`,
     co2: (day: string) => `Mauna Loa（ハワイ）の大気中の二酸化炭素、1958年からの月平均。最新の測定：${day}。`,
@@ -778,13 +784,15 @@ const ja: Dict = {
   // ——— いまの空 ———
 
   sole: {
-    title: '太陽', kicker: '今朝、紫外線で',
-    narrate: (time: string) => `これが今日の太陽だ。${time} UTCにSDO衛星が、100万度の鉄が放つ光で撮影した。明るいアーチは磁場。暗い部分は穴で、そこから太陽風が私たちのほうへ逃げ出していく。`,
+    title: '太陽', kicker: '地球と同じ縮尺で',
+    narrate: (time: string) => `これが太陽だ。端から端まで、地球が109個並ぶ。そばの小さな点が、私たちの惑星だ。こちらを向いた面は今日のもので、${time} UTCにSDO衛星が撮影した。本物の黒点が写っている。縮尺が合っているのは大きさで、距離ではない。実際の太陽は、これより80倍も遠い。`,
+    earth: '地球',
+    earthSub: '太陽と同じ縮尺',
     taken: (day: string) => `画像の撮影時刻、${day}`,
     light: 'その光がここに届くまでの時間',
     corona: 'コロナの温度。見えているのはこの気体だ',
-    text: 'ソーラー・ダイナミクス・オブザーバトリー（SDO）は地球同期軌道から、数秒ごとに一枚、休みなく太陽を見つめている。波長171オングストロームでは、コロナとその磁気のループが見える。ここから出た太陽風が、数日後にオーロラを灯す。',
-    source: 'NASA/SDOおよびAIA、EVE、HMIの科学チーム',
+    text: '地球に向いた面は、SDOのHMI装置が今朝撮影した可視光の画像だ。暗い斑点は、熱をせき止める磁場。球のほかの部分は描いたもので、粒状斑、縁に向かって暗くなる周縁減光、そしてコロナ。ここから出た太陽風が、数日後にオーロラを灯す。',
+    source: 'NASA/SDO、HMI（可視光） · AIA、EVE、HMIの科学チーム',
   },
   aurora: {
     title: 'オーロラ', kicker: 'この先30分の予報',
@@ -809,12 +817,13 @@ const ja: Dict = {
     source: (day: string) => `CelesTrak · 運用中の衛星の軌道要素 · ${day}`,
   },
   partenze: {
-    title: '旅立ち', kicker: '次の打ち上げ',
-    narrate: (p: { year: number; count: string | null; name: string; day: string; place: string }) => `${p.count ? `${p.year}年には、すでに${p.count}機のロケットが飛び立った。` : ''}点のひとつひとつが発射台で、この先数週間のうちに、そこからまた一機が飛び立つ。次は${p.name}、${p.day}に${p.place}から。`,
+    title: '旅立ち', kicker: '昨日、そしてこの1年',
+    narrate: (p: { count: number; yesterday: boolean; year: string }) => `${p.yesterday ? (p.count === 1 ? '昨日、ロケットが1機飛び立った' : `昨日から今日までに、${p.count}機のロケットが飛び立った`) : 'これが最近の打ち上げだ'}。それぞれの上昇の軌跡と、その行き先。続いて過去1年の${p.year}回の打ち上げが、飛び立った順に、それぞれの発射台で光る。`,
+    yearCount: '過去12か月の打ち上げ',
     done: (year: number) => `${year}年のこれまでの打ち上げ`,
     next: 'この先45日間に予定されている打ち上げ',
     first: (day: string) => `次の打ち上げ、${day}`,
-    text: '日付と発射台は、The Space Devsの公開カレンダーによる。打ち上げの日付は、直前になってもよく変わる。発射台をタップすると、次の打ち上げが読める。',
+    text: '上昇の軌跡は描いたものだ。発射台と行き先は本物で、方向は軌道の種類に合わせている（低軌道と静止軌道は東へ、極軌道は南へ）。曲線はおおよその形。日付、発射台、行き先は、The Space Devsの公開カレンダーによる。',
     source: (day: string) => `Launch Library 2 · The Space Devs · ${day}更新`,
   },
   bolidi: {
@@ -828,7 +837,10 @@ const ja: Dict = {
   },
   passaggi: {
     title: '通りすがり', kicker: 'この先60日間の小惑星',
-    narrate: (p: { name: string; day: string; km: string; ld: string }) => `${p.day}、小惑星${p.name}が、私たちから約${p.km}kmのところを通過する。月までの距離の${p.ld}倍だ。衝突はしない。その軌道は、何百回もの観測から計算されている。`,
+    narrate: (p: { name: string; day: string; km: string; ld: string }) => `${p.day}、小惑星${p.name}が、私たちから約${p.km}kmのところを通過する。月までの距離の${p.ld}倍だ。オレンジの線は本当の通り道で、6日間を数秒に縮めている。淡い線は月の軌道、真ん中の小さな点が地球だ。衝突はしない。`,
+    moon: '月',
+    moonSub: '今いる場所',
+    closest: (day: string, km: string) => `最接近点、${day} · ${km}km`,
     count: 'この先60日間に、月までの距離の20倍以内を通過するもの',
     speed: (name: string) => `地球に対する${name}の速さ`,
     distance: '月までの距離を単位に、最も近い通過',
@@ -841,6 +853,7 @@ const ja: Dict = {
     v1: '今日の地球からボイジャー1号までの距離',
     v2: '地球からボイジャー2号までの距離',
     launched: '旅立った年',
+    there: (au: string) => `私たちから${au} au、この方向に`,
     text: '地球からの距離は、JPL Horizonsの天体暦で計算している。1天文単位（au）は地球と太陽のあいだの距離で、1億5,000万km。ヘリオポーズは、太陽風が恒星間のガスに場所をゆずる境界だ。ボイジャー1号は2012年に、ボイジャー2号は2018年にそこを越えた。',
     source: 'NASA/JPL Horizons',
   },

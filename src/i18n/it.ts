@@ -344,6 +344,13 @@ const it = {
     voyager: (day: string) => `il ${day} Voyager 1 è a un giorno-luce da noi`,
   },
 
+  /** Where a rocket is going, from the Launch Library abbreviation. */
+  orbits: {
+    LEO: 'orbita bassa', SSO: 'orbita eliosincrona', PO: 'orbita polare', MEO: 'orbita media', GTO: 'verso l’orbita geostazionaria',
+    GEO: 'orbita geostazionaria', 'Direct-GEO': 'orbita geostazionaria', GSTO: 'verso l’orbita geosincrona', Sub: 'volo suborbitale',
+    Elliptical: 'orbita ellittica', Mars: 'verso Marte', 'Lunar flyby': 'verso la Luna', TLI: 'verso la Luna', L2: 'verso il punto L2',
+  } as Record<string, string>,
+
   /** The charts beside the planet. */
   charts: {
     temperature: (day: string, anomaly: string) => `Temperatura media dell’aria su tutto il pianeta, giorno per giorno: ogni linea è un anno. Il ${day}: ${anomaly} °C rispetto al 1991–2020.`,
@@ -783,13 +790,15 @@ const it = {
   // ——— Il cielo, adesso ———
 
   sole: {
-    title: 'Il Sole', kicker: 'Stamattina, in ultravioletto',
-    narrate: (time: string) => `Questo è il Sole di oggi, fotografato alle ${time} UTC dal satellite SDO, nella luce del ferro a un milione di gradi. Gli archi brillanti sono campi magnetici; le zone scure sono buchi da cui il vento solare scappa verso di noi.`,
+    title: 'Il Sole', kicker: 'In scala con la Terra',
+    narrate: (time: string) => `Questo è il Sole: centonove Terre in fila da un bordo all’altro. Quel puntino accanto è il nostro pianeta. La faccia rivolta a noi è quella di oggi, fotografata dal satellite SDO alle ${time} UTC, con le sue macchie vere. In scala di grandezza, non di distanza: davvero è ottanta volte più lontano di così.`,
+    earth: 'la Terra',
+    earthSub: 'in scala con il Sole',
     taken: (day: string) => `l’ora dell’immagine, il ${day}`,
     light: 'il tempo che la sua luce impiega ad arrivare qui',
     corona: 'la temperatura della corona, il gas che vedi',
-    text: 'Il Solar Dynamics Observatory guarda il Sole senza interruzioni da un’orbita geosincrona, con un’immagine ogni pochi secondi. A 171 ångström si vedono la corona e i suoi anelli magnetici. Il vento solare che parte da qui, giorni dopo, accende le aurore.',
-    source: 'NASA/SDO e i team scientifici di AIA, EVE e HMI',
+    text: 'La faccia rivolta alla Terra è l’immagine in luce visibile dello strumento HMI di SDO, di stamattina: le macchie scure sono campi magnetici che frenano il calore. Il resto della sfera è disegnato: la granulazione, l’oscuramento verso il bordo, la corona. Il vento solare che parte da qui, giorni dopo, accende le aurore.',
+    source: 'NASA/SDO, HMI (luce visibile) · AIA, EVE e HMI science teams',
   },
   aurora: {
     title: 'L’aurora', kicker: 'Previsione per la prossima mezz’ora',
@@ -814,12 +823,13 @@ const it = {
     source: (day: string) => `CelesTrak · elementi orbitali dei satelliti attivi · ${day}`,
   },
   partenze: {
-    title: 'In partenza', kicker: 'I prossimi lanci',
-    narrate: (p: { year: number; count: string | null; name: string; day: string; place: string }) => `${p.count ? `Nel ${p.year} sono già partiti ${p.count} razzi. ` : ''}Ogni punto è una rampa da cui ne partirà un altro nelle prossime settimane. Il prossimo: ${p.name}, il ${p.day}, da ${p.place}.`,
+    title: 'In partenza', kicker: 'Ieri, e in un anno',
+    narrate: (p: { count: number; yesterday: boolean; year: string }) => `${p.yesterday ? (p.count === 1 ? 'Ieri è partito un razzo' : `Fra ieri e oggi sono partiti ${p.count} razzi`) : 'Ecco gli ultimi lanci'}: le loro salite, ognuna con la sua destinazione. Poi tutto l’ultimo anno, ${p.year} lanci, ogni lampo sulla sua rampa, nell’ordine in cui sono partiti.`,
+    yearCount: 'lanci negli ultimi dodici mesi',
     done: (year: number) => `lanci nel ${year}, finora`,
     next: 'lanci previsti nei prossimi 45 giorni',
     first: (day: string) => `il prossimo, il ${day}`,
-    text: 'Date e rampe dal calendario aperto di The Space Devs: le date dei lanci cambiano spesso, anche all’ultimo minuto. Tocca una rampa per leggere il suo prossimo lancio.',
+    text: 'Le salite sono disegnate: la rampa e la destinazione sono vere; la direzione segue il tipo di orbita (verso est per le orbite basse e geostazionarie, verso sud per quelle polari) e la curva è indicativa. Date, rampe e destinazioni dal calendario aperto di The Space Devs.',
     source: (day: string) => `Launch Library 2 · The Space Devs · aggiornato al ${day}`,
   },
   bolidi: {
@@ -833,7 +843,10 @@ const it = {
   },
   passaggi: {
     title: 'Di passaggio', kicker: 'Asteroidi nei prossimi 60 giorni',
-    narrate: (p: { name: string; day: string; km: string; ld: string }) => `Il ${p.day} l’asteroide ${p.name} passerà a circa ${p.km} chilometri da noi: ${p.ld} volte la distanza della Luna. Non ci colpirà: la sua orbita è calcolata da centinaia di osservazioni.`,
+    narrate: (p: { name: string; day: string; km: string; ld: string }) => `Il ${p.day} l’asteroide ${p.name} passerà a circa ${p.km} chilometri da noi, ${p.ld} volte la distanza della Luna. La linea arancione è il suo percorso vero, sei giorni in pochi secondi; quella chiara è l’orbita della Luna; il puntino al centro è la Terra. Non ci colpirà.`,
+    moon: 'la Luna',
+    moonSub: 'dove si trova adesso',
+    closest: (day: string, km: string) => `il punto più vicino, ${day} · ${km} km`,
     count: 'passaggi entro 20 distanze lunari nei prossimi 60 giorni',
     speed: (name: string) => `la velocità di ${name} rispetto alla Terra`,
     distance: 'distanze lunari, il passaggio più vicino',
@@ -846,6 +859,7 @@ const it = {
     v1: 'Voyager 1 dalla Terra, oggi',
     v2: 'Voyager 2 dalla Terra',
     launched: 'l’anno della partenza',
+    there: (au: string) => `${au} UA da noi, in questa direzione`,
     text: 'Distanze dalla Terra calcolate con le effemeridi JPL Horizons; un’unità astronomica (UA) è la distanza Terra–Sole, 150 milioni di km. L’eliopausa è il confine oltre il quale il vento del Sole lascia il posto al gas fra le stelle: Voyager 1 l’ha passata nel 2012, Voyager 2 nel 2018.',
     source: 'NASA/JPL Horizons',
   },

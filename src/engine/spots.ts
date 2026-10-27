@@ -8,7 +8,7 @@ import { dayShort, num } from '../i18n/format';
 // oil slicks, launch pads and fireballs. Each set is a cloud of glowing dots on the globe,
 // revealed in the order of their time when the story replays them; the cursor reads them.
 
-export type SpotId = 'cyclones' | 'volcanoes' | 'icebergs' | 'slicks' | 'launches' | 'fireballs';
+export type SpotId = 'cyclones' | 'volcanoes' | 'icebergs' | 'slicks' | 'launches' | 'launchyear' | 'fireballs';
 
 export interface Spot {
   lon: number;
@@ -82,6 +82,15 @@ const BUILD: Record<SpotId, (d: any) => Spot[]> = {
       text: () => l.name, sub: () => t.spots.launch(dayShort(l.net), l.place || l.pad),
     }));
   },
+  launchyear(d) {
+    // Every launch of the last twelve months, flashing on its pad in the order they flew.
+    const list = d.past as { lat: number; lon: number; name: string; net: string; place: string; pad: string }[];
+    const t0 = Date.parse(list[0]?.net ?? '0'), t1 = Date.parse(list.at(-1)?.net ?? '0');
+    return list.map((l) => ({
+      lon: l.lon, lat: l.lat, size: 9, color: '#ffc98a', order: (Date.parse(l.net) - t0) / Math.max(1, t1 - t0),
+      text: () => l.name, sub: () => t.spots.launch(dayShort(l.net), l.place || l.pad),
+    }));
+  },
   fireballs(d) {
     const n = d.list.length;
     return d.list.map((f: [string, number, number, number, number | null, number | null], i: number) => ({
@@ -93,7 +102,7 @@ const BUILD: Record<SpotId, (d: any) => Spot[]> = {
 
 const FILES: Record<SpotId, string> = {
   cyclones: 'layers/cyclones.json', volcanoes: 'layers/volcanoes.json', icebergs: 'layers/icebergs.json',
-  slicks: 'layers/slicks.json', launches: 'sky/launches.json', fireballs: 'sky/fireballs.json',
+  slicks: 'layers/slicks.json', launches: 'sky/launches.json', launchyear: 'sky/launches.json', fireballs: 'sky/fireballs.json',
 };
 
 function createSet(id: SpotId, spots: Spot[], data: any): SpotSet {

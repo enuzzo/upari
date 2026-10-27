@@ -339,6 +339,12 @@ const zh: Dict = {
     voyager: (day: string) => `${day}，旅行者 1 号距离我们一光日`,
   },
 
+  orbits: {
+    LEO: '近地轨道', SSO: '太阳同步轨道', PO: '极地轨道', MEO: '中地球轨道', GTO: '前往地球静止轨道',
+    GEO: '地球静止轨道', 'Direct-GEO': '地球静止轨道', GSTO: '前往地球同步轨道', Sub: '亚轨道飞行',
+    Elliptical: '椭圆轨道', Mars: '前往火星', 'Lunar flyby': '前往月球', TLI: '前往月球', L2: '前往 L2 点',
+  } as Record<string, string>,
+
   charts: {
     temperature: (day: string, anomaly: string) => `全球平均气温，逐日变化：每条线是一年。${day}：与 1991–2020 年相比 ${anomaly} °C。`,
     co2: (day: string) => `Mauna Loa（夏威夷）空气中的二氧化碳，1958 年以来的月平均值。最新测量：${day}。`,
@@ -769,13 +775,15 @@ const zh: Dict = {
   // ——— 此刻的天空 ———
 
   sole: {
-    title: '太阳', kicker: '今天早上，紫外线下',
-    narrate: (time: string) => `这是今天的太阳，由 SDO 卫星在 ${time} UTC 拍摄，用的是百万度高温的铁发出的光。明亮的弧是磁场；暗色的区域是空洞，太阳风从那里逃逸，奔向我们。`,
+    title: '太阳', kicker: '与地球同比例',
+    narrate: (time: string) => `这是太阳：从一边到另一边，能排下一百零九个地球。旁边那个小点就是我们的星球。朝向我们的这一面是今天的样子，由 SDO 卫星在 ${time} UTC 拍摄，上面是真实的太阳黑子。这里按大小成比例，而不是按距离：实际上，太阳比这里远八十倍。`,
+    earth: '地球',
+    earthSub: '与太阳同比例',
     taken: (day: string) => `图像的拍摄时间，${day}`,
     light: '它的光到达这里所需的时间',
     corona: '日冕的温度，也就是你看到的气体',
-    text: '太阳动力学天文台（SDO）在地球同步轨道上不间断地注视着太阳，每隔几秒拍一幅图像。在 171 埃的波长下，可以看到日冕和它的磁环。从这里出发的太阳风，几天后会点亮极光。',
-    source: 'NASA/SDO 以及 AIA、EVE 与 HMI 科学团队',
+    text: '朝向地球的这一面，是 SDO 的 HMI 仪器今天早上拍摄的可见光图像：暗色的斑点是磁场，它们挡住了热量。球体的其余部分是绘制的：米粒组织、向边缘逐渐变暗的临边昏暗，以及日冕。从这里出发的太阳风，几天后会点亮极光。',
+    source: 'NASA/SDO，HMI（可见光） · AIA、EVE 与 HMI 科学团队',
   },
   aurora: {
     title: '极光', kicker: '未来半小时的预报',
@@ -800,12 +808,13 @@ const zh: Dict = {
     source: (day: string) => `CelesTrak · 在轨卫星的轨道根数 · ${day}`,
   },
   partenze: {
-    title: '出发', kicker: '即将到来的发射',
-    narrate: (p: { year: number; count: string | null; name: string; day: string; place: string }) => `${p.count ? `${p.year} 年，已经有 ${p.count} 枚火箭升空。` : ''}每个点都是一座发射台，在接下来的几周里，又会有一枚火箭从那里出发。下一次：${p.name}，${p.day}，从 ${p.place} 发射。`,
+    title: '出发', kicker: '昨天，以及一年来',
+    narrate: (p: { count: number; yesterday: boolean; year: string }) => `${p.yesterday ? (p.count === 1 ? '昨天有一枚火箭升空' : `从昨天到今天，已有 ${p.count} 枚火箭升空`) : '这是最近的几次发射'}：它们的上升轨迹，各自奔向自己的目的地。然后是过去一整年，${p.year} 次发射，每一道闪光都在它的发射台上，按升空的先后顺序亮起。`,
+    yearCount: '过去十二个月的发射',
     done: (year: number) => `${year} 年至今的发射`,
     next: '未来 45 天内计划的发射',
     first: (day: string) => `下一次，${day}`,
-    text: '日期和发射台来自 The Space Devs 的开放日历：发射日期经常变动，甚至在最后一刻。点击一座发射台，查看它的下一次发射。',
+    text: '上升轨迹是绘制的：发射台和目的地是真实的；方向取决于轨道类型（近地轨道和地球静止轨道向东，极地轨道向南），曲线只是示意。日期、发射台和目的地来自 The Space Devs 的开放日历。',
     source: (day: string) => `Launch Library 2 · The Space Devs · 更新至 ${day}`,
   },
   bolidi: {
@@ -819,7 +828,10 @@ const zh: Dict = {
   },
   passaggi: {
     title: '路过', kicker: '未来 60 天的小行星',
-    narrate: (p: { name: string; day: string; km: string; ld: string }) => `${p.day}，小行星 ${p.name} 将从距离我们约 ${p.km} 公里处经过：是地月距离的 ${p.ld} 倍。它不会撞上我们：它的轨道是根据数百次观测计算出来的。`,
+    narrate: (p: { name: string; day: string; km: string; ld: string }) => `${p.day}，小行星 ${p.name} 将从距离我们约 ${p.km} 公里处经过：是地月距离的 ${p.ld} 倍。橙色的线是它真实的路径，六天浓缩在几秒钟里；浅色的线是月球的轨道；中间的小点是地球。它不会撞上我们。`,
+    moon: '月球',
+    moonSub: '它现在的位置',
+    closest: (day: string, km: string) => `最近点，${day} · ${km} 公里`,
     count: '未来 60 天内，20 倍月球距离以内的掠过',
     speed: (name: string) => `${name} 相对地球的速度`,
     distance: '月球距离，最近的一次掠过',
@@ -832,6 +844,7 @@ const zh: Dict = {
     v1: '旅行者 1 号距地球，今天',
     v2: '旅行者 2 号距地球',
     launched: '它们出发的年份',
+    there: (au: string) => `距离我们 ${au} 天文单位，在这个方向`,
     text: '与地球的距离根据 JPL Horizons 星历计算；一个天文单位是日地距离，1.5 亿公里。日球层顶是一道边界，越过它，太阳风就让位给恒星之间的气体：旅行者 1 号在 2012 年越过，旅行者 2 号在 2018 年。',
     source: 'NASA/JPL Horizons',
   },

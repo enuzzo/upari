@@ -129,6 +129,19 @@ Fatto il 27 ottobre 2026 (rapporto «Nuove fonti e proposte per Upari»):
   strato con la sua fonte. **Accade adesso** sul titolo, con soglie alte. La data del
   fotogramma sta sopra il pianeta.
 
+Fatto il 27 ottobre 2026, sera — «Il cielo, adesso» rivisto dopo le note dell’utente:
+
+- **Il Sole** come corpo in 3D, in scala di grandezza con la Terra (non di distanza): da lontano con
+  la Terra come misura, poi da vicino; la faccia verso di noi è l’immagine HMI di SDO del mattino.
+- **L’aurora** come tende di luce sopra l’ovale previsto da NOAA OVATION: verde dell’ossigeno in
+  basso, rosso in alto, orlo rosa dell’azoto; dall’alto e poi di lato.
+- **In partenza**: le salite dei lanci di ieri dalle loro rampe, con l’etichetta della destinazione,
+  poi l’ultimo anno di lanci (335) rampa per rampa.
+- **Di passaggio**: il percorso vero dell’asteroide intorno alla Terra e l’orbita della Luna (JPL
+  Horizons), con le etichette; niente più satelliti di sfondo.
+- **Un giorno-luce**: Voyager 1 segnata fra le stelle nella sua direzione vera; la luce del Sole
+  ora tramonta dietro la Terra come un disco (prima, tagliata dalla profondità, sembrava quadrata).
+
 ## Piano dal rapporto, con lo stato
 
 Licenze: per decisione dell’utente (27 ottobre) Upari è un progetto gratuito; le licenze non

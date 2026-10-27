@@ -20,6 +20,10 @@ export interface Beat {
   hold?: number;
   /** Ride along with the station while holding. */
   follow?: boolean;
+  /** Change of look when this beat starts (on top of the chapter's). */
+  look?: Partial<Look>;
+  /** Remove the labels on the globe when this beat starts. */
+  clear?: boolean;
 }
 export interface Fact { value: string; label: string }
 export interface Detail { facts: Fact[]; text: string; source: string }
@@ -49,6 +53,8 @@ export interface Chapter {
   clock?: 'data' | 'year';
   /** A chart beside the planet. */
   chart?: ChartId;
+  /** Labels on the globe (lon, lat, height in km), shown once the words are on screen. */
+  badges?: (g: Globe) => Promise<{ lon: number; lat: number; altKm: number; title: string; sub: string }[]>;
   pin?: (g: Globe) => Promise<{ lon: number; lat: number; label: string; sub: string } | null>;
 }
 

@@ -49,7 +49,7 @@ export class CameraRig {
   private height = 1;
 
   constructor(private dom: HTMLElement) {
-    this.camera = new PerspectiveCamera(30, 1, 0.0005, 400);
+    this.camera = new PerspectiveCamera(30, 1, 0.0005, 4000);
     this.bind();
   }
 
@@ -96,6 +96,9 @@ export class CameraRig {
   }
 
   /** `now` places the planet at once instead of sliding it there. */
+  /** How far the camera may go for the shot of the moment (the Sun and the Moon need room). */
+  reach = MAX_DIST;
+
   setFrameShift(v: number, now = false) {
     this.frameShiftTarget = v;
     if (now) { this.frameShift = v; this.applyOffset(); }
@@ -174,7 +177,7 @@ export class CameraRig {
         this.vel.zoom *= Math.exp(-dt * 6);
         this.lon += this.drift * dt;
       }
-      this.dist = MathUtils.clamp(this.dist, MIN_DIST, MAX_DIST);
+      this.dist = MathUtils.clamp(this.dist, MIN_DIST, Math.max(MAX_DIST, this.reach));
       this.lat = MathUtils.clamp(this.lat, -85, 85);
       // Close to the ground, lean towards the horizon like an aircraft window.
       const autoTilt = MathUtils.clamp(1 - Math.log(this.dist / 0.006) / Math.log(0.35 / 0.006), 0, 1);

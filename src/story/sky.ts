@@ -1,7 +1,9 @@
 import type { Globe } from '../engine/globe';
 import { PALETTES } from '../engine/palettes';
-import { sunDirection, vecToLonLat } from '../engine/astro';
+import { Vector3 } from 'three';
+import { gmst, sunDirection, vecToLonLat } from '../engine/astro';
 import { loadSpots } from '../engine/spots';
+import { ascent, type Launch } from '../engine/trajectories';
 import { legend, titled, type Chapter } from './chapters';
 import { climate } from './charts';
 import { t } from '../i18n';
@@ -31,8 +33,9 @@ export const SKY_CHAPTERS: Chapter[] = titled([
   {
     id: 'sole',
     mood: 'open',
-    look: { ...SKY, dim: 0.35 },
-    duration: 21, chart: 'sun',
+    // The Sun as a body beside the Earth: to scale in size, much nearer than it really is.
+    look: { ...SKY, solar: 1, reach: 1400, clouds: 1, bloom: 0.45 },
+    duration: 32,
     narrate: async () => {
       const d = await climate.sun();
       return t.sole.narrate(timeUtc(d.time));
@@ -51,7 +54,16 @@ export const SKY_CHAPTERS: Chapter[] = titled([
     },
     beats: async (g) => {
       const s = vecToLonLat(sunDirection(g.now));
-      return [{ shot: { lon: s.lon - 80, lat: s.lat * 0.5 + 10, dist: 4.4 }, drift: 0.6 }];
+      return [
+        // From afar: the Sun, and beside it a speck that is the Earth.
+        { shot: { lon: s.lon - 90, lat: 12, dist: 1150 }, seconds: 7, hold: 7 },
+        // Then close, with the Sun behind the planet as a measure.
+        { shot: { lon: s.lon + 180 - 18, lat: -s.lat * 0.5 + 8, dist: 4.2 }, seconds: 6, drift: 0.4 },
+      ];
+    },
+    pin: async (g) => {
+      const s = vecToLonLat(sunDirection(g.now));
+      return { lon: s.lon - 90, lat: 12, label: t.sole.earth, sub: t.sole.earthSub };
     },
   },
   {
@@ -77,7 +89,11 @@ export const SKY_CHAPTERS: Chapter[] = titled([
     },
     beats: async (g) => {
       const p = darkPole(g);
-      return [{ shot: { lon: p.lon, lat: p.lat, dist: 2.3 }, drift: 2.2 }];
+      // From above the oval, then low and sideways, to see the curtains stand.
+      return [
+        { shot: { lon: p.lon, lat: p.lat, dist: 2.3 }, drift: 2.2, hold: 8 },
+        { shot: { lon: p.lon + 15, lat: p.north ? 58 : -58, dist: 0.3, tilt: 50, heading: p.north ? 0 : 180 }, seconds: 7, drift: 0.6 },
+      ];
     },
   },
   {
@@ -113,27 +129,43 @@ export const SKY_CHAPTERS: Chapter[] = titled([
   {
     id: 'partenze',
     mood: 'open',
-    look: { sun: 'studio', clouds: 0.1, night: 0, dim: 0.55, desat: 0.6, atmo: 0.8, spots: 'launches' },
-    duration: 21,
+    look: { sun: 'studio', clouds: 0.1, night: 0, dim: 0.55, desat: 0.6, atmo: 0.8, rockets: 1 },
+    duration: 30,
     narrate: async () => {
-      const d = await climate.launches(), next = d.launches[0];
-      return t.partenze.narrate({ year: d.year, count: d.launchedThisYear == null ? null : num(d.launchedThisYear), name: next.name, day: dayMonth(next.net), place: next.place || next.pad });
+      const d = await climate.launches(), recent = recentLaunches(d);
+      return t.partenze.narrate({ count: recent.length, yesterday: recent.yesterday, year: num(d.past?.length ?? 0) });
     },
     detail: async () => {
       const d = await climate.launches();
       return {
         facts: [
+          { value: num(d.past?.length ?? 0), label: t.partenze.yearCount },
           ...(d.launchedThisYear != null ? [{ value: num(d.launchedThisYear), label: t.partenze.done(d.year) }] : []),
-          { value: num(d.launches.length), label: t.partenze.next },
           { value: d.launches[0].rocket || d.launches[0].name, label: t.partenze.first(dayShort(d.launches[0].net)) },
         ],
         text: t.partenze.text,
         source: t.partenze.source(dayMonth(d.fetched)),
       };
     },
-    beats: async () => {
-      const d = await climate.launches(), next = d.launches[0];
-      return [{ shot: { lon: next.lon - 12, lat: next.lat * 0.8, dist: 2.8 }, drift: 0.9 }];
+    beats: async (g) => {
+      const d = await climate.launches(), recent = recentLaunches(d);
+      g.showRockets(recent);
+      const first = recent[0] ?? d.launches[0];
+      return [
+        // Yesterday's rockets climbing from their pads, with where each is going.
+        { shot: { lon: first.lon + 30, lat: first.lat * 0.6 + 8, dist: 2.4 }, drift: 0.6, hold: 11 },
+        // Then the whole year, pad by pad, in the order they flew.
+        { shot: { lon: first.lon + 10, lat: 22, dist: 3.4 }, seconds: 4, drift: 1.4, clear: true, look: { rockets: 0, spots: 'launchyear', spotReplay: 12 } },
+      ];
+    },
+    badges: async () => {
+      const d = await climate.launches();
+      return recentLaunches(d).slice(0, 6).map((l) => {
+        const end = ascent(l)(1);
+        const ll = vecToLonLat(end);
+        const [rocket, mission] = l.name.split(' | ');
+        return { lon: ll.lon, lat: ll.lat, altKm: (end.length() - 1) * 6371, title: mission ?? rocket, sub: `${rocket} · ${t.orbits[l.orbit as keyof typeof t.orbits] ?? l.orbit}` };
+      });
     },
   },
   {
@@ -162,8 +194,9 @@ export const SKY_CHAPTERS: Chapter[] = titled([
   {
     id: 'passaggi',
     mood: 'curious',
-    look: { ...SKY, dim: 0.55, satellites: 0.35 },
-    duration: 22, chart: 'neo',
+    // The real path of the pass around the Earth, and the Moon's orbit for scale.
+    look: { ...SKY, flyby: 1, reach: 400, clouds: 1 },
+    duration: 25,
     narrate: async () => {
       const d = await climate.neo(), o = d.list[0];
       return t.passaggi.narrate({ name: o.name, day: dayMonth(o.time), km: num(Math.round((o.ld * KM_LD) / 1000) * 1000), ld: num(o.ld, 2) });
@@ -180,13 +213,29 @@ export const SKY_CHAPTERS: Chapter[] = titled([
         source: t.passaggi.source(dayMonth(d.fetched)),
       };
     },
-    beats: async () => [{ shot: { lon: -40, lat: 20, dist: 4.2 }, drift: 0.5 }],
+    beats: async (g) => [
+      // Far enough to hold the Moon's orbit; the Earth is the speck in the middle.
+      { shot: { lon: vecToLonLat(sunDirection(g.now)).lon - 70, lat: 35, dist: 230 }, seconds: 6, drift: 0.8 },
+    ],
+    badges: async (g) => {
+      await g.loadFlyby();
+      const p = g.flybyPoints(), d = await climate.neo(), o = d.list[0];
+      if (!p) return [];
+      const label = (v: import('three').Vector3, title: string, sub: string) => {
+        const ll = vecToLonLat(v);
+        return { lon: ll.lon, lat: ll.lat, altKm: (v.length() - 1) * 6371, title, sub };
+      };
+      return [
+        label(p.moon, t.passaggi.moon, t.passaggi.moonSub),
+        label(p.closest, o.name, t.passaggi.closest(dayMonth(o.time), num(Math.round((o.ld * KM_LD) / 1000) * 1000))),
+      ];
+    },
   },
   {
     id: 'voyager',
     mood: 'open', sound: 'station',
-    look: { ...SKY, dim: 0.5, satellites: 0.15 },
-    duration: 23, chart: 'voyager',
+    look: { ...SKY, dim: 0.5 },
+    duration: 23,
     narrate: async () => {
       const d = await climate.voyager();
       return t.voyager.narrate({ hours: num(d.v1.lightHours, 2), day: d.v1.lightDay ? dayMonth(d.v1.lightDay) : null });
@@ -203,9 +252,36 @@ export const SKY_CHAPTERS: Chapter[] = titled([
         source: t.voyager.source,
       };
     },
-    beats: async () => [{ shot: { lon: 80, lat: 10, dist: 4.6 }, drift: 0.4 }],
+    beats: async (g) => {
+      const v = voyagerDir((await climate.voyager()).v1, g.now);
+      // From the far side of the Earth, looking out towards Ophiuchus where Voyager 1 is.
+      return [{ shot: { lon: v.lon + 180 + 12, lat: -v.lat * 0.6 - 6, dist: 4.4 }, seconds: 6, drift: 0.12 }];
+    },
+    badges: async (g) => {
+      const d = await climate.voyager();
+      return (['v1', 'v2'] as const).map((k) => {
+        const v = voyagerDir(d[k], g.now);
+        return { lon: v.lon, lat: v.lat, altKm: 400 * 6371, title: k === 'v1' ? 'Voyager 1' : 'Voyager 2', sub: t.voyager.there(num(d[k].au, 1)) };
+      });
+    },
   },
 ]);
+
+/** Where a Voyager is in the sky, as the Earth-fixed direction the globe uses. */
+function voyagerDir(v: { ra: number; dec: number }, now: Date) {
+  const ra = v.ra * Math.PI / 180, dec = v.dec * Math.PI / 180;
+  const dir = new Vector3(Math.cos(dec) * Math.cos(ra), Math.sin(dec), -Math.cos(dec) * Math.sin(ra)).applyAxisAngle(new Vector3(0, 1, 0), -gmst(now));
+  return vecToLonLat(dir);
+}
+
+/** The launches of yesterday (the last two days); on a quiet day, the last three. */
+function recentLaunches(d: { past?: Launch[] }) {
+  const past = d.past ?? [];
+  const recent = past.filter((l) => Date.now() - Date.parse(l.net) < 2 * 86400e3);
+  const list = (recent.length ? recent : past.slice(-3)).slice().reverse() as Launch[] & { yesterday?: boolean };
+  list.yesterday = recent.length > 0;
+  return list as Launch[] & { yesterday: boolean };
+}
 
 async function fireballs() {
   const d = (await loadSpots('fireballs')).data as { count: number; list: [string, number, number, number, number | null, number | null][] };

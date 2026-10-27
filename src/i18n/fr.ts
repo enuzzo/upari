@@ -386,6 +386,12 @@ const fr: Dict = {
     voyager: (day: string) => `le ${first(day)}, Voyager 1 est à un jour-lumière de nous`,
   },
 
+  orbits: {
+    LEO: 'orbite basse', SSO: 'orbite héliosynchrone', PO: 'orbite polaire', MEO: 'orbite moyenne', GTO: 'vers l’orbite géostationnaire',
+    GEO: 'orbite géostationnaire', 'Direct-GEO': 'orbite géostationnaire', GSTO: 'vers l’orbite géosynchrone', Sub: 'vol suborbital',
+    Elliptical: 'orbite elliptique', Mars: 'vers Mars', 'Lunar flyby': 'vers la Lune', TLI: 'vers la Lune', L2: 'vers le point L2',
+  } as Record<string, string>,
+
   charts: {
     temperature: (day: string, anomaly: string) => `Température moyenne de l’air sur toute la planète, jour après jour : chaque ligne est une année. Le ${first(day)} : ${anomaly} °C par rapport à 1991–2020.`,
     co2: (day: string) => `Dioxyde de carbone dans l’air de Mauna Loa (Hawaï), moyenne mensuelle depuis 1958. Dernière mesure : ${first(day)}.`,
@@ -820,13 +826,15 @@ const fr: Dict = {
   // ——— Le ciel, en ce moment ———
 
   sole: {
-    title: 'Le Soleil', kicker: 'Ce matin, en ultraviolet',
-    narrate: (time: string) => `Voici le Soleil d’aujourd’hui, photographié à ${time} UTC par le satellite SDO, dans la lumière du fer à un million de degrés. Les arcs brillants sont des champs magnétiques ; les zones sombres sont des trous par où le vent solaire s’échappe vers nous.`,
+    title: 'Le Soleil', kicker: 'À l’échelle de la Terre',
+    narrate: (time: string) => `Voici le Soleil : cent neuf Terres alignées d’un bord à l’autre. Ce petit point à côté, c’est notre planète. La face tournée vers nous est celle d’aujourd’hui, photographiée par le satellite SDO à ${time} UTC, avec ses vraies taches. À l’échelle pour la taille, pas pour la distance : en réalité, il est quatre-vingts fois plus loin que cela.`,
+    earth: 'la Terre',
+    earthSub: 'à l’échelle du Soleil',
     taken: (day: string) => `l’heure de l’image, le ${first(day)}`,
     light: 'le temps que met sa lumière pour arriver jusqu’ici',
     corona: 'la température de la couronne, le gaz que vous voyez',
-    text: 'Le Solar Dynamics Observatory observe le Soleil sans interruption depuis une orbite géosynchrone, avec une image toutes les quelques secondes. À 171 ångströms, on voit la couronne et ses boucles magnétiques. Le vent solaire qui part d’ici allume les aurores quelques jours plus tard.',
-    source: 'NASA/SDO et les équipes scientifiques d’AIA, EVE et HMI',
+    text: 'La face tournée vers la Terre est l’image en lumière visible de l’instrument HMI de SDO, prise ce matin : les taches sombres sont des champs magnétiques qui freinent la chaleur. Le reste de la sphère est dessiné : la granulation, l’assombrissement vers le bord, la couronne. Le vent solaire qui part d’ici allume les aurores quelques jours plus tard.',
+    source: 'NASA/SDO, HMI (lumière visible) · équipes scientifiques d’AIA, EVE et HMI',
   },
   aurora: {
     title: 'L’aurore', kicker: 'Prévision pour la prochaine demi-heure',
@@ -851,12 +859,13 @@ const fr: Dict = {
     source: (day: string) => `CelesTrak · éléments orbitaux des satellites actifs · ${first(day)}`,
   },
   partenze: {
-    title: 'Au départ', kicker: 'Les prochains lancements',
-    narrate: (p: { year: number; count: string | null; name: string; day: string; place: string }) => `${p.count ? `En ${p.year}, ${p.count} fusées sont déjà parties. ` : ''}Chaque point est un pas de tir d’où une autre partira dans les prochaines semaines. La prochaine : ${p.name}, le ${first(p.day)}, depuis ${p.place}.`,
+    title: 'Au départ', kicker: 'Hier, et en un an',
+    narrate: (p: { count: number; yesterday: boolean; year: string }) => `${p.yesterday ? (p.count === 1 ? 'Hier, une fusée est partie' : `Depuis hier, ${p.count} fusées sont parties`) : 'Voici les derniers lancements'} : leurs montées, chacune avec sa destination. Puis toute l’année écoulée, ${p.year} ${plural(p.year, 'lancement')}, chaque éclair sur son pas de tir, dans l’ordre où ils sont partis.`,
+    yearCount: 'lancements ces douze derniers mois',
     done: (year: number) => `lancements en ${year}, jusqu’ici`,
     next: 'lancements prévus dans les 45 prochains jours',
     first: (day: string) => `le prochain, le ${first(day)}`,
-    text: 'Dates et pas de tir tirés du calendrier ouvert de The Space Devs : les dates de lancement changent souvent, même à la dernière minute. Touchez un pas de tir pour lire son prochain lancement.',
+    text: 'Les montées sont dessinées : le pas de tir et la destination sont vrais ; la direction suit le type d’orbite (vers l’est pour les orbites basses et géostationnaires, vers le sud pour les orbites polaires) et la courbe est indicative. Dates, pas de tir et destinations tirés du calendrier ouvert de The Space Devs.',
     source: (day: string) => `Launch Library 2 · The Space Devs · mis à jour le ${first(day)}`,
   },
   bolidi: {
@@ -870,7 +879,10 @@ const fr: Dict = {
   },
   passaggi: {
     title: 'De passage', kicker: 'Astéroïdes dans les 60 prochains jours',
-    narrate: (p: { name: string; day: string; km: string; ld: string }) => `Le ${first(p.day)}, l’astéroïde ${p.name} passera à environ ${p.km} kilomètres de nous : ${p.ld} fois la distance de la Lune. Il ne nous frappera pas : son orbite est calculée à partir de centaines d’observations.`,
+    narrate: (p: { name: string; day: string; km: string; ld: string }) => `Le ${first(p.day)}, l’astéroïde ${p.name} passera à environ ${p.km} kilomètres de nous : ${p.ld} fois la distance de la Lune. La ligne orange est son vrai trajet, six jours en quelques secondes ; la ligne claire est l’orbite de la Lune ; le petit point au centre est la Terre. Il ne nous frappera pas.`,
+    moon: 'la Lune',
+    moonSub: 'là où elle se trouve maintenant',
+    closest: (day: string, km: string) => `le point le plus proche, ${first(day)} · ${km} km`,
     count: 'passages à moins de 20 distances lunaires dans les 60 prochains jours',
     speed: (name: string) => `la vitesse de ${name} par rapport à la Terre`,
     distance: 'distances lunaires, le passage le plus proche',
@@ -883,6 +895,7 @@ const fr: Dict = {
     v1: 'de la Terre à Voyager 1, aujourd’hui',
     v2: 'de la Terre à Voyager 2',
     launched: 'l’année du départ',
+    there: (au: string) => `${au} UA de nous, dans cette direction`,
     text: 'Distances depuis la Terre calculées avec les éphémérides JPL Horizons ; une unité astronomique (UA) est la distance Terre–Soleil, 150 millions de km. L’héliopause est la frontière au-delà de laquelle le vent du Soleil cède la place au gaz entre les étoiles : Voyager 1 l’a franchie en 2012, Voyager 2 en 2018.',
     source: 'NASA/JPL Horizons',
   },

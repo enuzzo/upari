@@ -338,6 +338,12 @@ const es: Dict = {
     voyager: (day: string) => `el ${day} la Voyager 1 está a un día luz de nosotros`,
   },
 
+  orbits: {
+    LEO: 'órbita baja', SSO: 'órbita heliosíncrona', PO: 'órbita polar', MEO: 'órbita media', GTO: 'hacia la órbita geoestacionaria',
+    GEO: 'órbita geoestacionaria', 'Direct-GEO': 'órbita geoestacionaria', GSTO: 'hacia la órbita geosíncrona', Sub: 'vuelo suborbital',
+    Elliptical: 'órbita elíptica', Mars: 'hacia Marte', 'Lunar flyby': 'hacia la Luna', TLI: 'hacia la Luna', L2: 'hacia el punto L2',
+  } as Record<string, string>,
+
   charts: {
     temperature: (day: string, anomaly: string) => `Temperatura media del aire en todo el planeta, día a día: cada línea es un año. El ${day}: ${anomaly} °C respecto a 1991–2020.`,
     co2: (day: string) => `Dióxido de carbono en el aire de Mauna Loa (Hawái), media mensual desde 1958. Última medición: ${day}.`,
@@ -768,13 +774,15 @@ const es: Dict = {
   // ——— El cielo, ahora ———
 
   sole: {
-    title: 'El Sol', kicker: 'Esta mañana, en ultravioleta',
-    narrate: (time: string) => `Este es el Sol de hoy, fotografiado a las ${time} UTC por el satélite SDO, con la luz del hierro a un millón de grados. Los arcos brillantes son campos magnéticos; las zonas oscuras son agujeros por donde el viento solar escapa hacia nosotros.`,
+    title: 'El Sol', kicker: 'A escala con la Tierra',
+    narrate: (time: string) => `Este es el Sol: ciento nueve Tierras en fila de un borde al otro. Ese puntito a su lado es nuestro planeta. La cara que nos mira es la de hoy, fotografiada por el satélite SDO a las ${time} UTC, con sus manchas reales. A escala en tamaño, no en distancia: en realidad está ochenta veces más lejos que esto.`,
+    earth: 'la Tierra',
+    earthSub: 'a escala con el Sol',
     taken: (day: string) => `la hora de la imagen, el ${day}`,
     light: 'el tiempo que tarda su luz en llegar hasta aquí',
     corona: 'la temperatura de la corona, el gas que ves',
-    text: 'El Solar Dynamics Observatory observa el Sol sin interrupción desde una órbita geosíncrona, con una imagen cada pocos segundos. A 171 ångström se ven la corona y sus bucles magnéticos. El viento solar que sale de aquí enciende las auroras días después.',
-    source: 'NASA/SDO y los equipos científicos de AIA, EVE y HMI',
+    text: 'La cara vuelta hacia la Tierra es la imagen en luz visible del instrumento HMI de SDO, de esta mañana: las manchas oscuras son campos magnéticos que frenan el calor. El resto de la esfera está dibujado: la granulación, el oscurecimiento hacia el borde, la corona. El viento solar que sale de aquí enciende las auroras días después.',
+    source: 'NASA/SDO, HMI (luz visible) · equipos científicos de AIA, EVE y HMI',
   },
   aurora: {
     title: 'La aurora', kicker: 'Previsión para la próxima media hora',
@@ -799,12 +807,13 @@ const es: Dict = {
     source: (day: string) => `CelesTrak · elementos orbitales de los satélites activos · ${day}`,
   },
   partenze: {
-    title: 'Despegues', kicker: 'Los próximos lanzamientos',
-    narrate: (p: { year: number; count: string | null; name: string; day: string; place: string }) => `${p.count ? `En ${p.year} ya han despegado ${p.count} cohetes. ` : ''}Cada punto es una plataforma desde la que despegará otro en las próximas semanas. El próximo: ${p.name}, el ${p.day}, desde ${p.place}.`,
+    title: 'Despegues', kicker: 'Ayer, y en un año',
+    narrate: (p: { count: number; yesterday: boolean; year: string }) => `${p.yesterday ? (p.count === 1 ? 'Ayer despegó un cohete' : `Entre ayer y hoy han despegado ${p.count} cohetes`) : 'Estos son los últimos lanzamientos'}: sus ascensos, cada uno con su destino. Luego todo el último año, ${p.year} lanzamientos, cada destello en su plataforma, en el orden en que despegaron.`,
+    yearCount: 'lanzamientos en los últimos doce meses',
     done: (year: number) => `lanzamientos en ${year}, hasta ahora`,
     next: 'lanzamientos previstos en los próximos 45 días',
     first: (day: string) => `el próximo, el ${day}`,
-    text: 'Fechas y plataformas del calendario abierto de The Space Devs: las fechas de lanzamiento cambian a menudo, incluso en el último minuto. Toca una plataforma para leer su próximo lanzamiento.',
+    text: 'Los ascensos están dibujados: la plataforma y el destino son reales; la dirección sigue el tipo de órbita (hacia el este para las órbitas bajas y geoestacionarias, hacia el sur para las polares) y la curva es aproximada. Fechas, plataformas y destinos del calendario abierto de The Space Devs.',
     source: (day: string) => `Launch Library 2 · The Space Devs · actualizado el ${day}`,
   },
   bolidi: {
@@ -818,7 +827,10 @@ const es: Dict = {
   },
   passaggi: {
     title: 'De paso', kicker: 'Asteroides en los próximos 60 días',
-    narrate: (p: { name: string; day: string; km: string; ld: string }) => `El ${p.day}, el asteroide ${p.name} pasará a unos ${p.km} kilómetros de nosotros: ${p.ld} veces la distancia de la Luna. No nos golpeará: su órbita está calculada a partir de cientos de observaciones.`,
+    narrate: (p: { name: string; day: string; km: string; ld: string }) => `El ${p.day}, el asteroide ${p.name} pasará a unos ${p.km} kilómetros de nosotros: ${p.ld} veces la distancia de la Luna. La línea naranja es su trayectoria real, seis días en pocos segundos; la clara es la órbita de la Luna; el puntito del centro es la Tierra. No nos golpeará.`,
+    moon: 'la Luna',
+    moonSub: 'dónde está ahora',
+    closest: (day: string, km: string) => `el punto más cercano, ${day} · ${km} km`,
     count: 'pasos a menos de 20 distancias lunares en los próximos 60 días',
     speed: (name: string) => `la velocidad de ${name} respecto a la Tierra`,
     distance: 'distancias lunares, el paso más cercano',
@@ -831,6 +843,7 @@ const es: Dict = {
     v1: 'de la Tierra a la Voyager 1, hoy',
     v2: 'de la Tierra a la Voyager 2',
     launched: 'el año en que partieron',
+    there: (au: string) => `${au} UA de nosotros, en esta dirección`,
     text: 'Distancias desde la Tierra calculadas con las efemérides JPL Horizons; una unidad astronómica (UA) es la distancia Tierra–Sol, 150 millones de km. La heliopausa es el límite más allá del cual el viento del Sol deja paso al gas entre las estrellas: la Voyager 1 lo cruzó en 2012 y la Voyager 2 en 2018.',
     source: 'NASA/JPL Horizons',
   },

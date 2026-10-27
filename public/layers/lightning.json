@@ -1,0 +1,15 @@
+{
+ "id": "lightning",
+ "width": 2048,
+ "height": 1024,
+ "coverage": 0.63339,
+ "unit": "flashes/km²/yr",
+ "scale": "log",
+ "min": 0,
+ "max": 150,
+ "dates": [
+  "1995-2014"
+ ],
+ "source": "NASA GHRC · LIS/OTD lightning climatology · NASA GIBS",
+ "layer": "LIS_High_Resolution_Full_Climatology_Combined_Flash_Rate_Climatology"
+}

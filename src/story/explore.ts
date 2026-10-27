@@ -21,7 +21,7 @@ interface Layer { id: LayerId; look: () => Partial<Look>; legend?: Legend; peopl
 type NoteId = keyof typeof t.notes;
 const SEA = { sun: 'studio' as const, clouds: 0, night: 0, atmo: 0.8 };
 /** The kind of data of the layers with their own note. */
-const OWN_KIND: Record<NoteId, keyof typeof t.kinds> = { livello: 'observed', onde: 'model', vulcani: 'inventory' };
+const OWN_KIND: Record<NoteId, keyof typeof t.kinds> = { livello: 'observed', onde: 'model', vulcani: 'inventory', nevegiorno: 'observed' };
 
 const chapterLook = (id: string) => () => ({ ...CHAPTERS.find((c) => c.id === id)!.look });
 const chapterLegend = (id: string) => CHAPTERS.find((c) => c.id === id)?.legend;
@@ -38,6 +38,7 @@ const PLANET: Layer[] = [
   { id: 'adesso', look: chapterLook('pianeta') },
   { id: 'venti', look: chapterLook('respiro'), legend: chapterLegend('respiro') },
   { id: 'tempeste', look: () => ({ ...chapterLook('tempeste')(), spotReplay: 0 }), legend: chapterLegend('tempeste') },
+  { id: 'fulmini', look: chapterLook('fulmini'), legend: chapterLegend('fulmini') },
   { id: 'correnti', look: chapterLook('correnti'), legend: chapterLegend('correnti') },
   { id: 'mare', look: chapterLook('calore'), legend: chapterLegend('calore') },
   { id: 'livello', look: () => ({ ...SEA, data: 'sealevel', dim: 0.55, desat: 0.7 }), legend: legend(PALETTES.sealevel, 'sealevel') },
@@ -90,6 +91,7 @@ const NATURE_LAYERS: Layer[] = [
   natureLayer('mangrovie'),
   natureLayer('integrita'),
   natureLayer('neve'),
+  { id: 'nevegiorno', look: () => ({ sun: 'real' as const, clouds: 0, night: 0.6, atmo: 0.8, desat: 0.4, data: 'ims' }) },
   natureLayer('smog'),
   natureLayer('ozono'),
   natureLayer('petrolio', 'petrolio', { spotReplay: 0 }),
@@ -109,7 +111,7 @@ const FROM_CHAPTER: Record<string, string> = {
   pianeta: 'adesso', respiro: 'venti', correnti: 'correnti', calore: 'mare', febbre: 'anomalia', fioritura: 'plancton', pioggia: 'pioggia',
   fuoco: 'fuochi', terremoti: 'terremoti', ghiaccio: 'ghiaccio', luci: 'luci', lassu: 'stazione', popolazione: 'popolazione', nascite: 'nascite', vita: 'vita',
   bambini: 'bambini', saldo: 'saldo', luce: 'elettricita', fuga: 'asilo', verde: 'verde', foreste: 'foreste', mangrovie: 'mangrovie', integrita: 'integrita', aria: 'aria', coralli: 'coralli',
-  citta: 'citta', rotte: 'rotte', impronta: 'co2', esilio: 'rifugiati', rotte_asilo: 'asilomondo', accendersi: 'nottiluci', dighe: 'dighe', tempeste: 'tempeste', neve: 'neve', smog: 'smog', ozono: 'ozono', petrolio: 'petrolio', aurora: 'aurora', satelliti: 'satelliti', partenze: 'partenze', bolidi: 'bolidi',
+  citta: 'citta', rotte: 'rotte', impronta: 'co2', esilio: 'rifugiati', rotte_asilo: 'asilomondo', accendersi: 'nottiluci', dighe: 'dighe', tempeste: 'tempeste', fulmini: 'fulmini', neve: 'neve', smog: 'smog', ozono: 'ozono', petrolio: 'petrolio', aurora: 'aurora', satelliti: 'satelliti', partenze: 'partenze', bolidi: 'bolidi',
 };
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;

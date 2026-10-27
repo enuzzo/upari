@@ -1,0 +1,14 @@
+{
+ "id": "ims",
+ "width": 3600,
+ "height": 1800,
+ "coverage": 0.5,
+ "unit": "",
+ "scale": "classes",
+ "min": 0,
+ "max": 1,
+ "dates": [
+  "2026-10-26"
+ ],
+ "source": "NOAA/NESDIS IMS 4 km, via NOAA@NSIDC G02156"
+}

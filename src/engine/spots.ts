@@ -2,14 +2,14 @@ import { BufferAttribute, BufferGeometry, CustomBlending, MaxEquation, OneFactor
 import { lonLatToVec } from './astro';
 import { hexToLinear } from './palettes';
 import { t } from '../i18n';
-import { dayShort, num } from '../i18n/format';
+import { dayShort, num, timeUtc } from '../i18n/format';
 import { fresh } from './fresh';
 
 // Things that happen in places: cyclones and their tracks, erupting volcanoes, icebergs,
 // oil slicks, launch pads and fireballs. Each set is a cloud of glowing dots on the globe,
 // revealed in the order of their time when the story replays them; the cursor reads them.
 
-export type SpotId = 'cyclones' | 'volcanoes' | 'icebergs' | 'slicks' | 'launches' | 'launchyear' | 'fireballs' | 'dams';
+export type SpotId = 'cyclones' | 'volcanoes' | 'icebergs' | 'slicks' | 'launches' | 'launchyear' | 'fireballs' | 'dams' | 'glm';
 
 export interface Spot {
   lon: number;
@@ -21,6 +21,8 @@ export interface Spot {
   order: number;
   /** Pulses with a ring: the current or the most important ones. */
   pulse?: boolean;
+  /** Flash and fade (lightning): bright when it appears, then only a faint mark. */
+  fade?: boolean;
   /** What the cursor reads. */
   text: () => string;
   sub: () => string;
@@ -96,6 +98,14 @@ const BUILD: Record<SpotId, (d: any) => Spot[]> = {
       };
     });
   },
+  glm(d) {
+    // The last half hour of lightning over the Americas, flash after flash.
+    const span = Math.max(1, d.list.at(-1)?.[2] ?? 1800);
+    return d.list.map(([lon, lat, s]: [number, number, number]) => ({
+      lon, lat, size: 7, color: '#e8fbff', order: s / span, fade: true,
+      text: () => t.spots.flash, sub: () => t.spots.flashSub(timeUtc(new Date(Date.parse(d.from) + s * 1000).toISOString())),
+    }));
+  },
   launchyear(d) {
     // Every launch of the last twelve months, flashing on its pad in the order they flew.
     const list = d.past as { lat: number; lon: number; name: string; net: string; place: string; pad: string }[];
@@ -117,7 +127,7 @@ const BUILD: Record<SpotId, (d: any) => Spot[]> = {
 const FILES: Record<SpotId, string> = {
   cyclones: 'layers/cyclones.json', volcanoes: 'layers/volcanoes.json', icebergs: 'layers/icebergs.json',
   slicks: 'layers/slicks.json', launches: 'sky/launches.json', launchyear: 'sky/launches.json', fireballs: 'sky/fireballs.json',
-  dams: 'statistics/dams.json',
+  dams: 'statistics/dams.json', glm: 'layers/glm.json',
 };
 
 function createSet(id: SpotId, spots: Spot[], data: any): SpotSet {
@@ -128,7 +138,7 @@ function createSet(id: SpotId, spots: Spot[], data: any): SpotSet {
     lonLatToVec(s.lon, s.lat, 1.001, v);
     pos.set([v.x, v.y, v.z], i * 3);
     col.set(hexToLinear(s.color), i * 3);
-    attr.set([s.size, s.order, s.pulse ? 1 : 0, Math.random()], i * 4);
+    attr.set([s.size, s.order, s.fade ? 2 : s.pulse ? 1 : 0, Math.random()], i * 4);
   });
   const geo = new BufferGeometry();
   geo.setAttribute('position', new BufferAttribute(pos, 3));
@@ -138,7 +148,7 @@ function createSet(id: SpotId, spots: Spot[], data: any): SpotSet {
     uniforms: { uClock: { value: 1 }, uTime: { value: 0 }, uOpacity: { value: 0 }, uPixelRatio: { value: Math.min(devicePixelRatio, 2) } },
     vertexShader: /* glsl */ `
       attribute vec3 tint;
-      attribute vec4 spot; // size px, order 0..1, pulse, random
+      attribute vec4 spot; // size px, order 0..1, pulse (1) or flash-and-fade (2), random
       uniform float uClock, uTime, uPixelRatio;
       varying vec3 vColor;
       varying float vAlpha, vPulse, vRing, vFresh;
@@ -147,7 +157,9 @@ function createSet(id: SpotId, spots: Spot[], data: any): SpotSet {
         vec3 toCam = normalize(cameraPosition - position);
         vAlpha = step(0.0, since) * smoothstep(0.0, 0.2, dot(normalize(position), toCam));
         vFresh = since >= 0.0 && uClock < 0.999 ? exp(-since * 40.0) : 0.0;
-        vPulse = spot.z;
+        // A flash: gone again in about half a second of the replay, a faint mark left behind.
+        if (spot.z > 1.5) vAlpha *= 0.1 + 0.9 * exp(-max(since, 0.0) * 36.0);
+        vPulse = spot.z > 1.5 ? 0.0 : spot.z;
         vRing = fract(uTime * 0.4 + spot.w);
         vColor = tint;
         vec4 mv = modelViewMatrix * vec4(position, 1.0);

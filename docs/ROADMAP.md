@@ -157,7 +157,7 @@ richieda un account o una chiave che l’utente non ha dato.
   (scaricato ogni giorno in `public/climate/seaice.json`, non ancora mostrato).
 - [x] Ozono OMPS. [x] NO₂ TROPOMI. [x] SO₂ TROPOMI (in Esplora, con i vulcani).
   [ ] OMPS Aerosol Index (c’è già MERRA-2).
-- [x] Neve VIIRS NDSI mensile. [ ] IMS senza nuvole (solo emisfero nord).
+- [x] Neve VIIRS NDSI mensile. [x] IMS senza nuvole (solo emisfero nord): strato «Neve e ghiaccio, ieri».
 - [x] Cicloni IBTrACS ACTIVE. [ ] Coni di previsione NHC.
 - [x] Rotte delle navi (World Bank/IMF). [x] Aurora e Kp.
 
@@ -171,7 +171,7 @@ richieda un account o una chiave che l’utente non ha dato.
   mare intorno. [ ] La parte con l’anno di nascita.
 - [x] Modalità `?kiosk` (i quattro racconti in ciclo, cursore nascosto) e `?embed` (cornice
   quieta con il link al sito).
-- [ ] Mare che si acidifica (OceanSODA: licenza dei file da confermare). Zone morte WRI: il
+- [ ] Mare che si acidifica (OceanSODA-ETHZ su NCEI: accesso pubblico con citazione, ma nessuna licenza esplicita; serve un sì scritto degli autori, decisione dell’utente). Zone morte WRI: il
   dataset non è più online.
 - [x] Integrità della biodiversità (Impact Observatory e Vizzuality via Planetary Computer,
   CC BY 4.0, 2017 e 2020 a 0,05°): capitolo «Quanta natura resta». [x] Mangrovie 1996–2020
@@ -199,7 +199,9 @@ richieda un account o una chiave che l’utente non ha dato.
 - [ ] HYDE 3.5 (licenza da confermare, protezione anti-bot). [x] Luci notturne 1992–2024 (Li, Zhou et al., CC BY 4.0): capitolo «Il mondo si accende».
 - [ ] Conflitti UCDP: scelta editoriale dell’utente.
 - [ ] Plastica come storia lenta (solo modelli o campioni, licenze da verificare).
-- [ ] Ondate di calore marine, fulmini GLM, CO₂ ODIAC: sforzo grande.
+- [x] Fulmini: capitolo «I fulmini», l’ultima mezz’ora dei due GOES (GLM) sopra la mappa di vent’anni LIS/OTD.
+- [ ] Ondate di calore marine, CO₂ ODIAC: sforzo grande.
+- [ ] GDACS (traiettorie previste dei cicloni in ogni bacino): i termini d’uso non parlano di riuso; escluso finché non è chiaro.
 
 ### Esclusi
 ACLED, OpenSky, TeleGeography, Ookla, WHO GHO, NHM BII (NC-SA, sostituito da quello CC BY),

@@ -5,7 +5,7 @@ import { num } from '../i18n/format';
 import { fresh } from './fresh';
 
 export type DataId = 'chlorophyll' | 'sst' | 'anomaly' | 'rain' | 'ice' | 'ndvi' | 'aerosol' | 'coral' | 'forest'
-  | 'ozone' | 'no2' | 'snow' | 'so2' | 'aurora' | 'ships' | 'built' | 'sealevel' | 'waves' | 'mangroves' | 'bii' | 'nightlights';
+  | 'ozone' | 'no2' | 'snow' | 'so2' | 'aurora' | 'ships' | 'built' | 'sealevel' | 'waves' | 'mangroves' | 'bii' | 'nightlights' | 'ims' | 'lightning';
 
 export interface LayerMeta {
   id: string;
@@ -87,6 +87,16 @@ export const DATA: Record<DataId, DataDef> = {
   snow: {
     palette: PALETTES.snow, style: [0.95, 0.04, 2, 0], fps: 0.9, hold: 2.5,
     decode: lin, format: (x) => (x < 5 ? t.data.noSnow : t.data.snow(num(x))),
+  },
+  lightning: {
+    // log10(1 + flashes per km² per year) over log10(151).
+    palette: PALETTES.lightning, style: [0.0, 0.45, 0, 0],
+    decode: (v) => Math.pow(151, v) - 1, format: (x) => t.data.lightning(num(x, x < 10 ? 1 : 0)),
+  },
+  ims: {
+    // Classes, not amounts: 0 open land or sea, 0.5 sea ice, 1 snow.
+    palette: PALETTES.ims, style: [0.6, 0.15, 0, 0],
+    decode: lin, format: (x) => (x > 0.75 ? t.data.imsSnow : x > 0.25 ? t.data.imsIce : t.data.imsNone),
   },
   so2: {
     palette: PALETTES.so2, style: [0.1, 1.0, 0, 1],

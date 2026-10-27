@@ -10,6 +10,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync, existsSync, readFileSync, copyFileSync, rmSync, readdirSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { gunzipSync } from 'node:zlib';
 
 const OUT = new URL('../public/layers/', import.meta.url).pathname;
 const TMP = join(process.env.UPARI_TMP || tmpdir(), 'upari-layers');
@@ -680,6 +681,53 @@ const layers = {
       return null;
     }, { unit: 'm', scale: 'linear', min: LO, max: HI, source: 'NOAA CoastWatch · blended sea level anomaly · ERDDAP', layer: 'noaacwBLENDEDsshDaily' },
     { W, H, minFrames: 10, cadence: 'day' });
+  },
+  async lightning() {
+    // Where lightning strikes: flashes per km² per year seen from space by the LIS and OTD
+    // sensors (1995-2014, NASA GHRC), via GIBS. A climatology: run by hand once, not daily.
+    const W = 2048, H = 1024, layer = 'LIS_High_Resolution_Full_Climatology_Combined_Flash_Rate_Climatology';
+    const cmap = await colormap(layer);
+    const file = await wmsChecked(layer, '1995-05-04', WORLD, W, H, 'lightning.png');
+    // Logarithmic: 0.1 to about 150 flashes per km² per year.
+    const { val, w } = composite([rgba(file)], cmap, (v) => Math.log10(1 + v) / Math.log10(151), W, H);
+    writeLayer('lightning', val, w, W, H, { unit: 'flashes/km²/yr', scale: 'log', min: 0, max: 150, dates: ['1995-2014'], source: 'NASA GHRC · LIS/OTD lightning climatology · NASA GIBS', layer });
+  },
+  async ims() {
+    // Snow and sea ice of the northern hemisphere, yesterday, without clouds: NOAA's IMS map,
+    // drawn by analysts from every satellite and station (4 km, polar stereographic; NOAA@NSIDC
+    // G02156). Classes: 1 sea, 2 land, 3 sea ice, 4 snow. Reprojected here to 0.1° (Snyder's
+    // polar stereographic on the file's ellipsoid, lat_ts 60°N, lon_0 80°W).
+    let gz = null, day = null;
+    for (const d of daysBack(6, new Date(Date.now() - 86400e3))) {
+      const doy = Math.round((Date.parse(d) - Date.UTC(Number(d.slice(0, 4)), 0, 1)) / 86400e3) + 1;
+      const url = `https://noaadata.apps.nsidc.org/NOAA/G02156/GIS/4km/${d.slice(0, 4)}/ims${d.slice(0, 4)}${String(doy).padStart(3, '0')}_4km_GIS_v1.3.tif.gz`;
+      gz = await fetchBuffer(url).catch(() => null);
+      if (gz && gz.length > 100_000) { day = d; break; }
+    }
+    if (!day) throw new Error('ims: no file in the last six days');
+    mkdirSync(TMP, { recursive: true });
+    const tif = join(TMP, 'ims.tif');
+    writeFileSync(tif, gunzipSync(gz));
+    const N = 6144, src = magick([tif, '-depth', '8', 'gray:-']);
+    rmSync(tif, { force: true });
+    if (src.length !== N * N) throw new Error(`ims: unexpected size ${src.length}`);
+    const a = 6378137, f = 1 / 291.505347349177, e = Math.sqrt(2 * f - f * f), DEG = Math.PI / 180;
+    const tOf = (phi) => Math.tan(Math.PI / 4 - phi / 2) / Math.pow((1 - e * Math.sin(phi)) / (1 + e * Math.sin(phi)), e / 2);
+    const pc = 60 * DEG, mc = Math.cos(pc) / Math.sqrt(1 - e * e * Math.sin(pc) ** 2), tc = tOf(pc);
+    const W = 3600, H = 1800, val = new Float32Array(W * H), conf = new Float32Array(W * H);
+    for (let y = 0; y < H / 2; y++) {
+      const phi = (90 - (y + 0.5) * 0.1) * DEG, rho = (a * mc * tOf(phi)) / tc;
+      for (let x = 0; x < W; x++) {
+        const lam = (-180 + (x + 0.5) * 0.1 + 80) * DEG;
+        const col = Math.floor((rho * Math.sin(lam) + 12288000) / 4000), row = Math.floor((12288000 + rho * Math.cos(lam)) / 4000);
+        if (col < 0 || row < 0 || col >= N || row >= N) continue;
+        const c = src[row * N + col];
+        if (!c) continue;
+        conf[y * W + x] = 1;
+        val[y * W + x] = c === 4 ? 1 : c === 3 ? 0.5 : 0;
+      }
+    }
+    writeLayer('ims', val, conf, W, H, { unit: '', scale: 'classes', min: 0, max: 1, dates: [day], source: 'NOAA/NESDIS IMS 4 km, via NOAA@NSIDC G02156' }, 0.5);
   },
   async waves() {
     // The waves of the last day, hour by hour: significant wave height from the WaveWatch III

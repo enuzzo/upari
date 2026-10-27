@@ -97,6 +97,7 @@ function when(iso: string | undefined): { text: string; today: boolean } {
 /** The NASA anomaly colormap stops at ±3 °C. */
 const anomalyText = (v: number) => (v >= 2.95 ? t.febbre.over3 : `+${num(v, 1)}`);
 const facts = (list: [string, string][]) => list.map(([value, label]) => ({ value, label }));
+const timeUtcOf = (iso: string) => `${timeUtc(iso)} UTC`;
 /** +0,95 / −0,12 */
 export const signed = (v: number, d = 1) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${num(Math.abs(v), d)}`;
 
@@ -238,6 +239,37 @@ export const CHAPTERS: Chapter[] = titled([
       const p = s.top?.track.at(-1);
       return [{ shot: p ? { lon: p[2] - 10, lat: p[1] * 0.8, dist: 2.6 } : { lon: 140, lat: 15, dist: 3.2 }, drift: 0.8 }];
     },
+  },
+  {
+    id: 'fulmini',
+    kind: 'observed',
+    mood: 'curious', sound: 'wind',
+    // Where lightning strikes in a year, and the last half hour of it over the Americas.
+    look: { sun: 'studio', clouds: 0.25, night: 0, dim: 0.78, desat: 0.85, atmo: 0.7, data: 'lightning', spots: 'glm', spotReplay: 16, bloom: 1.4 },
+    duration: 26,
+    legend: legend(PALETTES.lightning, 'lightning'),
+    narrate: async () => {
+      const g = (await loadSpots('glm')).data as { count: number; from: string; to: string };
+      return t.fulmini.narrate({ count: num(g.count), day: dayMonth(g.from), from: timeUtcOf(g.from), to: timeUtcOf(g.to) });
+    },
+    detail: async () => {
+      const g = (await loadSpots('glm')).data as { count: number; from: string; to: string };
+      return {
+        facts: [
+          { value: num(g.count), label: t.fulmini.halfHour(dayMonth(g.from), timeUtcOf(g.from), timeUtcOf(g.to)) },
+          ...facts(t.fulmini.facts),
+        ],
+        text: t.fulmini.text,
+        source: t.fulmini.source,
+      };
+    },
+    beats: async () => [
+      // The Americas: the half hour of flashes, replayed.
+      { shot: { lon: -72, lat: 8, dist: 2.7 }, drift: 0.5, hold: 15 },
+      // Then the map of the years: Africa and the Congo basin, the stormiest land.
+      { shot: { lon: 22, lat: 2, dist: 2.8 }, seconds: 5, drift: 0.6 },
+    ],
+    badges: async () => [{ lon: -71.6, lat: 9.8, altKm: 0, title: t.fulmini.maracaibo, sub: t.fulmini.maracaiboSub }],
   },
   {
     id: 'correnti',

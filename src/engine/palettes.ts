@@ -186,6 +186,24 @@ export const PALETTES: Record<string, Stop[]> = {
     [0.7, '#fff0c9', 1],
     [1.0, '#ffffff', 1],
   ],
+  // Lightning per km² per year: violet where it is rare, electric white where it never stops.
+  lightning: [
+    [0.0, '#4a2fb8', 0.0],
+    [0.2, '#4a2fb8', 0.0],
+    [0.38, '#5a3ccc', 0.28],
+    [0.6, '#7c5ee6', 0.45],
+    [0.82, '#b7a2ff', 0.62],
+    [1.0, '#efe8ff', 0.8],
+  ],
+  // Snow and sea ice of the northern hemisphere (IMS): classes, ice a glacier blue, snow white.
+  ims: [
+    [0.0, '#ffffff', 0.0],
+    [0.3, '#ffffff', 0.0],
+    [0.38, '#9fd8ff', 0.85],
+    [0.62, '#9fd8ff', 0.85],
+    [0.7, '#ffffff', 0.95],
+    [1.0, '#ffffff', 0.95],
+  ],
   // Night lights (square root of the brightness): sodium orange, white at the core of cities.
   nightlights: [
     [0.0, '#ffb35c', 0.0],

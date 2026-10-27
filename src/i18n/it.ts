@@ -111,6 +111,8 @@ const it = {
       asilomondo: 'Asilo, tutte le rotte', dighe: 'Dighe del mondo',
       mangrovie: 'Mangrovie, 1996 – 2020', integrita: 'Natura rimasta (BII)',
       nottiluci: 'Luci della notte, 1992 – 2024',
+      nevegiorno: 'Neve e ghiaccio, ieri',
+      fulmini: 'Fulmini: l’ultima mezz’ora e gli anni',
       livello: 'Altezza del mare', onde: 'Onde, ultime 24 ore',
       migranti: 'Nati all’estero', co2: 'CO₂ per persona', rifugiati: 'Rifugiati per paese d’origine',
     },
@@ -146,6 +148,9 @@ const it = {
       ['Vulcani', 'Smithsonian Institution, Global Volcanism Program, Volcanoes of the World'],
       ['Iceberg', 'U.S. National Ice Center'],
       ['Neve', 'NASA VIIRS NOAA-20, copertura nevosa NDSI, via NASA GIBS'],
+      ['Fulmini, la mappa degli anni', 'NASA GHRC, climatologia LIS/OTD 1995–2014, via NASA GIBS'],
+      ['Fulmini, l’ultima mezz’ora', 'NOAA, GOES-R Geostationary Lightning Mapper (GOES-19 e GOES-18), NOAA Open Data Dissemination su AWS'],
+      ['Neve e ghiaccio di ieri', 'NOAA/NESDIS, Interactive Multisensor Snow and Ice Mapping System (IMS) 4 km, via NOAA@NSIDC'],
       ['Ozono', 'NASA/NOAA OMPS, via NASA GIBS'],
       ['Biossido di azoto e di zolfo', 'contiene dati Copernicus Sentinel-5P modificati (ESA), TROPOMI, via NASA GIBS'],
       ['Chiazze di petrolio', '<a href="https://cerulean.skytruth.org" target="_blank" rel="noopener">SkyTruth Cerulean</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>: le immagini di Upari che le mostrano sono condivise con la stessa licenza'],
@@ -275,6 +280,8 @@ const it = {
     shipsHigh: 'una delle grandi rotte',
     built: (v: string) => `terra costruita: ${v}%`,
     notBuilt: 'quasi nessun edificio',
+    lightning: (v: string) => `${v} fulmini per km² in un anno`,
+    imsSnow: 'neve', imsIce: 'ghiaccio marino', imsNone: 'senza neve né ghiaccio',
     nightlights: (v: string) => `luce di notte: ${v} su 63`,
     dark: 'buio',
     mangroves: (v: string) => `mangrovie: ${v}% del suolo`,
@@ -297,6 +304,8 @@ const it = {
     launch: (day: string, place: string) => `${day} · ${place}`,
     fireball: (kt: string) => `${kt} chilotoni`,
     fireballSub: (day: string, alt: string | null) => `${day}${alt ? ` · esploso a ${alt} km di quota` : ''}`,
+    flash: 'un fulmine',
+    flashSub: (time: string) => `${time} UTC, visto dal satellite GOES`,
     dam: (year: number) => `diga finita nel ${year}`,
     damUndated: 'diga, anno non noto',
     damSub: (cap: string, height: string | null) => `serbatoio di ${cap} milioni di m³${height ? ` · alta ${height} m` : ''}`,
@@ -334,6 +343,10 @@ const it = {
 
   /** How to read the layers of Esplora that have no chapter of their own. */
   notes: {
+    nevegiorno: {
+      text: 'La neve e il ghiaccio marino dell’emisfero nord di ieri, senza nuvole: la mappa che gli analisti della NOAA disegnano ogni giorno mettendo insieme tutti i satelliti e le stazioni a terra, a 4 km. Bianco la neve, azzurro il ghiaccio sul mare. L’emisfero sud non è coperto.',
+      source: 'NOAA/NESDIS IMS 4 km · NOAA@NSIDC G02156',
+    },
     livello: {
       text: 'Di quanto la superficie del mare è più alta o più bassa della sua media 1993–2012, misurato dai satelliti altimetrici. Quasi tutto il mare oggi è sopra quella media: dal 1993 il livello medio è salito di circa dieci centimetri. I vortici caldi sporgono di qualche decina di centimetri; El Niño solleva il Pacifico orientale. Un fotogramma al mese, poi l’ultimo giorno.',
       source: 'NOAA CoastWatch · altimetria multi-satellite (AVISO+, Copernicus Sentinel) · 0,25°',
@@ -459,6 +472,7 @@ const it = {
     asylum: { title: 'domande di asilo, per paese d’origine', left: 'Siria · Ucraina', right: 'Afghanistan' },
     ndvi: { title: 'quanto è verde la terra (NDVI)', left: 'suolo nudo', right: 'foresta fitta' },
     forest: { title: 'alberi perduti, per anno', left: 'anni fa', right: 'quest’anno' },
+    lightning: { title: 'fulmini per km² in un anno', left: 'rari', right: 'continui' },
     nightlights: { title: 'luce di notte, dai satelliti', left: 'paesi', right: 'metropoli' },
     mangroves: { title: 'mangrovie in ogni cella di 5 km', left: 'frange', right: 'foresta fitta' },
     bii: { title: 'natura rimasta, stima', left: 'poca', right: 'intatta' },
@@ -519,6 +533,19 @@ const it = {
     threshold: 'la soglia oltre la quale una tempesta tropicale diventa uragano o tifone',
     text: 'Ogni punto è una posizione del ciclone, ogni tre o sei ore, colorata dal vento massimo sostenuto: dal ciano delle tempeste al magenta dei più violenti. Il punto che pulsa è l’ultima posizione nota, con circa due giorni di ritardo.',
     source: (day: string) => `NOAA NCEI · IBTrACS v04r01 · aggiornato al ${day}`,
+  },
+  fulmini: {
+    title: 'I fulmini', kicker: 'L’ultima mezz’ora e vent’anni',
+    narrate: (p: { count: string; day: string; from: string; to: string }) => `Il ${p.day}, fra le ${p.from} e le ${p.to}, i satelliti GOES hanno contato ${p.count} fulmini sulle Americhe e sugli oceani intorno: eccoli, uno dopo l’altro. Sotto, la mappa di vent’anni di fulmini visti dallo spazio: cadono soprattutto sulla terra calda dei tropici, sull’Africa centrale, sul lago di Maracaibo.`,
+    halfHour: (day: string, from: string, to: string) => `fulmini sulle Americhe il ${day}, fra le ${from} e le ${to}`,
+    facts: [
+      ['≈ 44', 'fulmini al secondo su tutta la Terra, in media'],
+      ['≈ 1,4 miliardi', 'fulmini in un anno'],
+    ] as [string, string][],
+    maracaibo: 'Lago di Maracaibo',
+    maracaiboSub: 'il posto con più fulmini della Terra',
+    text: 'La mappa sotto è la media di vent’anni (1995–2014) dei sensori LIS e OTD della NASA: fulmini per chilometro quadrato in un anno. I lampi sono quelli dell’ultima mezz’ora visti dai Geostationary Lightning Mapper dei due GOES, che guardano solo le Americhe, l’Atlantico e il Pacifico orientale: altrove non ci sono dati aperti in tempo reale. Quando sono troppi ne mostriamo una parte, presa a intervalli regolari.',
+    source: 'NOAA GOES-R GLM · NASA GHRC LIS/OTD via GIBS',
   },
   correnti: {
     title: 'Le correnti', kicker: 'Fiumi nel mare',

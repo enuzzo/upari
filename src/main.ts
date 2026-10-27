@@ -5,7 +5,6 @@ import { sunDirection, vecToLonLat } from './engine/astro';
 import { framing, initSearch, type Place } from './story/search';
 import { Sound, type Ambience, type Mood } from './engine/audio';
 import { Explorer } from './story/explore';
-import { enchant } from './intro';
 import { LANGS, NATIVE, detect, lang, onLang, setLang, t, type Lang } from './i18n';
 import { dayMonth, timeUtc } from './i18n/format';
 
@@ -39,7 +38,8 @@ soundBtn.addEventListener('click', () => { sound.start(); sound.toggle(); });
 function soundOf(): { ambience: Ambience | null; mood: Mood } {
   const c = explorer.isOpen ? explorer.chapter : director.chapter;
   if (c) return { ambience: c.sound ?? null, mood: c.mood ?? 'calm' };
-  return { ambience: 'sky', mood: 'calm' };
+  // The title and the first chapter only have the score: the wind belongs to Il respiro.
+  return { ambience: null, mood: 'calm' };
 }
 
 /** Opening shot: from the night side, the Sun about to rise over the limb. */
@@ -56,17 +56,21 @@ async function boot() {
   $('nature-btn').setAttribute('disabled', '');
   $('explore-btn').setAttribute('disabled', '');
   await globe.init((p) => (bar.style.width = `${Math.round(p * 100)}%`));
+  // The planet is already where it will stay: it does not slide in, it comes out of the dark,
+  // while the sharper textures arrive. Shaders are compiled first, behind the black.
   const shot = openingShot();
   Object.assign(globe.rig, { lon: shot.lon, lat: shot.lat, dist: shot.dist });
   globe.rig.drift = 1.1;
-  globe.rig.setFrameShift(0.16);
+  globe.rig.setFrameShift(0.16, true);
   globe.setLook({ sun: 'real', clouds: 1, night: 1, exposure: 0.95 });
+  await globe.warm();
+  globe.rise(6);
   globe.start();
   $('loader').classList.add('done');
-  requestAnimationFrame(() => {
-    $('veil').classList.add('clear', 'shown');
-    document.body.classList.add('ready');
-  });
+  $('veil').classList.add('clear');
+  document.body.classList.add('ready');
+  // The words follow the first light.
+  setTimeout(() => $('veil').classList.add('shown'), 900);
   setTimeout(() => {
     $('start-btn').removeAttribute('disabled');
     $('people-btn').removeAttribute('disabled');
@@ -247,7 +251,6 @@ function applyPage() {
   showClock();
 }
 applyPage();
-enchant($('intro'));
 onLang(() => {
   applyPage();
   director.relabel();

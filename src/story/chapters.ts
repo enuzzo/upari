@@ -105,9 +105,9 @@ function nightSide(g: Globe): Shot {
 export const CHAPTERS: Chapter[] = titled([
   {
     id: 'pianeta',
-    mood: 'calm', sound: 'sky',
+    mood: 'calm',
     look: { sun: 'real', clouds: 1, night: 1 },
-    duration: 22,
+    duration: 19,
     narrate: async () => t.pianeta.narrate,
     detail: async (g) => ({
       facts: [...facts(t.pianeta.facts), { value: timeLocal(g.now), label: t.pianeta.hour }],
@@ -120,7 +120,7 @@ export const CHAPTERS: Chapter[] = titled([
     id: 'respiro',
     mood: 'curious', sound: 'wind',
     look: { sun: 'studio', clouds: 0.12, cloudFlow: 1, dim: 0.62, desat: 0.5, night: 0, flow: 'wind', atmo: 0.8 },
-    duration: 24,
+    duration: 22,
     legend: legend([[0, '#3a5a9a'], [0.25, '#9cc7ff'], [0.5, '#ffffff'], [0.75, '#ffd37a'], [1, '#ff7a4a']], 'wind'),
     narrate: async (g) => {
       const w = await stats.windiest(g);
@@ -148,7 +148,7 @@ export const CHAPTERS: Chapter[] = titled([
     id: 'correnti',
     mood: 'curious', sound: 'ocean',
     look: { sun: 'studio', clouds: 0, dim: 0.62, desat: 0.5, night: 0, flow: 'currents', atmo: 0.75 },
-    duration: 24,
+    duration: 21,
     legend: legend([[0, '#1f5f7a'], [0.3, '#4ad1d1'], [0.6, '#b8fff0'], [1, '#ffffff']], 'currents'),
     narrate: async () => t.correnti.narrate,
     detail: async () => ({ facts: facts(t.correnti.facts), text: t.correnti.text, source: t.correnti.source }),
@@ -160,7 +160,7 @@ export const CHAPTERS: Chapter[] = titled([
     id: 'calore',
     mood: 'calm', sound: 'waves',
     look: { sun: 'studio', data: 'sst', clouds: 0.06, dim: 0.3, desat: 0.4, night: 0, atmo: 0.85 },
-    duration: 24, clock: 'data',
+    duration: 22, clock: 'data',
     legend: legend(PALETTES.sst, 'sst'),
     narrate: async (g) => {
       const h = await stats.hottestSea(g), day = when((await meta(g, 'sst')).dates?.[0]);
@@ -190,7 +190,7 @@ export const CHAPTERS: Chapter[] = titled([
     id: 'febbre',
     mood: 'grave', sound: 'waves',
     look: { sun: 'studio', data: 'anomaly', clouds: 0.06, dim: 0.55, desat: 0.75, night: 0, atmo: 0.85 },
-    duration: 24, clock: 'data',
+    duration: 22, clock: 'data',
     legend: legend(PALETTES.anomaly, 'anomaly'),
     narrate: async (g) => {
       const { share } = await stats.warmShare(g);
@@ -222,7 +222,7 @@ export const CHAPTERS: Chapter[] = titled([
     id: 'fioritura',
     mood: 'open', sound: 'reef',
     look: { sun: 'studio', data: 'chlorophyll', clouds: 0.04, dim: 0.66, desat: 0.5, night: 0, atmo: 0.8, bloom: 1.3 },
-    duration: 26, clock: 'data',
+    duration: 23, clock: 'data',
     legend: legend(PALETTES.chlorophyll, 'chlorophyll'),
     narrate: async () => t.fioritura.narrate,
     detail: async (g) => {
@@ -243,7 +243,7 @@ export const CHAPTERS: Chapter[] = titled([
     id: 'pioggia',
     mood: 'calm', sound: 'rain',
     look: { sun: 'studio', data: 'rain', clouds: 0.18, dim: 0.62, desat: 0.55, night: 0, atmo: 0.8, bloom: 0.8 },
-    duration: 24,
+    duration: 22,
     clock: 'data',
     legend: legend(PALETTES.rain, 'rain'),
     narrate: async () => t.pioggia.narrate,
@@ -266,7 +266,7 @@ export const CHAPTERS: Chapter[] = titled([
     id: 'fuoco',
     mood: 'grave', sound: 'fire',
     look: { sun: 'studio', clouds: 0, dim: 0.78, desat: 0.75, night: 0.35, fires: 1, atmo: 0.6, bloom: 1.4 },
-    duration: 22,
+    duration: 20,
     narrate: async () => {
       const f = await (await fetch('layers/fires.json')).json();
       const k = Math.round(f.detections / 1000);
@@ -327,7 +327,7 @@ export const CHAPTERS: Chapter[] = titled([
     id: 'ghiaccio',
     mood: 'curious', sound: 'ice',
     look: { sun: 'studio', data: 'ice', clouds: 0.08, dim: 0.5, desat: 0.5, night: 0, atmo: 0.9 },
-    duration: 24, clock: 'data',
+    duration: 22, clock: 'data',
     legend: legend(PALETTES.ice, 'ice'),
     narrate: async (g) => {
       const { north } = await stats.arcticIce(g), day = when((await meta(g, 'ice')).dates?.[0]);
@@ -351,7 +351,7 @@ export const CHAPTERS: Chapter[] = titled([
     id: 'luci',
     mood: 'open', sound: 'night',
     look: { sun: 'real', clouds: 0.45, night: 0.85, atmo: 1, bloom: 0.9 },
-    duration: 22,
+    duration: 19,
     narrate: async () => t.luci.narrate,
     detail: async () => ({ facts: facts(t.luci.facts), text: t.luci.text, source: t.luci.source }),
     beats: async (g) => [{ shot: nightSide(g), drift: 0.5 }],

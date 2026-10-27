@@ -63,9 +63,11 @@ try {
   await send('Runtime.enable');
   await send('Page.enable');
   await send('Emulation.setDeviceMetricsOverride', { width: 1600, height: 1000, deviceScaleFactor: Number(process.env.DPR || 1), mobile: false });
+  // Frame gaps from the very first frame (read with eval:JSON.stringify(__gaps)).
+  await send('Page.addScriptToEvaluateOnNewDocument', { source: `window.__gaps = []; (() => { let last = 0; const f = (t) => { if (last && t - last > 40) __gaps.push([Math.round(last), Math.round(t - last)]); last = t; requestAnimationFrame(f); }; requestAnimationFrame(f); })();` });
   await send('Page.navigate', { url });
   for (let i = 0; i < 100; i++) { await sleep(300); if (await evaluate('document.body.classList.contains("ready")')) break; }
-  await sleep(1500);
+  if (!process.env.EARLY) await sleep(1500);
   console.log('gl:', await evaluate(`(() => { const gl = document.createElement('canvas').getContext('webgl2'); const d = gl.getExtension('WEBGL_debug_renderer_info'); return d ? gl.getParameter(d.UNMASKED_RENDERER_WEBGL) : 'n/a'; })()`));
   const list = which.length ? which : ['intro', ...Array.from({ length: 11 }, (_, i) => String(i))];
   for (const w of list) {

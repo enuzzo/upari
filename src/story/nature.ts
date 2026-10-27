@@ -71,7 +71,7 @@ export const NATURE: Chapter[] = titled([
     id: 'verde',
     mood: 'open', sound: 'forest',
     look: { ...LOOK, data: 'ndvi', dim: 0.35, desat: 0.65 },
-    duration: 26, clock: 'data',
+    duration: 23, clock: 'data',
     legend: legend(PALETTES.ndvi, 'ndvi'),
     narrate: async (g) => {
       const { meta, share, hi, lo } = await greenSeasons(g);
@@ -97,7 +97,7 @@ export const NATURE: Chapter[] = titled([
     id: 'foreste',
     mood: 'grave', sound: 'forest',
     look: { ...LOOK, data: 'forest', dim: 0.55, desat: 0.85, years: [2001, 2024], yearSeconds: 18, bloom: 1.3 },
-    duration: 26, clock: 'year',
+    duration: 24, clock: 'year',
     legend: legend(PALETTES.forest, 'forest'),
     narrate: async () => t.foreste.narrate((await forestMeta()).peak),
     detail: async () => {
@@ -119,7 +119,7 @@ export const NATURE: Chapter[] = titled([
     id: 'aria',
     mood: 'curious', sound: 'desert',
     look: { ...LOOK, data: 'aerosol', dim: 0.45, desat: 0.6, clouds: 0.1 },
-    duration: 24, clock: 'data',
+    duration: 22, clock: 'data',
     legend: legend(PALETTES.aerosol, 'aerosol'),
     narrate: async (g) => {
       const { meta, best, worstMonth } = await haziest(g);
@@ -145,7 +145,7 @@ export const NATURE: Chapter[] = titled([
     id: 'coralli',
     mood: 'grave', sound: 'reef',
     look: { ...LOOK, data: 'coral', dim: 0.6, desat: 0.7, bloom: 1.2 },
-    duration: 26, clock: 'data',
+    duration: 24, clock: 'data',
     legend: legend(PALETTES.coral, 'coral'),
     narrate: async (g) => {
       const r = await reefStress(g);

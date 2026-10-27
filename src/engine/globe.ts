@@ -12,7 +12,7 @@ import { createSky, createSun } from './sky';
 import { FlowField, coherenceTexture } from './flow';
 import { FLOW_COLORS } from './palettes';
 import { createFires, createQuakes, placeIt, Station, type Quake } from './markers';
-import { DATA, LayerStore, Sampler, SplitSampler, loadTexture, type DataId, type LayerMeta } from './layers';
+import { DATA, LayerStore, Sampler, SplitSampler, loadBitmapTexture, loadTexture, type DataId, type LayerMeta } from './layers';
 import { gmst, lonLatToVec, moonBrightness, moonDirection, sunDirection, vecToLonLat } from './astro';
 import { Tiles } from './tiles';
 import { ATLAS, Atlas, atlasText, type AtlasId } from './atlas';
@@ -138,6 +138,9 @@ export class Globe {
   /** Master gains, tuned by eye. */
   tune = { atmo: 5, haze: 0.85, limb: 2, sun: 2.2, night: 3.2, relief: 9, bloom: 0.6, moon: 0.06, airglow: 0.05 };
   rainSpeed = 1.8;
+  /** Opening light, 0 (black) to 1: the planet comes out of the dark instead of popping in. */
+  private dawn = 1;
+  private dawnSeconds = 1;
   onFrame: (dt: number) => void = () => {};
 
   constructor(private canvas: HTMLCanvasElement) {
@@ -185,26 +188,31 @@ export class Globe {
     let done = 0;
     const total = 4;
     const tick = <T,>(p: Promise<T>) => p.then((v) => { progress(++done / total); return v; });
-    const [day, relief, clouds, night] = await Promise.all([
+    // The stars too: nothing should pop into the opening shot.
+    const [day, relief, clouds, night, sky] = await Promise.all([
       tick(loadTexture('earth/day-2k.jpg', { anisotropy: aniso })),
       tick(loadTexture('earth/relief-4k.webp', { anisotropy: 4 })),
       tick(loadTexture('earth/clouds-4k.jpg', { anisotropy: aniso })),
       tick(loadTexture('earth/night-4k.jpg', { anisotropy: aniso })),
+      createSky(),
     ]);
     this.u = earthUniforms({ day, night, clouds, relief });
     this.scene.add(createEarth(this.u), createAtmosphere(this.u), this.sun.mesh, this.station.group);
+    this.sky = sky;
+    this.scene.add(sky.group);
     this.tiles = new Tiles(this.u);
     this.scene.add(this.tiles.group);
-    // Sharper textures stream in after the first frame.
+    // Sharper textures stream in while the planet comes out of the dark.
     void this.upgrade(aniso);
-    void createSky().then((s) => { this.sky = s; this.scene.add(s.group); });
     void this.station.load();
     void this.loadFlow('wind');
   }
 
   private async upgrade(aniso: number) {
     const swap = async (key: 'uDay' | 'uNight' | 'uClouds' | 'uRelief', url: string) => {
-      const t = await loadTexture(url, { anisotropy: aniso });
+      // Decoded off the main thread and uploaded at once: an 8k image decoded on upload stalls a frame.
+      const t = await loadBitmapTexture(url, aniso);
+      this.renderer.initTexture(t);
       const old = this.u[key].value;
       this.u[key].value = t;
       old.dispose();
@@ -299,6 +307,22 @@ export class Globe {
 
   get currentLook() { return this.look; }
 
+  /** Compile every shader and upload the first textures behind the black, before anything moves. */
+  async warm() {
+    this.dawn = 0;
+    this.update(0);
+    await this.renderer.compileAsync(this.scene, this.rig.camera);
+    this.composer.render(0);
+  }
+
+  /** Bring the light up from black, like eyes adjusting to the dark. */
+  rise(seconds: number) {
+    this.dawn = 0;
+    this.dawnSeconds = seconds;
+  }
+
+  get risen() { return this.dawn >= 1; }
+
   start() {
     this.clock.start();
     // Adaptive resolution: if frames get slow, render fewer pixels.
@@ -306,7 +330,8 @@ export class Globe {
     const loop = () => {
       const raw = this.clock.getDelta();
       this.tick(Math.min(raw, 0.1));
-      if (document.visibilityState === 'visible' && raw < 0.5) {
+      // Not while the planet comes out of the dark: textures are still arriving.
+      if (this.dawn < 1) { acc = 0; frames = 0; } else if (document.visibilityState === 'visible' && raw < 0.5) {
         acc += raw; frames++;
         if (acc > 2.5) {
           const avg = acc / frames;
@@ -379,7 +404,10 @@ export class Globe {
     const nightK = Math.min(1, c.night) * (1 - c.studio);
     u.uMoon.value.set(this.moonVec.x, this.moonVec.y, this.moonVec.z, this.tune.moon * moonBrightness(this.sunVec, this.moonVec) * nightK);
     u.uAirglow.value = this.tune.airglow * nightK;
-    this.renderer.toneMappingExposure = c.exposure;
+    this.dawn = Math.min(1, this.dawn + dt / this.dawnSeconds);
+    // Slow at first, as the eye finds the night side, then the day.
+    const d = this.dawn * this.dawn * (3 - 2 * this.dawn);
+    this.renderer.toneMappingExposure = c.exposure * d * d;
     this.bloom.strength = this.tune.bloom * c.bloom;
     this.sun.place(this.sunVec);
     this.sun.mesh.quaternion.copy(cam.quaternion);

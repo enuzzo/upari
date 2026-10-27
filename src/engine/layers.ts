@@ -93,6 +93,22 @@ export function loadTexture(url: string, opts: { mipmaps?: boolean; repeat?: boo
   });
 }
 
+/** A large image decoded off the main thread (flipped here: WebGL ignores flipY for bitmaps). */
+export async function loadBitmapTexture(url: string, anisotropy = 1): Promise<Texture> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${url}: ${res.status}`);
+  const bmp = await createImageBitmap(await res.blob(), { imageOrientation: 'flipY', premultiplyAlpha: 'none', colorSpaceConversion: 'none' });
+  const t = new Texture(bmp);
+  t.flipY = false;
+  t.wrapS = RepeatWrapping;
+  t.wrapT = ClampToEdgeWrapping;
+  t.minFilter = LinearMipmapLinearFilter;
+  t.magFilter = LinearFilter;
+  t.anisotropy = anisotropy;
+  t.needsUpdate = true;
+  return t;
+}
+
 /** CPU copy of a layer at reduced resolution, for the probe under the cursor. */
 /** A value image and its coverage image read together, like a two-channel layer. */
 export class SplitSampler {

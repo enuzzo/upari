@@ -26,7 +26,7 @@ export const PEOPLE: Chapter[] = titled([
     id: 'popolazione',
     mood: 'calm', sound: 'city',
     look: { ...LOOK, dim: 0.76, atlas: 'population', dust: 1, years: [1960, 2025], yearSeconds: 20, bloom: 1.2 },
-    duration: 26, clock: 'year',
+    duration: 24, clock: 'year',
     narrate: async (g) => {
       const a = await atlas(g);
       return t.popolazione.narrate({ then: num(a.total('population', 1960) / 1e9, 1), now: num(a.total('population', 2025) / 1e9, 1) });
@@ -51,7 +51,7 @@ export const PEOPLE: Chapter[] = titled([
     id: 'nascite',
     mood: 'curious', sound: 'city',
     look: { ...LOOK, atlas: 'birth', years: [1960, 2024], yearSeconds: 18 },
-    duration: 24, clock: 'year', legend: legend('birth'),
+    duration: 22, clock: 'year', legend: legend('birth'),
     narrate: async (g) => {
       const top = (await atlas(g)).extreme('birth', 2024, true)!;
       return t.nascite.narrate({ then: num(await mean(g, 'birth', 1960)), now: num(await mean(g, 'birth', 2024)), top: top.name });
@@ -75,7 +75,7 @@ export const PEOPLE: Chapter[] = titled([
     id: 'vita',
     mood: 'open', sound: 'city',
     look: { ...LOOK, atlas: 'life', years: [1960, 2024], yearSeconds: 18 },
-    duration: 24, clock: 'year', legend: legend('life'),
+    duration: 21, clock: 'year', legend: legend('life'),
     narrate: async (g) => t.vita.narrate({ then: num(await mean(g, 'life', 1960)), now: num(await mean(g, 'life', 2024)) }),
     detail: async (g) => {
       const a = await atlas(g);
@@ -96,7 +96,7 @@ export const PEOPLE: Chapter[] = titled([
     id: 'bambini',
     mood: 'grave', sound: 'city',
     look: { ...LOOK, atlas: 'under5', years: [1960, 2024], yearSeconds: 18 },
-    duration: 24, clock: 'year', legend: legend('under5'),
+    duration: 22, clock: 'year', legend: legend('under5'),
     narrate: async (g) => {
       const a = await atlas(g);
       const many = a.count('under5', 1960, (v) => v >= 250);
@@ -122,7 +122,7 @@ export const PEOPLE: Chapter[] = titled([
     id: 'saldo',
     mood: 'curious', sound: 'city',
     look: { ...LOOK, atlas: 'balance', years: [1960, 2024], yearSeconds: 18 },
-    duration: 24, clock: 'year', legend: legend('balance'),
+    duration: 21, clock: 'year', legend: legend('balance'),
     narrate: async (g) => t.saldo.narrate(num((await atlas(g)).count('balance', 2024, (v) => v < 0))),
     detail: async (g) => {
       const a = await atlas(g);
@@ -142,7 +142,7 @@ export const PEOPLE: Chapter[] = titled([
     id: 'luce',
     mood: 'calm', sound: 'night',
     look: { ...LOOK, atlas: 'electricity', years: [2000, 2024], yearSeconds: 16 },
-    duration: 24, clock: 'year', legend: legend('electricity'),
+    duration: 21, clock: 'year', legend: legend('electricity'),
     narrate: async (g) => {
       const a = await atlas(g);
       const without = Array.from(a.slots.keys()).reduce((s, code) => {
@@ -173,7 +173,7 @@ export const PEOPLE: Chapter[] = titled([
     id: 'fuga',
     mood: 'grave', sound: 'wind',
     look: { ...LOOK, dim: 0.72, migration: 1, years: [2011, 2024], yearSeconds: 20, bloom: 1.3 },
-    duration: 26, clock: 'year',
+    duration: 24, clock: 'year',
     legend: legendOf([[0, '#5af2e6'], [0.34, '#5af2e6'], [0.35, '#ff8ccc'], [0.66, '#ff8ccc'], [0.67, '#ffc059'], [1, '#ffc059']], 'asylum'),
     narrate: async (g) => {
       const syr = (await atlas(g)).asylumPeak('SYR');

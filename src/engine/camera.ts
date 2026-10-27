@@ -95,7 +95,11 @@ export class CameraRig {
     this.applyOffset();
   }
 
-  setFrameShift(v: number) { this.frameShiftTarget = v; }
+  /** `now` places the planet at once instead of sliding it there. */
+  setFrameShift(v: number, now = false) {
+    this.frameShiftTarget = v;
+    if (now) { this.frameShift = v; this.applyOffset(); }
+  }
 
   private applyOffset() {
     const off = -this.frameShift * this.width;

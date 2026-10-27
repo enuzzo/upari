@@ -412,15 +412,22 @@ export class Director {
     const frame = c?.clock === 'data' ? this.globe.dataFrameTime() : null;
     const dc = $('data-clock');
     const run = c?.clock === 'year' ? this.globe.yearRunning : null;
+    // Over the planet, wherever the framing puts it.
+    dc.style.setProperty('--globe-x', `${((0.5 + this.globe.rig.frameShift) * 100).toFixed(2)}%`);
     if (run) {
       $('data-time').textContent = String(Math.round(this.globe.year));
+      $('data-from').textContent = String(run.from);
+      $('data-to').textContent = String(run.to);
       $('data-dot').style.left = `${(((this.globe.year - run.from) / Math.max(1, run.to - run.from)) * 100).toFixed(2)}%`;
       dc.classList.add('on');
     } else if (frame) {
       const time = frame.time;
+      const fmt = (iso: string) => (frame.cadence === 'hour' ? `${timeUtc(iso)} UTC` : frame.cadence === 'month' ? monthYear(iso) : dayShort(iso));
       $('data-time').textContent = frame.cadence === 'month' ? monthYear(time)
         : frame.cadence === 'day' ? dayShort(time)
         : `${dayMonthShort(time)} · ${timeUtc(time)} UTC`;
+      $('data-from').textContent = fmt(frame.first);
+      $('data-to').textContent = fmt(frame.last);
       $('data-dot').style.left = `${(this.globe.dataFrameProgress() * 100).toFixed(2)}%`;
       dc.classList.add('on');
     } else dc.classList.remove('on');

@@ -667,11 +667,11 @@ export class Globe {
   flowSampler(id: FlowId) { return this.flowSamplers[id] ?? null; }
 
   /** Time and cadence of the frame on screen, while a series plays. */
-  dataFrameTime(): { time: string; cadence: 'hour' | 'day' | 'month' } | null {
+  dataFrameTime(): { time: string; first: string; last: string; cadence: 'hour' | 'day' | 'month' } | null {
     const frames = this.dataMeta?.frames;
     if (!frames || frames.length < 2 || !this.dataShown) return null;
     const i = Math.min(frames.length - 1, Math.round(this.frame));
-    return { time: frames[i].time, cadence: this.dataMeta!.cadence ?? 'hour' };
+    return { time: frames[i].time, first: frames[0].time, last: frames[frames.length - 1].time, cadence: this.dataMeta!.cadence ?? 'hour' };
   }
   /** How far through the series the frame on screen is, 0..1. */
   dataFrameProgress(): number {

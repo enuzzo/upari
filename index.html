@@ -62,9 +62,14 @@
     <div class="cap-actions">
       <button class="more" id="more-btn"><span data-t="page.more"></span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
       <button class="more next-story" id="next-story"><span></span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-      <span class="data-clock" id="data-clock"><span id="data-time"></span><span class="data-track" aria-hidden="true"><i id="data-dot"></i></span></span>
     </div>
   </section>
+
+  <!-- The time the planet is showing, centred over it: the date moves with the scene. -->
+  <div class="data-clock" id="data-clock" aria-live="off">
+    <span class="dc-now" id="data-time"></span>
+    <span class="dc-row" aria-hidden="true"><span id="data-from"></span><span class="data-track"><i id="data-dot"></i></span><span id="data-to"></span></span>
+  </div>
 
   <aside class="telemetry" id="telemetry" data-t-aria="station.panel">
     <div class="tm-title" data-t="station.title"></div>

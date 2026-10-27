@@ -235,7 +235,7 @@ export const SKY_CHAPTERS: Chapter[] = titled([
     id: 'voyager',
     mood: 'open', sound: 'station',
     look: { ...SKY, dim: 0.5 },
-    duration: 23,
+    duration: 27,
     narrate: async () => {
       const d = await climate.voyager();
       return t.voyager.narrate({ hours: num(d.v1.lightHours, 2), day: d.v1.lightDay ? dayMonth(d.v1.lightDay) : null });
@@ -253,9 +253,14 @@ export const SKY_CHAPTERS: Chapter[] = titled([
       };
     },
     beats: async (g) => {
-      const v = voyagerDir((await climate.voyager()).v1, g.now);
-      // From the far side of the Earth, looking out towards Ophiuchus where Voyager 1 is.
-      return [{ shot: { lon: v.lon + 180 + 12, lat: -v.lat * 0.6 - 6, dist: 4.4 }, seconds: 6, drift: 0.12 }];
+      const d = await climate.voyager();
+      const v1 = voyagerDir(d.v1, g.now), v2 = voyagerDir(d.v2, g.now);
+      // From the far side of the Earth, looking out towards Voyager 1 (in Ophiuchus), then
+      // towards Voyager 2 (far south, in Pavo): they are too far apart for one shot.
+      return [
+        { shot: { lon: v1.lon + 180 + 12, lat: -v1.lat * 0.6 - 6, dist: 4.4 }, seconds: 6, drift: 0.12, hold: 9 },
+        { shot: { lon: v2.lon + 180 + 24, lat: -v2.lat, dist: 4.4 }, seconds: 5, drift: 0.1 },
+      ];
     },
     badges: async (g) => {
       const d = await climate.voyager();

@@ -21,6 +21,7 @@ import { createSunBody } from './sunbody';
 import { createAuroraCurtains } from './aurora';
 import { createTrajectories, type Launch } from './trajectories';
 import { createFlyby } from './flyby';
+import { createEarthRing } from './ring';
 import { ATLAS, Atlas, atlasText, type AtlasId } from './atlas';
 import { t } from '../i18n';
 import { num } from '../i18n/format';
@@ -123,6 +124,7 @@ export class Globe {
   private look: Look = { ...DEFAULT_LOOK };
   cur = { clouds: 1, cloudFlow: 1, night: 1, dim: 0, desat: 0, fires: 0, iss: 0, stars: 1, atmo: 1, exposure: 1, relief: 1, bloom: 1, dataMix: 0, trail: 0, studio: 0, pin: 0, atlas: 0, dust: 0, migration: 0, quakes: 0, spots: 0, satellites: 0, solar: 0, rockets: 0, flyby: 0 };
   private flybyScene: ReturnType<typeof createFlyby> | null = null;
+  private earthRing = createEarthRing();
   private flybyLoading: Promise<void> | null = null;
   private rocketTrails: ReturnType<typeof createTrajectories> | null = null;
   private sunBody = createSunBody();
@@ -232,7 +234,7 @@ export class Globe {
       createSky(),
     ]);
     this.u = earthUniforms({ day, night, clouds, relief });
-    this.scene.add(createEarth(this.u), createAtmosphere(this.u), this.sun.mesh, this.station.group, this.sunBody.group);
+    this.scene.add(createEarth(this.u), createAtmosphere(this.u), this.sun.mesh, this.station.group, this.sunBody.group, this.earthRing.points);
     this.sky = sky;
     this.scene.add(sky.group);
     this.tiles = new Tiles(this.u);
@@ -635,7 +637,14 @@ export class Globe {
 
     // An asteroid's pass, replayed in twelve seconds.
     c.flyby = approach(c.flyby, L.flyby, dt, 1.4);
-    this.flybyScene?.update(date, this.sunVec, c.flyby, (this.time % 12) / 12);
+    // Slowly: the whole near part of the pass in twenty seconds.
+    this.flybyScene?.update(date, this.sunVec, c.flyby, (this.time % 20) / 20);
+    // When the Earth is a speck beside the Sun or inside the Moon's orbit, a ring finds it.
+    const far = Math.min(1, Math.max(0, (cam.position.length() - 40) / 60));
+    const ring = Math.max(c.solar, c.flyby) * far;
+    this.earthRing.material.uniforms.uOpacity.value = ring;
+    this.earthRing.material.uniforms.uTime.value = this.time;
+    this.earthRing.points.visible = ring > 0.01;
 
     // Rockets climbing from their pads.
     c.rockets = approach(c.rockets, L.rockets, dt, 1.6);

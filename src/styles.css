@@ -615,3 +615,7 @@ button.about-link:hover { color: var(--ink); border-color: var(--ink-3); }
 .classe .classe-list li { display: list-item; grid-template-columns: none; border-bottom: 0; padding: 0; font-size: 15px; line-height: 1.55; color: var(--ink-2); }
 .classe .classe-list li b { display: inline; font-weight: 600; }
 .classe .classe-list li code { display: inline; }
+
+/* A label near the right edge reads to the left of its point. */
+.anchor.left .a-in { left: auto; right: 44px; padding-left: 0; padding-right: 14px; border-left: 0; border-right: 1px solid rgba(255, 255, 255, 0.6); text-align: right; }
+.anchor.left .a-in::before { left: -12px; right: 0; }

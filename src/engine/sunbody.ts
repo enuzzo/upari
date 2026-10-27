@@ -33,8 +33,8 @@ export function createSunBody() {
       void main() {
         vec3 view = normalize(cameraPosition - vWorld);
         float mu = clamp(dot(vN, view), 0.0, 1.0);
-        // Limb darkening of the photosphere (Eddington-like, warmer at the edge).
-        float limb = 0.3 + 0.7 * pow(mu, 0.6);
+        // Limb darkening of the photosphere (Eddington-like, warmer at the edge): the volume.
+        float limb = 0.22 + 0.78 * pow(mu, 0.55) + 0.12 * pow(mu, 6.0);
         // Granulation: cells of rising gas, a thousand kilometres across, slowly boiling.
         float g = fbm(vN * 160.0 + vec3(0.0, 0.0, uTime * 0.05));
         float cells = 0.85 + 0.3 * smoothstep(0.35, 0.75, g);
@@ -49,7 +49,7 @@ export function createSunBody() {
           float shown = img * 1.15 * (0.92 + 0.16 * smoothstep(0.35, 0.75, g));
           I = mix(I, shown, smoothstep(0.05, 0.25, facing));
         }
-        vec3 white = vec3(1.0, 0.93, 0.78), edge = vec3(1.0, 0.52, 0.22);
+        vec3 white = vec3(1.0, 0.9, 0.7), edge = vec3(1.0, 0.5, 0.2);
         vec3 col = mix(edge, white, smoothstep(0.0, 0.8, mu)) * I * 1.05;
         gl_FragColor = vec4(col * uOpacity, 1.0);
       }`,
@@ -75,7 +75,15 @@ export function createSunBody() {
         float streams = 0.75 + 0.25 * fbm(vec3(cos(a) * 3.0, sin(a) * 3.0, r * 0.6 - uTime * 0.02));
         float glow = (exp(-(r - 1.0) * 5.0) * 0.35 + exp(-(r - 1.0) * 1.4) * 0.05) * streams;
         glow *= smoothstep(3.4, 2.4, r); // nothing left at the edge of the quad
-        gl_FragColor = vec4(vec3(1.0, 0.86, 0.66) * glow * uOpacity, 1.0);
+        // The chromosphere, a thin red rim, and prominences: tongues and loops of hydrogen
+        // rising from the edge, where the noise of the surface field is strongest.
+        float rim = exp(-pow((r - 1.004) / 0.012, 2.0)) * 0.8;
+        float field = fbm(vec3(cos(a) * 4.0, sin(a) * 4.0, uTime * 0.02));
+        float tongues = smoothstep(0.6, 0.78, field) * exp(-(r - 1.0) * 16.0);
+        float loops = smoothstep(0.58, 0.85, fbm(vec3(a * 10.0, (r - 1.0) * 22.0 - uTime * 0.04, 2.3)))
+          * smoothstep(1.16, 1.02, r) * smoothstep(0.58, 0.74, field);
+        vec3 h = vec3(1.0, 0.3, 0.16) * (rim + tongues * 1.5 + loops * 1.2);
+        gl_FragColor = vec4((vec3(1.0, 0.86, 0.66) * glow + h) * uOpacity, 1.0);
       }`,
     blending: AdditiveBlending, depthWrite: false, transparent: true,
   });

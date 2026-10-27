@@ -442,6 +442,8 @@ export class Director {
       const v = lonLatToVec(a.lon, a.lat, 1 + a.alt / 6371);
       const p = this.globe.screenOf(v);
       a.el.style.transform = `translate(${p.x}px, ${p.y}px)`;
+      // Near the right edge the words go on the other side of the point, so they stay on screen.
+      a.el.classList.toggle('left', p.x > innerWidth * 0.76);
       // Within about 50 km the station itself is on screen: the label would sit on it.
       const onTop = a.follow === 'iss' && s.range < 0.008;
       a.el.style.visibility = p.visible && !onTop ? 'visible' : 'hidden';

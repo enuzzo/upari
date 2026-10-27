@@ -74,7 +74,7 @@ export function createAuroraCurtains(read: (lon: number, lat: number) => number)
         // Light from the bottom up: a sharp lower edge, a long fading top.
         float bottomEdge = smoothstep(0.0, 0.06, h);
         float green = exp(-pow((h - 0.16) / 0.13, 2.0));
-        float red = exp(-pow((h - 0.62) / 0.3, 2.0)) * 0.22;
+        float red = exp(-pow((h - 0.62) / 0.3, 2.0)) * 0.12;
         float hem = exp(-pow((h - 0.03) / 0.035, 2.0)) * smoothstep(0.35, 0.75, vAur.x);
         vec3 col = vec3(0.22, 1.0, 0.45) * green + vec3(1.0, 0.18, 0.28) * red + vec3(0.95, 0.35, 0.85) * hem;
         // Only in the dark: the sunlit sky drowns it.

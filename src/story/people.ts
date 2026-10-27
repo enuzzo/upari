@@ -36,6 +36,15 @@ async function dams() {
   return { total: d.list.length, dated, peakDecade, peakCount, km3: Math.round(km3) };
 }
 
+/** The Earth's surface, millions of km². */
+const EARTH_MKM2 = 510.07;
+
+/** The share of the Earth's surface brightly lit at night in each year, computed when the layer was made. */
+async function nightFrames(g: Globe) {
+  const frames = (await g.layers.get('nightlights')).meta.frames as unknown as { time: string; lit: number }[];
+  return frames.map((f) => ({ year: Number(f.time.slice(0, 4)), lit: f.lit }));
+}
+
 /** Built-up land in each epoch of GHSL, km², summed at full resolution when the layer was made. */
 async function builtArea(g: Globe) {
   const { meta } = await g.layers.get('built');
@@ -264,6 +273,31 @@ export const PEOPLE: Chapter[] = titled([
       };
     },
     beats: async () => [{ shot: { lon: 22, lat: -2, dist: 2.9 }, drift: 0.8 }],
+  },
+  {
+    id: 'accendersi',
+    kind: 'observed',
+    mood: 'calm', sound: 'night',
+    look: { ...LOOK, data: 'nightlights', dim: 0.9, desat: 0.85, atmo: 0.6, bloom: 1.4 },
+    duration: 23, clock: 'data',
+    legend: legendOf(PALETTES.nightlights, 'nightlights'),
+    narrate: async (g) => {
+      const f = await nightFrames(g);
+      return t.accendersi.narrate({ from: f[0].year, to: f.at(-1)!.year, then: num(f[0].lit * EARTH_MKM2, 1), now: num(f.at(-1)!.lit * EARTH_MKM2, 1) });
+    },
+    detail: async (g) => {
+      const f = await nightFrames(g);
+      return {
+        facts: [
+          { value: t.accendersi.million(num(f[0].lit * EARTH_MKM2, 1)), label: t.accendersi.lit(f[0].year) },
+          { value: t.accendersi.million(num(f.at(-1)!.lit * EARTH_MKM2, 1)), label: t.accendersi.lit(f.at(-1)!.year) },
+          { value: `×${num(f.at(-1)!.lit / f[0].lit, 1)}`, label: t.accendersi.growth },
+        ],
+        text: t.accendersi.text,
+        source: t.accendersi.source,
+      };
+    },
+    beats: async () => [{ shot: { lon: 78, lat: 24, dist: 2.6 }, drift: 0.9, hold: 10 }, { shot: { lon: 10, lat: 10, dist: 2.8 }, seconds: 5, drift: 0.8 }],
   },
   {
     id: 'impronta',

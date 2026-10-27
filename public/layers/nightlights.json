@@ -1,0 +1,79 @@
+{
+ "id": "nightlights",
+ "width": 7200,
+ "height": 3600,
+ "cadence": "year",
+ "unit": "DN",
+ "scale": "sqrt",
+ "min": 0,
+ "max": 63,
+ "dates": [
+  "2024-07-01"
+ ],
+ "source": "Li, Zhou et al. 2020 \u00b7 harmonized DMSP and VIIRS night lights, 1992\u20132024 \u00b7 figshare 9828827 v10 \u00b7 CC BY 4.0",
+ "frames": [
+  {
+   "file": "nightlights-1992.jpg",
+   "conf": "nightlights-1992-c.png",
+   "time": "1992-07-01",
+   "lit": 0.0021,
+   "sensor": "DMSP"
+  },
+  {
+   "file": "nightlights-1996.jpg",
+   "conf": "nightlights-1996-c.png",
+   "time": "1996-07-01",
+   "lit": 0.00254,
+   "sensor": "DMSP"
+  },
+  {
+   "file": "nightlights-2000.jpg",
+   "conf": "nightlights-2000-c.png",
+   "time": "2000-07-01",
+   "lit": 0.00314,
+   "sensor": "DMSP"
+  },
+  {
+   "file": "nightlights-2004.jpg",
+   "conf": "nightlights-2004-c.png",
+   "time": "2004-07-01",
+   "lit": 0.00327,
+   "sensor": "DMSP"
+  },
+  {
+   "file": "nightlights-2008.jpg",
+   "conf": "nightlights-2008-c.png",
+   "time": "2008-07-01",
+   "lit": 0.00344,
+   "sensor": "DMSP"
+  },
+  {
+   "file": "nightlights-2012.jpg",
+   "conf": "nightlights-2012-c.png",
+   "time": "2012-07-01",
+   "lit": 0.00406,
+   "sensor": "DMSP"
+  },
+  {
+   "file": "nightlights-2016.jpg",
+   "conf": "nightlights-2016-c.png",
+   "time": "2016-07-01",
+   "lit": 0.00427,
+   "sensor": "VIIRS"
+  },
+  {
+   "file": "nightlights-2020.jpg",
+   "conf": "nightlights-2020-c.png",
+   "time": "2020-07-01",
+   "lit": 0.00522,
+   "sensor": "VIIRS"
+  },
+  {
+   "file": "nightlights-2024.jpg",
+   "conf": "nightlights-2024-c.png",
+   "time": "2024-07-01",
+   "lit": 0.00674,
+   "sensor": "VIIRS"
+  }
+ ]
+}

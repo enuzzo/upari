@@ -5,7 +5,7 @@ import { num } from '../i18n/format';
 import { fresh } from './fresh';
 
 export type DataId = 'chlorophyll' | 'sst' | 'anomaly' | 'rain' | 'ice' | 'ndvi' | 'aerosol' | 'coral' | 'forest'
-  | 'ozone' | 'no2' | 'snow' | 'so2' | 'aurora' | 'ships' | 'built' | 'sealevel' | 'waves' | 'mangroves' | 'bii';
+  | 'ozone' | 'no2' | 'snow' | 'so2' | 'aurora' | 'ships' | 'built' | 'sealevel' | 'waves' | 'mangroves' | 'bii' | 'nightlights';
 
 export interface LayerMeta {
   id: string;
@@ -113,6 +113,11 @@ export const DATA: Record<DataId, DataDef> = {
     // Square root of the mangrove share of each 0.05° cell, like the built-up land.
     palette: PALETTES.mangroves, style: [0.0, 1.0, 0, 0], fps: 0.7, hold: 3,
     decode: (v) => v * v * 100, format: (x) => (x < 1 ? t.data.noMangroves : t.data.mangroves(num(x))),
+  },
+  nightlights: {
+    // Square root of the brightness (0..63): towns stay visible next to the megacities.
+    palette: PALETTES.nightlights, style: [0.0, 1.0, 0, 0], fps: 0.9, hold: 3,
+    decode: (v) => v * v * 63, format: (x) => (x < 4 ? t.data.dark : t.data.nightlights(num(x))),
   },
   bii: {
     palette: PALETTES.bii, style: [0.35, 0.55, 2, 0], fps: 0.5, hold: 3,

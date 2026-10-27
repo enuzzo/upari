@@ -184,7 +184,22 @@ void main() {
   float period = 24.0;
   float ph0 = fract(uTime / period), ph1 = fract(uTime / period + 0.5);
   float wgt = 1.0 - abs(1.0 - 2.0 * ph0);
-  vec2 uv0 = uv - flow * ph0 * period, uv1 = uv - flow * ph1 * period;
+  // The clouds float about 10 km up: seen at a slant they are not over the ground point but
+  // where the line of sight crosses their height. Close to the planet they shift against the
+  // ground and their shadows fall beside them; from afar nothing changes.
+  vec2 lift = vec2(0.0);
+  {
+    vec3 C = cameraPosition, d = normalize(vPos - C);
+    float b = dot(C, d), R = 1.0 + 10.0 / 6371.0;
+    float disc = b * b - (dot(C, C) - R * R);
+    if (disc > 0.0) {
+      vec3 Q = normalize(C + d * (-b - sqrt(disc)));
+      vec2 q = vec2(atan(-Q.z, Q.x) / (2.0 * PI) + 0.5, asin(clamp(Q.y, -1.0, 1.0)) / PI + 0.5);
+      lift = vec2(fract(q.x - uv.x + 0.5) - 0.5, q.y - uv.y);
+      lift *= step(length(lift), 0.02); // only the slant of a nearby view
+    }
+  }
+  vec2 uv0 = uv - flow * ph0 * period + lift, uv1 = uv - flow * ph1 * period + lift;
   float c0 = texture(uClouds, uv0).r;
   float c1 = texture(uClouds, uv1).r;
   float cloudBase = mix(c1, c0, wgt);
@@ -217,7 +232,8 @@ void main() {
   float cloudAlbedo = mix(0.46, 0.66, smoothstep(0.25, 0.95, cloudBase));
   // Thin haze in a 5 km map reads as fog from close by: let it clear as the camera comes down.
   cloud = smoothstep(0.08 + 0.2 * uCloudDetail, 0.95, cloud) * uCloudOpacity;
-  float cloudShadow = smoothstep(0.08, 0.95, texture(uClouds, uv0 + shadowShift).r) * uCloudOpacity;
+  // The shadow on the ground: the cloud above this point, displaced along the Sun's direction.
+  float cloudShadow = smoothstep(0.08, 0.95, texture(uClouds, uv0 - lift + shadowShift).r) * uCloudOpacity;
 
   // ---- Sunlight at the ground, reddened near the terminator by the atmosphere.
   vec3 sunT = sunTransmittance(N * 1.0005, L);
@@ -238,7 +254,13 @@ void main() {
   // A bright core and a faint wide halo: a milky disc would hide the sea and its clouds.
   float glint = pow(max(dot(N, H), 0.0), 160.0) * 0.6 + pow(max(dot(N, H), 0.0), 24.0) * 0.012;
   // Seen from near the ground the glint fills the sea: let waves break it up, as in photographs from orbit.
-  if (glint * uGlint > 0.002 && uGlintWaves > 0.001) glint *= mix(1.0, 0.35 + 1.0 * smoothstep(0.2, 0.85, fbm(N * vec3(520.0, 900.0, 520.0) + vec3(0.0, 0.0, uTime * 0.01))), uGlintWaves);
+  // The pattern runs downwind with today's wind, a little faster where it blows harder.
+  if (glint * uGlint > 0.002 && uGlintWaves > 0.001) {
+    vec3 drift = (east * w.x + north * w.y) * uTime * 0.0006;
+    float waves = fbm(N * vec3(520.0, 900.0, 520.0) - drift * 520.0 + vec3(0.0, 0.0, uTime * 0.01));
+    float chop = fbm(N * vec3(1900.0, 2600.0, 1900.0) - drift * 1900.0 + vec3(uTime * 0.03, 0.0, 0.0));
+    glint *= mix(1.0, 0.25 + 1.1 * smoothstep(0.2, 0.85, waves) * (0.6 + 0.6 * chop), uGlintWaves);
+  }
   surface += (1.0 - land) * sunT * glint * (1.0 - cloud) * uSunPower * (1.0 - uBaseDim) * uGlint;
   surface += (1.0 - land) * fres * vec3(0.10, 0.18, 0.32) * smoothstep(-0.2, 0.4, NL) * 0.35 * (1.0 - uBaseDim);
   vec3 Hm = normalize(uMoon.xyz + V);

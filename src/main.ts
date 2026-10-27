@@ -1,4 +1,5 @@
 import './styles.css';
+import { Vector3 } from 'three';
 import { Globe } from './engine/globe';
 import { Director } from './story/director';
 import { sunDirection, vecToLonLat } from './engine/astro';
@@ -211,8 +212,17 @@ addEventListener('keydown', (e) => {
   if (e.key === '/') { e.preventDefault(); search.open(); return; }
   if (!started) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); begin('pianeta'); } return; }
   if (e.key === ' ') { e.preventDefault(); director.setPlaying(!director.playing); if (director.playing) explorer.toggle(false); }
+  // Shift with the arrows turns the planet anywhere; in Esplora the arrows alone do.
+  else if (e.key.startsWith('Arrow') && (e.shiftKey || explorer.isOpen)) {
+    e.preventDefault();
+    const d = { ArrowLeft: [-12, 0], ArrowRight: [12, 0], ArrowUp: [0, 8], ArrowDown: [0, -8] }[e.key] ?? [0, 0];
+    globe.rig.turnBy(d[0], d[1]);
+  }
   else if (e.key === 'ArrowRight') director.next();
   else if (e.key === 'ArrowLeft') director.prev();
+  // Enter on the planet reads what is at its centre, as the cursor would, and opens the
+  // country's card where the people are shown.
+  else if (e.key === 'Enter' && (document.activeElement === canvas || explorer.isOpen)) readCentre();
   else if (e.key === 'f' || e.key === 'F') toggleFullscreen();
   else if (e.key === 'm' || e.key === 'M') { sound.start(); sound.toggle(); }
   else if (e.key === 'l' || e.key === 'L') explorer.toggle();
@@ -221,6 +231,16 @@ addEventListener('keydown', (e) => {
   else if (e.key === '+' || e.key === '=') globe.rig.zoomBy(0.6);
   else if (e.key === '-') globe.rig.zoomBy(1.6);
 });
+
+/** What is at the centre of the planet on screen, said aloud for screen readers. */
+function readCentre() {
+  const c = globe.screenOf(new Vector3(0, 0, 0));
+  const p = globe.probe(c.x, c.y);
+  const country = globe.countryUnder(c.x, c.y);
+  if (country) openCountry(globe, country.code, country.name, country.shown, country.year, c.x, c.y);
+  const said = [p?.text, p?.sub].filter(Boolean).join(', ');
+  $('sr-status').textContent = said || t.page.nothingHere;
+}
 
 // The postcard: what is on screen, with its title, date and sources.
 async function postcard() {

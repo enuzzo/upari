@@ -303,4 +303,12 @@ export class CameraRig {
     this.cancelFlight();
     this.vel.zoom += Math.log(factor) * 5;
   }
+
+  /** Turn the planet from the keyboard: a push in degrees, slowing down like a drag. */
+  turnBy(dLon: number, dLat: number) {
+    this.cancelFlight();
+    const k = Math.min(1, this.dist / 2);
+    this.vel.lon += dLon * 3.2 * k;
+    this.vel.lat += dLat * 3.2 * k;
+  }
 }

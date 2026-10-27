@@ -196,7 +196,7 @@ richieda un account o una chiave che l’utente non ha dato.
 - [ ] Aree protette WDPA: niente download, permesso scritto per usi commerciali.
 - [ ] GBIF / OBIS (licenze miste, distorsione del campionamento). [ ] Climate TRACE (API beta).
 - [ ] Ember, Global Energy Monitor: chiave o modulo. [ ] CAMS, Copernicus Marine: account.
-- [ ] HYDE 3.5 (licenza da confermare, protezione anti-bot). [ ] Luci notturne 1992–2024.
+- [ ] HYDE 3.5 (licenza da confermare, protezione anti-bot). [x] Luci notturne 1992–2024 (Li, Zhou et al., CC BY 4.0): capitolo «Il mondo si accende».
 - [ ] Conflitti UCDP: scelta editoriale dell’utente.
 - [ ] Plastica come storia lenta (solo modelli o campioni, licenze da verificare).
 - [ ] Ondate di calore marine, fulmini GLM, CO₂ ODIAC: sforzo grande.
@@ -211,7 +211,8 @@ persone, apre la sua curva dal 1960 per l’indicatore in vista e gli altri nume
 l’anno della misura. 3. [x] **Un giorno sulla Terra**: ultimo capitolo de «Il pianeta, adesso», le prossime
 ventiquattro ore in un minuto con il Sole vero, le luci e la Stazione. 4. [x] **Cartolina**: l’inquadratura salvata
 come immagine con titolo, data e fonti (icona accanto alla didascalia, voce in Esplora, tasto P).
-5. **Grafica**: nuvole volumetriche, onde, multi-scattering. 6. **Piattaforma**: [x] telefono in
-verticale (pianeta in alto, parole sotto, data e legenda in una riga, Sole sopra la Terra);
-[ ] accessibilità. 1b. [x] **Il tuo luogo**: il prossimo passaggio visibile della Stazione,
+5. **Grafica**: [x] nuvole a 10 km con parallasse e ombre spostate; [x] riflesso del mare che corre
+col vento; [ ] multi-scattering. 6. **Piattaforma**: [x] telefono in verticale (pianeta in alto,
+parole sotto, data e legenda in una riga, Sole sopra la Terra); [x] accessibilità: movimento
+ridotto, Maiuscolo + frecce gira il pianeta, Invio legge il centro per gli screen reader. 1b. [x] **Il tuo luogo**: il prossimo passaggio visibile della Stazione,
 calcolato sul dispositivo con SGP4.

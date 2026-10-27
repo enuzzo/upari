@@ -186,6 +186,15 @@ export const PALETTES: Record<string, Stop[]> = {
     [0.7, '#fff0c9', 1],
     [1.0, '#ffffff', 1],
   ],
+  // Night lights (square root of the brightness): sodium orange, white at the core of cities.
+  nightlights: [
+    [0.0, '#ffb35c', 0.0],
+    [0.22, '#ffb35c', 0.0],
+    [0.34, '#ff9a3c', 0.55],
+    [0.55, '#ffc46b', 0.9],
+    [0.8, '#fff0c9', 1],
+    [1.0, '#ffffff', 1],
+  ],
   // Mangroves (square root of the share): thin fringes a faint green, dense forests bright.
   mangroves: [
     [0.0, '#5dffa0', 0.0],

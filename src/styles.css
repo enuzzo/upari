@@ -725,3 +725,7 @@ body.exploring .probe-window, body.reading .probe-window { opacity: 0; }
 @media (max-width: 720px) { .probe-window { display: none; } }
 .chart[data-chart="voyager"] { background: rgba(3, 4, 7, 0.88); }
 .chart[data-chart="voyager"] svg { overflow: hidden; }
+
+/* For screen readers only. */
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+#scene:focus-visible { outline: 1px solid var(--ink-3); outline-offset: -6px; }

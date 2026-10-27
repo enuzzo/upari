@@ -10,7 +10,7 @@ import { t } from '../i18n';
 import { dayShort, monthYear, num } from '../i18n/format';
 
 /** Series that can be compared first frame against last. */
-const SERIES = new Set(['sst', 'anomaly', 'chlorophyll', 'ice', 'ndvi', 'aerosol', 'coral', 'ozone', 'no2', 'snow', 'sealevel', 'built', 'mangroves', 'bii']);
+const SERIES = new Set(['nightlights', 'sst', 'anomaly', 'chlorophyll', 'ice', 'ndvi', 'aerosol', 'coral', 'ozone', 'no2', 'snow', 'sealevel', 'built', 'mangroves', 'bii']);
 
 // Free exploration: every layer of both stories, the year, the hour, the sky, the station,
 // and a link that remembers what is on screen.
@@ -66,6 +66,7 @@ const HUMAN: Layer[] = [
   atlasLayer('co2', 'co2'),
   atlasLayer('rifugiati', 'refugees'),
   { id: 'asilomondo', people: true, look: () => ({ ...peopleBase, dim: 0.74, migrationAll: 1, bloom: 1.3 }) },
+  { id: 'nottiluci', look: () => ({ ...PEOPLE.find((c) => c.id === 'accendersi')!.look }), legend: PEOPLE.find((c) => c.id === 'accendersi')!.legend },
   { id: 'citta', look: () => ({ ...PEOPLE.find((c) => c.id === 'citta')!.look }), legend: PEOPLE.find((c) => c.id === 'citta')!.legend },
   { id: 'dighe', look: () => ({ ...PEOPLE.find((c) => c.id === 'dighe')!.look, spotReplay: 0 }) },
   { id: 'rotte', look: () => ({ ...PEOPLE.find((c) => c.id === 'rotte')!.look }), legend: PEOPLE.find((c) => c.id === 'rotte')!.legend },
@@ -108,7 +109,7 @@ const FROM_CHAPTER: Record<string, string> = {
   pianeta: 'adesso', respiro: 'venti', correnti: 'correnti', calore: 'mare', febbre: 'anomalia', fioritura: 'plancton', pioggia: 'pioggia',
   fuoco: 'fuochi', terremoti: 'terremoti', ghiaccio: 'ghiaccio', luci: 'luci', lassu: 'stazione', popolazione: 'popolazione', nascite: 'nascite', vita: 'vita',
   bambini: 'bambini', saldo: 'saldo', luce: 'elettricita', fuga: 'asilo', verde: 'verde', foreste: 'foreste', mangrovie: 'mangrovie', integrita: 'integrita', aria: 'aria', coralli: 'coralli',
-  citta: 'citta', rotte: 'rotte', impronta: 'co2', esilio: 'rifugiati', rotte_asilo: 'asilomondo', dighe: 'dighe', tempeste: 'tempeste', neve: 'neve', smog: 'smog', ozono: 'ozono', petrolio: 'petrolio', aurora: 'aurora', satelliti: 'satelliti', partenze: 'partenze', bolidi: 'bolidi',
+  citta: 'citta', rotte: 'rotte', impronta: 'co2', esilio: 'rifugiati', rotte_asilo: 'asilomondo', accendersi: 'nottiluci', dighe: 'dighe', tempeste: 'tempeste', neve: 'neve', smog: 'smog', ozono: 'ozono', petrolio: 'petrolio', aurora: 'aurora', satelliti: 'satelliti', partenze: 'partenze', bolidi: 'bolidi',
 };
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;

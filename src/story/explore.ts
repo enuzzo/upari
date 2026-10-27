@@ -355,7 +355,7 @@ export class Explorer {
 
   /** Restore a shared link: #layer/lon,lat,dist[/year]. */
   restore(hash: string): boolean {
-    const m = /^#([a-z]+)(?:\/(-?[\d.]+),(-?[\d.]+),([\d.]+))?(?:\/(\d{4}))?$/.exec(hash);
+    const m = /^#([a-z0-9]+)(?:\/(-?[\d.]+),(-?[\d.]+),([\d.]+))?(?:\/(\d{4}))?$/.exec(hash);
     const layer = m && LAYERS.find((l) => l.id === m[1]);
     if (!m || !layer) return false;
     this.layer = layer;

@@ -59,7 +59,7 @@ jobs:
           status=0
           node scripts/prepare-fields.mjs wind || status=1
           # Series keep their past months in the repository: only new months and the latest day are fetched.
-          node scripts/prepare-layers.mjs sst anomaly ice chlorophyll ndvi aerosol coral ozone no2 snow ims sealevel so2 rain waves fires quakes cyclones volcanoes icebergs slicks || status=1
+          node scripts/prepare-layers.mjs sst anomaly ice chlorophyll ndvi aerosol coral ozone no2 snow ims mhw sealevel so2 rain waves fires quakes cyclones volcanoes icebergs slicks || status=1
           exit $status
 
       - name: Il cielo e il clima
@@ -108,7 +108,7 @@ jobs:
             echo
             echo '| Strato | Date | Copertura |'
             echo '|---|---|---|'
-            for f in sst anomaly ice chlorophyll ndvi aerosol coral ozone no2 snow ims sealevel waves; do
+            for f in sst anomaly ice chlorophyll ndvi aerosol coral ozone no2 snow ims mhw sealevel waves; do
               node -e 'const m=require("./public/layers/"+process.argv[1]+".json"); console.log(`| ${m.id} | ${m.frames ? `${m.frames[0].time} → ${m.frames.at(-1).time}` : (m.dates||[])[0]} | ${m.frames ? `${m.frames.length} fotogrammi` : m.coverage} |`)' "$f"
             done
             node -e 'const m=require("./public/layers/rain.json"); console.log(`| pioggia | ${m.frames[0].time} → ${m.frames.at(-1).time} | ${m.frames.length} fotogrammi |`)'

@@ -1,0 +1,29 @@
+{
+ "grid": {
+  "lat0": -89.375,
+  "lon0": 0.625,
+  "step": 1,
+  "ny": 180,
+  "nx": 360
+ },
+ "variables": [
+  "mean",
+  "p90"
+ ],
+ "coefficients": [
+  "c0",
+  "cos1",
+  "sin1",
+  "cos2",
+  "sin2",
+  "cos3",
+  "sin3"
+ ],
+ "time": "t = (day of year from 0 + 0.5) / 365, 29 Feb as 28 Feb",
+ "baseline": "1991-2020",
+ "misfit": {
+  "mean": 0.9,
+  "p90": 1.896
+ },
+ "source": "NOAA OISST v2.1 (NOAA PSL), Hobday et al. 2016 method"
+}

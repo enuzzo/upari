@@ -186,6 +186,28 @@ export const PALETTES: Record<string, Stop[]> = {
     [0.7, '#fff0c9', 1],
     [1.0, '#ffffff', 1],
   ],
+  // Marine heatwave categories (Hobday et al.): moderate, strong, severe, extreme.
+  mhw: [
+    [0.0, '#ffd27a', 0.0],
+    [0.12, '#ffd27a', 0.0],
+    [0.2, '#ffd27a', 0.7],
+    [0.375, '#ffd27a', 0.7],
+    [0.45, '#ff8a3d', 0.85],
+    [0.625, '#ff8a3d', 0.85],
+    [0.7, '#ff3d2e', 0.92],
+    [0.875, '#ff3d2e', 0.92],
+    [0.95, '#d1004f', 1],
+    [1.0, '#d1004f', 1],
+  ],
+  // Fossil CO2 per km² (log): a dull ember where little is burnt, white-hot in the cities.
+  odiac: [
+    [0.0, '#7a1c08', 0.0],
+    [0.12, '#7a1c08', 0.0],
+    [0.3, '#b3360f', 0.55],
+    [0.55, '#ff6a2a', 0.85],
+    [0.8, '#ffc46b', 1],
+    [1.0, '#fff4dc', 1],
+  ],
   // Lightning per km² per year: violet where it is rare, electric white where it never stops.
   lightning: [
     [0.0, '#4a2fb8', 0.0],

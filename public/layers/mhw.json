@@ -1,0 +1,22 @@
+{
+ "id": "mhw",
+ "width": 720,
+ "height": 360,
+ "coverage": 0.64555,
+ "unit": "category",
+ "scale": "classes",
+ "min": 0,
+ "max": 4,
+ "dates": [
+  "2026-10-26"
+ ],
+ "baseline": "1991-2020",
+ "share": 0.3373,
+ "byCategory": [
+  0.1914,
+  0.1052,
+  0.0295,
+  0.0111
+ ],
+ "source": "NOAA OISST v2.1 (NOAA PSL) · Hobday et al. 2016"
+}

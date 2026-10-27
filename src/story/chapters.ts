@@ -316,6 +316,30 @@ export const CHAPTERS: Chapter[] = titled([
     },
   },
   {
+    id: 'ondate',
+    kind: 'observed',
+    mood: 'grave', sound: 'waves',
+    look: { sun: 'studio', data: 'mhw', clouds: 0.04, dim: 0.6, desat: 0.8, night: 0, atmo: 0.85, bloom: 1.2 },
+    duration: 23,
+    legend: legend(PALETTES.mhw.filter((_, i) => i % 2 === 0), 'mhw'),
+    narrate: async (g) => {
+      const m = (await g.layers.get('mhw')).meta as unknown as { share: number; dates: string[] };
+      return t.ondate.narrate({ pct: num(m.share * 100, 0), day: dayMonth(m.dates[0]) });
+    },
+    detail: async (g) => {
+      const m = (await g.layers.get('mhw')).meta as unknown as { share: number; byCategory: number[]; dates: string[] };
+      return {
+        facts: [
+          { value: `${num(m.share * 100, 0)}%`, label: t.ondate.share(dayMonth(m.dates[0])) },
+          { value: `${num((m.byCategory[2] + m.byCategory[3]) * 100, 1)}%`, label: t.ondate.severe },
+        ],
+        text: t.ondate.text,
+        source: t.ondate.source,
+      };
+    },
+    beats: async () => [{ shot: { lon: -150, lat: 15, dist: 2.9 }, drift: 2.4 }],
+  },
+  {
     id: 'febbre',
     kind: 'observed',
     mood: 'grave', sound: 'waves',

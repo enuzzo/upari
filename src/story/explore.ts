@@ -37,6 +37,7 @@ const atlasLayer = (id: LayerId, atlas: AtlasId, extra: Partial<Look> = {}): Lay
 const PLANET: Layer[] = [
   { id: 'adesso', look: chapterLook('pianeta') },
   { id: 'venti', look: chapterLook('respiro'), legend: chapterLegend('respiro') },
+  { id: 'ondate', look: chapterLook('ondate'), legend: chapterLegend('ondate') },
   { id: 'tempeste', look: () => ({ ...chapterLook('tempeste')(), spotReplay: 0 }), legend: chapterLegend('tempeste') },
   { id: 'fulmini', look: chapterLook('fulmini'), legend: chapterLegend('fulmini') },
   { id: 'correnti', look: chapterLook('correnti'), legend: chapterLegend('correnti') },
@@ -68,6 +69,7 @@ const HUMAN: Layer[] = [
   atlasLayer('rifugiati', 'refugees'),
   { id: 'asilomondo', people: true, look: () => ({ ...peopleBase, dim: 0.74, migrationAll: 1, bloom: 1.3 }) },
   { id: 'nottiluci', look: () => ({ ...PEOPLE.find((c) => c.id === 'accendersi')!.look }), legend: PEOPLE.find((c) => c.id === 'accendersi')!.legend },
+  { id: 'fumo', look: () => ({ ...PEOPLE.find((c) => c.id === 'fumo')!.look }), legend: PEOPLE.find((c) => c.id === 'fumo')!.legend },
   { id: 'citta', look: () => ({ ...PEOPLE.find((c) => c.id === 'citta')!.look }), legend: PEOPLE.find((c) => c.id === 'citta')!.legend },
   { id: 'dighe', look: () => ({ ...PEOPLE.find((c) => c.id === 'dighe')!.look, spotReplay: 0 }) },
   { id: 'rotte', look: () => ({ ...PEOPLE.find((c) => c.id === 'rotte')!.look }), legend: PEOPLE.find((c) => c.id === 'rotte')!.legend },
@@ -111,7 +113,7 @@ const FROM_CHAPTER: Record<string, string> = {
   pianeta: 'adesso', respiro: 'venti', correnti: 'correnti', calore: 'mare', febbre: 'anomalia', fioritura: 'plancton', pioggia: 'pioggia',
   fuoco: 'fuochi', terremoti: 'terremoti', ghiaccio: 'ghiaccio', luci: 'luci', lassu: 'stazione', popolazione: 'popolazione', nascite: 'nascite', vita: 'vita',
   bambini: 'bambini', saldo: 'saldo', luce: 'elettricita', fuga: 'asilo', verde: 'verde', foreste: 'foreste', mangrovie: 'mangrovie', integrita: 'integrita', aria: 'aria', coralli: 'coralli',
-  citta: 'citta', rotte: 'rotte', impronta: 'co2', esilio: 'rifugiati', rotte_asilo: 'asilomondo', accendersi: 'nottiluci', dighe: 'dighe', tempeste: 'tempeste', fulmini: 'fulmini', neve: 'neve', smog: 'smog', ozono: 'ozono', petrolio: 'petrolio', aurora: 'aurora', satelliti: 'satelliti', partenze: 'partenze', bolidi: 'bolidi',
+  citta: 'citta', rotte: 'rotte', impronta: 'co2', esilio: 'rifugiati', rotte_asilo: 'asilomondo', accendersi: 'nottiluci', dighe: 'dighe', tempeste: 'tempeste', ondate: 'ondate', fumo: 'fumo', fulmini: 'fulmini', neve: 'neve', smog: 'smog', ozono: 'ozono', petrolio: 'petrolio', aurora: 'aurora', satelliti: 'satelliti', partenze: 'partenze', bolidi: 'bolidi',
 };
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;

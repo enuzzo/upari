@@ -1,0 +1,22 @@
+{
+ "id": "odiac",
+ "width": 7200,
+ "height": 3600,
+ "cadence": "year",
+ "unit": "t CO2/km\u00b2/yr",
+ "scale": "log",
+ "min": 0,
+ "max": 657666,
+ "dates": [
+  "2024-07-01"
+ ],
+ "totalGt": 38.53,
+ "source": "ODIAC2025 \u00b7 Oda and Maksyutov, CGER/NIES \u00b7 CC BY 4.0",
+ "frames": [
+  {
+   "file": "odiac-2024.jpg",
+   "conf": "odiac-2024-c.png",
+   "time": "2024-07-01"
+  }
+ ]
+}

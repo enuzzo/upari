@@ -5,7 +5,7 @@ import { num } from '../i18n/format';
 import { fresh } from './fresh';
 
 export type DataId = 'chlorophyll' | 'sst' | 'anomaly' | 'rain' | 'ice' | 'ndvi' | 'aerosol' | 'coral' | 'forest'
-  | 'ozone' | 'no2' | 'snow' | 'so2' | 'aurora' | 'ships' | 'built' | 'sealevel' | 'waves' | 'mangroves' | 'bii' | 'nightlights' | 'ims' | 'lightning';
+  | 'ozone' | 'no2' | 'snow' | 'so2' | 'aurora' | 'ships' | 'built' | 'sealevel' | 'waves' | 'mangroves' | 'bii' | 'nightlights' | 'ims' | 'lightning' | 'mhw' | 'odiac';
 
 export interface LayerMeta {
   id: string;
@@ -87,6 +87,16 @@ export const DATA: Record<DataId, DataDef> = {
   snow: {
     palette: PALETTES.snow, style: [0.95, 0.04, 2, 0], fps: 0.9, hold: 2.5,
     decode: lin, format: (x) => (x < 5 ? t.data.noSnow : t.data.snow(num(x))),
+  },
+  mhw: {
+    // Categories of Hobday et al.: 0 none, then 1 moderate ... 4 extreme, as quarters.
+    palette: PALETTES.mhw, style: [0.2, 0.6, 1, 0],
+    decode: (v) => Math.round(v * 4), format: (x) => t.data.mhw[Math.max(0, Math.min(4, x))],
+  },
+  odiac: {
+    // log10(1 + tonnes of CO2 per km² per year) over log10(1 + max).
+    palette: PALETTES.odiac, style: [0.0, 1.0, 2, 0], fps: 0.5, hold: 3,
+    decode: (v, m) => Math.pow(1 + m.max, v) - 1, format: (x) => (x < 1 ? t.data.odiacNone : t.data.odiac(num(x, x < 100 ? 1 : 0))),
   },
   lightning: {
     // log10(1 + flashes per km² per year) over log10(151).

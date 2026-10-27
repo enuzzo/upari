@@ -682,6 +682,67 @@ const layers = {
     }, { unit: 'm', scale: 'linear', min: LO, max: HI, source: 'NOAA CoastWatch · blended sea level anomaly · ERDDAP', layer: 'noaacwBLENDEDsshDaily' },
     { W, H, minFrames: 10, cadence: 'day' });
   },
+  async mhw() {
+    // Marine heatwaves today (Hobday et al. 2016): five days or more above the 90th percentile
+    // of 1991-2020 for that day of the year. The climatology is a committed snapshot
+    // (mhw-clim.bin, made once by prepare-mhw-climatology.py); only the last ten days of OISST
+    // v2.1 are fetched here, at 1°, from NOAA PSL. Category: how many times the gap between
+    // the threshold and the mean the sea stands above the mean (1 moderate ... 4 extreme).
+    // Seas that freeze part of the year are left out (see prepare-mhw-climatology.py).
+    const base = 'https://psl.noaa.gov/thredds/dodsC/Datasets/noaa.oisst.v2.highres';
+    const year = new Date().getUTCFullYear();
+    let file = `${base}/sst.day.mean.${year}.nc`, dds = (await fetchBuffer(`${file}.dds`).catch(() => null))?.toString();
+    if (!dds) { file = `${base}/sst.day.mean.${year - 1}.nc`; dds = (await fetchBuffer(`${file}.dds`)).toString(); }
+    const N = Number(/time = (\d+)/.exec(dds)[1]), DAYS = 10, NY = 180, NX = 360;
+    if (N < DAYS) throw new Error('mhw: too few days in this year’s file yet');
+    const ascii = (await fetchBuffer(`${file}.ascii?sst[${N - DAYS}:1:${N - 1}][2:4:718][2:4:1438],time[${N - DAYS}:1:${N - 1}]`)).toString();
+    const sst = new Float32Array(DAYS * NY * NX).fill(NaN);
+    for (const m of ascii.matchAll(/^\[(\d+)\]\[(\d+)\], (.+)$/gm)) {
+      const t = Number(m[1]), y = Number(m[2]);
+      m[3].split(', ').forEach((v, x) => { const n = Number(v); if (n > -5 && n < 50) sst[(t * NY + y) * NX + x] = n; });
+    }
+    const times = /time\[\d+\]\n([^\n]+)/.exec(ascii.slice(ascii.lastIndexOf('time[')))?.[1].split(', ').map(Number) ?? [];
+    if (times.length !== DAYS) throw new Error('mhw: could not read the dates');
+    const dates = times.map((d) => new Date(Date.UTC(1800, 0, 1) + d * 86400e3));
+    const clim = new Float32Array(readFileSync(join(OUT, 'mhw-clim.bin')).buffer.slice(0));
+    const K = 7, P = NY * NX;
+    const curve = (v, cell, date) => {
+      let doy = Math.floor((date - Date.UTC(date.getUTCFullYear(), 0, 1)) / 86400e3);
+      const leap = date.getUTCFullYear() % 4 === 0;
+      if (leap && doy >= 59) doy = doy > 59 ? doy - 1 : 58;
+      const tt = 2 * Math.PI * (doy + 0.5) / 365, c = (k) => clim[(v * K + k) * P + cell];
+      return c(0) + c(1) * Math.cos(tt) + c(2) * Math.sin(tt) + c(3) * Math.cos(2 * tt) + c(4) * Math.sin(2 * tt) + c(5) * Math.cos(3 * tt) + c(6) * Math.sin(3 * tt);
+    };
+    // Output at 0.5°, north up, each cell taking its 1° parent (centres at x.625 → shifted by 0.125°, negligible here).
+    const W = 720, H = 360, val = new Float32Array(W * H), conf = new Float32Array(W * H);
+    let ocean = 0, inHeat = 0;
+    const share = [0, 0, 0, 0, 0];
+    for (let y = 0; y < NY; y++) for (let x = 0; x < NX; x++) {
+      const cell = y * NX + x, last = sst[((DAYS - 1) * NY + y) * NX + x];
+      if (!Number.isFinite(last) || !Number.isFinite(clim[cell])) continue;
+      // Seas that freeze part of the year are left out: there the climatology is a poor fit.
+      let coldest = Infinity;
+      for (let m = 0; m < 24; m++) coldest = Math.min(coldest, curve(0, cell, new Date(Date.UTC(2001, 0, 1) + m * 365 / 24 * 86400e3)));
+      if (coldest < -1) continue;
+      let run = 0;
+      for (let t = DAYS - 1; t >= 0; t--) { const v = sst[(t * NY + y) * NX + x]; if (Number.isFinite(v) && v > curve(1, cell, dates[t])) run++; else break; }
+      const mean = curve(0, cell, dates.at(-1)), thr = curve(1, cell, dates.at(-1));
+      const cat = run >= 5 ? Math.min(4, Math.max(1, Math.floor((last - mean) / Math.max(0.1, thr - mean)))) : 0;
+      const area = Math.cos((-89.375 + y) * Math.PI / 180);
+      ocean += area; if (cat) { inHeat += area; share[cat] += area; }
+      // Source rows run south to north; the layer runs north to south, with longitudes from -180.
+      for (const [dy, dx] of [[0, 0], [0, 1], [1, 0], [1, 1]]) {
+        const oy = (NY - 1 - y) * 2 + dy, ox = (((x + 180) % 360) * 2) + dx;
+        val[oy * W + ox] = cat / 4; conf[oy * W + ox] = 1;
+      }
+    }
+    const day = dates.at(-1).toISOString().slice(0, 10);
+    writeLayer('mhw', val, conf, W, H, {
+      unit: 'category', scale: 'classes', min: 0, max: 4, dates: [day], baseline: '1991-2020',
+      share: Number((inHeat / ocean).toFixed(4)), byCategory: share.slice(1).map((s) => Number((s / ocean).toFixed(4))),
+      source: 'NOAA OISST v2.1 (NOAA PSL) · Hobday et al. 2016',
+    }, 0.5);
+  },
   async lightning() {
     // Where lightning strikes: flashes per km² per year seen from space by the LIS and OTD
     // sensors (1995-2014, NASA GHRC), via GIBS. A climatology: run by hand once, not daily.

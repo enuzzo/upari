@@ -300,6 +300,27 @@ export const PEOPLE: Chapter[] = titled([
     beats: async () => [{ shot: { lon: 78, lat: 24, dist: 2.6 }, drift: 0.9, hold: 10 }, { shot: { lon: 10, lat: 10, dist: 2.8 }, seconds: 5, drift: 0.8 }],
   },
   {
+    id: 'fumo',
+    kind: 'estimate',
+    mood: 'grave', sound: 'city',
+    look: { ...LOOK, data: 'odiac', dim: 0.85, desat: 0.85, atmo: 0.6, bloom: 1.3 },
+    duration: 22,
+    legend: legendOf(PALETTES.odiac, 'odiac'),
+    narrate: async (g) => {
+      const m = (await g.layers.get('odiac')).meta as unknown as { totalGt: number };
+      return t.fumo.narrate(num(m.totalGt, 0));
+    },
+    detail: async (g) => {
+      const m = (await g.layers.get('odiac')).meta as unknown as { totalGt: number };
+      return {
+        facts: [{ value: `${num(m.totalGt, 1)} Gt`, label: t.fumo.total }, ...t.fumo.facts.map(([value, label]) => ({ value, label }))],
+        text: t.fumo.text,
+        source: t.fumo.source,
+      };
+    },
+    beats: async () => [{ shot: { lon: 112, lat: 30, dist: 2.6 }, drift: 1.2, hold: 10 }, { shot: { lon: 0, lat: 45, dist: 2.7 }, seconds: 5, drift: 1 }],
+  },
+  {
     id: 'impronta',
     kind: 'estimate',
     mood: 'grave', sound: 'city',

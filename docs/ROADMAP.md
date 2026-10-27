@@ -200,7 +200,8 @@ richieda un account o una chiave che l’utente non ha dato.
 - [ ] Conflitti UCDP: scelta editoriale dell’utente.
 - [ ] Plastica come storia lenta (solo modelli o campioni, licenze da verificare).
 - [x] Fulmini: capitolo «I fulmini», l’ultima mezz’ora dei due GOES (GLM) sopra la mappa di vent’anni LIS/OTD.
-- [ ] Ondate di calore marine, CO₂ ODIAC: sforzo grande.
+- [x] Ondate di calore marine (Hobday su OISST, clima 1991–2020 calcolato una volta e salvato): capitolo «Le ondate di calore marine». [x] CO₂ fossile ODIAC 2024 (CC BY 4.0, sommata a 0,05° una volta): capitolo «Dove si brucia».
+- [ ] Multi-scattering dell’atmosfera: rimandato (costo alto, guadagno visivo piccolo).
 - [ ] GDACS (traiettorie previste dei cicloni in ogni bacino): i termini d’uso non parlano di riuso; escluso finché non è chiaro.
 
 ### Esclusi

@@ -244,6 +244,27 @@ function place(g: Element, taken: Box[], x: number, y: number, s: string, cls: s
   return false;
 }
 
+/** A few lines of text, right-aligned on the panel's edge, at the free height nearest to y. */
+function block(g: Element, taken: Box[], s: string, y: number, W: number, H: number) {
+  const out: string[] = [];
+  const width = W < 700 ? 30 : 40;
+  for (const w of s.split(' ')) { const l = out.at(-1); if (l && (l + ' ' + w).length <= width) out[out.length - 1] = l + ' ' + w; else out.push(w); }
+  const w = Math.max(...out.map((l) => l.length)) * 13.5 * 0.56, h = out.length * 18;
+  // On the right edge first, then further in.
+  for (const right of [W - 8, W - 8 - w * 0.5, W - 8 - w]) {
+    for (let d = 0; d < H; d += 8) {
+      for (const top of [y + d, y - d]) {
+        if (top < 44 || top + h > H - 66 || right - w < 20) continue;
+        const b = { x0: right - w - 4, y0: top - 4, x1: right + 4, y1: top + h + 2 };
+        if (taken.some((o) => b.x0 < o.x1 && b.x1 > o.x0 && b.y0 < o.y1 && b.y1 > o.y0)) continue;
+        taken.push(b);
+        out.forEach((l, i) => text(g, right, top + 13 + i * 18, l, 'ch-dest', 'end'));
+        return;
+      }
+    }
+  }
+}
+
 /**
  * The Voyagers leaving the planets behind: their real paths since 1977 (Horizons), seen from a
  * little above the plane of the planets, the view widening as they go, from Jupiter's orbit to
@@ -304,39 +325,40 @@ async function voyager(svg: SVGElement, cap: HTMLElement) {
       text(g, 44, ly, t.charts.probeNow(key === 'v1' ? 1 : 2, num(d[key].au, 0), num(d[key].lightHours, 1)), 'ch-legend');
     });
     taken.push({ x0: 0, y0: H - 62, x1: 360, y1: H });
-    // The planets' orbits shrink towards the Sun as the view widens; the planet is named once,
-    // by its meeting.
+    // The planets' orbits shrink towards the Sun as the view widens; the planets are named by
+    // their meetings. First everything drawn, as obstacles; then the words, around them.
     for (const [, r] of ORBITS) {
       if (r * s < 2) continue;
       el('ellipse', { cx, cy, rx: r * s, ry: r * s * Math.sin(tilt), class: 'ch-orbit' }, g);
     }
-    if (120 * s < W) {
-      el('ellipse', { cx, cy, rx: 120 * s, ry: 120 * s * Math.sin(tilt), class: 'ch-helio' }, g);
-      place(g, taken, cx + 120 * s * 0.7, cy + 120 * s * Math.sin(tilt) * 0.72, t.charts.heliopause, 'ch-tick', 14, W, H);
-    }
-    // The Sun, marked and named.
+    const helio = 120 * s < W;
+    if (helio) el('ellipse', { cx, cy, rx: 120 * s, ry: 120 * s * Math.sin(tilt), class: 'ch-helio' }, g);
     el('circle', { cx, cy, r: 6, class: 'ch-sunpt' }, g);
-    place(g, taken, cx, cy, t.charts.theSun, 'ch-tick ch-sunname', 14, W, H);
+    taken.push({ x0: cx - 9, y0: cy - 9, x1: cx + 9, y1: cy + 9 });
+    const obstacle = (ax: number, ay: number, bx: number, by: number) => {
+      const n = Math.ceil(Math.hypot(bx - ax, by - ay) / 6);
+      for (let j = 0; j <= n; j++) { const x = ax + ((bx - ax) * j) / n, y = ay + ((by - ay) * j) / n; taken.push({ x0: x - 4, y0: y - 4, x1: x + 4, y1: y + 4 }); }
+    };
+    const heads: Record<'v1' | 'v2', [number, number]> = { v1: [0, 0], v2: [0, 0] };
     for (const key of ['v2', 'v1'] as const) {
       const pts = paths[key].filter((q) => q[0] <= year).map((q) => project(q[1], q[2], q[3], s));
       const head = at(key, year), [hx, hy] = project(head[1], head[2], head[3], s);
+      heads[key] = [hx, hy];
       pts.push([hx, hy]);
       el('polyline', { points: pts.map((q) => q.join(',')).join(' '), class: `ch-vpath ch-${key}`, stroke: COL[key] }, g);
-      // The labels keep off the paths too.
-      for (let i = 1; i < pts.length; i++) {
-        const [ax, ay] = pts[i - 1], [bx, by] = pts[i], n = Math.ceil(Math.hypot(bx - ax, by - ay) / 6);
-        for (let j = 0; j <= n; j++) { const x = ax + ((bx - ax) * j) / n, y = ay + ((by - ay) * j) / n; taken.push({ x0: x - 3, y0: y - 3, x1: x + 3, y1: y + 3 }); }
-      }
+      for (let i = 1; i < pts.length; i++) obstacle(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1]);
       // Where it is heading, once it is here: the line goes on, dashed.
       if (k >= 1) {
         const prev = at(key, year - 3), [px, py] = project(prev[1], prev[2], prev[3], s);
         const dx = hx - px, dy = hy - py, n = Math.hypot(dx, dy) || 1;
         el('line', { x1: hx, y1: hy, x2: hx + (dx / n) * 46, y2: hy + (dy / n) * 46, class: 'ch-heading', stroke: COL[key] }, g);
+        obstacle(hx, hy, hx + (dx / n) * 46, hy + (dy / n) * 46);
       }
       el('circle', { cx: hx, cy: hy, r: 5, fill: COL[key], class: `ch-head ch-${key}` }, g);
-      taken.push({ x0: hx - 8, y0: hy - 8, x1: hx + 8, y1: hy + 8 });
+      taken.push({ x0: hx - 10, y0: hy - 10, x1: hx + 10, y1: hy + 10 });
     }
-    // The meetings, while the planets are still large enough to tell apart.
+    // The meetings: a dot where each probe passed each planet.
+    const spots: { planet: string; years: string; x: number; y: number }[] = [];
     for (const m of meetings) {
       const seen = m.who.filter((w) => w.when <= year);
       if (!seen.length || s * 5 < 9) continue;
@@ -344,20 +366,25 @@ async function voyager(svg: SVGElement, cap: HTMLElement) {
       for (const w of seen) {
         const f = at(w.k, w.when), [fx, fy] = project(f[1], f[2], f[3], s);
         el('circle', { cx: fx, cy: fy, r: 3, fill: COL[w.k], class: 'ch-meet' }, g);
+        taken.push({ x0: fx - 5, y0: fy - 5, x1: fx + 5, y1: fy + 5 });
         mx += fx / seen.length; my += fy / seen.length;
       }
-      if (s * 5 > 22) {
-        const years = [...new Set(seen.map((w) => Math.floor(w.when)))].join(', ');
-        place(g, taken, mx, my, `${t.charts[m.planet]} · ${years}`, 'ch-tick ch-meetname', 14, W, H);
-      }
+      spots.push({ planet: t.charts[m.planet], years: [...new Set(seen.map((w) => Math.floor(w.when)))].join(', '), x: mx, y: my });
     }
+    // The words, around what is drawn.
+    place(g, taken, cx, cy, t.charts.theSun, 'ch-tick ch-sunname', 14, W, H);
+    if (helio) place(g, taken, cx + 120 * s * 0.7, cy + 120 * s * Math.sin(tilt) * 0.72, t.charts.heliopause, 'ch-tick', 14, W, H);
+    // One label per meeting while they stand apart; once the view has widened and they crowd
+    // around the Sun, one label for all of them, with a leader line.
+    const crowded = spots.some((a, i) => spots.some((b, j) => j > i && Math.hypot(a.x - b.x, a.y - b.y) < 54));
+    if (spots.length && (crowded || s * 5 <= 22)) {
+      const gx = spots.reduce((a, p) => a + p.x, 0) / spots.length, gy = spots.reduce((a, p) => a + p.y, 0) / spots.length;
+      place(g, taken, gx, gy, spots.map((p) => p.planet).join(' · '), 'ch-tick ch-meetname', 14, W, H);
+    } else for (const p of spots) place(g, taken, p.x, p.y, `${p.planet} · ${p.years}`, 'ch-tick ch-meetname', 14, W, H);
     if (k >= 1) {
-      // Each destination beside its probe, on the side its path leaves free: under Voyager 1's
-      // climbing line, above Voyager 2's falling one.
-      const h1 = at('v1', year), h2 = at('v2', year);
-      const [, y1h] = project(h1[1], h1[2], h1[3], s), [, y2h] = project(h2[1], h2[2], h2[3], s);
-      lines(g, W - 8, Math.min(H - 150, y1h + 44), t.charts.heading1, 40, 'ch-dest', 'end');
-      lines(g, W - 8, Math.max(150, y2h - 76), t.charts.heading2, 40, 'ch-dest', 'end');
+      // Each destination as a block beside its probe, where it covers no path and no dot.
+      block(g, taken, t.charts.heading1, heads.v1[1] + 30, W, H);
+      block(g, taken, t.charts.heading2, heads.v2[1] - 90, W, H);
     }
     text(g, 14, 40, String(Math.floor(year)), 'ch-big');
     if (k < 1) requestAnimationFrame(draw);
@@ -415,7 +442,9 @@ export function showChart(id: ChartId | null) {
   box.classList.remove('on');
   setTimeout(() => {
     if (my !== token) return;
-    DRAW[id](svg, cap).then(() => { if (my === token) { box.dataset.chart = id; box.classList.add('on'); } }).catch(() => box.classList.remove('on'));
+    // The panel takes the size of this chart first: some charts are drawn in real pixels.
+    box.dataset.chart = id;
+    DRAW[id](svg, cap).then(() => { if (my === token) box.classList.add('on'); }).catch(() => box.classList.remove('on'));
   }, 400);
 }
 

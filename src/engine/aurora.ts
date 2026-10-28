@@ -10,17 +10,19 @@ import { noiseGLSL } from './glsl';
 // the height a thin pink-magenta fringe at the bottom (nitrogen, 90-100 km), the green of oxygen
 // at 557.7 nm as the body (100-200 km), and a faint deep red above (oxygen at 630 nm) that fades
 // to nothing. Seen edge-on the sheets would add up to hard lines, so their light follows how much
-// of their face the camera sees. Only the night side shows them, and the planet hides the far side.
+// of their face the camera sees; a soft footprint glows across the band beneath them, and fine
+// rays run up each curtain. Only the night side shows them, and the planet hides the far side.
 // The ribbon idea (upright tube strips with a vertical fade and seamless noise along the ring)
 // comes from the CodePen "[Three.js] Aurora ribbons" (see THIRD_PARTY_NOTICES.md); the code is ours.
 
 const R_EARTH_KM = 6371, THICK = 1.6;
-const BOTTOM = 1 + (95 * THICK) / R_EARTH_KM, TOP = 1 + (300 * THICK) / R_EARTH_KM;
+const BOTTOM = 1 + (95 * THICK) / R_EARTH_KM, TOP = 1 + (300 * THICK) / R_EARTH_KM, VEIL = 1 + (108 * THICK) / R_EARTH_KM;
 const N = 720;
 
 /** read(lon, lat) → probability 0..1 of seeing an aurora there (the OVATION grid). */
 export function createAuroraCurtains(read: (lon: number, lat: number) => number) {
   const pos: number[] = [], attr: number[] = [], nrm: number[] = [], index: number[] = [];
+  const veilPos: number[] = [], veilAttr: number[] = [], veilIndex: number[] = [];
   const v = new Vector3(), a = new Vector3(), b = new Vector3(), up = new Vector3(), n = new Vector3();
   for (const north of [true, false]) {
     // Along the oval, for every half degree of longitude: where the aurora is strongest, how
@@ -54,26 +56,47 @@ export function createAuroraCurtains(read: (lon: number, lat: number) => number)
         const fold = waves.reduce((s, [k, amp, ph]) => s + Math.sin(t * k + ph) * amp, 0);
         return r.lat + (offset + fold) * r.w * Math.sign(r.lat);
       });
+      // Closed loops with a doubled first vertex at the end, so the place along the oval runs
+      // 0..1 without jumping back inside a quad (that jump drew a hard cut in the light).
       const base = pos.length / 3;
-      for (let i = 0; i < N; i++) {
-        const lon = -180 + i * 0.5;
+      for (let i = 0; i <= N; i++) {
+        const j = i % N, lon = -180 + i * 0.5;
         // The sheet's face: across the oval, horizontal (radial × along).
-        lonLatToVec(lon - 0.5, lats[(i - 1 + N) % N], 1, a);
-        lonLatToVec(lon + 0.5, lats[(i + 1) % N], 1, b);
-        lonLatToVec(lon, lats[i], 1, up);
+        lonLatToVec(lon - 0.5, lats[(j - 1 + N) % N], 1, a);
+        lonLatToVec(lon + 0.5, lats[(j + 1) % N], 1, b);
+        lonLatToVec(lon, lats[j], 1, up);
         n.subVectors(b, a).cross(up).normalize();
         for (const [h, top] of [[BOTTOM, 0], [TOP, 1]] as const) {
-          lonLatToVec(lon, lats[i], h, v);
+          lonLatToVec(lon, lats[j], h, v);
           pos.push(v.x, v.y, v.z);
           nrm.push(n.x, n.y, n.z);
-          attr.push(smooth[i].p * weight, top, i / N + ri * 0.21);
+          // Which ribbon (whole part) and where along the oval (fraction 0..1).
+          attr.push(smooth[j].p * weight, top, ri + (i / N) * 0.999);
         }
       }
       for (let i = 0; i < N; i++) {
-        const p = base + i * 2, q = base + ((i + 1) % N) * 2;
+        const p = base + i * 2, q = base + (i + 1) * 2;
         index.push(p, q, p + 1, q, q + 1, p + 1);
       }
     });
+    // The footprint: a soft glow across the band just above the curtains' lower edge, what
+    // makes the aurora read as light and not as lines when seen from above.
+    const ACROSS = 9, vbase = veilPos.length / 3;
+    for (let i = 0; i <= N; i++) {
+      const j = i % N, lon = -180 + i * 0.5, r = smooth[j];
+      for (let k = 0; k < ACROSS; k++) {
+        const u = (k / (ACROSS - 1)) * 2 - 1;
+        lonLatToVec(lon, r.lat + u * r.w * 0.85 * Math.sign(r.lat), VEIL, v);
+        veilPos.push(v.x, v.y, v.z);
+        veilAttr.push(r.p, u, (i / N) * 0.999);
+      }
+    }
+    for (let i = 0; i < N; i++) {
+      for (let k = 0; k < ACROSS - 1; k++) {
+        const p = vbase + i * ACROSS + k, q = vbase + (i + 1) * ACROSS + k;
+        veilIndex.push(p, q, p + 1, q, q + 1, p + 1);
+      }
+    }
   }
   const geo = new BufferGeometry();
   geo.setAttribute('position', new BufferAttribute(new Float32Array(pos), 3));
@@ -100,10 +123,13 @@ export function createAuroraCurtains(read: (lon: number, lat: number) => number)
       varying vec3 vAur; varying vec3 vPos; varying float vFace;
       void main() {
         float strength = smoothstep(0.02, 0.35, vAur.x) * (0.55 + 0.45 * min(1.0, vAur.x * 2.0));
-        float h = vAur.y, s = vAur.z * 720.0;
-        // Brightness that drifts along the ribbon, and fine vertical rays.
-        float patches = fbm(vec3(s * 0.03 - uTime * 0.04, 0.0, uTime * 0.03 + vAur.z * 9.0));
-        float rays = 0.55 + 0.45 * fbm(vec3(s * 0.9, h * 0.6, uTime * 0.12));
+        float h = vAur.y, ribbon = floor(vAur.z), along = fract(vAur.z) * 6.2831853;
+        // Noise read on a circle, so it closes on itself around the oval: broad patches of
+        // brightness that drift slowly, and fine rays stretched up the curtain.
+        vec2 ring = vec2(cos(along + uTime * 0.004), sin(along + uTime * 0.004));
+        float patches = fbm(vec3(ring * 3.4, ribbon * 3.1 + uTime * 0.03));
+        float rays = fbm(vec3(ring * 160.0, h * 0.35 + ribbon * 1.7 + uTime * 0.05));
+        rays = 0.3 + 0.7 * smoothstep(0.25, 0.8, rays);
         float glow = (0.3 + 0.7 * smoothstep(0.2, 0.7, patches)) * rays;
         // Altitude: h 0 = 95 km, 1 = 300 km.
         float km = 95.0 + h * 205.0;
@@ -125,6 +151,37 @@ export function createAuroraCurtains(read: (lon: number, lat: number) => number)
   const mesh = new Mesh(geo, material);
   mesh.frustumCulled = false;
   mesh.renderOrder = 4;
+
+  const veilGeo = new BufferGeometry();
+  veilGeo.setAttribute('position', new BufferAttribute(new Float32Array(veilPos), 3));
+  veilGeo.setAttribute('aur', new BufferAttribute(new Float32Array(veilAttr), 3));
+  veilGeo.setIndex(veilIndex);
+  const veil = new Mesh(veilGeo, new ShaderMaterial({
+    uniforms,
+    vertexShader: /* glsl */ `
+      attribute vec3 aur; // strength, across the band (-1 .. 1), place along the oval
+      varying vec3 vAur; varying vec3 vPos;
+      void main() { vAur = aur; vPos = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: /* glsl */ `
+      ${noiseGLSL}
+      uniform float uTime, uOpacity;
+      uniform vec3 uSun;
+      varying vec3 vAur; varying vec3 vPos;
+      void main() {
+        float strength = smoothstep(0.02, 0.35, vAur.x) * (0.55 + 0.45 * min(1.0, vAur.x * 2.0));
+        float along = vAur.z * 6.2831853;
+        vec2 ring = vec2(cos(along + uTime * 0.004), sin(along + uTime * 0.004));
+        float patches = fbm(vec3(ring * 3.4, vAur.y * 0.8 + uTime * 0.03));
+        float across = exp(-vAur.y * vAur.y * 2.4);
+        float dark = smoothstep(0.08, -0.15, dot(normalize(vPos), uSun));
+        float I = strength * across * (0.35 + 0.65 * smoothstep(0.25, 0.75, patches)) * dark * uOpacity;
+        gl_FragColor = vec4(vec3(0.22, 1.0, 0.5) * (1.0 - exp(-I * 1.6)) * 0.22, 1.0);
+      }`,
+    blending: AdditiveBlending, depthWrite: false, transparent: true, side: DoubleSide,
+  }));
+  veil.frustumCulled = false;
+  veil.renderOrder = 4;
+  mesh.add(veil);
   mesh.visible = false;
   return { mesh, material };
 }

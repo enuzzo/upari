@@ -218,12 +218,31 @@ body.ready.started .rail { opacity: 1; transform: none; }
 .play.paused .i-play { display: block; }
 .play.paused .i-pause { display: none; }
 .play.paused { border-color: var(--warm); color: var(--warm); }
+/* Paused (a touch on the planet, a key): a play button beside the chapter's label, and the one in
+   the rail, glow slowly until the story goes on; then the one beside the label goes away. */
+.resume { display: none; flex: none; align-self: center; width: 28px; height: 28px; border-radius: 50%; place-items: center; border: 1px solid var(--warm); color: var(--warm); background: rgba(3, 4, 7, 0.55); }
+.resume svg { width: 13px; height: 13px; fill: currentColor; stroke: none; margin-left: 2px; }
+body.paused .resume { display: grid; animation: resumeGlow 2.6s ease-in-out infinite; }
+body.paused .play.paused { animation: resumeGlow 2.6s ease-in-out infinite; }
+@keyframes resumeGlow { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 217, 160, 0); opacity: 0.6; } 50% { box-shadow: 0 0 18px 3px rgba(255, 217, 160, 0.35); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { body.paused .resume, body.paused .play.paused { animation: none; opacity: 1; } }
 .chapters { flex: 1; display: flex; gap: 6px; list-style: none; margin: 0; padding: 0; }
 .chapters li { flex: 1; min-width: 0; }
 .chapters button { width: 100%; text-align: left; padding: 14px 0 0; position: relative; }
 .chapters .bar { display: block; height: 2px; background: var(--ink-4); border-radius: 1px; overflow: hidden; position: relative; }
 .chapters .fill { position: absolute; inset: 0; transform-origin: left; transform: scaleX(0); background: var(--ink); }
 .chapters li.done .fill { transform: scaleX(1); background: var(--ink-3); }
+/* The cursor of each chapter: on the one playing always, on the others when pointed at; drag it
+   to move inside the chapter. */
+.chapters .knob {
+  position: absolute; top: 14px; left: calc(var(--p, 0) * 100%); width: 9px; height: 9px; margin: -3.5px 0 0 -4.5px;
+  border-radius: 50%; background: var(--void); border: 1.5px solid var(--ink-3); opacity: 0.55; pointer-events: none;
+  transition: opacity 0.3s, transform 0.2s, border-color 0.3s;
+}
+.chapters li.current .knob { opacity: 1; border-color: var(--ink); }
+.chapters button:hover .knob { opacity: 1; }
+.chapters li.scrub .knob { opacity: 1; transform: scale(1.35); border-color: var(--warm); }
+.chapters button { cursor: ew-resize; touch-action: none; }
 .chapters .label {
   display: block; margin-top: 10px; font-size: 11px; letter-spacing: 0.08em; color: var(--ink-2); text-shadow: var(--halo-soft);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color 0.3s;
@@ -754,19 +773,22 @@ button.about-link:hover { color: var(--ink); border-color: var(--ink-3); }
 
 /* The spacecraft in 3D (src/story/probe.ts), above the caption. */
 .probe-window {
-  position: fixed; left: var(--gutter); top: calc(var(--gutter) * 0.55 + 76px); z-index: 5; margin: 0; width: 250px;
-  opacity: 0; transform: translateY(8px); transition: opacity 0.9s var(--ease), transform 0.9s var(--ease); pointer-events: none;
+  position: fixed; left: var(--gutter); top: 96px; z-index: 5; margin: 0; width: 300px;
+  opacity: 0; transform: translateY(8px); transition: opacity 0.9s var(--ease), transform 0.9s var(--ease), left 0.6s var(--ease), top 0.6s var(--ease), width 0.6s var(--ease); pointer-events: none;
 }
-.probe-window.on { opacity: 1; transform: none; }
-.probe-window canvas { display: block; width: 250px; height: 190px; border-radius: 4px; background: radial-gradient(ellipse at 40% 45%, rgba(40, 46, 60, 0.55), rgba(3, 4, 7, 0.7) 70%); }
-.probe-window figcaption { margin-top: var(--space-1); font-size: 11px; line-height: var(--lead-small); letter-spacing: 0.04em; color: var(--ink-3); text-shadow: var(--halo-soft); }
+.probe-window.on { opacity: 1; transform: none; pointer-events: auto; }
+.probe-window canvas { display: block; width: 100%; aspect-ratio: 1 / 0.78; height: auto; cursor: pointer; touch-action: none; border-radius: 4px; background: radial-gradient(ellipse at 40% 45%, rgba(40, 46, 60, 0.55), rgba(3, 4, 7, 0.7) 70%); }
+.probe-window figcaption { margin-top: var(--space-2); font-size: 12.5px; line-height: var(--lead-small); letter-spacing: 0.04em; color: var(--ink-3); text-shadow: var(--halo-soft); }
 body.exploring .probe-window, body.reading .probe-window { opacity: 0; }
 @media (max-width: 720px) { .probe-window { display: none; } }
 /* On shorter screens the model window shrinks and drops its line, so it never meets the caption. */
-@media (max-height: 900px) { .probe-window { width: 168px; } .probe-window canvas { width: 168px; height: 128px; } .probe-window figcaption { display: none; } }
+/* While one probe is shown, the diagram brings its path forward. */
+body[data-probe="v1"] .chart .ch-v2, body[data-probe="v2"] .chart .ch-v1 { opacity: 0.35; }
+.chart .ch-v1, .chart .ch-v2 { transition: opacity 0.6s var(--ease); }
 /* Voyager: the diagram is the picture, larger, on a near-opaque plate, beside the caption. */
 .chart[data-chart="voyager"] {
-  width: min(860px, calc(100vw - min(560px, 40vw) - var(--gutter) * 2.4 - 32px));
+  /* Narrower on middle-sized screens, so the spacecraft fits between the story and the diagram. */
+  width: min(860px, max(560px, calc(100vw - 1040px)), calc(100vw - min(560px, 40vw) - var(--gutter) * 2.4 - 32px));
   background: rgba(3, 4, 7, 0.9); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 0 80px 30px rgba(3, 4, 7, 0.6);
 }
 .chart .ch-vpath { fill: none; stroke-width: 2; stroke-linejoin: round; }

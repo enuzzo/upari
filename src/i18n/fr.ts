@@ -1064,7 +1064,10 @@ const fr: Dict = {
     source: (day: string) => `NASA/JPL CNEOS · Close-Approach Data · mis à jour le ${first(day)}`,
   },
   voyager: {
-    model: 'À quoi elle ressemble : l’antenne de 3,7 mètres regarde toujours la Terre · modèle 3D de la NASA',
+    modelV1: 'Voyager 1 : l’antenne de 3,7 mètres regarde toujours la Terre · modèle 3D de la NASA',
+    modelV2: 'Voyager 2, jumelle de la première, lancée deux semaines plus tôt · modèle 3D de la NASA',
+    modelPioneer: 'Pioneer 10, 1972 : la première à passer Jupiter et à partir vers les étoiles ; muette depuis 2003 · modèle 3D de la NASA',
+    modelHint: 'cliquez pour la sonde suivante, faites glisser pour la faire tourner',
     title: 'Un jour-lumière', kicker: 'Les Voyager, aux confins',
     narrate: (p: { hours: string; day: string | null }) => `Parties en 1977, les deux sondes Voyager ont franchi la frontière du vent du Soleil. La lumière met ${p.hours} heures pour atteindre Voyager 1${p.day ? ` ; le ${first(p.day)}, elle en mettra vingt-quatre : un jour-lumière` : ''}. C’est l’objet le plus lointain jamais construit.`,
     v1: 'de la Terre à Voyager 1, aujourd’hui',

@@ -1001,7 +1001,10 @@ const en: Dict = {
     source: (day: string) => `NASA/JPL CNEOS · Close-Approach Data · updated ${day}`,
   },
   voyager: {
-    model: 'What it looks like: the 3.7-metre dish always faces the Earth · NASA 3D model',
+    modelV1: 'Voyager 1: the 3.7-metre dish always faces the Earth · NASA 3D model',
+    modelV2: 'Voyager 2, twin of the first, launched two weeks earlier · NASA 3D model',
+    modelPioneer: 'Pioneer 10, 1972: the first past Jupiter and the first out towards the stars; silent since 2003 · NASA 3D model',
+    modelHint: 'click for the next probe, drag to turn it',
     title: 'One light-day', kicker: 'The Voyagers, at the edge',
     narrate: (p: { hours: string; day: string | null }) => `Launched in 1977, the two Voyagers have crossed the edge of the Sun’s wind. Light takes ${p.hours} hours to reach Voyager 1${p.day ? `; on ${p.day} it will take twenty-four: one light-day` : ''}. It is the most distant object ever built.`,
     v1: 'Voyager 1 from the Earth, today',

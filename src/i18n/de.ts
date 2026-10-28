@@ -1005,7 +1005,10 @@ const de: Dict = {
     source: (day: string) => `NASA/JPL CNEOS · Close-Approach Data · Stand: ${day}`,
   },
   voyager: {
-    model: 'So sieht sie aus: Die 3,7-Meter-Antenne zeigt immer zur Erde · 3D-Modell der NASA',
+    modelV1: 'Voyager 1: Die 3,7-Meter-Antenne zeigt immer zur Erde · 3D-Modell der NASA',
+    modelV2: 'Voyager 2, Zwillingssonde der ersten, zwei Wochen früher gestartet · 3D-Modell der NASA',
+    modelPioneer: 'Pioneer 10, 1972: als erste an Jupiter vorbei und als erste auf dem Weg zu den Sternen; stumm seit 2003 · 3D-Modell der NASA',
+    modelHint: 'Klick für die nächste Sonde, Ziehen zum Drehen',
     title: 'Ein Lichttag', kicker: 'Die Voyager-Sonden, am Rand',
     narrate: (p: { hours: string; day: string | null }) => `1977 gestartet, haben die beiden Voyager-Sonden die Grenze des Sonnenwinds überquert. Das Licht braucht ${p.hours} Stunden bis zu Voyager 1${p.day ? `; am ${p.day} werden es vierundzwanzig sein: ein Lichttag` : ''}. Sie ist das entfernteste Objekt, das je gebaut wurde.`,
     v1: 'Abstand von Voyager 1 zur Erde, heute',

@@ -404,6 +404,16 @@ export class Globe {
 
   get yearRunning() { return this.yearRun; }
 
+  /** Move the chapter's own clocks (replays, the year run, the rockets' year, the time-lapse) by
+   *  `seconds`, as when the reader drags the chapter's cursor forwards or back. */
+  shiftClocks(seconds: number) {
+    this.quakeT0 -= seconds;
+    this.spotT0 -= seconds;
+    this.yearT0 -= seconds;
+    if (this.yearRun) this.yearRun.t0 -= seconds;
+    if (this.look.lapse > 0) this.timeOffset = Math.max(0, this.timeOffset + seconds * this.look.lapse * 3600e3);
+  }
+
   setLook(next: Partial<Look>) {
     this.look = { ...DEFAULT_LOOK, ...next };
     if (this.look.years) {

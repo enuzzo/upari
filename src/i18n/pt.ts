@@ -1051,7 +1051,10 @@ const pt: Dict = {
     source: (day: string) => `NASA/JPL CNEOS · Close-Approach Data · atualizado em ${day}`,
   },
   voyager: {
-    model: 'Como ela é: a antena de 3,7 metros aponta sempre para a Terra · modelo 3D da NASA',
+    modelV1: 'Voyager 1: a antena de 3,7 metros aponta sempre para a Terra · modelo 3D da NASA',
+    modelV2: 'Voyager 2, gêmea da primeira, lançada duas semanas antes · modelo 3D da NASA',
+    modelPioneer: 'Pioneer 10, 1972: a primeira a passar por Júpiter e a seguir rumo às estrelas; em silêncio desde 2003 · modelo 3D da NASA',
+    modelHint: 'clique para a próxima sonda, arraste para girá-la',
     title: 'Um dia-luz', kicker: 'As Voyager, nos confins',
     narrate: (p: { hours: string; day: string | null }) => `Lançadas em 1977, as duas Voyager já cruzaram a fronteira do vento do Sol. A luz leva ${p.hours} horas para chegar à Voyager 1${p.day ? `; em ${p.day}, vai levar vinte e quatro: um dia-luz` : ''}. É o objeto mais distante já construído.`,
     v1: 'da Terra à Voyager 1, hoje',

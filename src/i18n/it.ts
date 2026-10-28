@@ -1028,7 +1028,10 @@ const it = {
     source: (day: string) => `NASA/JPL CNEOS · Close-Approach Data · aggiornato al ${day}`,
   },
   voyager: {
-    model: 'Com’è fatta: l’antenna di 3,7 metri guarda sempre la Terra · modello 3D della NASA',
+    modelV1: 'Voyager 1: l’antenna di 3,7 metri guarda sempre la Terra · modello 3D della NASA',
+    modelV2: 'Voyager 2, gemella della prima, partita due settimane prima · modello 3D della NASA',
+    modelPioneer: 'Pioneer 10, 1972: la prima a passare Giove e a uscire verso le stelle; tace dal 2003 · modello 3D della NASA',
+    modelHint: 'clic per la prossima sonda, trascina per girarla',
     title: 'Un giorno-luce', kicker: 'Le Voyager, ai confini',
     narrate: (p: { hours: string; day: string | null }) => `Partite nel 1977, le due Voyager hanno passato il confine del vento del Sole. La luce impiega ${p.hours} ore per raggiungere Voyager 1${p.day ? `; il ${p.day} ne impiegherà ventiquattro: un giorno-luce` : ''}. È l’oggetto più lontano mai costruito.`,
     v1: 'Voyager 1 dalla Terra, oggi',

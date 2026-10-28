@@ -1012,7 +1012,10 @@ const es: Dict = {
     source: (day: string) => `NASA/JPL CNEOS · Close-Approach Data · actualizado el ${day}`,
   },
   voyager: {
-    model: 'Cómo es: la antena de 3,7 metros mira siempre a la Tierra · modelo 3D de la NASA',
+    modelV1: 'Voyager 1: la antena de 3,7 metros mira siempre a la Tierra · modelo 3D de la NASA',
+    modelV2: 'Voyager 2, gemela de la primera, lanzada dos semanas antes · modelo 3D de la NASA',
+    modelPioneer: 'Pioneer 10, 1972: la primera en pasar Júpiter y en salir hacia las estrellas; en silencio desde 2003 · modelo 3D de la NASA',
+    modelHint: 'clic para la siguiente sonda, arrastra para girarla',
     title: 'Un día luz', kicker: 'Las Voyager, en el límite',
     narrate: (p: { hours: string; day: string | null }) => `Lanzadas en 1977, las dos Voyager han cruzado el límite del viento del Sol. La luz tarda ${p.hours} horas en llegar a la Voyager 1${p.day ? `; el ${p.day} tardará veinticuatro: un día luz` : ''}. Es el objeto más lejano jamás construido.`,
     v1: 'de la Tierra a la Voyager 1, hoy',

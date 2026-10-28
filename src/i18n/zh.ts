@@ -1013,7 +1013,10 @@ const zh: Dict = {
     source: (day: string) => `NASA/JPL CNEOS · Close-Approach Data · 更新至 ${day}`,
   },
   voyager: {
-    model: '它的样子：3.7 米的天线始终对准地球 · NASA 3D 模型',
+    modelV1: '旅行者 1 号：3.7 米的天线始终对准地球 · NASA 3D 模型',
+    modelV2: '旅行者 2 号，1 号的孪生兄弟，早两周发射 · NASA 3D 模型',
+    modelPioneer: '先驱者 10 号，1972 年：第一个飞越木星、第一个驶向星际的探测器；2003 年起沉默 · NASA 3D 模型',
+    modelHint: '点击切换下一个探测器，拖动旋转',
     title: '一光日', kicker: '旅行者号，在太阳系边缘',
     narrate: (p: { hours: string; day: string | null }) => `1977 年发射的两艘旅行者号，已经越过了太阳风的边界。光需要 ${p.hours} 小时才能到达旅行者 1 号${p.day ? `；到${p.day}，将需要二十四小时：一光日` : ''}。它是人类建造过的最遥远的物体。`,
     v1: '旅行者 1 号距地球，今天',

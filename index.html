@@ -59,7 +59,7 @@
   </header>
 
   <section class="caption hidden" id="caption" aria-live="polite">
-    <div class="kicker"><span class="num" id="cap-num"></span><span id="cap-kicker"></span><span class="kind" id="cap-kind"></span></div>
+    <div class="kicker"><button class="resume" id="resume-btn" data-t-aria="page.resume" data-t-title="page.resume"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg></button><span class="num" id="cap-num"></span><span id="cap-kicker"></span><span class="kind" id="cap-kind"></span></div>
     <h1 class="title" id="cap-title"></h1>
     <p class="line" id="cap-line"></p>
     <div class="cap-actions">
@@ -162,8 +162,8 @@
   </aside>
 
   <figure class="probe-window" id="probe-window" aria-hidden="true">
-    <canvas id="probe-canvas"></canvas>
-    <figcaption data-t="voyager.model"></figcaption>
+    <canvas id="probe-canvas" tabindex="0" data-t-aria="voyager.modelHint"></canvas>
+    <figcaption id="probe-caption"></figcaption>
   </figure>
 
   <aside class="country-card" id="country-card" aria-live="polite">

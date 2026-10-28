@@ -1051,7 +1051,10 @@ const ko: Dict = {
     source: (day: string) => `NASA/JPL CNEOS · Close-Approach Data · ${day} 업데이트`,
   },
   voyager: {
-    model: '생김새: 지름 3.7미터 안테나는 언제나 지구를 향한다 · NASA의 3D 모델',
+    modelV1: '보이저 1호: 지름 3.7미터 안테나는 언제나 지구를 향한다 · NASA의 3D 모델',
+    modelV2: '보이저 2호는 1호의 쌍둥이로, 2주 먼저 발사되었다 · NASA의 3D 모델',
+    modelPioneer: '파이어니어 10호, 1972년: 목성을 처음 지나 별을 향해 처음 떠난 탐사선, 2003년부터 교신이 끊겼다 · NASA의 3D 모델',
+    modelHint: '클릭하면 다음 탐사선, 드래그해서 돌리기',
     title: '1광일', kicker: '끝자락의 보이저',
     narrate: (p: { hours: string; day: string | null }) => `1977년에 떠난 두 보이저는 태양풍의 경계를 넘었다. 빛이 보이저 1호에 닿는 데 ${p.hours}시간이 걸린다${p.day ? `. ${p.day}에는 스물네 시간, 곧 1광일이 걸릴 것이다` : ''}. 사람이 만든 것 가운데 가장 먼 물체다.`,
     v1: '오늘, 지구에서 보이저 1호까지',

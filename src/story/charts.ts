@@ -321,7 +321,7 @@ async function voyager(svg: SVGElement, cap: HTMLElement) {
       const pts = paths[key].filter((q) => q[0] <= year).map((q) => project(q[1], q[2], q[3], s));
       const head = at(key, year), [hx, hy] = project(head[1], head[2], head[3], s);
       pts.push([hx, hy]);
-      el('polyline', { points: pts.map((q) => q.join(',')).join(' '), class: 'ch-vpath', stroke: COL[key] }, g);
+      el('polyline', { points: pts.map((q) => q.join(',')).join(' '), class: `ch-vpath ch-${key}`, stroke: COL[key] }, g);
       // The labels keep off the paths too.
       for (let i = 1; i < pts.length; i++) {
         const [ax, ay] = pts[i - 1], [bx, by] = pts[i], n = Math.ceil(Math.hypot(bx - ax, by - ay) / 6);
@@ -333,7 +333,7 @@ async function voyager(svg: SVGElement, cap: HTMLElement) {
         const dx = hx - px, dy = hy - py, n = Math.hypot(dx, dy) || 1;
         el('line', { x1: hx, y1: hy, x2: hx + (dx / n) * 46, y2: hy + (dy / n) * 46, class: 'ch-heading', stroke: COL[key] }, g);
       }
-      el('circle', { cx: hx, cy: hy, r: 5, fill: COL[key], class: 'ch-head' }, g);
+      el('circle', { cx: hx, cy: hy, r: 5, fill: COL[key], class: `ch-head ch-${key}` }, g);
       taken.push({ x0: hx - 8, y0: hy - 8, x1: hx + 8, y1: hy + 8 });
     }
     // The meetings, while the planets are still large enough to tell apart.

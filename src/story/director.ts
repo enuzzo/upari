@@ -26,6 +26,8 @@ export class Director {
   index = -1;
   playing = true;
   private elapsed = 0;
+  /** Counts the camera choreographies started: a seek starts a new one, the old one stops. */
+  private frameRun = 0;
   private token = 0;
   private lineReady = false;
   private anchors: Anchor[] = [];
@@ -46,6 +48,7 @@ export class Director {
       void this.go(0);
     });
     $('play-btn').addEventListener('click', () => this.setPlaying(!this.playing));
+    $('resume-btn').addEventListener('click', () => this.setPlaying(true));
     $('more-btn').addEventListener('click', () => this.openDrawer());
     $('drawer-close').addEventListener('click', () => this.closeDrawer());
     globe.rig.onUserInput = () => {
@@ -92,10 +95,26 @@ export class Director {
     this.chapterEls = [];
     this.chapters.forEach((c, i) => {
       const li = document.createElement('li');
-      li.innerHTML = '<button><span class="bar"><span class="fill"></span></span><span class="label"></span></button>';
-      li.querySelector('button')!.setAttribute('aria-label', c.title);
+      li.innerHTML = '<button><span class="bar"><span class="fill"></span></span><i class="knob" aria-hidden="true"></i><span class="label"></span></button>';
+      const button = li.querySelector('button')!;
+      button.setAttribute('aria-label', c.title);
       li.querySelector('.label')!.textContent = c.title;
-      li.querySelector('button')!.addEventListener('click', () => { this.go(i); });
+      // A click starts the chapter; a drag along its bar moves to that moment of it.
+      let down: { x: number; moved: boolean } | null = null;
+      const at = (e: PointerEvent) => { const r = button.getBoundingClientRect(); return Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)); };
+      button.addEventListener('pointerdown', (e) => { down = { x: e.clientX, moved: false }; try { button.setPointerCapture(e.pointerId); } catch { /* synthetic pointer */ } });
+      button.addEventListener('pointermove', (e) => {
+        if (!down) return;
+        if (Math.abs(e.clientX - down.x) > 4) down.moved = true;
+        if (down.moved) { li.classList.add('scrub'); this.progress(li, at(e)); }
+      });
+      button.addEventListener('pointerup', (e) => {
+        const d = down; down = null;
+        li.classList.remove('scrub');
+        if (d?.moved) { li.dataset.dragged = '1'; void this.goAt(i, at(e)); }
+      });
+      button.addEventListener('pointercancel', () => { down = null; li.classList.remove('scrub'); });
+      button.addEventListener('click', () => { if (li.dataset.dragged) { delete li.dataset.dragged; return; } this.go(i); });
       ol.appendChild(li);
       this.chapterEls.push(li);
     });
@@ -112,7 +131,7 @@ export class Director {
     this.chapterEls.forEach((li, k) => {
       li.classList.toggle('current', k === index);
       li.classList.toggle('done', k < index);
-      (li.querySelector('.fill') as HTMLElement).style.transform = k < index ? 'scaleX(1)' : k === index ? `scaleX(${Math.min(1, this.elapsed / c.duration)})` : 'scaleX(0)';
+      this.progress(li, k < index ? 1 : k === index ? Math.min(1, this.elapsed / c.duration) : 0);
     });
     $('cap-kicker').textContent = c.kicker;
     $('cap-kind').textContent = c.kind ? t.kinds[c.kind] : '';
@@ -135,14 +154,51 @@ export class Director {
 
   setPlaying(v: boolean) {
     this.playing = v;
-    $('play-btn').classList.toggle('paused', !v);
-    $('play-btn').setAttribute('aria-label', v ? t.page.pause : t.page.resume);
+    this.showPlaying();
     if (v && this.chapter) {
-      // Resuming: go back to the chapter's framing.
+      // Resuming: back to the chapter's framing, at the moment where it stopped.
       if (this.detour) this.go(this.index);
       else if (this.elapsed > this.chapter.duration - 4) this.next();
-      else void this.frame(this.chapter, this.token);
+      else void this.frame(this.chapter, this.token, this.elapsed);
     }
+  }
+
+  private showPlaying() {
+    const v = this.playing;
+    $('play-btn').classList.toggle('paused', !v);
+    $('play-btn').setAttribute('aria-label', v ? t.page.pause : t.page.resume);
+    document.body.classList.toggle('paused', !v && this.index >= 0);
+  }
+
+  /** How far into a chapter its bar and its cursor show. */
+  private progress(li: HTMLElement, f: number) {
+    (li.querySelector('.fill') as HTMLElement).style.transform = `scaleX(${f})`;
+    li.style.setProperty('--p', f.toFixed(4));
+  }
+
+  /** Start chapter i at a fraction of its length (a drag along its bar). */
+  async goAt(i: number, f: number) {
+    if (i !== this.index) {
+      await this.go(i);
+      for (let k = 0; k < 80 && !this.lineReady; k++) await new Promise((r) => setTimeout(r, 100));
+    }
+    const c = this.chapter;
+    if (c) this.seek(f * c.duration);
+  }
+
+  /** Move inside the chapter to second t: the globe's clocks, then the camera from the beat
+   *  that holds that moment (a quick flight to its shot, the rest of it, the beats after). */
+  seek(t: number) {
+    const c = this.chapter;
+    if (!c) return;
+    t = Math.min(c.duration - 0.5, Math.max(0, t));
+    this.globe.shiftClocks(t - this.elapsed);
+    this.elapsed = t;
+    this.progress(this.chapterEls[this.index], t / c.duration);
+    this.lineReady = true;
+    this.playing = true;
+    this.showPlaying();
+    void this.frame(c, this.token, t);
   }
 
   next() { this.go((this.index + 1) % this.chapters.length); }
@@ -161,7 +217,7 @@ export class Director {
     this.chapterEls.forEach((li, k) => {
       li.classList.toggle('current', k === i);
       li.classList.toggle('done', k < i);
-      (li.querySelector('.fill') as HTMLElement).style.transform = k < i ? 'scaleX(1)' : 'scaleX(0)';
+      this.progress(li, k < i ? 1 : 0);
     });
 
     // Prefetch, so the planet changes as the words arrive.
@@ -212,23 +268,38 @@ export class Director {
   }
 
   /** Camera choreography for a chapter. */
-  private async frame(c: Chapter, token: number) {
+  private async frame(c: Chapter, token: number, from = 0) {
+    const run = ++this.frameRun;
     const beats = await c.beats(this.globe).catch(() => []);
-    if (token !== this.token) return;
-    for (const b of beats) {
+    if (token !== this.token || run !== this.frameRun) return;
+    // Starting later (a seek): skip the beats already over, counting a flight as about four
+    // seconds when the chapter does not say, and enter the current one by a quick flight.
+    let t = 0, skip = 0, holdLeft = -1;
+    if (from > 0) {
+      for (; skip < beats.length; skip++) {
+        const b = beats[skip], fly = b.seconds ?? 4, hold = b.hold ?? 0;
+        if (t + fly + hold > from) { holdLeft = Math.min(hold, t + fly + hold - from); break; }
+        t += fly + hold;
+        if (b.look) this.globe.setLook({ ...c.look, ...b.look });
+      }
+      if (skip >= beats.length) skip = beats.length - 1;
+    }
+    for (const [k, b] of beats.entries()) {
+      if (k < skip) continue;
       this.globe.rig.drift = 0;
       if (b.look) this.globe.setLook({ ...c.look, ...b.look });
       if (b.clear) this.clearAnchors();
       if (this.globe.rig.portrait && !this.drawerOpen) this.globe.rig.setFrameShift(b.portraitShift ?? 0.14);
-      await this.globe.rig.flyTo(b.shot, b.seconds);
-      if (token !== this.token || !this.playing) return;
+      await this.globe.rig.flyTo(b.shot, k === skip && from > 0 ? 1.2 : b.seconds);
+      if (token !== this.token || run !== this.frameRun || !this.playing) return;
       this.globe.rig.drift = b.drift ?? 0;
-      if (b.hold) {
+      const hold = k === skip && holdLeft >= 0 ? holdLeft : b.hold;
+      if (hold) {
         this.following = !!b.follow;
-        const until = this.elapsed + b.hold;
+        const until = this.elapsed + hold;
         while (this.elapsed < until) {
           await new Promise((r) => setTimeout(r, 150));
-          if (token !== this.token || !this.playing) return;
+          if (token !== this.token || run !== this.frameRun || !this.playing) return;
         }
         this.following = false;
       }
@@ -420,8 +491,8 @@ export class Director {
     const c = this.chapter;
     if (c && this.playing && this.lineReady && !this.drawerOpen) {
       this.elapsed += dt;
-      const f = this.chapterEls[this.index].querySelector('.fill') as HTMLElement;
-      f.style.transform = `scaleX(${Math.min(1, this.elapsed / c.duration)})`;
+      const li = this.chapterEls[this.index];
+      if (!li.classList.contains('scrub')) this.progress(li, Math.min(1, this.elapsed / c.duration));
       if (this.elapsed >= c.duration) {
         if (this.index === this.chapters.length - 1) {
           // The end: leave the viewer free to explore, and offer the next story.

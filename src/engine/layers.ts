@@ -240,8 +240,9 @@ export class LayerStore {
         const files = meta.frames ? meta.frames.map((f) => f.file) : [`${id}.png`];
         const split = !!meta.frames?.[0]?.conf;
         const [tex, conf] = await Promise.all([
-          Promise.all(files.map((f) => loadTexture(`layers/${f}`))),
-          split ? Promise.all(meta.frames!.map((f) => loadTexture(`layers/${f.conf}`, { mipmaps: false }))) : Promise.resolve(null),
+          // The images too carry the build's mark: same names every morning, new pictures.
+          Promise.all(files.map((f) => loadTexture(fresh(`layers/${f}`)))),
+          split ? Promise.all(meta.frames!.map((f) => loadTexture(fresh(`layers/${f.conf}`), { mipmaps: false }))) : Promise.resolve(null),
         ]);
         const w = meta.frames ? 720 : 1440;
         const sampler = tex.map((t, i) => {
@@ -249,7 +250,7 @@ export class LayerStore {
           return conf ? new SplitSampler(s, Sampler.fromImage(conf[i].image as HTMLImageElement, w)) : s;
         });
         if (meta.frames && !meta.width) {
-          const first = await (await fetch(`layers/${files[0].replace('.png', '.json')}`)).json().catch(() => null);
+          const first = await (await fetch(fresh(`layers/${files[0].replace('.png', '.json')}`))).json().catch(() => null);
           if (first) { meta.width = first.width; meta.height = first.height; }
         }
         return { tex, conf, meta, sampler };
@@ -287,7 +288,7 @@ export class LayerStore {
       meta.dates = [d['Forecast Time']];
       return { tex: [tex as Texture], conf: null, meta: { ...meta, width: W, height: H }, sampler: [Sampler.fromImage(sc, W)] };
     } catch {
-      const tex = await loadTexture('layers/aurora.png', { mipmaps: false });
+      const tex = await loadTexture(fresh('layers/aurora.png'), { mipmaps: false });
       return { tex: [tex], conf: null, meta, sampler: [Sampler.fromImage(tex.image as HTMLImageElement, 360)] };
     }
   }

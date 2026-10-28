@@ -232,7 +232,9 @@ jobs:
             fresh=0
             for try in 1 2 3 4 5 6 7 8; do
               sleep 20
-              live=$(curl -fsS --max-time 30 "https://upari.earth/${f/index.html/}" | sha256sum | cut -c1-64)
+              # As the page asks for them: the data files with the build's mark (src/engine/fresh.ts).
+              q=''; [ "$f" != index.html ] && q="?b=$(cat dist/.build 2>/dev/null)"
+              live=$(curl -fsS --max-time 30 "https://upari.earth/${f/index.html/}$q" | sha256sum | cut -c1-64)
               if [ "$live" = "$built" ]; then fresh=1; break; fi
             done
             if [ $fresh = 1 ]; then echo "$f: aggiornato"; else echo "$f: upari.earth serve ancora una versione precedente"; stale=1; fi

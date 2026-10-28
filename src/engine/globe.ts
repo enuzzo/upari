@@ -280,7 +280,8 @@ export class Globe {
   async loadFlow(id: FlowId): Promise<FlowField> {
     if (this.flows[id]) return this.flows[id]!;
     const meta = await (await fetch(fresh(`fields/${id}.json`))).json();
-    const tex = await loadTexture(`fields/${id}.png`, { mipmaps: false });
+    // The wind changes every morning: its picture carries the build's mark; the currents do not.
+    const tex = await loadTexture(id === 'wind' ? fresh(`fields/${id}.png`) : `fields/${id}.png`, { mipmaps: false });
     const style = id === 'wind'
       ? { scale: meta.scale, speed: 22000, vmax: 26, colors: FLOW_COLORS.wind as unknown as [number, number, number][], life: 7, fade: 0.988, intensity: 0.28 }
       : {

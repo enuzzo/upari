@@ -71,6 +71,7 @@ const es: Dict = {
     dataCredit: 'Datos ©',
     hint: 'Arrastra para girar · usa la rueda para acercarte · toca un punto para leerlo · L para las capas · / para buscar · M para el sonido',
     intro: 'El planeta, contado por sus datos de hoy.',
+    asOf: (month: string) => `Datos más recientes, actualizados a ${month}`,
     exploreAlone: 'Explorar por tu cuenta',
     noWebgl: 'Necesitas un navegador con WebGL 2 para ver el planeta.',
     clock: (day: string, time: string) => `${day} · ${time} UTC`,
@@ -524,7 +525,7 @@ const es: Dict = {
   },
   termometro: {
     title: 'El termómetro', kicker: 'Cada día desde 1940',
-    narrate: (p: { day: string; value: string; anomaly: string }) => `Cada línea es un año, desde 1940 hasta hoy: la temperatura media del aire en todo el planeta, día tras día. El ${p.day} fue de ${p.value} grados, ${p.anomaly} respecto a la media de 1991–2020. Las líneas más cálidas son las más recientes.`,
+    narrate: (p: { value: string; anomaly: string }) => `Cada línea es un año, desde 1940 hasta hoy: la temperatura media del aire en todo el planeta, día tras día. La última medición, de hace pocos días, dice ${p.value} grados, ${p.anomaly} respecto a la media de 1991–2020. Las líneas más cálidas son las más recientes.`,
     anomaly: (day: string, preliminary: boolean) => `respecto a 1991–2020, el ${day}${preliminary ? ' (dato provisional)' : ''}`,
     record: (day: string) => `el día más cálido jamás medido, el ${day}`,
     sea: (day: string) => `el mar entre 60° S y 60° N respecto a 1991–2020, el ${day}`,
@@ -555,7 +556,7 @@ const es: Dict = {
   },
   fulmini: {
     title: 'Los rayos', kicker: 'La última media hora, y veinte años',
-    narrate: (p: { count: string; day: string; from: string; to: string }) => `El ${p.day}, entre ${p.from} y ${p.to}, los satélites GOES contaron ${p.count} rayos sobre las Américas y los océanos que las rodean: aquí están, uno tras otro. Debajo, el mapa de veinte años de rayos vistos desde el espacio: caen sobre todo en las tierras cálidas del trópico, en el centro de África, en el lago de Maracaibo.`,
+    narrate: (p: { count: string }) => `En la última media hora registrada, los satélites GOES contaron ${p.count} rayos sobre las Américas y los océanos que las rodean: aquí están, uno tras otro. Debajo, el mapa de veinte años de rayos vistos desde el espacio: caen sobre todo en las tierras cálidas del trópico, en el centro de África, en el lago de Maracaibo.`,
     halfHour: (day: string, from: string, to: string) => `rayos sobre las Américas el ${day}, entre ${from} y ${to}`,
     facts: [
       ['≈ 44', 'rayos por segundo en toda la Tierra, de media'],
@@ -590,7 +591,7 @@ const es: Dict = {
   },
   ondate: {
     title: 'Las olas de calor marinas', kicker: 'El mar hoy, frente a 1991 – 2020',
-    narrate: (p: { pct: string; day: string }) => `El ${p.day} una ola de calor cubre el ${p.pct}% de los mares: aguas que desde hace al menos cinco días están más cálidas de lo que lo estaban nueve veces de cada diez, en esa época del año, entre 1991 y 2020.`,
+    narrate: (p: { pct: string }) => `Estos días una ola de calor cubre el ${p.pct}% de los mares: aguas que desde hace al menos cinco días están más cálidas de lo que lo estaban nueve veces de cada diez, en esa época del año, entre 1991 y 2020.`,
     share: (day: string) => `de los mares en una ola de calor, el ${day}`,
     severe: 'de los mares en una ola de calor severa o extrema',
     text: 'Es la definición de Hobday y colaboradores (2016): una ola de calor marina es un tramo de mar por encima del percentil 90 de su clima para ese día del año, durante al menos cinco días seguidos. La categoría dice por cuánto: moderada, fuerte (el doble de la distancia entre el umbral y la media), severa, extrema. Las temperaturas son las de NOAA OISST, leídas a 1 grado; el umbral lo calculó Upari sobre los treinta años 1991–2020. Los mares que se congelan durante parte del año quedan excluidos, también del porcentaje: allí el clima de referencia no es fiable.',
@@ -949,7 +950,7 @@ const es: Dict = {
 
   sole: {
     title: 'El Sol', kicker: 'A escala con la Tierra',
-    narrate: (time: string) => `Este es el Sol: ciento nueve Tierras en fila de un borde al otro. Ese puntito a su lado es nuestro planeta. La cara que nos mira es la verdadera: sus últimas veinticuatro horas vistas por el satélite SDO, hasta las ${time} UTC, que pasan en pocos segundos. A escala en tamaño, no en distancia: en realidad está ochenta veces más lejos que esto.`,
+    narrate: 'Este es el Sol: ciento nueve Tierras en fila de un borde al otro. Ese puntito a su lado es nuestro planeta. La cara que nos mira es la verdadera: sus últimas veinticuatro horas vistas por el satélite SDO, que pasan en pocos segundos. A escala en tamaño, no en distancia: en realidad está ochenta veces más lejos que esto.',
     earth: 'la Tierra',
     earthSub: 'a escala con el Sol',
     taken: (day: string) => `la hora de la imagen, el ${day}`,

@@ -52,6 +52,7 @@ const zh: Dict = {
     dataCredit: '数据 ©',
     hint: '拖动旋转 · 滚轮拉近 · 点击某处读取数据 · L 打开图层 · / 搜索 · M 开关声音',
     intro: '用今天的数据，讲述这颗星球。',
+    asOf: (month: string) => `最新数据，截至 ${month}`,
     exploreAlone: '自己探索',
     noWebgl: '需要支持 WebGL 2 的浏览器才能看到地球。',
     clock: (day: string, time: string) => `${day} · ${time} UTC`,
@@ -525,7 +526,7 @@ const zh: Dict = {
   },
   termometro: {
     title: '温度计', kicker: '1940 年以来的每一天',
-    narrate: (p: { day: string; value: string; anomaly: string }) => `每条线是一年，从 1940 年到今天：整个地球的平均气温，一天接一天。${p.day}，它是 ${p.value} 摄氏度，与 1991–2020 年的平均值相差 ${p.anomaly} 度。最暖的那些线，就是最近的年份。`,
+    narrate: (p: { value: string; anomaly: string }) => `每条线是一年，从 1940 年到今天：整个地球的平均气温，一天接一天。最近一次测量，来自几天前，是 ${p.value} 摄氏度，与 1991–2020 年的平均值相差 ${p.anomaly} 度。最暖的那些线，就是最近的年份。`,
     anomaly: (day: string, preliminary: boolean) => `与 1991–2020 年相比，${day}${preliminary ? '（初步数据）' : ''}`,
     record: (day: string) => `有测量以来最热的一天，${day}`,
     sea: (day: string) => `南纬 60° 至北纬 60° 之间的海洋，与 1991–2020 年相比，${day}`,
@@ -556,7 +557,7 @@ const zh: Dict = {
   },
   fulmini: {
     title: '闪电', kicker: '最近半小时，与二十年',
-    narrate: (p: { count: string; day: string; from: string; to: string }) => `${p.day}，在 ${p.from} 到 ${p.to} 之间，GOES 卫星在南北美洲及周边海洋上空数到了 ${p.count} 次闪电：它们一道接一道，都在这里。它们之下，是从太空看到的二十年闪电地图：闪电最爱落在热带炎热的陆地上，落在非洲中部，落在马拉开波湖上空。`,
+    narrate: (p: { count: string }) => `在最近记录的半小时里，GOES 卫星在南北美洲及周边海洋上空数到了 ${p.count} 次闪电：它们一道接一道，都在这里。它们之下，是从太空看到的二十年闪电地图：闪电最爱落在热带炎热的陆地上，落在非洲中部，落在马拉开波湖上空。`,
     halfHour: (day: string, from: string, to: string) => `南北美洲上空的闪电，${day}，${from} 到 ${to}`,
     facts: [
       ['≈ 44', '次闪电每秒，全球平均'],
@@ -591,7 +592,7 @@ const zh: Dict = {
   },
   ondate: {
     title: '海洋热浪', kicker: '今天的海洋，对照 1991 – 2020 年',
-    narrate: (p: { pct: string; day: string }) => `${p.day}，海洋热浪笼罩着 ${p.pct}% 的海面：这些海水已连续至少五天，比 1991–2020 年间同一时节十有九次的水温都更暖。`,
+    narrate: (p: { pct: string }) => `这几天，海洋热浪笼罩着 ${p.pct}% 的海面：这些海水已连续至少五天，比 1991–2020 年间同一时节十有九次的水温都更暖。`,
     share: (day: string) => `处于热浪中的海面比例（${day}）`,
     severe: '处于严重或极端热浪中的海面比例',
     text: '这是 Hobday 及其同事（2016）的定义：海洋热浪，是指某片海域的温度连续至少五天高于其气候在当天的第 90 百分位。类别说明高出多少：中等、强（阈值与平均值之间距离的两倍）、严重、极端。温度取自 NOAA OISST，分辨率 1 度；阈值由 Upari 根据 1991–2020 年这三十年计算得出。一年中有一段时间结冰的海域被排除在外，百分比中也不计入：那里的参考气候不可靠。',
@@ -950,7 +951,7 @@ const zh: Dict = {
 
   sole: {
     title: '太阳', kicker: '与地球同比例',
-    narrate: (time: string) => `这是太阳：从一边到另一边，能排下一百零九个地球。旁边那个小点就是我们的星球。朝向我们的这一面是真实的：SDO 卫星看到的最近二十四小时，截至 ${time} UTC，几秒钟就放完。这里按大小成比例，而不是按距离：实际上，太阳比这里远八十倍。`,
+    narrate: '这是太阳：从一边到另一边，能排下一百零九个地球。旁边那个小点就是我们的星球。朝向我们的这一面是真实的：SDO 卫星看到的最近二十四小时，几秒钟就放完。这里按大小成比例，而不是按距离：实际上，太阳比这里远八十倍。',
     earth: '地球',
     earthSub: '与太阳同比例',
     taken: (day: string) => `图像的拍摄时间，${day}`,

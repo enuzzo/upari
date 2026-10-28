@@ -83,6 +83,7 @@ const pt: Dict = {
     dataCredit: 'Dados ©',
     hint: 'Arraste para girar · role para se aproximar · toque num ponto para lê-lo · L para as camadas · / para procurar · M para o som',
     intro: 'O planeta, contado pelos seus dados de hoje.',
+    asOf: (month: string) => `Dados mais recentes, atualizados em ${month}`,
     exploreAlone: 'Explorar por conta própria',
     noWebgl: 'É preciso um navegador com WebGL 2 para ver o planeta.',
     clock: (day: string, time: string) => `${day} · ${time} UTC`,
@@ -560,7 +561,7 @@ const pt: Dict = {
   },
   termometro: {
     title: 'O termômetro', kicker: 'Todos os dias desde 1940',
-    narrate: (p: { day: string; value: string; anomaly: string }) => `Cada linha é um ano, de 1940 até hoje: a temperatura média do ar em todo o planeta, dia após dia. Em ${p.day}, ela foi de ${p.value} graus, ${p.anomaly} em relação à média de 1991–2020. As linhas mais quentes são as mais recentes.`,
+    narrate: (p: { value: string; anomaly: string }) => `Cada linha é um ano, de 1940 até hoje: a temperatura média do ar em todo o planeta, dia após dia. A última medição, de poucos dias atrás, diz ${p.value} graus, ${p.anomaly} em relação à média de 1991–2020. As linhas mais quentes são as mais recentes.`,
     anomaly: (day: string, preliminary: boolean) => `em relação a 1991–2020, em ${day}${preliminary ? ' (dado provisório)' : ''}`,
     record: (day: string) => `o dia mais quente já medido, em ${day}`,
     sea: (day: string) => `o mar entre 60° S e 60° N em relação a 1991–2020, em ${day}`,
@@ -591,7 +592,7 @@ const pt: Dict = {
   },
   fulmini: {
     title: 'Os raios', kicker: 'A última meia hora, e vinte anos',
-    narrate: (p: { count: string; day: string; from: string; to: string }) => `Em ${p.day}, entre ${p.from} e ${p.to}, os satélites GOES contaram ${p.count} raios sobre as Américas e os oceanos ao redor: aqui estão eles, um depois do outro. Abaixo, o mapa de vinte anos de raios vistos do espaço: eles caem sobretudo nas terras quentes dos trópicos, na África central, no Lago Maracaibo.`,
+    narrate: (p: { count: string }) => `Na última meia hora registrada, os satélites GOES contaram ${p.count} raios sobre as Américas e os oceanos ao redor: aqui estão eles, um depois do outro. Abaixo, o mapa de vinte anos de raios vistos do espaço: eles caem sobretudo nas terras quentes dos trópicos, na África central, no Lago Maracaibo.`,
     halfHour: (day: string, from: string, to: string) => `raios sobre as Américas em ${day}, entre ${from} e ${to}`,
     facts: [
       ['≈ 44', 'raios por segundo em toda a Terra, em média'],
@@ -626,7 +627,7 @@ const pt: Dict = {
   },
   ondate: {
     title: 'As ondas de calor marinhas', kicker: 'O mar hoje, em comparação com 1991 – 2020',
-    narrate: (p: { pct: string; day: string }) => `Em ${p.day}, uma onda de calor cobre ${p.pct}% dos mares: águas que há pelo menos cinco dias estão mais quentes do que estiveram nove vezes em dez, nessa época do ano, entre 1991 e 2020.`,
+    narrate: (p: { pct: string }) => `Nestes dias, uma onda de calor cobre ${p.pct}% dos mares: águas que há pelo menos cinco dias estão mais quentes do que estiveram nove vezes em dez, nessa época do ano, entre 1991 e 2020.`,
     share: (day: string) => `dos mares em onda de calor, em ${day}`,
     severe: 'dos mares em onda de calor severa ou extrema',
     text: 'É a definição de Hobday e colegas (2016): uma onda de calor marinha é um trecho de mar acima do percentil 90 do seu clima para aquele dia do ano, por pelo menos cinco dias seguidos. A categoria diz por quanto: moderada, forte (o dobro da distância entre o limiar e a média), severa, extrema. As temperaturas são as do NOAA OISST, lidas a 1 grau; o limiar foi calculado pelo Upari sobre os trinta anos de 1991–2020. Os mares que congelam durante parte do ano ficam de fora, inclusive da porcentagem: ali o clima de referência não é confiável.',
@@ -988,7 +989,7 @@ const pt: Dict = {
 
   sole: {
     title: 'O Sol', kicker: 'Em escala com a Terra',
-    narrate: (time: string) => `Este é o Sol: cento e nove Terras enfileiradas de uma borda à outra. Aquele pontinho ao lado é o nosso planeta. A face voltada para nós é a verdadeira: as suas últimas vinte e quatro horas vistas pelo satélite SDO, até às ${time} UTC, passando em poucos segundos. Em escala de tamanho, não de distância: na verdade, ele está oitenta vezes mais longe do que isso.`,
+    narrate: 'Este é o Sol: cento e nove Terras enfileiradas de uma borda à outra. Aquele pontinho ao lado é o nosso planeta. A face voltada para nós é a verdadeira: as suas últimas vinte e quatro horas vistas pelo satélite SDO, passando em poucos segundos. Em escala de tamanho, não de distância: na verdade, ele está oitenta vezes mais longe do que isso.',
     earth: 'a Terra',
     earthSub: 'em escala com o Sol',
     taken: (day: string) => `a hora da imagem, em ${day}`,

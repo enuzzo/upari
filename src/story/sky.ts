@@ -41,7 +41,7 @@ export const SKY_CHAPTERS: Chapter[] = titled([
     duration: 42,
     narrate: async () => {
       const d = await climate.sun();
-      return t.sole.narrate(timeUtc(d.time));
+      return t.sole.narrate;
     },
     detail: async () => {
       const d = await climate.sun();

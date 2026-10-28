@@ -173,7 +173,7 @@ export const CHAPTERS: Chapter[] = titled([
     duration: 24, chart: 'temperature',
     narrate: async () => {
       const d = await climate.temperature();
-      return t.termometro.narrate({ day: dayMonth(d.last.date), value: num(d.last.value, 1), anomaly: signed(d.last.anomaly, 2) });
+      return t.termometro.narrate({ value: num(d.last.value, 1), anomaly: signed(d.last.anomaly, 2) });
     },
     detail: async () => {
       const [d, s] = await Promise.all([climate.temperature(), climate.sst()]);
@@ -260,7 +260,7 @@ export const CHAPTERS: Chapter[] = titled([
     legend: legend(PALETTES.lightning, 'lightning'),
     narrate: async () => {
       const g = (await loadSpots('glm')).data as { count: number; from: string; to: string };
-      return t.fulmini.narrate({ count: num(g.count), day: dayMonth(g.from), from: timeUtcOf(g.from), to: timeUtcOf(g.to) });
+      return t.fulmini.narrate({ count: num(g.count) });
     },
     detail: async () => {
       const g = (await loadSpots('glm')).data as { count: number; from: string; to: string };
@@ -337,7 +337,7 @@ export const CHAPTERS: Chapter[] = titled([
     legend: legend(PALETTES.mhw.filter((_, i) => i % 2 === 0), 'mhw'),
     narrate: async (g) => {
       const m = (await g.layers.get('mhw')).meta as unknown as { share: number; dates: string[] };
-      return t.ondate.narrate({ pct: num(m.share * 100, 0), day: dayMonth(m.dates[0]) });
+      return t.ondate.narrate({ pct: num(m.share * 100, 0) });
     },
     detail: async (g) => {
       const m = (await g.layers.get('mhw')).meta as unknown as { share: number; byCategory: number[]; dates: string[] };

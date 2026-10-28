@@ -43,6 +43,7 @@ const it = {
     dataCredit: 'Dati ©',
     hint: 'Trascina per ruotare · rotella per avvicinarti · tocca un punto per leggerlo · L per gli strati · / per cercare · M per l’audio',
     intro: 'Il pianeta, raccontato dai suoi dati di oggi.',
+    asOf: (month: string) => `Dati più recenti, aggiornati a ${month}`,
     exploreAlone: 'Esplora da solo',
     noWebgl: 'Serve un browser con WebGL 2 per vedere il pianeta.',
     /** The clock in the top bar. */
@@ -534,7 +535,7 @@ const it = {
   },
   termometro: {
     title: 'Il termometro', kicker: 'Ogni giorno dal 1940',
-    narrate: (p: { day: string; value: string; anomaly: string }) => `Ogni linea è un anno, dal 1940 a oggi: la temperatura media dell’aria su tutto il pianeta, giorno dopo giorno. Il ${p.day} è stata di ${p.value} gradi, ${p.anomaly} rispetto alla media 1991–2020. Le linee più calde sono le più recenti.`,
+    narrate: (p: { value: string; anomaly: string }) => `Ogni linea è un anno, dal 1940 a oggi: la temperatura media dell’aria su tutto il pianeta, giorno dopo giorno. L’ultima misura, di pochi giorni fa, dice ${p.value} gradi, ${p.anomaly} rispetto alla media 1991–2020. Le linee più calde sono le più recenti.`,
     anomaly: (day: string, preliminary: boolean) => `rispetto al 1991–2020, il ${day}${preliminary ? ' (dato provvisorio)' : ''}`,
     record: (day: string) => `il giorno più caldo mai misurato, il ${day}`,
     sea: (day: string) => `il mare fra 60° S e 60° N rispetto al 1991–2020, il ${day}`,
@@ -565,7 +566,7 @@ const it = {
   },
   fulmini: {
     title: 'I fulmini', kicker: 'L’ultima mezz’ora e vent’anni',
-    narrate: (p: { count: string; day: string; from: string; to: string }) => `Il ${p.day}, fra le ${p.from} e le ${p.to}, i satelliti GOES hanno contato ${p.count} fulmini sulle Americhe e sugli oceani intorno: eccoli, uno dopo l’altro. Sotto, la mappa di vent’anni di fulmini visti dallo spazio: cadono soprattutto sulla terra calda dei tropici, sull’Africa centrale, sul lago di Maracaibo.`,
+    narrate: (p: { count: string }) => `Nell’ultima mezz’ora registrata i satelliti GOES hanno contato ${p.count} fulmini sulle Americhe e sugli oceani intorno: eccoli, uno dopo l’altro. Sotto, la mappa di vent’anni di fulmini visti dallo spazio: cadono soprattutto sulla terra calda dei tropici, sull’Africa centrale, sul lago di Maracaibo.`,
     halfHour: (day: string, from: string, to: string) => `fulmini sulle Americhe il ${day}, fra le ${from} e le ${to}`,
     facts: [
       ['≈ 44', 'fulmini al secondo su tutta la Terra, in media'],
@@ -601,7 +602,7 @@ const it = {
   },
   ondate: {
     title: 'Le ondate di calore marine', kicker: 'Il mare oggi, contro il 1991 – 2020',
-    narrate: (p: { pct: string; day: string }) => `Il ${p.day} un’ondata di calore riguarda ${p.pct} chilometri quadrati di mare su cento: acque che da almeno cinque giorni sono più calde di come erano nove volte su dieci, in quel periodo dell’anno, fra il 1991 e il 2020.`,
+    narrate: (p: { pct: string }) => `In questi giorni un’ondata di calore riguarda ${p.pct} chilometri quadrati di mare su cento: acque che da almeno cinque giorni sono più calde di come erano nove volte su dieci, in quel periodo dell’anno, fra il 1991 e il 2020.`,
     share: (day: string) => `dei mari in un’ondata di calore, il ${day}`,
     severe: 'dei mari in un’ondata grave o estrema',
     text: 'È la definizione di Hobday e colleghi (2016): un’ondata di calore marina è un tratto di mare sopra il 90° percentile del suo clima per quel giorno dell’anno, per almeno cinque giorni di fila. La categoria dice di quanto: moderata, forte (il doppio della distanza fra la soglia e la media), grave, estrema. Le temperature sono quelle di NOAA OISST, lette a 1 grado; la soglia l’ha calcolata Upari sui trent’anni 1991–2020. I mari che gelano per una parte dell’anno sono esclusi, anche dalla percentuale: lì il clima di riferimento non è affidabile.',
@@ -965,7 +966,7 @@ const it = {
 
   sole: {
     title: 'Il Sole', kicker: 'In scala con la Terra',
-    narrate: (time: string) => `Questo è il Sole: centonove Terre in fila da un bordo all’altro. Quel puntino accanto è il nostro pianeta. La faccia rivolta a noi è quella vera: le ultime ventiquattro ore viste dal satellite SDO, fino alle ${time} UTC, che scorrono in pochi secondi. In scala di grandezza, non di distanza: davvero è ottanta volte più lontano di così.`,
+    narrate: 'Questo è il Sole: centonove Terre in fila da un bordo all’altro. Quel puntino accanto è il nostro pianeta. La faccia rivolta a noi è quella vera: le sue ultime ventiquattro ore viste dal satellite SDO, che scorrono in pochi secondi. In scala di grandezza, non di distanza: davvero è ottanta volte più lontano di così.',
     earth: 'la Terra',
     earthSub: 'in scala con il Sole',
     taken: (day: string) => `l’ora dell’immagine, il ${day}`,

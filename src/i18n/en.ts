@@ -42,6 +42,7 @@ const en: Dict = {
     dataCredit: 'Data ©',
     hint: 'Drag to turn · scroll to come closer · touch a point to read it · L for layers · / to search · M for sound',
     intro: 'The planet, told by today’s data.',
+    asOf: (month: string) => `Latest data, as of ${month}`,
     exploreAlone: 'Explore on your own',
     noWebgl: 'You need a browser with WebGL 2 to see the planet.',
     clock: (day: string, time: string) => `${day} · ${time} UTC`,
@@ -515,7 +516,7 @@ const en: Dict = {
   },
   termometro: {
     title: 'The thermometer', kicker: 'Every day since 1940',
-    narrate: (p: { day: string; value: string; anomaly: string }) => `Each line is a year, from 1940 to today: the average air temperature over the whole planet, day after day. On ${p.day} it was ${p.value} degrees, ${p.anomaly} against the 1991–2020 average. The warmest lines are the most recent.`,
+    narrate: (p: { value: string; anomaly: string }) => `Each line is a year, from 1940 to today: the average air temperature over the whole planet, day after day. The last measurement, a few days ago, says ${p.value} degrees, ${p.anomaly} against the 1991–2020 average. The warmest lines are the most recent.`,
     anomaly: (day: string, preliminary: boolean) => `against 1991–2020, on ${day}${preliminary ? ' (preliminary)' : ''}`,
     record: (day: string) => `the warmest day ever measured, on ${day}`,
     sea: (day: string) => `the sea between 60° S and 60° N against 1991–2020, on ${day}`,
@@ -546,7 +547,7 @@ const en: Dict = {
   },
   fulmini: {
     title: 'Lightning', kicker: 'The last half hour, and twenty years',
-    narrate: (p: { count: string; day: string; from: string; to: string }) => `On ${p.day}, between ${p.from} and ${p.to}, the GOES satellites counted ${p.count} lightning flashes over the Americas and the oceans around them: here they are, one after another. Beneath them, the map of twenty years of lightning seen from space: it strikes above all over the warm land of the tropics, over central Africa, over Lake Maracaibo.`,
+    narrate: (p: { count: string }) => `In the last half hour recorded, the GOES satellites counted ${p.count} lightning flashes over the Americas and the oceans around them: here they are, one after another. Beneath them, the map of twenty years of lightning seen from space: it strikes above all over the warm land of the tropics, over central Africa, over Lake Maracaibo.`,
     halfHour: (day: string, from: string, to: string) => `flashes over the Americas on ${day}, between ${from} and ${to}`,
     facts: [
       ['≈ 44', 'flashes a second over the whole Earth, on average'],
@@ -581,7 +582,7 @@ const en: Dict = {
   },
   ondate: {
     title: 'Marine heatwaves', kicker: 'The sea today, against 1991 – 2020',
-    narrate: (p: { pct: string; day: string }) => `On ${p.day} a heatwave covers ${p.pct}% of the seas: waters that for at least five days have been warmer than they were nine times in ten, at that time of year, between 1991 and 2020.`,
+    narrate: (p: { pct: string }) => `These days a heatwave covers ${p.pct}% of the seas: waters that for at least five days have been warmer than they were nine times in ten, at that time of year, between 1991 and 2020.`,
     share: (day: string) => `of the seas in a heatwave, on ${day}`,
     severe: 'of the seas in a severe or extreme heatwave',
     text: 'This is the definition of Hobday and colleagues (2016): a marine heatwave is a stretch of sea above the 90th percentile of its climate for that day of the year, for at least five days in a row. The category tells by how much: moderate, strong (twice the distance between the threshold and the mean), severe, extreme. The temperatures are NOAA OISST, read at 1 degree; the threshold was computed by Upari over the thirty years 1991–2020. Seas that freeze for part of the year are left out, from the percentage too: there the reference climate is not reliable.',
@@ -938,7 +939,7 @@ const en: Dict = {
 
   sole: {
     title: 'The Sun', kicker: 'To scale with the Earth',
-    narrate: (time: string) => `This is the Sun: a hundred and nine Earths side by side from edge to edge. That speck beside it is our planet. The face turned to us is the real one: its last twenty-four hours seen by the SDO satellite, up to ${time} UTC, running in a few seconds. To scale in size, not in distance: it is really eighty times farther than this.`,
+    narrate: 'This is the Sun: a hundred and nine Earths side by side from edge to edge. That speck beside it is our planet. The face turned to us is the real one: its last twenty-four hours seen by the SDO satellite, running in a few seconds. To scale in size, not in distance: it is really eighty times farther than this.',
     earth: 'the Earth',
     earthSub: 'to scale with the Sun',
     taken: (day: string) => `the time of the image, ${day}`,

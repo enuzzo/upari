@@ -44,6 +44,7 @@ const de: Dict = {
     dataCredit: 'Daten ©',
     hint: 'Ziehen zum Drehen · Mausrad zum Heranzoomen · Punkt antippen zum Ablesen · L für die Ebenen · / zum Suchen · M für den Ton',
     intro: 'Der Planet, erzählt von seinen Daten von heute.',
+    asOf: (month: string) => `Neueste Daten, Stand ${month}`,
     exploreAlone: 'Auf eigene Faust entdecken',
     noWebgl: 'Um den Planeten zu sehen, brauchst du einen Browser mit WebGL 2.',
     clock: (day: string, time: string) => `${day} · ${time} UTC`,
@@ -517,7 +518,7 @@ const de: Dict = {
   },
   termometro: {
     title: 'Das Thermometer', kicker: 'Jeden Tag seit 1940',
-    narrate: (p: { day: string; value: string; anomaly: string }) => `Jede Linie ist ein Jahr, von 1940 bis heute: die mittlere Lufttemperatur über den ganzen Planeten, Tag für Tag. Am ${p.day} lag sie bei ${p.value} Grad, ${p.anomaly} gegenüber dem Mittel 1991–2020. Die wärmsten Linien sind die jüngsten.`,
+    narrate: (p: { value: string; anomaly: string }) => `Jede Linie ist ein Jahr, von 1940 bis heute: die mittlere Lufttemperatur über den ganzen Planeten, Tag für Tag. Die letzte Messung, wenige Tage alt, sagt ${p.value} Grad, ${p.anomaly} gegenüber dem Mittel 1991–2020. Die wärmsten Linien sind die jüngsten.`,
     anomaly: (day: string, preliminary: boolean) => `gegenüber 1991–2020, am ${day}${preliminary ? ' (vorläufiger Wert)' : ''}`,
     record: (day: string) => `der wärmste je gemessene Tag, am ${day}`,
     sea: (day: string) => `das Meer zwischen 60° S und 60° N gegenüber 1991–2020, am ${day}`,
@@ -548,7 +549,7 @@ const de: Dict = {
   },
   fulmini: {
     title: 'Die Blitze', kicker: 'Die letzte halbe Stunde und zwanzig Jahre',
-    narrate: (p: { count: string; day: string; from: string; to: string }) => `Am ${p.day}, zwischen ${p.from} und ${p.to}, zählten die GOES-Satelliten ${p.count} Blitze über Nord- und Südamerika und den Ozeanen ringsum: Hier sind sie, einer nach dem anderen. Darunter die Karte von zwanzig Jahren Blitzen, aus dem All gesehen: Sie schlagen vor allem über dem warmen Land der Tropen ein, über Zentralafrika, über dem Maracaibo-See.`,
+    narrate: (p: { count: string }) => `In der letzten aufgezeichneten halben Stunde zählten die GOES-Satelliten ${p.count} Blitze über Nord- und Südamerika und den Ozeanen ringsum: Hier sind sie, einer nach dem anderen. Darunter die Karte von zwanzig Jahren Blitzen, aus dem All gesehen: Sie schlagen vor allem über dem warmen Land der Tropen ein, über Zentralafrika, über dem Maracaibo-See.`,
     halfHour: (day: string, from: string, to: string) => `Blitze über Nord- und Südamerika am ${day}, zwischen ${from} und ${to}`,
     facts: [
       ['≈ 44', 'Blitze pro Sekunde auf der ganzen Erde, im Mittel'],
@@ -583,7 +584,7 @@ const de: Dict = {
   },
   ondate: {
     title: 'Die marinen Hitzewellen', kicker: 'Das Meer heute, verglichen mit 1991 – 2020',
-    narrate: (p: { pct: string; day: string }) => `Am ${p.day} erfasst eine Hitzewelle ${p.pct} Prozent der Meere: Wasser, das seit mindestens fünf Tagen wärmer ist, als es zu dieser Jahreszeit zwischen 1991 und 2020 in neun von zehn Fällen war.`,
+    narrate: (p: { pct: string }) => `Dieser Tage erfasst eine Hitzewelle ${p.pct} Prozent der Meere: Wasser, das seit mindestens fünf Tagen wärmer ist, als es zu dieser Jahreszeit zwischen 1991 und 2020 in neun von zehn Fällen war.`,
     share: (day: string) => `der Meere in einer Hitzewelle, am ${day}`,
     severe: 'der Meere in einer schweren oder extremen Hitzewelle',
     text: 'Das ist die Definition von Hobday und Kollegen (2016): Eine marine Hitzewelle ist ein Meeresabschnitt oberhalb des 90. Perzentils seines Klimas für diesen Tag des Jahres, und zwar an mindestens fünf Tagen in Folge. Die Kategorie sagt, um wie viel: moderat, stark (der doppelte Abstand zwischen Schwelle und Mittel), schwer, extrem. Die Temperaturen stammen von NOAA OISST, gelesen bei 1 Grad; die Schwelle hat Upari über die dreißig Jahre 1991–2020 berechnet. Meere, die in einem Teil des Jahres zufrieren, bleiben ausgeklammert, auch aus dem Prozentsatz: Dort ist das Referenzklima nicht verlässlich.',
@@ -942,7 +943,7 @@ const de: Dict = {
 
   sole: {
     title: 'Die Sonne', kicker: 'Im Maßstab der Erde',
-    narrate: (time: string) => `Das ist die Sonne: hundertneun Erden nebeneinander, von Rand zu Rand. Der kleine Punkt daneben ist unser Planet. Die uns zugewandte Seite ist die echte: ihre letzten vierundzwanzig Stunden, vom Satelliten SDO gesehen, bis ${time} UTC, in wenigen Sekunden im Zeitraffer. Maßstabsgetreu in der Größe, nicht im Abstand: In Wirklichkeit ist sie achtzigmal weiter weg als hier.`,
+    narrate: 'Das ist die Sonne: hundertneun Erden nebeneinander, von Rand zu Rand. Der kleine Punkt daneben ist unser Planet. Die uns zugewandte Seite ist die echte: ihre letzten vierundzwanzig Stunden, vom Satelliten SDO gesehen, in wenigen Sekunden im Zeitraffer. Maßstabsgetreu in der Größe, nicht im Abstand: In Wirklichkeit ist sie achtzigmal weiter weg als hier.',
     earth: 'die Erde',
     earthSub: 'im selben Maßstab wie die Sonne',
     taken: (day: string) => `die Aufnahmezeit, am ${day}`,

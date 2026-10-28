@@ -99,6 +99,7 @@ const fr: Dict = {
     dataCredit: 'Données ©',
     hint: 'Faites glisser pour tourner · molette pour vous approcher · touchez un point pour le lire · L pour les couches · / pour chercher · M pour le son',
     intro: 'La planète, racontée par ses données du jour.',
+    asOf: (month: string) => `Données les plus récentes, à jour en ${month}`,
     exploreAlone: 'Explorer librement',
     noWebgl: 'Il faut un navigateur compatible WebGL 2 pour voir la planète.',
     clock: (day: string, time: string) => `${first(day)} · ${time} UTC`,
@@ -576,7 +577,7 @@ const fr: Dict = {
   },
   termometro: {
     title: 'Le thermomètre', kicker: 'Chaque jour depuis 1940',
-    narrate: (p: { day: string; value: string; anomaly: string }) => `Chaque ligne est une année, de 1940 à aujourd’hui : la température moyenne de l’air sur toute la planète, jour après jour. Le ${first(p.day)}, elle était de ${p.value} degrés, ${p.anomaly} par rapport à la moyenne 1991–2020. Les lignes les plus chaudes sont les plus récentes.`,
+    narrate: (p: { value: string; anomaly: string }) => `Chaque ligne est une année, de 1940 à aujourd’hui : la température moyenne de l’air sur toute la planète, jour après jour. La dernière mesure, d’il y a quelques jours, indique ${p.value} degrés, ${p.anomaly} par rapport à la moyenne 1991–2020. Les lignes les plus chaudes sont les plus récentes.`,
     anomaly: (day: string, preliminary: boolean) => `par rapport à 1991–2020, le ${first(day)}${preliminary ? ' (donnée provisoire)' : ''}`,
     record: (day: string) => `le jour le plus chaud jamais mesuré, le ${first(day)}`,
     sea: (day: string) => `la mer entre 60° S et 60° N par rapport à 1991–2020, le ${first(day)}`,
@@ -607,7 +608,7 @@ const fr: Dict = {
   },
   fulmini: {
     title: 'Les éclairs', kicker: 'La dernière demi-heure, et vingt ans',
-    narrate: (p: { count: string; day: string; from: string; to: string }) => `Le ${first(p.day)}, entre ${p.from} et ${p.to}, les satellites GOES ont compté ${p.count} éclairs sur les Amériques et les océans alentour : les voici, l’un après l’autre. En dessous, la carte de vingt ans d’éclairs vus depuis l’espace : ils se concentrent surtout sur les terres chaudes des tropiques, en Afrique centrale, autour du lac Maracaibo.`,
+    narrate: (p: { count: string }) => `Durant la dernière demi-heure enregistrée, les satellites GOES ont compté ${p.count} éclairs sur les Amériques et les océans alentour : les voici, l’un après l’autre. En dessous, la carte de vingt ans d’éclairs vus depuis l’espace : ils se concentrent surtout sur les terres chaudes des tropiques, en Afrique centrale, autour du lac Maracaibo.`,
     halfHour: (day: string, from: string, to: string) => `éclairs sur les Amériques le ${first(day)}, entre ${from} et ${to}`,
     facts: [
       ['≈ 44', 'éclairs par seconde sur toute la Terre, en moyenne'],
@@ -642,7 +643,7 @@ const fr: Dict = {
   },
   ondate: {
     title: 'Les vagues de chaleur marines', kicker: 'La mer aujourd’hui, face à 1991 – 2020',
-    narrate: (p: { pct: string; day: string }) => `Le ${first(p.day)}, une vague de chaleur couvre ${p.pct} % des mers : des eaux qui, depuis au moins cinq jours, sont plus chaudes qu’elles ne l’étaient neuf fois sur dix, à cette période de l’année, entre 1991 et 2020.`,
+    narrate: (p: { pct: string }) => `Ces jours-ci, une vague de chaleur couvre ${p.pct} % des mers : des eaux qui, depuis au moins cinq jours, sont plus chaudes qu’elles ne l’étaient neuf fois sur dix, à cette période de l’année, entre 1991 et 2020.`,
     share: (day: string) => `des mers en vague de chaleur, le ${first(day)}`,
     severe: 'des mers en vague de chaleur sévère ou extrême',
     text: 'C’est la définition de Hobday et ses collègues (2016) : une vague de chaleur marine est un pan de mer au-dessus du 90e centile de son climat pour ce jour de l’année, pendant au moins cinq jours de suite. La catégorie dit de combien : modérée, forte (le double de l’écart entre le seuil et la moyenne), sévère, extrême. Les températures sont celles de NOAA OISST, lues à 1 degré ; le seuil a été calculé par Upari sur les trente années 1991–2020. Les mers qui gèlent une partie de l’année sont exclues, y compris du pourcentage : là, le climat de référence n’est pas fiable.',
@@ -1001,7 +1002,7 @@ const fr: Dict = {
 
   sole: {
     title: 'Le Soleil', kicker: 'À l’échelle de la Terre',
-    narrate: (time: string) => `Voici le Soleil : cent neuf Terres alignées d’un bord à l’autre. Ce petit point à côté, c’est notre planète. La face tournée vers nous est la vraie : ses vingt-quatre dernières heures vues par le satellite SDO, jusqu’à ${time} UTC, qui défilent en quelques secondes. À l’échelle pour la taille, pas pour la distance : en réalité, il est quatre-vingts fois plus loin que cela.`,
+    narrate: 'Voici le Soleil : cent neuf Terres alignées d’un bord à l’autre. Ce petit point à côté, c’est notre planète. La face tournée vers nous est la vraie : ses vingt-quatre dernières heures vues par le satellite SDO, qui défilent en quelques secondes. À l’échelle pour la taille, pas pour la distance : en réalité, il est quatre-vingts fois plus loin que cela.',
     earth: 'la Terre',
     earthSub: 'à l’échelle du Soleil',
     taken: (day: string) => `l’heure de l’image, le ${first(day)}`,

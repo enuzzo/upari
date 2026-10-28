@@ -10,7 +10,7 @@ import { happenings, type Happening } from './story/now';
 import { savePostcard, screenDate } from './story/postcard';
 import { closeCountry, openCountry } from './story/country';
 import { LANGS, NATIVE, detect, lang, onLang, setLang, t, type Lang } from './i18n';
-import { dayMonth, timeUtc } from './i18n/format';
+import { dayMonth, monthYear, timeUtc } from './i18n/format';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -327,6 +327,8 @@ function applyPage() {
   each('t-aria', (el, v) => el.setAttribute('aria-label', v));
   each('t-title', (el, v) => el.setAttribute('title', v));
   each('t-placeholder', (el, v) => el.setAttribute('placeholder', v));
+  // The site is rebuilt every morning: its data are those of the current month.
+  $('intro-asof').textContent = t.page.asOf(monthYear(new Date()));
   document.title = t.page.title;
   document.querySelector('meta[name="description"]')!.setAttribute('content', t.page.description);
   const list = $('credits-list');

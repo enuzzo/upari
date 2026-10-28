@@ -6,12 +6,21 @@ name: Dati del giorno e pubblicazione
 # 10:41 UTC comes after NASA publishes yesterday's GHRSST MUR and GAMSSA days.
 # Fresh data are not committed: the repository keeps a validated snapshot that is
 # used whenever a source is late, partial or unreachable.
+# The daily run fetches everything and keeps what it fetched in the Actions cache. A push
+# reuses that (if it is less than 36 hours old) and fetches again only the datasets whose
+# script changed; a change to this workflow, a missing or old cache, or a manual run with
+# "full" fetches everything.
 'on':
   schedule:
     - cron: '41 10 * * *'
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      full:
+        description: Fetch every dataset again (ignore the cache)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -46,6 +55,53 @@ jobs:
       - name: Dipendenze
         run: npm ci --no-audit --no-fund
 
+      - name: Ultimi dati scaricati
+        # The newest data kept by a full run (keys sort by run id).
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.full)
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/daily
+          key: daily-data-none
+          restore-keys: daily-data-
+
+      - name: Cosa scaricare
+        id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          FULL_INPUT: ${{ inputs.full }}
+          DAILY: ${{ runner.temp }}/daily
+        run: |
+          full=0; why=''
+          if [ "$EVENT" = schedule ]; then full=1; why='giro quotidiano'
+          elif [ "$FULL_INPUT" = true ]; then full=1; why='richiesto a mano'
+          elif [ ! -f "$DAILY/data.tgz" ] || [ ! -f "$DAILY/meta" ]; then full=1; why='nessun dato in cache'
+          else
+            . "$DAILY/meta"   # DATA_SHA, DATA_TIME (epoch seconds)
+            age=$(( $(date +%s) - DATA_TIME ))
+            if [ $age -gt $((36 * 3600)) ]; then full=1; why="dati in cache di $((age / 3600)) ore"
+            elif ! git fetch --no-tags --depth=1 origin "$DATA_SHA" 2>/dev/null; then full=1; why='commit dei dati non trovato'
+            else
+              git diff --name-only "$DATA_SHA" HEAD > "$RUNNER_TEMP/changed"
+              if grep -q '^\.github/workflows/' "$RUNNER_TEMP/changed"; then full=1; why='workflow cambiato'; fi
+            fi
+          fi
+          if [ $full = 1 ]; then
+            for k in wind layers sky climate lightning; do echo "$k=1" >> "$GITHUB_OUTPUT"; done
+            echo "full=1" >> "$GITHUB_OUTPUT"
+            echo "> Dati: tutto scaricato di nuovo ($why)." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          # The cached files, except those this push changed itself (committed data win).
+          grep '^public/' "$RUNNER_TEMP/changed" > "$RUNNER_TEMP/exclude" || true
+          tar -xzf "$DAILY/data.tgz" --exclude-from="$RUNNER_TEMP/exclude"
+          echo "full=0" >> "$GITHUB_OUTPUT"
+          again=''
+          for pair in wind:scripts/prepare-fields.mjs layers:scripts/prepare-layers.mjs sky:scripts/prepare-sky.mjs climate:scripts/prepare-climate.mjs lightning:scripts/prepare-lightning.py; do
+            k=${pair%%:*}; f=${pair#*:}
+            if grep -qx "$f" "$RUNNER_TEMP/changed"; then echo "$k=1" >> "$GITHUB_OUTPUT"; again="$again $k"; else echo "$k=0" >> "$GITHUB_OUTPUT"; fi
+          done
+          echo "> Dati: ripresi dal giro del $(date -u -d @"$DATA_TIME" '+%d/%m %H:%M') UTC (commit ${DATA_SHA:0:7}); scaricati di nuovo:${again:- nessuno}." >> "$GITHUB_STEP_SUMMARY"
+
       - name: Dati del giorno
         id: refresh
         # A source that fails keeps its published snapshot; the site is rebuilt anyway.
@@ -57,9 +113,11 @@ jobs:
           UPARI_DEADLINE_MIN: '28'
         run: |
           status=0
-          node scripts/prepare-fields.mjs wind || status=1
+          if [ "${{ steps.plan.outputs.wind }}" = 1 ]; then node scripts/prepare-fields.mjs wind || status=1; fi
           # Series keep their past months in the repository: only new months and the latest day are fetched.
-          node scripts/prepare-layers.mjs sst anomaly ice chlorophyll ndvi aerosol coral ozone no2 snow ims mhw sealevel so2 rain waves fires quakes cyclones volcanoes icebergs slicks || status=1
+          if [ "${{ steps.plan.outputs.layers }}" = 1 ]; then
+            node scripts/prepare-layers.mjs sst anomaly ice chlorophyll ndvi aerosol coral ozone no2 snow ims mhw sealevel so2 rain waves fires quakes cyclones volcanoes icebergs slicks || status=1
+          fi
           exit $status
 
       - name: Il cielo e il clima
@@ -72,15 +130,18 @@ jobs:
           UPARI_TMP: ${{ runner.temp }}/upari
         run: |
           status=0
-          # ffmpeg tiles the Sun's last day; the runner may not have it.
-          command -v ffmpeg >/dev/null || sudo apt-get install -y --no-install-recommends ffmpeg >/dev/null || true
-          node scripts/prepare-sky.mjs || status=1
-          node scripts/prepare-climate.mjs || status=1
+          if [ "${{ steps.plan.outputs.sky }}" = 1 ]; then
+            # ffmpeg tiles the Sun's last day; the runner may not have it.
+            command -v ffmpeg >/dev/null || sudo apt-get install -y --no-install-recommends ffmpeg >/dev/null || true
+            node scripts/prepare-sky.mjs || status=1
+          fi
+          if [ "${{ steps.plan.outputs.climate }}" = 1 ]; then node scripts/prepare-climate.mjs || status=1; fi
           exit $status
 
       - name: I fulmini
         # The last half hour of the two GOES Lightning Mappers (NOAA open data on AWS).
         # Keeps the published file when it fails.
+        if: steps.plan.outputs.lightning == '1'
         continue-on-error: true
         timeout-minutes: 4
         env:
@@ -99,6 +160,27 @@ jobs:
           curl -fsS --max-time 60 'https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=JSON' -o "$RUNNER_TEMP/iss.json"
           node -e 'const [o]=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")); if(!o||o.NORAD_CAT_ID!==25544||!o.EPOCH) process.exit(1)' "$RUNNER_TEMP/iss.json"
           cp "$RUNNER_TEMP/iss.json" public/sky/iss.json
+
+      - name: Conserva i dati scaricati
+        # What a full run fetched (the files under public/ that differ from the repository),
+        # for the pushes of the next hours.
+        if: steps.plan.outputs.full == '1'
+        env:
+          DAILY: ${{ runner.temp }}/daily
+        run: |
+          mkdir -p "$DAILY"
+          # Ignored files too (the satellites are fetched in CI only); never a file that is gone.
+          git ls-files -m -o -- public | while read -r f; do [ -f "$f" ] && echo "$f"; done | sort -u > "$RUNNER_TEMP/fetched"
+          tar -czf "$DAILY/data.tgz" -T "$RUNNER_TEMP/fetched"
+          printf 'DATA_SHA=%s\nDATA_TIME=%s\n' "$GITHUB_SHA" "$(date +%s)" > "$DAILY/meta"
+          echo "> Dati conservati: $(wc -l < "$RUNNER_TEMP/fetched") file, $(du -h "$DAILY/data.tgz" | cut -f1)." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Salva i dati in cache
+        if: steps.plan.outputs.full == '1'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/daily
+          key: daily-data-${{ github.run_id }}
 
       - name: Riepilogo dei dati
         if: always()

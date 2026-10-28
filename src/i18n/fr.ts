@@ -471,6 +471,8 @@ const fr: Dict = {
     heliopause: 'héliopause',
     au: 'unités astronomiques',
     auShort: 'UA',
+    theSun: 'le Soleil',
+    probeNow: (n: number, au: string, hours: string) => `Voyager ${n} · ${au} UA · ${hours} heures-lumière`,
     born: 'Votre année de naissance',
     bornLine: (year: number, then: string, now: string, diff: string) => `En ${year}, la Terre avait en moyenne ${then} °C ; sur les douze derniers mois, ${now} °C : ${diff} °C.`,
   },

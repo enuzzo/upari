@@ -81,8 +81,8 @@ export const SKY_CHAPTERS: Chapter[] = titled([
     credit: ['swpc'],
     kind: 'forecast',
     mood: 'open', sound: 'night',
-    look: { ...SKY, data: 'aurora', clouds: 0.5, bloom: 1.4 },
-    duration: 22,
+    look: { ...SKY, data: 'aurora', clouds: 0.5, bloom: 0.9 },
+    duration: 26,
     legend: legend(PALETTES.aurora, 'aurora'),
     narrate: async (g) => {
       const a = await aurora(g), p = darkPole(g);
@@ -101,10 +101,12 @@ export const SKY_CHAPTERS: Chapter[] = titled([
     },
     beats: async (g) => {
       const p = darkPole(g);
-      // From above the oval, then low and sideways, to see the curtains stand.
+      // From above the oval; then at the limb, the oval on the horizon; then low and sideways,
+      // where the curtains stand.
       return [
-        { shot: { lon: p.lon, lat: p.lat, dist: 2.3 }, drift: 2.2, hold: 8 },
-        { shot: { lon: p.lon + 15, lat: p.north ? 58 : -58, dist: 0.3, tilt: 50, heading: p.north ? 0 : 180 }, seconds: 7, drift: 0.6 },
+        { shot: { lon: p.lon, lat: p.lat, dist: 2.3 }, drift: 2.2, hold: 5 },
+        { shot: { lon: p.lon + 10, lat: p.north ? 44 : -44, dist: 0.62, tilt: 74, heading: p.north ? 0 : 180 }, seconds: 6, drift: 0.5, hold: 5 },
+        { shot: { lon: p.lon + 15, lat: p.north ? 58 : -58, dist: 0.3, tilt: 50, heading: p.north ? 0 : 180 }, seconds: 6, drift: 0.6 },
       ];
     },
   },
@@ -298,8 +300,9 @@ export const SKY_CHAPTERS: Chapter[] = titled([
       // From the far side of the Earth, looking out towards Voyager 1 (in Ophiuchus), then
       // towards Voyager 2 (far south, in Pavo): they are too far apart for one shot.
       return [
-        { shot: { lon: v1.lon + 180 + 12, lat: -v1.lat * 0.6 - 6, dist: 6.5 }, seconds: 6, drift: 0.12, hold: 12 },
-        { shot: { lon: v2.lon + 180 + 24, lat: -v2.lat, dist: 6.5 }, seconds: 5, drift: 0.1 },
+        // The Earth small and far: the diagram beside it is the picture.
+        { shot: { lon: v1.lon + 180 + 12, lat: -v1.lat * 0.6 - 6, dist: 15 }, seconds: 6, drift: 0.12, hold: 12 },
+        { shot: { lon: v2.lon + 180 + 24, lat: -v2.lat, dist: 15 }, seconds: 5, drift: 0.1 },
       ];
     },
   },

@@ -424,6 +424,8 @@ const zh: Dict = {
     heliopause: '日球层顶',
     au: '天文单位',
     auShort: '天文单位',
+    theSun: '太阳',
+    probeNow: (n: number, au: string, hours: string) => `Voyager ${n} · ${au} 天文单位 · ${hours} 光时`,
     born: '你出生的年份',
     bornLine: (year: number, then: string, now: string, diff: string) => `${year} 年，地球平均气温为 ${then} °C；过去十二个月为 ${now} °C：相差 ${diff} °C。`,
   },

@@ -433,6 +433,8 @@ const ja: Dict = {
     heliopause: 'ヘリオポーズ',
     au: '天文単位',
     auShort: 'au',
+    theSun: '太陽',
+    probeNow: (n: number, au: string, hours: string) => `Voyager ${n} · ${au} au · ${hours} 光時`,
     born: 'あなたの生まれた年',
     bornLine: (year: number, then: string, now: string, diff: string) => `${year}年の地球の平均気温は${then} °C、直近12か月は${now} °C：その差${diff} °C。`,
   },

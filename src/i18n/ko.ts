@@ -462,6 +462,8 @@ const ko: Dict = {
     heliopause: '태양권계면',
     au: '천문단위',
     auShort: 'AU',
+    theSun: '태양',
+    probeNow: (n: number, au: string, hours: string) => `Voyager ${n} · ${au} AU · ${hours} 광시`,
     born: '내가 태어난 해',
     bornLine: (year: number, then: string, now: string, diff: string) => `${year}년 지구의 평균 기온은 ${then} °C, 최근 12개월은 ${now} °C: ${diff} °C.`,
   },

@@ -439,6 +439,8 @@ const ar: Dict = {
     heliopause: 'حد الغلاف الشمسي',
     au: 'وحدات فلكية',
     auShort: 'و.ف',
+    theSun: 'الشمس',
+    probeNow: (n: number, au: string, hours: string) => `Voyager ${n} · ${au} و.ف · ${hours} ساعة ضوئية`,
     born: 'سنة ميلادك',
     bornLine: (year: number, then: string, now: string, diff: string) => `في ${year} كان متوسط حرارة الأرض ${ltr(`${then} °C`)}؛ وفي الأشهر الاثني عشر الأخيرة ${ltr(`${now} °C`)}: ${ltr(`${diff} °C`)}.`,
   },

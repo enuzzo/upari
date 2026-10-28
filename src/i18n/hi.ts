@@ -420,6 +420,8 @@ const hi: Dict = {
     heliopause: 'हीलियोपॉज़',
     au: 'खगोलीय इकाइयाँ',
     auShort: 'ख.इ.',
+    theSun: 'सूर्य',
+    probeNow: (n: number, au: string, hours: string) => `Voyager ${n} · ${au} ख.इ. · ${hours} प्रकाश-घंटे`,
     born: 'आपके जन्म का साल',
     bornLine: (year: number, then: string, now: string, diff: string) => `${year} में पृथ्वी का औसत तापमान ${then} °C था; पिछले बारह महीनों में ${now} °C: ${diff} °C।`,
   },

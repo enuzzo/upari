@@ -431,6 +431,8 @@ const it = {
     heliopause: 'eliopausa',
     au: 'unità astronomiche',
     auShort: 'UA',
+    theSun: 'il Sole',
+    probeNow: (n: number, au: string, hours: string) => `Voyager ${n} · ${au} UA · ${hours} ore di luce`,
     born: 'Il tuo anno di nascita',
     bornLine: (year: number, then: string, now: string, diff: string) => `Nel ${year} la Terra aveva in media ${then} °C; negli ultimi dodici mesi ${now} °C: ${diff} °C.`,
   },

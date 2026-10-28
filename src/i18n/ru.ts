@@ -425,6 +425,8 @@ const ru: Dict = {
     heliopause: 'гелиопауза',
     au: 'астрономические единицы',
     auShort: 'а. е.',
+    theSun: 'Солнце',
+    probeNow: (n: number, au: string, hours: string) => `Voyager ${n} · ${au} а. е. · ${hours} ч света`,
     born: 'Год твоего рождения',
     bornLine: (year: number, then: string, now: string, diff: string) => `В ${year} году средняя температура Земли была ${then} °C, за последние двенадцать месяцев — ${now} °C: ${diff} °C.`,
   },

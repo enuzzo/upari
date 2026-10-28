@@ -262,13 +262,13 @@ export const PALETTES: Record<string, Stop[]> = {
     [1.0, '#2f8f4a', 0.22],
   ],
   // Aurora: oxygen green, red at the top of the strongest ones.
+  // Only a faint green footprint on the ground: the curtains above carry the light.
   aurora: [
     [0.0, '#1aff8c', 0.0],
-    [0.18, '#1aff8c', 0.0],
-    [0.32, '#2bff9a', 0.03],
-    [0.58, '#6dffaa', 0.07],
-    [0.85, '#c8ff9a', 0.11],
-    [1.0, '#ff6fb5', 0.14],
+    [0.25, '#1aff8c', 0.0],
+    [0.45, '#2bff9a', 0.03],
+    [0.75, '#4dffa0', 0.06],
+    [1.0, '#7dffb0', 0.08],
   ],
   ice: [
     [0.0, '#cfe8ff', 0.0],

@@ -27,6 +27,7 @@ import { ATLAS, Atlas, atlasText, type AtlasId } from './atlas';
 import { t } from '../i18n';
 import { num } from '../i18n/format';
 import { fresh } from './fresh';
+const REDUCE = matchMedia('(prefers-reduced-motion: reduce)');
 
 export type FlowId = 'wind' | 'currents';
 
@@ -133,7 +134,7 @@ export class Globe {
   private look: Look = { ...DEFAULT_LOOK };
   cur = { clouds: 1, cloudFlow: 1, night: 1, dim: 0, desat: 0, fires: 0, iss: 0, stars: 1, atmo: 1, exposure: 1, relief: 1, bloom: 1, dataMix: 0, trail: 0, studio: 0, pin: 0, atlas: 0, dust: 0, migration: 0, migrationAll: 0, quakes: 0, spots: 0, satellites: 0, solar: 0, rockets: 0, rocketYear: 0, flyby: 0 };
   private flybyScene: ReturnType<typeof createFlyby> | null = null;
-  private earthRing = createEarthRing();
+  private earthRing!: ReturnType<typeof createEarthRing>;
   private flybyLoading: Promise<void> | null = null;
   private rocketTrails: ReturnType<typeof createTrajectories> | null = null;
   private yearTrails: ReturnType<typeof createTrajectories> | null = null;
@@ -248,6 +249,7 @@ export class Globe {
       createSky(),
     ]);
     this.u = earthUniforms({ day, night, clouds, relief });
+    this.earthRing = createEarthRing(this.u);
     this.scene.add(createEarth(this.u), createAtmosphere(this.u), this.sun.mesh, this.station.group, this.sunBody.group, this.earthRing.points);
     this.sky = sky;
     this.scene.add(sky.group);
@@ -623,7 +625,8 @@ export class Globe {
       const m = this.curtains.material.uniforms;
       const k = this.dataShown === 'aurora' ? u.uDataMix.value as number : 0;
       m.uOpacity.value = k;
-      m.uTime.value = this.time;
+      // Slower when the reader asks the system for less motion.
+      m.uTime.value = this.time * (REDUCE.matches ? 0.25 : 1);
       m.uSun.value.copy(this.sunVec);
       this.curtains.mesh.visible = k > 0.002;
     }
@@ -694,11 +697,10 @@ export class Globe {
     c.flyby = approach(c.flyby, L.flyby, dt, 1.4);
     // Slowly: the whole near part of the pass in twenty seconds.
     this.flybyScene?.update(date, this.sunVec, c.flyby, (this.time % 20) / 20);
-    // When the Earth is a speck beside the Sun or inside the Moon's orbit, a ring finds it.
+    // When the Earth is a speck beside the Sun or inside the Moon's orbit, a miniature finds it.
     const far = Math.min(1, Math.max(0, (cam.position.length() - 40) / 60));
     const ring = Math.max(c.solar, c.flyby) * far;
     this.earthRing.material.uniforms.uOpacity.value = ring;
-    this.earthRing.material.uniforms.uTime.value = this.time;
     this.earthRing.points.visible = ring > 0.01;
 
     // Rockets climbing from their pads.

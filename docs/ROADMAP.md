@@ -220,6 +220,17 @@ that needs an account or a key the user has not given.
   (Hillaire 2020) would cost a precompute pass for the same small gain.
 - [ ] Letters to providers (OceanSODA, WDPA, OpenSky, Blitzortung, HYDE, TeleGeography):
   drafts in `docs/outreach/`, to be signed and sent.
+- [x] Spacing and leading tokens (`--lead-*`, `--space-*` in `src/styles.css`), measured on the
+  glyph boxes by `tools/qa/gaps.js` and `tools/qa/spacing.sh` in 12 languages at 1600×1000,
+  1280×800 and on a phone; the home title no longer touches its tagline.
+- [x] The Earth pointed out as a miniature globe (day texture, sunlight, city lights at night,
+  thin stroke, soft shadow) beside the Sun, in "Passing by" and in the charts; the old ring
+  sprite painted an opaque black square over the Sun.
+- [x] Voyager panel redrawn as an illustration: larger, near-opaque, the Sun named, each probe
+  in its colour with a legend of today's distances, one label per planet met, placed without
+  collisions; the Earth far behind it.
+- [x] Aurora rebuilt as five folding curtains standing 95–300 km on the OVATION oval, with
+  physical colours along the height and a limb shot.
 - [x] A credit line always on screen for every chapter, layer and country card: each holder
   of the data linked in a new tab, with its licence (`src/story/holders.ts`).
 

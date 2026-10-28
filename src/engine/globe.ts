@@ -865,7 +865,7 @@ export class Globe {
     } else if (L.spots && this.spotShown === L.spots) {
       const set = this.spotSets[L.spots]!;
       const clock = set.material.uniforms.uClock.value as number;
-      const s = nearestSpot(set, lon, lat, L.spots === 'cyclones' ? 220 : L.spots === 'slicks' ? 120 : 300, clock);
+      const s = nearestSpot(set, lon, lat, L.spots === 'cyclones' ? 220 : L.spots === 'slicks' || L.spots === 'conflicts' ? 120 : 300, clock);
       if (s) { text = s.text(); sub = s.sub(); }
     } else if (L.quakes && this.quakes) {
       // The nearest earthquake within about 300 km.

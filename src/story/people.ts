@@ -4,7 +4,7 @@ import { legend as legendOf, titled, type Chapter, type Legend } from './chapter
 import { PALETTES } from '../engine/palettes';
 import { loadSpots } from '../engine/spots';
 import { t } from '../i18n';
-import { num } from '../i18n/format';
+import { num, dayMonth } from '../i18n/format';
 
 // The second story: the people of the planet since 1960, from the atlas snapshots.
 
@@ -34,6 +34,15 @@ async function dams() {
   }
   const [peakDecade, peakCount] = [...decades.entries()].sort((a, b) => b[1] - a[1])[0];
   return { total: d.list.length, dated, peakDecade, peakCount, km3: Math.round(km3) };
+}
+
+/** Organised violence: the last full year, the years before, this year so far. */
+async function conflicts() {
+  const d = (await loadSpots('conflicts')).data as {
+    latest: number; countries: number; years: Record<string, { best: number; low: number; high: number; civilians: number }>;
+    recent: { best: number; to: string };
+  };
+  return { ...d, year: d.years[d.latest] };
 }
 
 /** The Earth's surface, millions of km². */
@@ -417,5 +426,31 @@ export const PEOPLE: Chapter[] = titled([
       };
     },
     beats: async () => [{ shot: { lon: 25, lat: 30, dist: 2.9 }, drift: 0.6 }],
+  },
+  {
+    id: 'guerre',
+    kind: 'estimate',
+    // No sound and no music swell: the dots are people killed.
+    mood: 'grave',
+    look: { ...LOOK, dim: 0.62, desat: 0.85, spots: 'conflicts', spotReplay: 16, bloom: 0.8 },
+    duration: 26, chart: 'conflicts',
+    narrate: async () => {
+      const c = await conflicts();
+      return t.guerre.narrate({ year: c.latest, deaths: num(Math.round(c.year.best / 1000) * 1000), countries: c.countries });
+    },
+    detail: async () => {
+      const c = await conflicts();
+      return {
+        facts: [
+          { value: num(c.year.best), label: t.guerre.deaths(c.latest) },
+          { value: `${num(c.year.low)} – ${num(c.year.high)}`, label: t.guerre.range },
+          { value: num(c.year.civilians), label: t.guerre.civilians },
+          { value: num(c.recent.best), label: t.guerre.recent(dayMonth(c.recent.to)) },
+        ],
+        text: t.guerre.text,
+        source: t.guerre.source,
+      };
+    },
+    beats: async () => [{ shot: { lon: 30, lat: 18, dist: 3.0 }, drift: 0.5 }],
   },
 ]);

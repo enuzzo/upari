@@ -9,7 +9,7 @@ import { fresh } from './fresh';
 // oil slicks, launch pads and fireballs. Each set is a cloud of glowing dots on the globe,
 // revealed in the order of their time when the story replays them; the cursor reads them.
 
-export type SpotId = 'cyclones' | 'volcanoes' | 'icebergs' | 'slicks' | 'launches' | 'launchyear' | 'fireballs' | 'dams' | 'glm';
+export type SpotId = 'cyclones' | 'volcanoes' | 'icebergs' | 'slicks' | 'launches' | 'launchyear' | 'fireballs' | 'dams' | 'glm' | 'conflicts';
 
 export interface Spot {
   lon: number;
@@ -46,18 +46,40 @@ const BUILD: Record<SpotId, (d: any) => Spot[]> = {
     const out: Spot[] = [];
     const times = d.list.flatMap((s: any) => s.track.map((p: any) => Date.parse(p[0])));
     const t0 = Math.min(...times), t1 = Math.max(...times);
+    // From a breath of cyan to the magenta of the strongest storms.
+    const color = (wind: number) => {
+      const k = Math.min(1, Math.max(0, (wind - 30) / 110));
+      return k < 0.5 ? (k < 0.2 ? '#7fe0ff' : '#b7a6ff') : k < 0.8 ? '#ff7ad9' : '#ff3fa4';
+    };
+    const name = (s: any) => () => s.name ? t.spots.cyclone(s.name) : t.spots.cycloneUnnamed;
     for (const s of d.list) {
       s.track.forEach((p: [string, number, number, number | null], i: number) => {
         const wind = p[3] ?? 25, last = i === s.track.length - 1;
-        // From a breath of cyan to the magenta of the strongest storms.
-        const k = Math.min(1, Math.max(0, (wind - 30) / 110));
         out.push({
           lon: p[2], lat: p[1], size: (last ? 16 : 5) + wind / (last ? 6 : 14), order: (Date.parse(p[0]) - t0) / Math.max(1, t1 - t0),
-          color: k < 0.5 ? (k < 0.2 ? '#7fe0ff' : '#b7a6ff') : k < 0.8 ? '#ff7ad9' : '#ff3fa4', pulse: last,
-          text: () => s.name ? t.spots.cyclone(s.name) : t.spots.cycloneUnnamed,
+          color: color(wind), pulse: last, text: name(s),
           sub: () => t.spots.cycloneSub(num(kmh(wind)), dayShort(p[0])),
         });
       });
+      // The forecast: a dotted road ahead of the storm, pale, drawn once the replay is over.
+      let prev = s.track.at(-1) as [string, number, number, number | null] | undefined;
+      for (const f of (s.forecast ?? []) as [string, number, number, number][]) {
+        if (prev) {
+          const steps = Math.max(1, Math.round(Math.hypot(f[1] - prev[1], (f[2] - prev[2]) * Math.cos((f[1] * Math.PI) / 180)) / 0.7));
+          for (let k = 1; k < steps; k++) {
+            const a = k / steps;
+            out.push({
+              lon: prev[2] + (f[2] - prev[2]) * a, lat: prev[1] + (f[1] - prev[1]) * a, size: 2.6, color: '#d9ecff', order: 1,
+              text: name(s), sub: () => t.spots.cycloneAhead(dayShort(f[0])),
+            });
+          }
+        }
+        out.push({
+          lon: f[2], lat: f[1], size: 4 + f[3] / 18, color: color(f[3]), order: 1,
+          text: name(s), sub: () => t.spots.cycloneForecast(num(kmh(f[3])), dayShort(f[0])),
+        });
+        prev = f;
+      }
     }
     return out;
   },
@@ -106,6 +128,15 @@ const BUILD: Record<SpotId, (d: any) => Spot[]> = {
       text: () => t.spots.flash, sub: () => t.spots.flashSub(timeUtc(new Date(Date.parse(d.from) + s * 1000).toISOString())),
     }));
   },
+  conflicts(d) {
+    // The deaths of organised violence in the last full year, cell by cell (0.5°), lit in the
+    // order of the first event of each cell. Colour by the kind of violence that killed most.
+    const COL = ['#ff9f6b', '#d9b36c', '#ff5d73'];
+    return d.cells.map(([lon, lat, deaths, type, events, first]: [number, number, number, number, number, number]) => ({
+      lon, lat, size: 3 + Math.log10(1 + deaths) * 3.2, color: COL[type - 1], order: (first - 1) / 364,
+      text: () => t.spots.conflict(num(deaths), d.latest), sub: () => t.spots.conflictSub(t.spots.violence[type - 1], num(events)),
+    }));
+  },
   launchyear(d) {
     // Every launch of the last twelve months, flashing on its pad in the order they flew.
     const list = d.past as { lat: number; lon: number; name: string; net: string; place: string; pad: string }[];
@@ -127,7 +158,7 @@ const BUILD: Record<SpotId, (d: any) => Spot[]> = {
 const FILES: Record<SpotId, string> = {
   cyclones: 'layers/cyclones.json', volcanoes: 'layers/volcanoes.json', icebergs: 'layers/icebergs.json',
   slicks: 'layers/slicks.json', launches: 'sky/launches.json', launchyear: 'sky/launches.json', fireballs: 'sky/fireballs.json',
-  dams: 'statistics/dams.json', glm: 'layers/glm.json',
+  dams: 'statistics/dams.json', glm: 'layers/glm.json', conflicts: 'statistics/conflicts.json',
 };
 
 function createSet(id: SpotId, spots: Spot[], data: any): SpotSet {

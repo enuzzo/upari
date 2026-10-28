@@ -72,6 +72,7 @@ const HUMAN: Layer[] = [
   { id: 'fumo', look: () => ({ ...PEOPLE.find((c) => c.id === 'fumo')!.look }), legend: PEOPLE.find((c) => c.id === 'fumo')!.legend },
   { id: 'citta', look: () => ({ ...PEOPLE.find((c) => c.id === 'citta')!.look }), legend: PEOPLE.find((c) => c.id === 'citta')!.legend },
   { id: 'dighe', look: () => ({ ...PEOPLE.find((c) => c.id === 'dighe')!.look, spotReplay: 0 }) },
+  { id: 'guerre', look: () => ({ ...PEOPLE.find((c) => c.id === 'guerre')!.look, spotReplay: 0 }) },
   { id: 'rotte', look: () => ({ ...PEOPLE.find((c) => c.id === 'rotte')!.look }), legend: PEOPLE.find((c) => c.id === 'rotte')!.legend },
   {
     id: 'asilo', people: true, look: () => ({ ...peopleBase, dim: 0.72, migration: 1, bloom: 1.3 }),
@@ -113,7 +114,7 @@ const FROM_CHAPTER: Record<string, string> = {
   pianeta: 'adesso', respiro: 'venti', correnti: 'correnti', calore: 'mare', febbre: 'anomalia', fioritura: 'plancton', pioggia: 'pioggia',
   fuoco: 'fuochi', terremoti: 'terremoti', ghiaccio: 'ghiaccio', luci: 'luci', lassu: 'stazione', popolazione: 'popolazione', nascite: 'nascite', vita: 'vita',
   bambini: 'bambini', saldo: 'saldo', luce: 'elettricita', fuga: 'asilo', verde: 'verde', foreste: 'foreste', mangrovie: 'mangrovie', integrita: 'integrita', aria: 'aria', coralli: 'coralli',
-  citta: 'citta', rotte: 'rotte', impronta: 'co2', esilio: 'rifugiati', rotte_asilo: 'asilomondo', accendersi: 'nottiluci', dighe: 'dighe', tempeste: 'tempeste', ondate: 'ondate', fumo: 'fumo', fulmini: 'fulmini', neve: 'neve', smog: 'smog', ozono: 'ozono', petrolio: 'petrolio', aurora: 'aurora', satelliti: 'satelliti', partenze: 'partenze', bolidi: 'bolidi',
+  citta: 'citta', rotte: 'rotte', impronta: 'co2', esilio: 'rifugiati', rotte_asilo: 'asilomondo', accendersi: 'nottiluci', dighe: 'dighe', guerre: 'guerre', tempeste: 'tempeste', ondate: 'ondate', fumo: 'fumo', fulmini: 'fulmini', neve: 'neve', smog: 'smog', ozono: 'ozono', petrolio: 'petrolio', aurora: 'aurora', satelliti: 'satelliti', partenze: 'partenze', bolidi: 'bolidi',
 };
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;

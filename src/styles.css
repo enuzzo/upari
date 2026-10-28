@@ -516,6 +516,11 @@ body.exploring .chart, body.reading .chart { opacity: 0; }
 .chart .ch-now { fill: none; stroke: #fff1d6; stroke-width: 2.6; opacity: 0; filter: drop-shadow(0 0 6px rgba(255, 217, 160, 0.8)); animation: chIn 0.9s var(--ease) forwards; }
 .chart .ch-keeling { fill: none; stroke: var(--warm); stroke-width: 1.4; stroke-dasharray: 1; stroke-dashoffset: 1; animation: chDraw 6.2s cubic-bezier(0.4, 0, 0.6, 1) forwards; }
 .chart .ch-dot { fill: #fff1d6; filter: drop-shadow(0 0 6px rgba(255, 217, 160, 0.9)); }
+.chart .ch-bar { opacity: 0; animation: chIn 0.6s var(--ease) forwards; }
+.chart .ch-break { fill: var(--bg, #03040a); }
+.ch-key { display: inline-flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--ink-3); margin-right: 14px; }
+.ch-key span { display: inline-flex; align-items: center; gap: 6px; }
+.ch-key b { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
 .chart .ch-dot, .chart .ch-label, .chart .ch-neo { opacity: 0; animation: chIn 0.8s var(--ease) forwards; }
 .chart .ch-axis { stroke: rgba(255, 255, 255, 0.3); stroke-width: 1; }
 .chart .ch-earth { fill: #3f7fd0; filter: drop-shadow(0 0 8px rgba(120, 180, 255, 0.6)); }
@@ -533,7 +538,7 @@ body.exploring .chart, body.reading .chart { opacity: 0; }
 @keyframes chIn { to { opacity: 1; } }
 @keyframes chDraw { to { stroke-dashoffset: 0; } }
 @media (prefers-reduced-motion: reduce) {
-  .chart .ch-year, .chart .ch-now, .chart .ch-dot, .chart .ch-label, .chart .ch-neo { animation: none; opacity: 1; }
+  .chart .ch-year, .chart .ch-now, .chart .ch-dot, .chart .ch-label, .chart .ch-neo, .chart .ch-bar { animation: none; opacity: 1; }
   .chart .ch-keeling { animation: none; stroke-dashoffset: 0; }
 }
 

@@ -158,7 +158,7 @@ richieda un account o una chiave che l’utente non ha dato.
 - [x] Ozono OMPS. [x] NO₂ TROPOMI. [x] SO₂ TROPOMI (in Esplora, con i vulcani).
   [ ] OMPS Aerosol Index (c’è già MERRA-2).
 - [x] Neve VIIRS NDSI mensile. [x] IMS senza nuvole (solo emisfero nord): strato «Neve e ghiaccio, ieri».
-- [x] Cicloni IBTrACS ACTIVE. [ ] Coni di previsione NHC.
+- [x] Cicloni IBTrACS ACTIVE. [x] Traiettorie previste in ogni bacino (GDACS, CC BY 4.0 dichiarata su ogni risorsa).
 - [x] Rotte delle navi (World Bank/IMF). [x] Aurora e Kp.
 
 ### Dopo
@@ -193,16 +193,16 @@ richieda un account o una chiave che l’utente non ha dato.
 - [x] Vulcani Smithsonian GVP (termini «non commercial», accettati per un progetto gratuito).
 - [ ] Area bruciata MCD64A1: serve un account Earthdata gratuito come secret del workflow.
 - [ ] Pesca e navi buie (Global Fishing Watch): serve un token personale.
-- [ ] Aree protette WDPA: niente download, permesso scritto per usi commerciali.
+- [ ] Aree protette WDPA: niente download, permesso scritto per usi commerciali (lettera in `docs/outreach/wdpa.md`).
 - [ ] GBIF / OBIS (licenze miste, distorsione del campionamento). [ ] Climate TRACE (API beta).
 - [ ] Ember, Global Energy Monitor: chiave o modulo. [ ] CAMS, Copernicus Marine: account.
 - [ ] HYDE 3.5 (licenza da confermare, protezione anti-bot). [x] Luci notturne 1992–2024 (Li, Zhou et al., CC BY 4.0): capitolo «Il mondo si accende».
-- [ ] Conflitti UCDP: scelta editoriale dell’utente.
+- [x] Conflitti UCDP GED 26.1 (CC BY 4.0): capitolo «Le guerre», morti del 2025 per cella e grafico 1989–2025.
 - [ ] Plastica come storia lenta (solo modelli o campioni, licenze da verificare).
 - [x] Fulmini: capitolo «I fulmini», l’ultima mezz’ora dei due GOES (GLM) sopra la mappa di vent’anni LIS/OTD.
 - [x] Ondate di calore marine (Hobday su OISST, clima 1991–2020 calcolato una volta e salvato): capitolo «Le ondate di calore marine». [x] CO₂ fossile ODIAC 2024 (CC BY 4.0, sommata a 0,05° una volta): capitolo «Dove si brucia».
 - [ ] Multi-scattering dell’atmosfera: rimandato (costo alto, guadagno visivo piccolo).
-- [ ] GDACS (traiettorie previste dei cicloni in ogni bacino): i termini d’uso non parlano di riuso; escluso finché non è chiaro.
+- [ ] Lettere ai fornitori (OceanSODA, WDPA, OpenSky, Blitzortung, HYDE, TeleGeography): bozze in `docs/outreach/`, da firmare e spedire.
 
 ### Esclusi
 ACLED, OpenSky, TeleGeography, Ookla, WHO GHO, NHM BII (NC-SA, sostituito da quello CC BY),

@@ -413,6 +413,44 @@ function writePoints(id, list, meta, min = 1) {
 
 async function getJson(url) { return JSON.parse((await fetchBuffer(url)).toString()); }
 
+// GDACS tropical cyclones still active: the RSS lists them, a static GeoJSON per bulletin
+// holds the positions (past ones labelled "previous position", the others are the forecast,
+// the first of them being the analysis of the bulletin). Winds come in km/h.
+async function gdacsForecasts(list) {
+  const rss = (await fetchBuffer('https://www.gdacs.org/xml/rss.xml')).toString();
+  const items = [...rss.matchAll(/<item>([\s\S]*?)<\/item>/g)].map((m) => m[1]).filter((i) => i.includes('<gdacs:eventtype>TC</gdacs:eventtype>') && i.includes('<gdacs:iscurrent>true</gdacs:iscurrent>'));
+  const tag = (i, k) => i.match(new RegExp(`<${k}[^>]*>([^<]*)</${k}>`))?.[1];
+  const kt = (kmh) => Math.round(Number(kmh) / 1.852);
+  const iso = (d) => { const [day, mon, rest] = d.split('/'); const [y, time] = rest.split(' '); return `${y}-${mon}-${day}T${time}Z`; };
+  const km = (a, b) => 6371 * Math.acos(Math.min(1, Math.sin(a[0] * Math.PI / 180) * Math.sin(b[0] * Math.PI / 180) + Math.cos(a[0] * Math.PI / 180) * Math.cos(b[0] * Math.PI / 180) * Math.cos((a[1] - b[1]) * Math.PI / 180)));
+  let n = 0;
+  for (const i of items) {
+    const id = tag(i, 'gdacs:eventid'), ep = tag(i, 'gdacs:episodeid'), event = tag(i, 'gdacs:eventname') ?? '';
+    const g = await getJson(`https://www.gdacs.org/contentdata/resources/TC/${id}/geojson_${id}_${ep}.geojson`);
+    const pts = g.features.filter((f) => /^Point_\d+$/.test(f.properties.Class)).map((f) => ({
+      t: iso(f.properties.trackdate), lat: Number(f.properties.latitude), lon: Number(f.properties.longitude),
+      wind: kt(f.properties.windspeed), past: f.properties.polygonlabel === 'previous position',
+    })).sort((a, b) => Date.parse(a.t) - Date.parse(b.t));
+    const past = pts.filter((p) => p.past), ahead = pts.filter((p) => !p.past);
+    if (!ahead.length) continue;
+    // The same storm in IBTrACS: by name, or by a fix close in space and time.
+    const name = event.replace(/-\d+$/, '').toUpperCase();
+    const near = (s) => s.track.some((q) => pts.some((p) => Math.abs(Date.parse(p.t) - Date.parse(q[0])) < 12 * 3600e3 && km([p.lat, p.lon], [q[1], q[2]]) < 250));
+    let s = list.find((x) => x.name && x.name.toUpperCase() === name) ?? list.find(near);
+    if (!s) {
+      s = { sid: `GDACS-${id}`, name: /^(ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN|ELEVEN|TWELVE|THIRTEEN|FOURTEEN|FIFTEEN|SIXTEEN|SEVENTEEN|EIGHTEEN|NINETEEN|TWENTY|INVEST)\b/.test(name) ? null : name, basin: null, peak: 0, track: [] };
+      list.push(s);
+    }
+    const lastT = s.track.length ? Date.parse(s.track.at(-1)[0]) : 0;
+    for (const p of [...past, ahead[0]]) if (Date.parse(p.t) > lastT) s.track.push([p.t, p.lat, p.lon, p.wind]);
+    s.peak = Math.max(s.peak, ...s.track.map((p) => p[3] ?? 0));
+    s.forecast = ahead.slice(1).map((p) => [p.t, p.lat, p.lon, p.wind]);
+    s.gdacs = { id: Number(id), episode: Number(ep), alert: tag(i, 'gdacs:alertlevel') };
+    n++;
+  }
+  return n;
+}
+
 /**
  * A grid from ERDDAP drawn as a grey image (BlackWhite colour bar: grey level = value), placed
  * on the global W × H grid. `rows` is the latitude span of the source image, north first.
@@ -617,8 +655,18 @@ const layers = {
     const since = Date.now() - 10 * 86400e3;
     const list = [...storms.entries()].filter(([, s]) => Date.parse(s.track.at(-1)[0]) > since)
       .map(([sid, s]) => ({ sid, name: s.name === 'NOT_NAMED' ? null : s.name, basin: s.basin, peak: Math.max(0, ...s.track.map((p) => p[3] ?? 0)), track: s.track }));
-    writeAtomic(join(OUT, 'cyclones.json'), JSON.stringify({ id: 'cyclones', count: list.length, fetched: new Date().toISOString(), days: 10, unit: 'kt', source: 'NOAA NCEI IBTrACS v04r01 · ACTIVE', list }));
-    console.log(`cyclones: ${list.length} in the last 10 days`);
+    // Where the storms still active are expected to go, from GDACS (European Commission JRC
+    // and UN OCHA, CC BY 4.0), which carries the official forecasts of every basin (JTWC, NHC
+    // and the regional centres). It is also a day or two ahead of IBTrACS: positions newer
+    // than the last IBTrACS fix join the track. A failure here leaves the tracks as they are.
+    let forecasts = 0;
+    try {
+      forecasts = await gdacsForecasts(list);
+    } catch (err) {
+      console.warn(`cyclones: no GDACS forecasts (${err.message})`);
+    }
+    writeAtomic(join(OUT, 'cyclones.json'), JSON.stringify({ id: 'cyclones', count: list.length, fetched: new Date().toISOString(), days: 10, unit: 'kt', source: 'NOAA NCEI IBTrACS v04r01 · ACTIVE; forecasts GDACS (EC JRC, UN OCHA), CC BY 4.0', list }));
+    console.log(`cyclones: ${list.length} in the last 10 days, ${forecasts} with a forecast`);
   },
   async volcanoes() {
     // Eruptions still going on, from the Smithsonian Global Volcanism Program.

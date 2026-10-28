@@ -4,10 +4,11 @@ import { fresh } from '../engine/fresh';
 
 // Panels drawn beside the planet when a number needs its history to be understood:
 // the temperature of every day since 1940, the carbon dioxide of Mauna Loa, the Sun of
-// this morning, how close the next asteroid passes, how far the Voyagers are.
+// this morning, how close the next asteroid passes, how far the Voyagers are, how many die in
+// wars every year.
 // Lines draw themselves year after year, so the chart is read as time passing.
 
-export type ChartId = 'temperature' | 'co2' | 'sun' | 'neo' | 'voyager';
+export type ChartId = 'temperature' | 'co2' | 'sun' | 'neo' | 'voyager' | 'conflicts';
 
 const SVG = 'http://www.w3.org/2000/svg';
 const $ = (id: string) => document.getElementById(id)!;
@@ -29,6 +30,7 @@ export const climate = {
   voyager: () => json('sky/voyager.json'),
   launches: () => json('sky/launches.json'),
   fireballs: () => json('sky/fireballs.json'),
+  conflicts: () => json('statistics/conflicts.json'),
 };
 
 const el = (name: string, attrs: Record<string, string | number> = {}, parent?: Element) => {
@@ -302,7 +304,46 @@ async function voyager(svg: SVGElement, cap: HTMLElement) {
   requestAnimationFrame(draw);
 }
 
-const DRAW: Record<ChartId, (svg: SVGElement, cap: HTMLElement) => Promise<void>> = { temperature, co2, sun, neo, voyager };
+/** Deaths in organised violence every year since 1989, by kind, rising one year after another.
+ *  1994 (the genocide in Rwanda) is four times taller than any other year: its bar is broken
+ *  and labelled with its value, so the other years stay readable. */
+async function conflicts(svg: SVGElement, cap: HTMLElement) {
+  const d = await climate.conflicts();
+  const W = 640, H = 360, L = 52, R = 18, T = 26, B = 30;
+  frame(svg, W, H);
+  const years = Object.keys(d.years).map(Number).sort((a, b) => a - b);
+  const top = 350_000;
+  const bw = (W - L - R) / years.length;
+  const X = (i: number) => L + i * bw, Y = (v: number) => T + (1 - Math.min(v, top) / top) * (H - T - B);
+  const grid = el('g', { class: 'ch-grid' }, svg);
+  for (let v = 100_000; v <= top; v += 100_000) { el('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v) }, grid); text(grid, L - 8, Y(v) + 4, num(v), 'ch-tick', 'end'); }
+  for (const y of years) if (y % 5 === 0) text(grid, X(years.indexOf(y)) + bw / 2, H - 10, String(y), 'ch-tick', 'middle');
+  const COL = ['#ff9f6b', '#d9b36c', '#ff5d73'];
+  years.forEach((y, i) => {
+    const g = el('g', { class: 'ch-bar' }, svg) as SVGElement;
+    g.style.animationDelay = `${0.3 + (i / years.length) * 6}s`;
+    let base = 0;
+    (d.years[y].type as number[]).forEach((v, k) => {
+      const y0 = Y(base), y1 = Y(base + v);
+      if (y0 - y1 > 0.2) el('rect', { x: X(i) + 1, y: y1, width: bw - 2, height: y0 - y1, fill: COL[k] }, g);
+      base += v;
+    });
+    if (base > top) {
+      el('rect', { x: X(i) - 2, y: T + 14, width: bw + 4, height: 5, class: 'ch-break' }, g);
+      text(g, X(i) + bw / 2 + 4, T - 6, `${y} · ${num(base)}`, 'ch-tick', 'start');
+    }
+  });
+  const last = years.at(-1)!;
+  const lab = text(svg, X(years.length - 1) + bw / 2, Y(d.years[last].best) - 10, num(d.years[last].best), 'ch-label', 'end') as SVGElement;
+  lab.style.animationDelay = '6.4s';
+  cap.innerHTML = '';
+  const key = document.createElement('span');
+  key.className = 'ch-key';
+  t.spots.violence.forEach((name, k) => { const s = document.createElement('span'); s.innerHTML = `<b style="background:${COL[k]}"></b>`; s.append(name); key.append(s); });
+  cap.append(key, t.charts.conflicts);
+}
+
+const DRAW: Record<ChartId, (svg: SVGElement, cap: HTMLElement) => Promise<void>> = { temperature, co2, sun, neo, voyager, conflicts };
 let token = 0;
 
 /** Show a chart beside the planet, or hide it. */

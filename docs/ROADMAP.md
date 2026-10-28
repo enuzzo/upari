@@ -1,221 +1,238 @@
-# Upari: dove andare
+# Upari: where to go
 
-Upari oggi è un racconto di undici capitoli sul pianeta di questo momento. Può diventare
-un piccolo atlante vivo della Terra: più racconti, un'esplorazione libera completa, i dati
-dell'umanità accanto a quelli fisici. Lo stesso sguardo dappertutto: poche parole, luce
-vera, nessun dato inventato, ogni immagine con la sua fonte.
+Upari today is a story of eleven chapters about the planet at this moment. It can become a
+small living atlas of the Earth: more stories, a complete free exploration, the data of
+humanity next to the physical ones. The same eye everywhere: few words, real light, no
+invented data, every image with its source.
 
-Le fasi sono in ordine di lavoro. Ognuna si pubblica da sola, dopo verifiche con
-screenshot, build e tempo di frame.
+The phases are in working order. Each one is published on its own, after checks with
+screenshots, build and frame time.
 
-## 1. Lassù, il viaggio
+## 1. Up there, the journey
 
-Il capitolo diventa una sequenza in tre tempi.
+The chapter becomes a sequence in three movements.
 
-1. **Da lontano.** La Terra intera con il terminatore vero; l'orbita completa disegnata
-   come un filo di luce, la stazione come un punto che corre, in tempo reale.
-2. **Il viaggio.** La camera accompagna la stazione lungo l'orbita, ancora alta: si vede
-   dove sta andando (giorno, notte, la prossima alba).
-3. **Da vicino.** La camera scende fino a qualche centinaio di metri e si ferma: il
-   modello NASA della ISS, nel suo assetto reale, con la Terra sotto.
-   - Telemetria discreta: quota, velocità, sopra quale paese o mare, a bordo è giorno o
-     notte, minuti alla prossima alba o al prossimo tramonto, orbita del giorno.
-   - Didascalia: «Questo è ciò che l'equipaggio vede adesso dal finestrino».
-   - Di notte la stazione è illuminata dalla Luna vera e dal bagliore delle città.
-4. **Anche in esplorazione.** Voce «Raggiungi la Stazione» nel pannello, e il modello
-   compare sempre quando ci si avvicina.
+1. **From afar.** The whole Earth with the real terminator; the complete orbit drawn as a
+   thread of light, the station as a running dot, in real time.
+2. **The journey.** The camera follows the station along its orbit, still high: you can see
+   where it is going (day, night, the next sunrise).
+3. **Close up.** The camera comes down to a few hundred metres and stops: the NASA model of
+   the ISS, in its real attitude, with the Earth below.
+   - Discreet telemetry: altitude, speed, which country or sea it is over, whether it is day
+     or night on board, minutes to the next sunrise or sunset, the orbit of the day.
+   - Caption: "This is what the crew sees from the window right now".
+   - At night the station is lit by the real Moon and the glow of the cities.
+4. **In exploration too.** A "Reach the Station" item in the panel, and the model always
+   appears when you get close.
 
-## 2. Le persone: l'atlante, rifatto
+## 2. People: the atlas, redone
 
-I dati della versione precedente tornano, con la grafica nuova. Restano snapshot
-verificati (World Bank WDI CC BY 4.0, UN IGME, UNHCR CC BY 4.0, Natural Earth pubblico
-dominio).
+The data of the previous version come back, with the new graphics. They stay verified
+snapshots (World Bank WDI CC BY 4.0, UN IGME, UNHCR CC BY 4.0, Natural Earth public domain).
 
-- **Indicatori:** popolazione, natalità, mortalità, saldo naturale, speranza di vita,
-  mortalità sotto i 5 anni, accesso all'elettricità, occupazione e disoccupazione (con
-  la loro avvertenza: stime modellate, niente classifiche), quota di rinnovabili nell'UE.
-- **Resa:** i paesi diventano luce sulla superficie, non un mosaico piatto: una mappa di
-  identità dei paesi su GPU, i valori per anno in una texture, i colori che scorrono
-  fra un anno e l'altro (si interpolano i colori, mai le misure). Confini come fili sottili
-  e luminosi, il paese sotto il cursore che si accende.
-- **Popolazione come polvere di luce:** un punto ogni milione di persone, sparso dentro
-  ogni paese; negli anni la polvere si addensa.
-- **Migrazioni:** le domande di asilo da Siria, Ucraina e Afghanistan come scie di
-  particelle dall'origine al paese di presentazione, spessore proporzionale ai numeri.
-  Scie schematiche, non itinerari: lo diciamo.
-- **Tempo:** cursore degli anni 1960–2025 con play; i vuoti restano vuoti.
-- **Lettura:** al passaggio nome, valore e anno; al clic una scheda del paese con la
-  curva dal 1960.
+- **Indicators:** population, birth rate, death rate, natural balance, life expectancy,
+  under-5 mortality, access to electricity, employment and unemployment (with their
+  warning: modelled estimates, no rankings), share of renewables in the EU.
+- **Rendering:** countries become light on the surface, not a flat mosaic: a country
+  identity map on the GPU, the values per year in a texture, colours flowing from one year to
+  the next (colours are interpolated, never the measurements). Borders as thin, glowing
+  threads, the country under the cursor lighting up.
+- **Population as dust of light:** one dot for every million people, scattered inside each
+  country; over the years the dust thickens.
+- **Migration:** asylum applications from Syria, Ukraine and Afghanistan as particle trails
+  from the origin to the country where they were filed, thickness proportional to the
+  numbers. Schematic trails, not itineraries: we say so.
+- **Time:** a 1960–2025 year slider with play; gaps stay gaps.
+- **Reading:** on hover, name, value and year; on click, a country card with the curve
+  since 1960.
 
-## 3. Più racconti
+## 3. More stories
 
-Il racconto attuale diventa il primo di una serie. All'avvio si sceglie quale vedere.
+The current story becomes the first of a series. On opening, you choose which one to see.
 
-- **Il pianeta, adesso.** Gli undici capitoli di oggi.
-- **Le persone.** Otto miliardi; Si nasce di meno; Si vive più a lungo; I bambini; La
-  luce elettrica; In fuga; Il lavoro; Il saldo.
-- **Il tuo luogo.** Dopo una ricerca: il luogo adesso, con ora solare, alba e tramonto,
-  vento, pioggia e mare intorno, e il prossimo passaggio visibile della ISS calcolato in
-  locale con SGP4.
-- **Un giorno sulla Terra.** Ventiquattro ore in un minuto: terminatore, nuvole, luci
-  delle città che si accendono, la stazione che gira sedici volte.
-- **La Terra trema** (dati nuovi, sotto). Terremoti degli ultimi sette giorni.
+- **The planet, right now.** Today's eleven chapters.
+- **People.** Eight billion; Fewer births; Longer lives; The children; Electric light;
+  Fleeing; Work; The balance.
+- **Your place.** After a search: the place right now, with solar time, sunrise and sunset,
+  wind, rain and sea around it, and the next visible pass of the ISS computed locally with
+  SGP4.
+- **A day on Earth.** Twenty-four hours in a minute: terminator, clouds, city lights coming
+  on, the station going round sixteen times.
+- **The Earth shakes** (new data, below). Earthquakes of the last seven days.
 
-## 4. Esplorazione libera completa
+## 4. Complete free exploration
 
-- **Pannello degli strati.** Il cielo (nuvole, notte, atmosfera, stelle); L'aria (vento);
-  Il mare (correnti, temperatura, anomalia, plancton, ghiaccio); L'acqua (pioggia);
-  Il fuoco; Le luci; La Stazione; Le persone (ogni indicatore).
-- **Controlli:** luce reale o da studio, rotazione automatica, ora (avanti e indietro
-  nelle 24 ore, il Sole si sposta), anno per i dati statistici, fotogramma della pioggia.
-- **Link condivisibili:** posizione, strato e anno nell'indirizzo.
-- **Cartolina:** salva l'inquadratura come immagine con titolo, data e fonti.
+- **Layer panel.** The sky (clouds, night, atmosphere, stars); The air (wind); The sea
+  (currents, temperature, anomaly, plankton, ice); Water (rain); Fire; Lights; The Station;
+  People (every indicator).
+- **Controls:** real or studio light, automatic rotation, time (forwards and backwards over
+  24 hours, the Sun moves), year for the statistical data, rain frame.
+- **Shareable links:** position, layer and year in the address.
+- **Postcard:** save the view as an image with title, date and sources.
 
-## 5. Dati nuovi, tutti aperti
+## 5. New data, all open
 
-- Terremoti degli ultimi 7 giorni (USGS, pubblico dominio).
-- Cicloni tropicali attivi (NOAA NHC / JTWC).
-- Fumo e polveri: profondità ottica degli aerosol (NASA GIBS).
-- Neve e vegetazione (NASA GIBS, MODIS).
-- Lunghe serie: CO₂ a Mauna Loa, ghiaccio artico, anomalia globale di temperatura.
+- Earthquakes of the last 7 days (USGS, public domain).
+- Active tropical cyclones (NOAA NHC / JTWC).
+- Smoke and dust: aerosol optical depth (NASA GIBS).
+- Snow and vegetation (NASA GIBS, MODIS).
+- Long series: CO₂ at Mauna Loa, Arctic ice, global temperature anomaly.
 
-## 6. Piattaforma
+## 6. Platform
 
-- Tablet e telefono: tocco, pannelli compatti, qualità adattiva.
-- Accessibilità: movimento ridotto, tastiera completa, testi alternativi.
-- Inglese accanto all'italiano.
-- Dominio upari.netmilk.dev su GitHub Pages (serve il record DNS).
-- Test automatici delle trasformazioni dei dati.
+- Tablet and phone: touch, compact panels, adaptive quality.
+- Accessibility: reduced motion, full keyboard, alternative texts.
+- English next to Italian.
+- Domain upari.netmilk.dev on GitHub Pages (needs the DNS record).
+- Automated tests of the data transformations.
 
-## Stato
+## Status
 
-Fatto e pubblicato il 26 ottobre 2026:
+Done and published on 26 October 2026:
 
-- **Lassù, il viaggio**: Terra intera con l'orbita come filo di luce, inseguimento, discesa
-  alla ISS, telemetria dal vivo, didascalia «Questo è ciò che l'equipaggio vede adesso».
-- **Le persone**: motore dell'atlante (paesi come luce, polvere della popolazione,
-  scie dell'asilo) e un racconto di sette capitoli.
-- **Scelta del racconto** all'avvio e nella barra in alto; a fine racconto, «Continua».
-- **Esplora**: tutti gli strati, anno, ora, luce vera, nuvole, rotazione, «Raggiungi la
-  Stazione», link condivisibili.
-- **La Terra trema**: terremoti USGS degli ultimi sette giorni, aggiornati ogni mattina,
-  nuovo capitolo del primo racconto e strato in Esplora.
+- **Up there, the journey**: the whole Earth with the orbit as a thread of light, the chase,
+  the descent to the ISS, live telemetry, the caption "This is what the crew sees right now".
+- **People**: the atlas engine (countries as light, population dust, asylum trails) and a
+  story of seven chapters.
+- **Choice of story** on opening and in the top bar; at the end of a story, "Continue".
+- **Explore**: every layer, year, time, real light, clouds, rotation, "Reach the Station",
+  shareable links.
+- **The Earth shakes**: USGS earthquakes of the last seven days, refreshed every morning, a
+  new chapter of the first story and a layer in Explore.
 
-Fatto e pubblicato il 26 ottobre 2026, sera:
+Done and published on 26 October 2026, evening:
 
-- **La natura**, terzo racconto: il respiro verde (NDVI mensile), le foreste perdute
-  (2001–2024, anno per anno), l'aria (aerosol MERRA-2 mensili), le barriere coralline
-  (Coral Reef Watch). Strati anche in Esplora.
-- **Strati animati**: temperatura del mare, anomalia, plancton e ghiaccio sono serie di
-  dodici mesi fino a oggi, con l'orologio del mese.
-- **Audio**: quattro caratteri della stessa musica (calmo, grave, interrogativo, disteso)
-  in dissolvenza; un ambiente per ogni capitolo; effetti più bassi.
-- **Grafica**: nuvole con rilievo, luci delle città nitide, oceano più azzurro, riflesso del
-  Sole più netto; corretta una linea sul lato notturno.
+- **Nature**, the third story: green breath (monthly NDVI), lost forests (2001–2024, year by
+  year), air (monthly MERRA-2 aerosols), coral reefs (Coral Reef Watch). Layers in Explore
+  too.
+- **Animated layers**: sea temperature, anomaly, plankton and ice are series of twelve
+  months up to today, with the month's clock.
+- **Audio**: four characters of the same music (calm, grave, curious, open) crossfading; an
+  ambience for each chapter; quieter effects.
+- **Graphics**: clouds with relief, sharp city lights, a bluer ocean, a crisper sun glint;
+  a line on the night side fixed.
 
-Fatto il 27 ottobre 2026 (rapporto «Nuove fonti e proposte per Upari»):
+Done on 27 October 2026 (report "Nuove fonti e proposte per Upari"):
 
-- **Il cielo, adesso**, quarto racconto: il Sole di stamattina (SDO), l’aurora della prossima
-  mezz’ora con il Kp (NOAA SWPC, chiesta dal vivo), tutti i satelliti attivi mossi sulla GPU
-  (CelesTrak), i prossimi lanci, i bolidi dal 1988, gli asteroidi dei prossimi 60 giorni, le
-  Voyager a un giorno-luce (JPL).
-- **Il pianeta**: «Il termometro» (ogni giorno dal 1940, Climate Pulse), «Le tempeste»
-  (cicloni IBTrACS con le tracce), vulcani in eruzione dentro «La Terra trema», iceberg dentro
-  «Il ghiaccio».
-- **La natura**: «Il respiro del carbonio» (curva di Keeling), «La neve», «L’aria delle città»
-  (NO₂), «Lo scudo» (ozono), «Il mare ferito» (chiazze di petrolio SkyTruth, CC BY-SA).
-- **Le persone**: «Le città crescono» (GHSL 1975–2030), «Le rotte» (navi 2015–2021).
-- **Esplora**: tutti gli strati nuovi, il gruppo «Il cielo», una nota su come leggere ogni
-  strato con la sua fonte. **Accade adesso** sul titolo, con soglie alte. La data del
-  fotogramma sta sopra il pianeta.
+- **The sky, right now**, the fourth story: this morning's Sun (SDO), the aurora of the next
+  half hour with Kp (NOAA SWPC, requested live), every active satellite moved on the GPU
+  (CelesTrak), the next launches, fireballs since 1988, the asteroids of the next 60 days,
+  the Voyagers at one light day (JPL).
+- **The planet**: "The thermometer" (every day since 1940, Climate Pulse), "The storms"
+  (IBTrACS cyclones with their tracks), erupting volcanoes inside "The Earth shakes",
+  icebergs inside "Ice".
+- **Nature**: "The breath of carbon" (Keeling curve), "Snow", "The air of cities" (NO₂),
+  "The shield" (ozone), "The wounded sea" (SkyTruth oil slicks, CC BY-SA).
+- **People**: "Cities grow" (GHSL 1975–2030), "The lanes" (ships 2015–2021).
+- **Explore**: all the new layers, the "Sky" group, a note on how to read each layer with
+  its source. **Happening now** on the title, with high thresholds. The date of the frame
+  sits above the planet.
 
-Fatto il 27 ottobre 2026, sera — «Il cielo, adesso» rivisto dopo le note dell’utente:
+Done on 27 October 2026, evening: "The sky, right now" revised after the user's notes:
 
-- **Il Sole** come corpo in 3D, in scala di grandezza con la Terra (non di distanza): da lontano con
-  la Terra come misura, poi da vicino; la faccia verso di noi è l’immagine HMI di SDO del mattino.
-- **L’aurora** come tende di luce sopra l’ovale previsto da NOAA OVATION: verde dell’ossigeno in
-  basso, rosso in alto, orlo rosa dell’azoto; dall’alto e poi di lato.
-- **In partenza**: le salite dei lanci di ieri dalle loro rampe, con l’etichetta della destinazione,
-  poi l’ultimo anno di lanci (335) rampa per rampa.
-- **Di passaggio**: il percorso vero dell’asteroide intorno alla Terra e l’orbita della Luna (JPL
-  Horizons), con le etichette; niente più satelliti di sfondo.
-- **Un giorno-luce**: Voyager 1 segnata fra le stelle nella sua direzione vera; la luce del Sole
-  ora tramonta dietro la Terra come un disco (prima, tagliata dalla profondità, sembrava quadrata).
+- **The Sun** as a 3D body, at the right size against the Earth (not the right distance):
+  from afar with the Earth as a measure, then close up; the face towards us is the morning's
+  SDO HMI image.
+- **The aurora** as curtains of light above the oval forecast by NOAA OVATION: oxygen green
+  below, red above, the pink hem of nitrogen; from above and then from the side.
+- **Departures**: yesterday's launches climbing from their pads, labelled with their
+  destination, then the last year of launches (335) pad by pad.
+- **Passing by**: the asteroid's real path around the Earth and the Moon's orbit (JPL
+  Horizons), labelled; no more background satellites.
+- **One light day**: Voyager 1 marked among the stars in its real direction; the sunlight
+  now sets behind the Earth as a disc (before, clipped by depth, it looked square).
 
-## Piano dal rapporto, con lo stato
+## Plan from the report, with its status
 
-Licenze: per decisione dell’utente (27 ottobre) Upari è un progetto gratuito; le licenze non
-commerciali e share-alike si usano con i crediti richiesti, i dati a pagamento no, e nulla che
-richieda un account o una chiave che l’utente non ha dato.
+Licences: by the user's decision (27 October) Upari is a free project; non-commercial and
+share-alike licences are used with the required credits, paid data are not, and nothing
+that needs an account or a key the user has not given.
 
-### Subito
-- [x] Nota «come leggere» e fonte per ogni strato in Esplora (dal testo del capitolo).
-- [x] Etichette del tipo di dato (misurato, modello, previsione, rianalisi, stima, statistica
-  ufficiale, inventario, calcolato, con proiezioni): accanto al titolo di ogni capitolo e
-  nella nota di Esplora.
-- [x] Il pianeta oggi: temperatura (Climate Pulse), CO₂ (NOAA GML), ghiaccio NSIDC v4
-  (scaricato ogni giorno in `public/climate/seaice.json`, non ancora mostrato).
-- [x] Ozono OMPS. [x] NO₂ TROPOMI. [x] SO₂ TROPOMI (in Esplora, con i vulcani).
-  [ ] OMPS Aerosol Index (c’è già MERRA-2).
-- [x] Neve VIIRS NDSI mensile. [x] IMS senza nuvole (solo emisfero nord): strato «Neve e ghiaccio, ieri».
-- [x] Cicloni IBTrACS ACTIVE. [x] Traiettorie previste in ogni bacino (GDACS, CC BY 4.0 dichiarata su ogni risorsa).
-- [x] Rotte delle navi (World Bank/IMF). [x] Aurora e Kp.
+### Now
+- [x] A "how to read" note and the source for every layer in Explore (from the chapter text).
+- [x] Data-kind labels (measured, model, forecast, reanalysis, estimate, official
+  statistics, inventory, computed, with projections): next to the title of every chapter
+  and in the Explore note.
+- [x] The planet today: temperature (Climate Pulse), CO₂ (NOAA GML), NSIDC v4 sea ice
+  (downloaded every day into `public/climate/seaice.json`).
+- [x] OMPS ozone. [x] TROPOMI NO₂. [x] TROPOMI SO₂ (in Explore, with the volcanoes).
+  [ ] OMPS Aerosol Index (MERRA-2 is already there).
+- [x] Monthly VIIRS NDSI snow. [x] Cloud-free IMS (northern hemisphere only): layer "Snow
+  and ice, yesterday".
+- [x] IBTrACS ACTIVE cyclones. [x] Forecast tracks in every basin (GDACS, CC BY 4.0 stated on
+  every resource).
+- [x] Shipping lanes (World Bank/IMF). [x] Aurora and Kp.
 
-### Dopo
-- [x] Il cielo, adesso. [x] Lanci. [x] Iceberg. [x] Città 1975–2030. [x] Accade adesso.
-- [x] Altezza del mare (CoastWatch ERDDAP, 12 mesi). [x] Onde (WaveWatch III via PacIOOS,
-  ultime 24 ore). [ ] Allagamenti, gelo e disgelo (MODIS Flood, SMAP): a scala globale non
-  si leggono, servono viste ravvicinate.
-- [x] Ghiaccio NSIDC v4 dentro «Il ghiaccio» (oggi contro la media 1981–2010 dello stesso giorno).
-- [x] Il tuo luogo, prima parte: un luogo cercato mostra ora solare, alba e tramonto, vento e
-  mare intorno. [ ] La parte con l’anno di nascita.
-- [x] Modalità `?kiosk` (i quattro racconti in ciclo, cursore nascosto) e `?embed` (cornice
-  quieta con il link al sito).
-- [ ] Mare che si acidifica (OceanSODA-ETHZ su NCEI: accesso pubblico con citazione, ma nessuna licenza esplicita; serve un sì scritto degli autori, decisione dell’utente). Zone morte WRI: il
-  dataset non è più online.
-- [x] Integrità della biodiversità (Impact Observatory e Vizzuality via Planetary Computer,
-  CC BY 4.0, 2017 e 2020 a 0,05°): capitolo «Quanta natura resta». [x] Mangrovie 1996–2020
-  (Global Mangrove Watch v3.0, CC BY 4.0 verificata su Zenodo): capitolo «Le mangrovie».
-- [x] Nati all’estero (UN DESA via WDI, ogni cinque anni, il dato mostra il suo anno).
-  [x] Rifugiati per paese d’origine (UNHCR, ogni mille abitanti): capitolo «Lontano da casa».
-  [x] Flussi di asilo da tutte le origini (UNHCR, le trenta rotte più grandi di ogni anno,
-  colore per regione di partenza): capitolo «Le rotte dell’asilo» e strato in Esplora.
-- [x] CO₂ per persona 1970–2024 (EDGAR via WDI, non IEA-EDGAR): capitolo «L’impronta».
-  [x] Dighe nel tempo (Global Dam Watch v1.0, CC BY 4.0): capitolo «Le dighe», accese
-  nell’ordine dell’anno di costruzione, e strato in Esplora.
-- [x] Tendina prima/dopo in Esplora (atlante e serie). [x] Anno di nascita nel «Termometro».
-- [x] Pagina «Per la classe» (da «Perché Upari»).
-- [ ] Riserva per gli elementi orbitali: SatNOGS rimanda dati Space-Track, la cui
-  ridistribuzione non è chiara; per ora resta l’ultimo file buono del giorno.
+### Next
+- [x] The sky, right now. [x] Launches. [x] Icebergs. [x] Cities 1975–2030. [x] Happening now.
+- [x] Sea level (CoastWatch ERDDAP, 12 months). [x] Waves (WaveWatch III via PacIOOS, last
+  24 hours). [ ] Floods, freeze and thaw (MODIS Flood, SMAP): unreadable at global scale,
+  they need close views.
+- [x] NSIDC v4 ice inside "Ice" (today against the 1981–2010 mean of the same day).
+- [x] Your place, first part: a searched place shows solar time, sunrise and sunset, wind
+  and sea around it. [ ] The year-of-birth part.
+- [x] `?kiosk` mode (the four stories in a loop, cursor hidden) and `?embed` (a quiet frame
+  with the link to the site).
+- [ ] The sea turning acidic (OceanSODA-ETHZ on NCEI: public access with a citation, but no
+  explicit licence; it needs a written yes from the authors, letter in
+  `docs/outreach/oceansoda.md`). WRI dead zones: the dataset is no longer online.
+- [x] Biodiversity intactness (Impact Observatory and Vizzuality via Planetary Computer,
+  CC BY 4.0, 2017 and 2020 at 0.05°): chapter "How much nature is left". [x] Mangroves
+  1996–2020 (Global Mangrove Watch v3.0, CC BY 4.0 checked on Zenodo): chapter "The
+  mangroves".
+- [x] Born abroad (UN DESA via WDI, every five years, the data show their year).
+  [x] Refugees by country of origin (UNHCR, per thousand inhabitants): chapter "Far from
+  home". [x] Asylum flows from every origin (UNHCR, the thirty largest routes of each year,
+  coloured by region of departure): chapter "The routes of asylum" and a layer in Explore.
+- [x] CO₂ per person 1970–2024 (EDGAR via WDI, not IEA-EDGAR): chapter "The footprint".
+  [x] Dams over time (Global Dam Watch v1.0, CC BY 4.0): chapter "The dams", lit in the
+  order of their construction year, and a layer in Explore.
+- [x] Before/after slider in Explore (atlas and series). [x] Year of birth in "The
+  thermometer".
+- [x] "For the classroom" page (from "Why Upari").
+- [ ] A fallback for the orbital elements: SatNOGS relays Space-Track data, whose
+  redistribution is unclear; for now the last good file of the day stays.
 
-### Da valutare
-- [x] Chiazze di petrolio SkyTruth Cerulean (CC BY-SA, crediti e nota sulle immagini derivate).
-- [x] Vulcani Smithsonian GVP (termini «non commercial», accettati per un progetto gratuito).
-- [ ] Area bruciata MCD64A1: serve un account Earthdata gratuito come secret del workflow.
-- [ ] Pesca e navi buie (Global Fishing Watch): serve un token personale.
-- [ ] Aree protette WDPA: niente download, permesso scritto per usi commerciali (lettera in `docs/outreach/wdpa.md`).
-- [ ] GBIF / OBIS (licenze miste, distorsione del campionamento). [ ] Climate TRACE (API beta).
-- [ ] Ember, Global Energy Monitor: chiave o modulo. [ ] CAMS, Copernicus Marine: account.
-- [ ] HYDE 3.5 (licenza da confermare, protezione anti-bot). [x] Luci notturne 1992–2024 (Li, Zhou et al., CC BY 4.0): capitolo «Il mondo si accende».
-- [x] Conflitti UCDP GED 26.1 (CC BY 4.0): capitolo «Le guerre», morti del 2025 per cella e grafico 1989–2025.
-- [ ] Plastica come storia lenta (solo modelli o campioni, licenze da verificare).
-- [x] Fulmini: capitolo «I fulmini», l’ultima mezz’ora dei due GOES (GLM) sopra la mappa di vent’anni LIS/OTD.
-- [x] Ondate di calore marine (Hobday su OISST, clima 1991–2020 calcolato una volta e salvato): capitolo «Le ondate di calore marine». [x] CO₂ fossile ODIAC 2024 (CC BY 4.0, sommata a 0,05° una volta): capitolo «Dove si brucia».
-- [ ] Multi-scattering dell’atmosfera: rimandato (costo alto, guadagno visivo piccolo).
-- [ ] Lettere ai fornitori (OceanSODA, WDPA, OpenSky, Blitzortung, HYDE, TeleGeography): bozze in `docs/outreach/`, da firmare e spedire.
+### To evaluate
+- [x] SkyTruth Cerulean oil slicks (CC BY-SA, credits and a note on the derived images).
+- [x] Smithsonian GVP volcanoes ("non commercial" terms, accepted for a free project).
+- [ ] MCD64A1 burned area: needs a free Earthdata account as a workflow secret.
+- [ ] Fishing and dark vessels (Global Fishing Watch): needs a personal token.
+- [ ] WDPA protected areas: no downloads, written permission for commercial uses (letter in
+  `docs/outreach/wdpa.md`).
+- [ ] GBIF / OBIS (mixed licences, sampling bias). [ ] Climate TRACE (beta API).
+- [ ] Ember, Global Energy Monitor: key or form. [ ] CAMS, Copernicus Marine: account.
+- [ ] HYDE 3.5 (licence to be confirmed, letter in `docs/outreach/hyde.md`).
+  [x] Night lights 1992–2024 (Li, Zhou et al., CC BY 4.0): chapter "The world lights up".
+- [x] UCDP GED 26.1 conflicts (CC BY 4.0): chapter "The wars", 2025 deaths per cell and a
+  1989–2025 chart.
+- [ ] Plastic as a slow story (only models or samples, licences to be checked).
+- [x] Lightning: chapter "Lightning", the last half hour of the two GOES (GLM) over the
+  twenty-year LIS/OTD map.
+- [x] Marine heatwaves (Hobday on OISST, the 1991–2020 climate computed once and saved):
+  chapter "Marine heatwaves". [x] ODIAC 2024 fossil CO₂ (CC BY 4.0, summed to 0.05° once):
+  chapter "Where it burns".
+- [ ] Multi-scattering in the atmosphere: postponed (high cost, small visual gain).
+- [ ] Letters to providers (OceanSODA, WDPA, OpenSky, Blitzortung, HYDE, TeleGeography):
+  drafts in `docs/outreach/`, to be signed and sent.
 
-### Esclusi
-ACLED, OpenSky, TeleGeography, Ookla, WHO GHO, NHM BII (NC-SA, sostituito da quello CC BY),
-Blitzortung, dati SOS presi direttamente dal catalogo.
+### Excluded
+ACLED, Ookla, WHO GHO, NHM BII (NC-SA, replaced by the CC BY one), SOS data taken directly
+from the catalogue. OpenSky, Blitzortung and TeleGeography stay out unless their letters
+get a yes.
 
-### Ancora dalla roadmap
-1. **Il tuo luogo**. 2. [x] **Scheda del paese**: un clic su un paese, quando sono mostrate le
-persone, apre la sua curva dal 1960 per l’indicatore in vista e gli altri numeri, ognuno con
-l’anno della misura. 3. [x] **Un giorno sulla Terra**: ultimo capitolo de «Il pianeta, adesso», le prossime
-ventiquattro ore in un minuto con il Sole vero, le luci e la Stazione. 4. [x] **Cartolina**: l’inquadratura salvata
-come immagine con titolo, data e fonti (icona accanto alla didascalia, voce in Esplora, tasto P).
-5. **Grafica**: [x] nuvole a 10 km con parallasse e ombre spostate; [x] riflesso del mare che corre
-col vento; [ ] multi-scattering. 6. **Piattaforma**: [x] telefono in verticale (pianeta in alto,
-parole sotto, data e legenda in una riga, Sole sopra la Terra); [x] accessibilità: movimento
-ridotto, Maiuscolo + frecce gira il pianeta, Invio legge il centro per gli screen reader. 1b. [x] **Il tuo luogo**: il prossimo passaggio visibile della Stazione,
-calcolato sul dispositivo con SGP4.
+### Still on the roadmap
+1. [x] **Your place**: the next visible pass of the Station, computed on the device with
+   SGP4. [ ] The year-of-birth part.
+2. [x] **Country card**: a click on a country, when people are shown, opens its curve since
+   1960 for the indicator in view and the other numbers, each with the year of the
+   measurement.
+3. [x] **A day on Earth**: the last chapter of "The planet, right now", the next twenty-four
+   hours in a minute with the real Sun, the lights and the Station.
+4. [x] **Postcard**: the view saved as an image with title, date and sources (icon next to
+   the caption, item in Explore, P key).
+5. **Graphics**: [x] clouds 10 km up with parallax and offset shadows; [x] a sea glint that
+   runs with the wind; [ ] multi-scattering.
+6. **Platform**: [x] phone held upright (planet above, words below, date and legend on one
+   line, the Sun above the Earth); [x] accessibility: reduced motion, Shift + arrows turn the
+   planet, Enter reads the centre for screen readers.

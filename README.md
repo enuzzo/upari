@@ -1,33 +1,78 @@
 # Upari
 
-Il pianeta Terra raccontato dai suoi dati di oggi. Un documentario interattivo per desktop: quattro racconti di capitoli brevi, una voce narrante scritta, un globo che si può trascinare, avvicinare fino a 10 m per pixel e interrogare punto per punto.
+The planet Earth told through today's data. An interactive documentary for the desktop (it
+also works on a phone held upright): four stories of short chapters, a written narration, and
+a globe you can drag, bring as close as 10 m per pixel and question point by point.
 
-## Racconti
+## Stories
 
-- **Il pianeta, adesso**: Il pianeta · Il termometro (Climate Pulse, ogni giorno dal 1940) · Il respiro (venti GFS) · Le tempeste (cicloni IBTrACS) · Le correnti (OSCAR) · Il calore del mare e La febbre (GHRSST MUR) · Il mare che fiorisce (PACE) · La pioggia (GPM IMERG, 24 ore) · Il fuoco (FIRMS) · La Terra trema (USGS, con i vulcani GVP) · Il ghiaccio (GAMSSA, con gli iceberg) · Le luci (Black Marble) · Lassù (ISS in tempo reale).
-- **La natura**: Il respiro verde (NDVI) · Il respiro del carbonio (Mauna Loa) · Le foreste perdute (Hansen/GFW) · La neve (VIIRS) · L’aria (MERRA-2) · L’aria delle città (NO₂ TROPOMI) · Lo scudo (ozono OMPS) · Il mare ferito (SkyTruth Cerulean) · Le barriere coralline (Coral Reef Watch).
-- **Le persone**: Otto miliardi · Le città crescono (GHSL 1975–2030) · Le rotte (navi, World Bank/IMF) · natalità, speranza di vita, bambini, saldo, elettricità (World Bank WDI) · In fuga (UNHCR).
-- **Il cielo, adesso**: Il Sole (SDO) · L’aurora (NOAA SWPC) · I satelliti (CelesTrak) · In partenza (Launch Library 2) · Le stelle cadenti e Di passaggio (JPL CNEOS) · Un giorno-luce (Voyager, JPL Horizons).
+- **The planet, right now**: The planet · The thermometer (Climate Pulse, every day since
+  1940) · Breath (GFS winds) · The storms (IBTrACS cyclones, with GDACS forecast tracks) ·
+  Lightning (GOES GLM, the last half hour, over the LIS/OTD climatology) · Currents (OSCAR) ·
+  The warmth of the sea (GHRSST MUR) · Marine heatwaves (Hobday method on NOAA OISST) ·
+  Fever (sea temperature anomaly) · The sea in bloom (PACE) · Rain (GPM IMERG, 24 hours) ·
+  Fire (FIRMS) · The Earth shakes (USGS, with GVP volcanoes) · Ice (GAMSSA, with icebergs) ·
+  Lights (Black Marble) · Up there (the ISS in real time) · A day on Earth.
+- **Nature**: Green breath (NDVI) · The breath of carbon (Mauna Loa) · Lost forests
+  (Hansen/GFW) · The mangroves (Global Mangrove Watch) · How much nature is left
+  (Biodiversity Intactness Index) · Snow (VIIRS) · Air (MERRA-2) · The air of cities
+  (TROPOMI NO₂) · The shield (OMPS ozone) · The wounded sea (SkyTruth Cerulean) · Coral reefs
+  (Coral Reef Watch).
+- **People**: Eight billion · Cities grow (GHSL 1975–2030) · The dams (Global Dam Watch) ·
+  The lanes (ships, World Bank/IMF) · births, life expectancy, children, natural balance and
+  electricity (World Bank WDI) · The world lights up (night lights 1992–2024) · Where it
+  burns (ODIAC fossil CO₂) · The footprint · Far from home · Fleeing and The routes of asylum
+  (UNHCR) · The wars (UCDP).
+- **The sky, right now**: The Sun (SDO) · The aurora (NOAA SWPC) · The satellites
+  (CelesTrak) · Departures (Launch Library 2) · Shooting stars and Passing by (JPL CNEOS) ·
+  One light day (Voyager, JPL Horizons).
 
-Le frasi con numeri sono calcolate dai dati all’apertura. I dati del giorno si aggiornano ogni mattina (`scripts/prepare-*.mjs`, nel workflow); le rotte e le città si preparano una volta a mano (`scripts/prepare-ships.py`, `scripts/prepare-built.py`). Fonti e licenze in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Next to the stories: Explore (every layer on its own, with a note on how to read it), Your
+place (search a place, read what is there, see when the Space Station passes overhead), a
+card for each country, a postcard of the current view and a mode for classrooms.
 
-## Lingue
+Every chapter carries a label for the kind of data it shows (measured, model, forecast,
+reanalysis, estimate, official statistics, inventory, computed, with projections). Sentences
+with numbers are computed from the data when the page opens. Daily data are refreshed every
+morning by the workflow (`scripts/prepare-*.mjs` and `prepare-lightning.py`); the heavier
+datasets are prepared once by hand with the other `scripts/prepare-*.py` and committed.
+Sources and licences are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md); letters to the
+providers whose data are not yet open are in [`docs/outreach`](docs/outreach/README.md).
 
-Dodici lingue: italiano, inglese, spagnolo, francese, tedesco, portoghese, russo, cinese, giapponese, coreano, arabo e hindi. All'apertura Upari sceglie la lingua del browser (altrimenti l'inglese); il menu in alto a destra la cambia al volo e la ricorda. `?lang=xx` nell'indirizzo forza una lingua.
+## Languages
 
-I testi stanno in [`src/i18n`](src/i18n): l'italiano ([`it.ts`](src/i18n/it.ts)) è l'originale e definisce la forma di tutti i dizionari, che TypeScript controlla. Le frasi con dati sono funzioni che ricevono numeri e date già formattati nella lingua della pagina. I nomi dei paesi vengono da `Intl.DisplayNames`, con poche eccezioni per lingua; per cinese, giapponese, coreano, arabo, hindi e russo si caricano i Noto (o Cormorant) di Google Fonts solo quando servono, e l'arabo si legge da destra a sinistra.
+Twelve languages: Italian, English, Spanish, French, German, Portuguese, Russian, Chinese,
+Japanese, Korean, Arabic and Hindi. On opening, Upari picks the browser's language (English
+otherwise); the menu at the top right changes it on the fly and remembers it. `?lang=xx` in
+the address forces a language.
 
-Il testo di «Perché Upari», che si apre dal copyright in basso a destra, è in [`docs/ABOUT.md`](docs/ABOUT.md).
+The texts live in [`src/i18n`](src/i18n). Italian ([`it.ts`](src/i18n/it.ts)) is the
+original and defines the shape of every dictionary, which TypeScript checks. Sentences with
+data are functions that receive numbers and dates already formatted in the page's language.
+Country names come from `Intl.DisplayNames`, with a few exceptions per language. For Chinese,
+Japanese, Korean, Arabic, Hindi and Russian the Noto (or Cormorant) fonts are loaded from
+Google Fonts only when needed, and Arabic reads right to left.
 
-## Versione
+The text of "Why Upari", opened from the copyright line at the bottom right, is in
+[`docs/ABOUT.md`](docs/ABOUT.md). Notes for coding agents are in [AGENTS.md](AGENTS.md).
 
-La versione è quella di `package.json` e compare in basso a destra accanto al copyright di Netmilk Studio (l'anno è quello corrente). Sale di una patch per le correzioni (1.1.1) e di una minor per le novità (1.2.0).
+## Version
 
-## Motore
+The version is the one in `package.json` and appears at the bottom right next to the
+Netmilk Studio copyright (the year is the current one). It goes up a patch for fixes (1.1.1)
+and a minor for new features (1.2.0).
 
-three.js e shader propri: scattering atmosferico a singola diffusione (Rayleigh + Mie) sia sul bordo sia sulla superficie, luce del Sole calcolata per l'istante presente, rilievo da DEM in luce radente, nuvole trasportate dai venti reali (flow map), particelle GPU per venti e correnti, palette scientifiche ricampionate in bicubico, bloom HDR e tone mapping ACES. Da vicino si caricano le tessere Sentinel-2 cloudless di EOX. La risoluzione si adatta da sola se la GPU fatica.
+## Engine
 
-## Comandi
+three.js and custom shaders: single-scattering atmosphere (Rayleigh + Mie) on both the limb
+and the surface, sunlight computed for the present instant, relief from a DEM in grazing
+light, clouds 10 km up carried by the real winds (flow map) with their parallax and shadow,
+a sea glint that moves with the wind, GPU particles for winds and currents, scientific
+palettes resampled bicubically, HDR bloom and ACES tone mapping. Close up, EOX Sentinel-2
+cloudless tiles are loaded. Resolution adapts by itself when the GPU struggles, and motion
+is reduced when the system asks for it.
+
+## Commands
 
 ```bash
 npm install
@@ -35,24 +80,49 @@ npm run dev          # http://127.0.0.1:4181
 npm run build        # dist/
 ```
 
-Dati (tutti rigenerabili, richiedono ImageMagick):
+Data (all regenerable, ImageMagick required):
 
 ```bash
-node scripts/prepare-earth.mjs    # texture giorno, notte, nuvole, rilievo
-node scripts/prepare-fields.mjs   # venti GFS e correnti OSCAR
-node scripts/prepare-layers.mjs   # mare, anomalie, ghiaccio, clorofilla, pioggia, fuochi
+node scripts/prepare-earth.mjs    # day, night, cloud and relief textures
+node scripts/prepare-fields.mjs   # GFS winds and OSCAR currents
+node scripts/prepare-layers.mjs   # sea, anomalies, ice, chlorophyll, rain, fires and more
+node scripts/prepare-sky.mjs      # Sun, aurora, launches, fireballs, asteroids, Voyager
+node scripts/prepare-climate.mjs  # temperature, CO₂, sea ice
 node scripts/prepare-stars.mjs    # Yale Bright Star Catalogue
-node tools/shots.mjs http://127.0.0.1:4181/ shots   # screenshot di QA in Chrome headless
+node tools/shots.mjs http://127.0.0.1:4181/ shots   # QA screenshots in headless Chrome
 ```
 
-Tastiera: spazio pausa, frecce capitoli, I approfondimento, F schermo intero, + e − zoom, / cerca un luogo (Nominatim di OpenStreetMap, una richiesta solo quando premi Invio), M audio (musica e ambienti, attivi dopo il primo clic).
+The Python scripts (`scripts/*.py`) need a virtual environment outside Dropbox; each one
+says at the top what it needs and how to run it.
 
-## Aggiornamento quotidiano
+Keyboard: space pause, arrows chapters, Shift + arrows turn the planet, Enter reads the
+centre of the view, I details, L Explore, P postcard, F full screen, + and − zoom, / search a
+place (OpenStreetMap Nominatim, one request only when you press Enter), M sound (music and
+ambience, active after the first click), Esc closes panels.
 
-Il workflow [`pages.yml`](.github/workflows/pages.yml) gira ogni giorno alle 10:41 UTC (dopo che NASA pubblica i dati del giorno prima), a ogni push su `main` e a richiesta. Scarica venti, mare, anomalie, ghiaccio, fitoplancton, 24 ore di pioggia, fuochi e l'orbita della ISS, ricostruisce il sito e lo pubblica su https://upari.earth (SiteGround, via FTPS, con [`scripts/deploy-siteground.sh`](scripts/deploy-siteground.sh): invia solo i file cambiati, `index.html` per ultimo). Le credenziali stanno nei secrets del repository (`DEPLOY_HOST`, `DEPLOY_PORT`, `DEPLOY_USER`, `DEPLOY_PASSWORD`, `DEPLOY_PATH`) e, in locale, in `.env`, che git ignora. Le regole di cache e i reindirizzamenti a https senza www sono in [`public/.htaccess`](public/.htaccess). GitHub Pages pubblica solo un rimando dal vecchio indirizzo enuzzo.github.io/upari a upari.earth.
+## Daily refresh
 
-I dati freschi non vengono committati: il repository conserva un'istantanea verificata, che il sito usa ogni volta che una fonte è in ritardo, incompleta o irraggiungibile (il riepilogo del workflow lo segnala). Uno strato nuovo entra solo se la sua copertura è almeno l'80% di quella dell'istantanea (il ghiaccio, che cambia con le stagioni, il 50% e con ghiaccio a entrambi i poli; la pioggia con almeno 20 fotogrammi su 24; i fuochi con almeno il 30% delle celle; il vento con il 95% della griglia). Correnti, rilievo, texture e stelle sono statici.
+The workflow [`pages.yml`](.github/workflows/pages.yml) runs every day at 10:41 UTC (after
+NASA publishes the previous day's data), on every push to `main` and on demand. It downloads
+winds, sea, anomalies, ice, phytoplankton, 24 hours of rain, fires, earthquakes, cyclones,
+lightning, snow and ice, marine heatwaves, the sky and the orbit of the ISS, rebuilds the
+site and publishes it to https://upari.earth (SiteGround, over FTPS, with
+[`scripts/deploy-siteground.sh`](scripts/deploy-siteground.sh): it sends only the files that
+changed, `index.html` last). Credentials live in the repository secrets (`DEPLOY_HOST`,
+`DEPLOY_PORT`, `DEPLOY_USER`, `DEPLOY_PASSWORD`, `DEPLOY_PATH`) and, locally, in `.env`,
+which git ignores. Cache rules and the redirects to https without www are in
+[`public/.htaccess`](public/.htaccess). GitHub Pages publishes only a redirect from the old
+address enuzzo.github.io/upari to upari.earth.
 
-GitHub sospende i workflow pianificati dopo 60 giorni senza attività sul repository: per evitarlo, il primo di ogni mese il workflow committa gli elementi orbitali aggiornati della ISS. Se fosse comunque sospeso, si riattiva dalla scheda Actions.
+Fresh data are not committed: the repository keeps a verified snapshot, which the site uses
+whenever a source is late, incomplete or unreachable (the workflow summary reports it). A new
+layer is accepted only if its coverage is at least 80% of the snapshot's (ice, which changes
+with the seasons, 50% and with ice at both poles; rain with at least 20 frames out of 24;
+fires with at least 30% of the cells; wind with 95% of the grid). Currents, relief, textures
+and stars are static.
 
-La versione precedente (0.7.x, Cesium e React) resta nella storia git.
+GitHub suspends scheduled workflows after 60 days without activity on the repository: to
+avoid that, on the first day of every month the workflow commits the updated orbital
+elements of the ISS. If it is suspended anyway, it can be re-enabled from the Actions tab.
+
+The previous version (0.7.x, Cesium and React) remains in the git history.

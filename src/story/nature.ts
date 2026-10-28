@@ -16,6 +16,15 @@ const monthYearOf = (iso: string) => monthYear(iso.slice(0, 10));
 const LOOK = { sun: 'studio' as const, clouds: 0, night: 0, atmo: 0.8 };
 
 /** Mangrove area of each year, km², summed at full resolution when the layer was made. */
+/** Global mean surface pH of the first and last frame, and how much the acidity grew. */
+async function acidYears(g: Globe) {
+  const frames = (await g.layers.get('acid')).meta.frames as unknown as { time: string; mean: number }[];
+  const pick = (f: { time: string; mean: number }) => ({ year: Number(f.time.slice(0, 4)), mean: f.mean });
+  const from = pick(frames[0]), to = pick(frames.at(-1)!);
+  // pH is the negative logarithm of the hydrogen ions: their concentration grows by 10^ΔpH.
+  return { from, to, more: Math.round((10 ** (from.mean - to.mean) - 1) * 100) };
+}
+
 async function mangroveArea(g: Globe) {
   const frames = (await g.layers.get('mangroves')).meta.frames as { time: string; km2: number }[];
   return { km2: frames.map((f) => f.km2), years: frames.map((f) => Number(f.time.slice(0, 4))) };
@@ -127,6 +136,7 @@ async function forestMeta() {
 export const NATURE: Chapter[] = titled([
   {
     id: 'verde',
+    credit: ['gibs'],
     kind: 'observed',
     mood: 'open', sound: 'forest',
     look: { ...LOOK, data: 'ndvi', dim: 0.35, desat: 0.65 },
@@ -154,6 +164,7 @@ export const NATURE: Chapter[] = titled([
   },
   {
     id: 'carbonio',
+    credit: ['gml'],
     kind: 'observed',
     mood: 'curious',
     look: { ...LOOK, dim: 0.62, desat: 0.6 },
@@ -178,6 +189,7 @@ export const NATURE: Chapter[] = titled([
   },
   {
     id: 'foreste',
+    credit: ['hansen'],
     kind: 'observed',
     mood: 'grave', sound: 'forest',
     look: { ...LOOK, data: 'forest', dim: 0.55, desat: 0.85, years: [2001, 2024], yearSeconds: 18, bloom: 1.3 },
@@ -201,6 +213,7 @@ export const NATURE: Chapter[] = titled([
   },
   {
     id: 'mangrovie',
+    credit: ['gmw'],
     kind: 'observed',
     mood: 'calm', sound: 'waves',
     look: { ...LOOK, data: 'mangroves', dim: 0.62, desat: 0.75, bloom: 1.2 },
@@ -226,6 +239,7 @@ export const NATURE: Chapter[] = titled([
   },
   {
     id: 'integrita',
+    credit: ['bii'],
     kind: 'model',
     mood: 'grave', sound: 'forest',
     look: { ...LOOK, data: 'bii', dim: 0.5, desat: 0.85, bloom: 0.9 },
@@ -244,6 +258,7 @@ export const NATURE: Chapter[] = titled([
   },
   {
     id: 'neve',
+    credit: ['gibs'],
     kind: 'observed',
     mood: 'calm', sound: 'ice',
     look: { ...LOOK, data: 'snow', dim: 0.5, desat: 0.55, clouds: 0 },
@@ -270,6 +285,7 @@ export const NATURE: Chapter[] = titled([
   },
   {
     id: 'aria',
+    credit: ['merra', 'gibs'],
     kind: 'reanalysis',
     mood: 'curious', sound: 'desert',
     look: { ...LOOK, data: 'aerosol', dim: 0.45, desat: 0.6, clouds: 0.1 },
@@ -297,6 +313,7 @@ export const NATURE: Chapter[] = titled([
   },
   {
     id: 'smog',
+    credit: ['s5p', 'gibs'],
     kind: 'observed',
     mood: 'grave', sound: 'city',
     look: { ...LOOK, data: 'no2', dim: 0.66, desat: 0.75, night: 0.4, sun: 'real' as const },
@@ -322,6 +339,7 @@ export const NATURE: Chapter[] = titled([
   },
   {
     id: 'ozono',
+    credit: ['omps', 'gibs'],
     kind: 'observed',
     mood: 'curious', sound: 'ice',
     look: { ...LOOK, data: 'ozone', dim: 0.55, desat: 0.6 },
@@ -347,6 +365,7 @@ export const NATURE: Chapter[] = titled([
   },
   {
     id: 'petrolio',
+    credit: ['cerulean'],
     kind: 'observed',
     mood: 'grave', sound: 'waves',
     look: { ...LOOK, dim: 0.72, desat: 0.75, spots: 'slicks', spotReplay: 12, bloom: 1.2 },
@@ -372,6 +391,7 @@ export const NATURE: Chapter[] = titled([
   },
   {
     id: 'coralli',
+    credit: ['crw', 'pacioos'],
     kind: 'observed',
     mood: 'grave', sound: 'reef',
     look: { ...LOOK, data: 'coral', dim: 0.6, desat: 0.7, bloom: 1.2 },
@@ -398,5 +418,31 @@ export const NATURE: Chapter[] = titled([
       };
     },
     beats: async () => [{ shot: { lon: 150, lat: -12, dist: 2.9 }, drift: 1.0 }],
+  },
+  {
+    id: 'acido',
+    credit: ['oceansoda'],
+    kind: 'model',
+    mood: 'grave', sound: 'waves',
+    look: { ...LOOK, data: 'acid', dim: 0.6, desat: 0.7, bloom: 1.1 },
+    duration: 24, clock: 'data',
+    legend: legend(PALETTES.acid, 'acid'),
+    narrate: async (g) => {
+      const a = await acidYears(g);
+      return t.acido.narrate({ from: a.from.year, to: a.to.year, then: num(a.from.mean, 3), now: num(a.to.mean, 3), more: num(a.more) });
+    },
+    detail: async (g) => {
+      const a = await acidYears(g);
+      return {
+        facts: [
+          { value: num(a.from.mean, 3), label: t.acido.ph(a.from.year) },
+          { value: num(a.to.mean, 3), label: t.acido.ph(a.to.year) },
+          { value: `+${num(a.more)}%`, label: t.acido.more },
+        ],
+        text: t.acido.text,
+        source: t.acido.source,
+      };
+    },
+    beats: async () => [{ shot: { lon: -35, lat: 25, dist: 3.0 }, drift: 0.9 }],
   },
 ]);

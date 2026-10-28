@@ -11,7 +11,7 @@ goes into `THIRD_PARTY_NOTICES.md` with its date and the name of who gave it.
 
 | Provider | Data | Why a letter | Letter |
 | --- | --- | --- | --- |
-| ETH Zürich, Gregor and Gruber | OceanSODA-ETHZ, ocean acidification since 1982 | Public on NCEI with a citation, but no licence | [oceansoda.md](oceansoda.md) |
+| ETH Zürich, Gregor and Gruber | OceanSODA-ETHZ, ocean acidification since 1982 | Public on NCEI with a citation, but no licence; already on the site, the letter asks to keep or remove it | [oceansoda.md](oceansoda.md) |
 | UNEP-WCMC | WDPA, the world's protected areas | Commercial use and redistribution need written permission; the definition of commercial is broad | [wdpa.md](wdpa.md) |
 | OpenSky Network | Aircraft positions | Licence limited to non-profit research and education | [opensky.md](opensky.md) |
 | Blitzortung.org | Lightning everywhere, in near real time | Data reserved to station operators, non-commercial | [blitzortung.md](blitzortung.md) |
@@ -28,9 +28,9 @@ Upari (https://upari.earth) is a 3D globe that tells the Earth as it is today: w
 fires, earthquakes, ice, people, the sky above. It is free, with no ads, no accounts, no
 tracking and no paid tier, and it never will have one. Its code is open source under the
 Apache License 2.0 (https://github.com/enuzzo/upari). It uses only open data, refreshed
-every morning by a public build, and every source is credited on the page that shows it
-and in the repository's third-party notices. Data reach the reader only as pictures already
-drawn on the globe (images and aggregated grids, never the raw records), so nobody can
-download a dataset from Upari. The site carries the name of Netmilk Studio, the small design
-studio of its author, as a signature: it sells nothing through Upari and earns nothing from
-it.
+every morning by a public build, and every source is credited on screen, with a link to its
+holder in a new tab, wherever its data appear, and in the repository's third-party notices.
+Data reach the reader only as pictures already drawn on the globe (images and aggregated
+grids, never the raw records), so nobody can download a dataset from Upari. The site carries
+the name of Netmilk Studio, the small design studio of its author, as a signature: it sells
+nothing through Upari and earns nothing from it.

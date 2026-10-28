@@ -1,6 +1,7 @@
 import { t } from '../i18n';
 import { num, dayMonth, dayShort, timeUtc } from '../i18n/format';
 import { fresh } from '../engine/fresh';
+import { BORN_KEY } from './place';
 
 // Panels drawn beside the planet when a number needs its history to be understood:
 // the temperature of every day since 1940, the carbon dioxide of Mauna Loa, the Sun of
@@ -101,7 +102,7 @@ async function temperature(svg: SVGElement, cap: HTMLElement) {
 }
 
 /** Mean of the 365 days of a year, or of the last 365 days measured. */
-function yearMean(d: { years: Record<string, (number | null)[]> }, y: number | 'last') {
+export function yearMean(d: { years: Record<string, (number | null)[]> }, y: number | 'last') {
   let vals: number[];
   if (y === 'last') {
     const all = Object.keys(d.years).map(Number).sort((a, b) => a - b).flatMap((k) => d.years[k]).filter((v): v is number => v != null);
@@ -112,7 +113,7 @@ function yearMean(d: { years: Record<string, (number | null)[]> }, y: number | '
 
 /** An optional field: the year you were born, its line lit, its mean against the last twelve months. */
 function bornField(svg: SVGElement, d: any, first: number, now: number) {
-  const KEY = 'upari.born';
+  const KEY = BORN_KEY;
   const box = document.createElement('span');
   box.className = 'ch-born';
   const label = document.createElement('label');

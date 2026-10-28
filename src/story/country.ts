@@ -1,6 +1,7 @@
 import type { Globe } from '../engine/globe';
 import { ATLAS, atlasText, type AtlasId } from '../engine/atlas';
 import { t } from '../i18n';
+import { showCredit } from './holders';
 
 // The country card: a click on a country, while the people of the planet are on screen,
 // opens its curve since 1960 for the indicator shown, and its other numbers, each with the
@@ -71,6 +72,7 @@ export function openCountry(globe: Globe, code: string, name: string, shown: Atl
     list.append(li);
   }
   $('cc-source').textContent = text.source;
+  showCredit($('cc-credit'), shown === 'refugees' ? ['unhcr', 'wdi', 'naturalEarth'] : ['wdi', 'naturalEarth']);
 
   // Beside the click, inside the screen.
   card.classList.add('on');

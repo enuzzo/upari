@@ -1,0 +1,88 @@
+{
+ "id": "acid",
+ "width": 720,
+ "height": 360,
+ "cadence": "year",
+ "unit": "pH",
+ "scale": "linear",
+ "min": 7.94,
+ "max": 8.18,
+ "dates": [
+  "2024-07-01"
+ ],
+ "source": "OceanSODA-ETHZ v2025 \u00b7 Gregor and Gruber 2021 \u00b7 ETH Z\u00fcrich \u00b7 NOAA NCEI 0220059",
+ "frames": [
+  {
+   "file": "acid-1982.jpg",
+   "conf": "acid-1982-c.png",
+   "time": "1982-07-01",
+   "mean": 8.1122
+  },
+  {
+   "file": "acid-1986.jpg",
+   "conf": "acid-1986-c.png",
+   "time": "1986-07-01",
+   "mean": 8.1052
+  },
+  {
+   "file": "acid-1990.jpg",
+   "conf": "acid-1990-c.png",
+   "time": "1990-07-01",
+   "mean": 8.0982
+  },
+  {
+   "file": "acid-1994.jpg",
+   "conf": "acid-1994-c.png",
+   "time": "1994-07-01",
+   "mean": 8.0952
+  },
+  {
+   "file": "acid-1998.jpg",
+   "conf": "acid-1998-c.png",
+   "time": "1998-07-01",
+   "mean": 8.0886
+  },
+  {
+   "file": "acid-2002.jpg",
+   "conf": "acid-2002-c.png",
+   "time": "2002-07-01",
+   "mean": 8.0826
+  },
+  {
+   "file": "acid-2006.jpg",
+   "conf": "acid-2006-c.png",
+   "time": "2006-07-01",
+   "mean": 8.0754
+  },
+  {
+   "file": "acid-2010.jpg",
+   "conf": "acid-2010-c.png",
+   "time": "2010-07-01",
+   "mean": 8.0689
+  },
+  {
+   "file": "acid-2014.jpg",
+   "conf": "acid-2014-c.png",
+   "time": "2014-07-01",
+   "mean": 8.0617
+  },
+  {
+   "file": "acid-2018.jpg",
+   "conf": "acid-2018-c.png",
+   "time": "2018-07-01",
+   "mean": 8.0523
+  },
+  {
+   "file": "acid-2022.jpg",
+   "conf": "acid-2022-c.png",
+   "time": "2022-07-01",
+   "mean": 8.0434
+  },
+  {
+   "file": "acid-2024.jpg",
+   "conf": "acid-2024-c.png",
+   "time": "2024-07-01",
+   "mean": 8.0369
+  }
+ ]
+}

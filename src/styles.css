@@ -80,6 +80,11 @@ body.started .brand { opacity: 1; visibility: visible; transition-delay: 0.6s, 0
 .search-results button:hover, .search-results button.current { color: var(--ink); background: rgba(255, 255, 255, 0.05); }
 .search-results b { display: block; font-family: var(--serif); font-weight: 400; font-size: 19px; line-height: 1.15; }
 .search-results small { display: block; font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.search-born { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 8px 0 2px; padding: 8px 14px 0; border-top: 1px solid rgba(255, 255, 255, 0.06); font-size: 12px; color: var(--ink-2); }
+.search-born input { width: 64px; background: transparent; border: 0; border-bottom: 1px solid var(--ink-4); color: var(--ink); font: inherit; font-size: 15px; text-align: right; padding: 2px 0; -moz-appearance: textfield; }
+.search-born input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.search-born input:focus { outline: none; border-color: var(--warm); }
+.search .search-born-hint { font-size: 11px; animation: none; }
 .search-credit { margin: 8px 0 0; padding: 8px 14px 10px; font-size: 10.5px; color: var(--ink-3); border-top: 1px solid rgba(255, 255, 255, 0.06); }
 .search-credit a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--ink-4); }
 
@@ -382,6 +387,15 @@ body.exploring .caption { opacity: 0; pointer-events: none; }
 body.reading .caption, body.reading .legend { opacity: 0; pointer-events: none; }
 body.reading .anchors { opacity: 0; }
 .anchors { transition: opacity 0.6s var(--ease); }
+
+/* ——— Who holds the data: always on screen, each holder a link ——— */
+.data-credit { margin: 14px 0 0; font-size: 11px; line-height: 1.5; letter-spacing: 0.03em; color: var(--ink-3); max-width: 46ch; }
+.data-credit a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--ink-4); transition: color 0.3s, border-color 0.3s; }
+.data-credit a:hover, .data-credit a:focus-visible { color: var(--ink); border-color: var(--ink-2); }
+.caption .cap-credit { text-shadow: var(--halo-soft); }
+.caption.out .cap-credit { opacity: 0; }
+.cap-credit { transition: opacity 0.6s var(--ease); }
+.ex-credit { margin: 0 0 14px; }
 
 /* ——— Close-up imagery credit (CC BY 4.0) ——— */
 .tile-credit {

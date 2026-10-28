@@ -11,7 +11,7 @@ Dear Dr Klein Goldewijk,
 I make Upari (https://upari.earth), a 3D globe that tells the Earth as it is today. It is
 free, with no ads, no accounts, no tracking and no paid tier, and its code is open source
 under the Apache License 2.0 (https://github.com/enuzzo/upari). It shows only open data, and
-every source is credited on the page that shows it.
+every source is credited on screen, with a link to its holder, wherever its data appear.
 
 Upari shows where people live today and how cities grew since 1975. HYDE would let it tell
 the longest story of all: from ten thousand years before our era to now, people spreading

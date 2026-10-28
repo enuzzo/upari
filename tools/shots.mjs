@@ -14,7 +14,7 @@ mkdirSync(out, { recursive: true });
 const port = 9300 + Math.floor(Math.random() * 400);
 const profile = mkdtempSync(join(tmpdir(), 'upari-shots-'));
 const chrome = spawn(CHROME, ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`,
-  '--window-size=1600,1000', '--hide-scrollbars', '--use-angle=metal', '--enable-gpu', '--ignore-gpu-blocklist', '--no-first-run'], { stdio: 'ignore' });
+  '--window-size=1600,1000', '--hide-scrollbars', '--mute-audio', '--use-angle=metal', '--enable-gpu', '--ignore-gpu-blocklist', '--no-first-run'], { stdio: 'ignore' });
 let exited = false;
 chrome.once('exit', () => { exited = true; });
 

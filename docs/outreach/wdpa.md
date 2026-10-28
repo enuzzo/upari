@@ -11,7 +11,7 @@ I make Upari (https://upari.earth), a 3D globe that tells the Earth as it is tod
 mangroves, the intactness of nature, the sea. It is free, with no ads, no accounts, no
 tracking and no paid tier, and its code is open source under the Apache License 2.0
 (https://github.com/enuzzo/upari). It shows only open data, and every source is credited on
-the page that shows it.
+screen, with a link to its holder, wherever its data appear.
 
 I would like to add the world's protected areas to the nature chapter, next to the forests
 lost since 2001 and the Biodiversity Intactness Index: where nature is protected, and where

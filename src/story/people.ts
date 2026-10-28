@@ -68,6 +68,7 @@ async function builtArea(g: Globe) {
 export const PEOPLE: Chapter[] = titled([
   {
     id: 'popolazione',
+    credit: ['wdi', 'naturalEarth', 'blackMarble'],
     kind: 'statistics',
     mood: 'calm', sound: 'city',
     look: { ...LOOK, dim: 0.76, atlas: 'population', dust: 1, years: [1960, 2025], yearSeconds: 20, bloom: 1.2 },
@@ -94,6 +95,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'citta',
+    credit: ['ghsl'],
     kind: 'projection',
     mood: 'curious', sound: 'city',
     look: { ...LOOK, data: 'built', dim: 0.74, desat: 0.75, bloom: 1.3 },
@@ -119,6 +121,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'dighe',
+    credit: ['gdw'],
     kind: 'inventory',
     mood: 'curious', sound: 'waves',
     look: { ...LOOK, dim: 0.66, desat: 0.7, spots: 'dams', spotReplay: 16, bloom: 1.1 },
@@ -143,6 +146,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'rotte',
+    credit: ['ships'],
     kind: 'observed',
     mood: 'open', sound: 'waves',
     look: { ...LOOK, data: 'ships', dim: 0.8, desat: 0.8, bloom: 0.9 },
@@ -158,6 +162,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'nascite',
+    credit: ['wdi', 'naturalEarth'],
     kind: 'statistics',
     mood: 'curious', sound: 'city',
     look: { ...LOOK, atlas: 'birth', years: [1960, 2024], yearSeconds: 18 },
@@ -183,6 +188,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'vita',
+    credit: ['wdi', 'naturalEarth'],
     kind: 'statistics',
     mood: 'open', sound: 'city',
     look: { ...LOOK, atlas: 'life', years: [1960, 2024], yearSeconds: 18 },
@@ -205,6 +211,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'bambini',
+    credit: ['wdi', 'naturalEarth'],
     kind: 'estimate',
     mood: 'grave', sound: 'city',
     look: { ...LOOK, atlas: 'under5', years: [1960, 2024], yearSeconds: 18 },
@@ -232,6 +239,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'saldo',
+    credit: ['wdi', 'naturalEarth'],
     kind: 'statistics',
     mood: 'curious', sound: 'city',
     look: { ...LOOK, atlas: 'balance', years: [1960, 2024], yearSeconds: 18 },
@@ -253,6 +261,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'luce',
+    credit: ['wdi', 'naturalEarth'],
     kind: 'statistics',
     mood: 'calm', sound: 'night',
     look: { ...LOOK, atlas: 'electricity', years: [2000, 2024], yearSeconds: 16 },
@@ -285,6 +294,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'accendersi',
+    credit: ['nightlights'],
     kind: 'observed',
     mood: 'calm', sound: 'night',
     look: { ...LOOK, data: 'nightlights', dim: 0.9, desat: 0.85, atmo: 0.6, bloom: 1.4 },
@@ -310,6 +320,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'fumo',
+    credit: ['odiac'],
     kind: 'estimate',
     mood: 'grave', sound: 'city',
     look: { ...LOOK, data: 'odiac', dim: 0.85, desat: 0.85, atmo: 0.6, bloom: 1.3 },
@@ -331,6 +342,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'impronta',
+    credit: ['wdi', 'naturalEarth'],
     kind: 'estimate',
     mood: 'grave', sound: 'city',
     look: { ...LOOK, atlas: 'co2', years: [1970, 2024], yearSeconds: 18 },
@@ -356,6 +368,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'esilio',
+    credit: ['unhcr', 'wdi', 'naturalEarth'],
     kind: 'statistics',
     mood: 'grave', sound: 'wind',
     look: { ...LOOK, atlas: 'refugees', years: [1990, 2024], yearSeconds: 18 },
@@ -381,6 +394,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'fuga',
+    credit: ['unhcr', 'naturalEarth'],
     kind: 'statistics',
     mood: 'grave', sound: 'wind',
     look: { ...LOOK, dim: 0.72, migration: 1, years: [2011, 2024], yearSeconds: 20, bloom: 1.3 },
@@ -403,6 +417,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'rotte_asilo',
+    credit: ['unhcr', 'wdi', 'naturalEarth'],
     kind: 'statistics',
     mood: 'grave', sound: 'wind',
     look: { ...LOOK, dim: 0.74, migrationAll: 1, years: [2000, 2024], yearSeconds: 18, bloom: 1.3 },
@@ -429,6 +444,7 @@ export const PEOPLE: Chapter[] = titled([
   },
   {
     id: 'guerre',
+    credit: ['ucdp'],
     kind: 'estimate',
     // No sound and no music swell: the dots are people killed.
     mood: 'grave',

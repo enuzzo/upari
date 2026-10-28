@@ -4,6 +4,7 @@
 // https://operations.osmfoundation.org/policies/nominatim/
 
 import { t, lang } from '../i18n';
+import { BORN_KEY, bornYear } from './place';
 
 export interface Place {
   name: string;
@@ -73,6 +74,18 @@ export function initSearch(onPick: (p: Place) => void) {
   const box = $('search'), input = $<HTMLInputElement>('search-input'), list = $('search-results'), note = $('search-note');
   let controller: AbortController | null = null;
   let results: Place[] = [];
+  let picked = -1;
+  // The year of birth, optional, kept on this device only (the thermometer shares it): the
+  // place then also says what changed there and on the planet since that year.
+  const born = $<HTMLInputElement>('search-born');
+  born.max = String(new Date().getFullYear() - 1);
+  const saved = bornYear();
+  if (saved) born.value = String(saved);
+  born.addEventListener('change', () => {
+    const y = Number(born.value);
+    try { if (y >= 1900 && y < new Date().getFullYear()) localStorage.setItem(BORN_KEY, String(y)); else if (!born.value) localStorage.removeItem(BORN_KEY); } catch { /* private mode */ }
+    if (results[picked]) onPick(results[picked]);
+  });
 
   const open = () => {
     box.classList.add('on');
@@ -93,7 +106,7 @@ export function initSearch(onPick: (p: Place) => void) {
       b.innerHTML = '<b></b><small></small>';
       b.querySelector('b')!.textContent = p.name;
       b.querySelector('small')!.textContent = p.context;
-      b.addEventListener('click', () => { render(i); onPick(p); });
+      b.addEventListener('click', () => { picked = i; render(i); onPick(p); });
       li.appendChild(b);
       list.appendChild(li);
     });
@@ -113,6 +126,7 @@ export function initSearch(onPick: (p: Place) => void) {
       results = await geocode(q, controller.signal);
       note.textContent = results.length ? '' : t.page.noPlace;
       render(0);
+      picked = results.length ? 0 : -1;
       if (results[0]) onPick(results[0]);
     } catch (err) {
       if ((err as Error).name !== 'AbortError') note.textContent = t.page.searchDown;

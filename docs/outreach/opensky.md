@@ -10,7 +10,7 @@ Dear OpenSky team,
 I make Upari (https://upari.earth), a 3D globe that tells the Earth as it is today. It is
 free, with no ads, no accounts, no tracking and no paid tier, and its code is open source
 under the Apache License 2.0 (https://github.com/enuzzo/upari). It shows only open data, and
-every source is credited on the page that shows it.
+every source is credited on screen, with a link to its holder, wherever its data appear.
 
 Upari already shows the ships of the world and the satellites overhead. The sky of people,
 the aircraft, is missing, and OpenSky is the only open source of it. Your licence is limited

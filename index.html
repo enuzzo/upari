@@ -33,6 +33,8 @@
         <div class="search-panel">
           <p class="search-note" id="search-note" aria-live="polite"></p>
           <ol class="search-results" id="search-results"></ol>
+          <label class="search-born"><span data-t="place.bornLabel"></span><input id="search-born" type="number" inputmode="numeric" min="1900" max="2025" placeholder="—" /></label>
+          <p class="search-note search-born-hint" data-t="place.bornHint"></p>
           <p class="search-credit" data-t-html="page.searchCredit"></p>
         </div>
       </form>
@@ -65,6 +67,7 @@
       <button class="more next-story" id="next-story"><span></span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
       <button class="postcard-btn" id="postcard-btn" data-t-aria="page.postcard" data-t-title="page.postcard"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="1.5"/><circle cx="12" cy="12.5" r="3.5"/><path d="M8.5 6l1.4-2h4.2l1.4 2"/></svg></button>
     </div>
+    <p class="data-credit cap-credit" id="cap-credit" hidden></p>
   </section>
 
   <!-- Before and after: drag the line (src/story/explore.ts). -->
@@ -123,6 +126,7 @@
     <div class="facts" id="drawer-facts"></div>
     <p class="drawer-text" id="drawer-text"></p>
     <p class="drawer-source" id="drawer-source"></p>
+    <p class="data-credit" id="drawer-credit" hidden></p>
   </aside>
 
   <aside class="explore" id="explore" aria-hidden="true" data-t-aria="explore.title">
@@ -143,6 +147,7 @@
     </div>
     <button class="more ex-compare" id="ex-compare"><span data-t="explore.compare"></span><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l-3 4 3 4M19 8l3 4-3 4"/></svg></button>
     <div class="ex-block ex-note" id="ex-note"><span class="kind" id="ex-note-kind"></span><p id="ex-note-text"></p><p class="ex-note-source" id="ex-note-source"></p></div>
+    <p class="data-credit ex-credit" id="ex-credit" hidden></p>
     <button class="more ex-postcard" id="ex-postcard"><span data-t="page.postcard"></span><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="1.5"/><circle cx="12" cy="12.5" r="3.5"/></svg></button>
     <button class="more ex-iss" id="ex-iss"><span data-t="explore.reach"></span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
     <div class="ex-block">
@@ -170,6 +175,7 @@
     <div class="cc-axis"><span id="cc-from"></span><span id="cc-to"></span></div>
     <ul class="cc-others" id="cc-others"></ul>
     <p class="cc-source" id="cc-source"></p>
+    <p class="data-credit" id="cc-credit" hidden></p>
   </aside>
 
   <div class="tile-credit" id="tile-credit" data-t-html="page.tileCredit"></div>

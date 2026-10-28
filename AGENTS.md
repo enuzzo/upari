@@ -14,3 +14,8 @@ Upari is a free project. Use only data whose licence allows reuse with credit (C
 CC BY-NC, public domain, open government data), credit every source on the page and in
 `THIRD_PARTY_NOTICES.md`, and never use paid data. Accounts, API keys and written permissions
 belong to the maintainer: do not register anywhere on their behalf.
+
+Every view that shows data names its rights holders on screen, always visible, each linked to
+the holder's own page in a new tab, with the licence when there is one. Holders live in
+`src/story/holders.ts`; every chapter declares `credit`, and an Explore layer without a
+chapter declares its own.

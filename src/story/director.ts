@@ -4,6 +4,7 @@ import { loadCountries, placeBelow, type Country } from './geo';
 import { cssGradient } from '../engine/palettes';
 import type { Chapter } from './chapters';
 import { STORIES, type Story } from './stories';
+import { showCredit } from './holders';
 import { showChart } from './charts';
 import { placeFacts } from './place';
 import { showProbe } from './probe';
@@ -116,6 +117,7 @@ export class Director {
     $('cap-kicker').textContent = c.kicker;
     $('cap-kind').textContent = c.kind ? t.kinds[c.kind] : '';
     $('cap-title').textContent = c.title;
+    showCredit($('cap-credit'), c.credit);
     this.legend(c);
     if (!this.detour && c.chart) showChart(c.chart);
     if (!this.detour) showProbe(!!c.probe);
@@ -180,6 +182,7 @@ export class Director {
     // What the planet shows, for screen readers (the narration itself is a live region).
     $('scene').setAttribute('aria-label', `${t.page.globe}. ${c.title}: ${c.kicker}${c.kind ? `, ${t.kinds[c.kind]}` : ''}`);
     $('cap-title').textContent = c.title;
+    showCredit($('cap-credit'), c.credit);
     $('cap-line').innerHTML = '';
     cap.classList.remove('out', 'hidden');
 
@@ -372,6 +375,7 @@ export class Director {
     }
     $('drawer-text').textContent = d.text;
     $('drawer-source').textContent = d.source;
+    showCredit($('drawer-credit'), c.credit);
     $('drawer').classList.add('on');
     $('drawer').setAttribute('aria-hidden', 'false');
     document.body.classList.add('reading');

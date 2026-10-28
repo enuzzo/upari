@@ -199,6 +199,14 @@ export const PALETTES: Record<string, Stop[]> = {
     [0.95, '#d1004f', 1],
     [1.0, '#d1004f', 1],
   ],
+  // Surface pH: deep blue where the sea is most basic, amber where it has turned most acidic.
+  acid: [
+    [0.0, '#ff5a2a', 0.95],
+    [0.3, '#ffb347', 0.92],
+    [0.5, '#35a9b5', 0.9],
+    [0.75, '#2a6fd0', 0.9],
+    [1.0, '#1b3a9a', 0.9],
+  ],
   // Fossil CO2 per km² (log): a dull ember where little is burnt, white-hot in the cities.
   odiac: [
     [0.0, '#7a1c08', 0.0],

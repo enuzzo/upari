@@ -170,12 +170,14 @@ that needs an account or a key the user has not given.
   they need close views.
 - [x] NSIDC v4 ice inside "Ice" (today against the 1981–2010 mean of the same day).
 - [x] Your place, first part: a searched place shows solar time, sunrise and sunset, wind
-  and sea around it. [ ] The year-of-birth part.
+  and sea around it. [x] The year-of-birth part: an optional field in the search panel
+  (device only); the place then says what changed in its country and on the planet since.
 - [x] `?kiosk` mode (the four stories in a loop, cursor hidden) and `?embed` (a quiet frame
   with the link to the site).
-- [ ] The sea turning acidic (OceanSODA-ETHZ on NCEI: public access with a citation, but no
-  explicit licence; it needs a written yes from the authors, letter in
-  `docs/outreach/oceansoda.md`). WRI dead zones: the dataset is no longer online.
+- [x] The sea turning acidic (OceanSODA-ETHZ v2025 on NCEI, public access with a citation
+  but no explicit licence): chapter "The sea turning acidic", published on the user's
+  decision (28 October) while the authors are asked to keep or remove it, letter in
+  `docs/outreach/oceansoda.md`. WRI dead zones: the dataset is no longer online.
 - [x] Biodiversity intactness (Impact Observatory and Vizzuality via Planetary Computer,
   CC BY 4.0, 2017 and 2020 at 0.05°): chapter "How much nature is left". [x] Mangroves
   1996–2020 (Global Mangrove Watch v3.0, CC BY 4.0 checked on Zenodo): chapter "The
@@ -212,9 +214,14 @@ that needs an account or a key the user has not given.
 - [x] Marine heatwaves (Hobday on OISST, the 1991–2020 climate computed once and saved):
   chapter "Marine heatwaves". [x] ODIAC 2024 fossil CO₂ (CC BY 4.0, summed to 0.05° once):
   chapter "Where it burns".
-- [ ] Multi-scattering in the atmosphere: postponed (high cost, small visual gain).
+- [x] Multi-scattering in the atmosphere: dropped (28 October). A cheap isotropic term with a
+  wider twilight shadow was tried and compared frame by frame: from orbit the difference is a
+  faint haze that cannot be told apart from the single-scattering image, and a real LUT version
+  (Hillaire 2020) would cost a precompute pass for the same small gain.
 - [ ] Letters to providers (OceanSODA, WDPA, OpenSky, Blitzortung, HYDE, TeleGeography):
   drafts in `docs/outreach/`, to be signed and sent.
+- [x] A credit line always on screen for every chapter, layer and country card: each holder
+  of the data linked in a new tab, with its licence (`src/story/holders.ts`).
 
 ### Excluded
 ACLED, Ookla, WHO GHO, NHM BII (NC-SA, replaced by the CC BY one), SOS data taken directly
@@ -223,7 +230,7 @@ get a yes.
 
 ### Still on the roadmap
 1. [x] **Your place**: the next visible pass of the Station, computed on the device with
-   SGP4. [ ] The year-of-birth part.
+   SGP4. [x] The year-of-birth part (see above).
 2. [x] **Country card**: a click on a country, when people are shown, opens its curve since
    1960 for the indicator in view and the other numbers, each with the year of the
    measurement.
@@ -232,7 +239,7 @@ get a yes.
 4. [x] **Postcard**: the view saved as an image with title, date and sources (icon next to
    the caption, item in Explore, P key).
 5. **Graphics**: [x] clouds 10 km up with parallax and offset shadows; [x] a sea glint that
-   runs with the wind; [ ] multi-scattering.
+   runs with the wind; [x] multi-scattering dropped (see above).
 6. **Platform**: [x] phone held upright (planet above, words below, date and legend on one
    line, the Sun above the Earth); [x] accessibility: reduced motion, Shift + arrows turn the
    planet, Enter reads the centre for screen readers.

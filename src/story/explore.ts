@@ -8,6 +8,7 @@ import { SKY_CHAPTERS } from './sky';
 import type { Director } from './director';
 import { t } from '../i18n';
 import { dayShort, monthYear, num } from '../i18n/format';
+import { showCredit, type HolderId } from './holders';
 
 /** Series that can be compared first frame against last. */
 const SERIES = new Set(['nightlights', 'sst', 'anomaly', 'chlorophyll', 'ice', 'ndvi', 'aerosol', 'coral', 'ozone', 'no2', 'snow', 'sealevel', 'built', 'mangroves', 'bii']);
@@ -16,7 +17,7 @@ const SERIES = new Set(['nightlights', 'sst', 'anomaly', 'chlorophyll', 'ice', '
 // and a link that remembers what is on screen.
 
 type LayerId = keyof typeof t.explore.layers;
-interface Layer { id: LayerId; look: () => Partial<Look>; legend?: Legend; people?: boolean }
+interface Layer { id: LayerId; look: () => Partial<Look>; legend?: Legend; people?: boolean; credit?: readonly HolderId[] }
 /** Layers without a chapter carry their own note on how to read them. */
 type NoteId = keyof typeof t.notes;
 const SEA = { sun: 'studio' as const, clouds: 0, night: 0, atmo: 0.8 };
@@ -42,14 +43,14 @@ const PLANET: Layer[] = [
   { id: 'fulmini', look: chapterLook('fulmini'), legend: chapterLegend('fulmini') },
   { id: 'correnti', look: chapterLook('correnti'), legend: chapterLegend('correnti') },
   { id: 'mare', look: chapterLook('calore'), legend: chapterLegend('calore') },
-  { id: 'livello', look: () => ({ ...SEA, data: 'sealevel', dim: 0.55, desat: 0.7 }), legend: legend(PALETTES.sealevel, 'sealevel') },
-  { id: 'onde', look: () => ({ ...SEA, data: 'waves', dim: 0.6, desat: 0.6 }), legend: legend(PALETTES.waves, 'waves') },
+  { id: 'livello', credit: ['coastwatch'], look: () => ({ ...SEA, data: 'sealevel', dim: 0.55, desat: 0.7 }), legend: legend(PALETTES.sealevel, 'sealevel') },
+  { id: 'onde', credit: ['ww3', 'pacioos'], look: () => ({ ...SEA, data: 'waves', dim: 0.6, desat: 0.6 }), legend: legend(PALETTES.waves, 'waves') },
   { id: 'anomalia', look: chapterLook('febbre'), legend: chapterLegend('febbre') },
   { id: 'plancton', look: chapterLook('fioritura'), legend: chapterLegend('fioritura') },
   { id: 'pioggia', look: chapterLook('pioggia'), legend: chapterLegend('pioggia') },
   { id: 'fuochi', look: chapterLook('fuoco') },
   { id: 'terremoti', look: () => ({ ...chapterLook('terremoti')(), quakeReplay: 0 }), legend: chapterLegend('terremoti') },
-  { id: 'vulcani', look: () => ({ sun: 'studio', clouds: 0, dim: 0.7, desat: 0.75, night: 0, atmo: 0.7, data: 'so2', spots: 'volcanoes', bloom: 1.2 }) },
+  { id: 'vulcani', credit: ['gvp', 's5p', 'gibs'], look: () => ({ sun: 'studio', clouds: 0, dim: 0.7, desat: 0.75, night: 0, atmo: 0.7, data: 'so2', spots: 'volcanoes', bloom: 1.2 }) },
   { id: 'ghiaccio', look: chapterLook('ghiaccio'), legend: chapterLegend('ghiaccio') },
   { id: 'luci', look: chapterLook('luci') },
   { id: 'stazione', look: chapterLook('lassu') },
@@ -92,9 +93,10 @@ const NATURE_LAYERS: Layer[] = [
   { id: 'foreste', people: true, look: () => ({ ...NATURE.find((c) => c.id === 'foreste')!.look, years: null }), legend: NATURE.find((c) => c.id === 'foreste')!.legend },
   { id: 'aria', look: () => ({ ...NATURE.find((c) => c.id === 'aria')!.look }), legend: NATURE.find((c) => c.id === 'aria')!.legend },
   natureLayer('mangrovie'),
+  natureLayer('acido'),
   natureLayer('integrita'),
   natureLayer('neve'),
-  { id: 'nevegiorno', look: () => ({ sun: 'real' as const, clouds: 0, night: 0.6, atmo: 0.8, desat: 0.4, data: 'ims' }) },
+  { id: 'nevegiorno', credit: ['ims'], look: () => ({ sun: 'real' as const, clouds: 0, night: 0.6, atmo: 0.8, desat: 0.4, data: 'ims' }) },
   natureLayer('smog'),
   natureLayer('ozono'),
   natureLayer('petrolio', 'petrolio', { spotReplay: 0 }),
@@ -113,7 +115,7 @@ const LAYERS = [...PLANET, ...NATURE_LAYERS, ...HUMAN, ...SKY_LAYERS];
 const FROM_CHAPTER: Record<string, string> = {
   pianeta: 'adesso', respiro: 'venti', correnti: 'correnti', calore: 'mare', febbre: 'anomalia', fioritura: 'plancton', pioggia: 'pioggia',
   fuoco: 'fuochi', terremoti: 'terremoti', ghiaccio: 'ghiaccio', luci: 'luci', lassu: 'stazione', popolazione: 'popolazione', nascite: 'nascite', vita: 'vita',
-  bambini: 'bambini', saldo: 'saldo', luce: 'elettricita', fuga: 'asilo', verde: 'verde', foreste: 'foreste', mangrovie: 'mangrovie', integrita: 'integrita', aria: 'aria', coralli: 'coralli',
+  bambini: 'bambini', saldo: 'saldo', luce: 'elettricita', fuga: 'asilo', verde: 'verde', foreste: 'foreste', mangrovie: 'mangrovie', acido: 'acido', integrita: 'integrita', aria: 'aria', coralli: 'coralli',
   citta: 'citta', rotte: 'rotte', impronta: 'co2', esilio: 'rifugiati', rotte_asilo: 'asilomondo', accendersi: 'nottiluci', dighe: 'dighe', guerre: 'guerre', tempeste: 'tempeste', ondate: 'ondate', fumo: 'fumo', fulmini: 'fulmini', neve: 'neve', smog: 'smog', ozono: 'ozono', petrolio: 'petrolio', aurora: 'aurora', satelliti: 'satelliti', partenze: 'partenze', bolidi: 'bolidi',
 };
 
@@ -331,7 +333,17 @@ export class Explorer {
     box.classList.add('on');
   }
 
+  /** Who holds the data of the layer: its own list, its chapter's, or the atlas sources. */
+  private credit(): readonly HolderId[] {
+    const layer = this.layer;
+    if (layer.credit) return layer.credit;
+    const id = Object.entries(FROM_CHAPTER).find(([, l]) => l === layer.id)?.[0];
+    const c = [...CHAPTERS, ...NATURE, ...PEOPLE, ...SKY_CHAPTERS].find((ch) => ch.id === id);
+    return c?.credit ?? (layer.people ? ['wdi', 'naturalEarth'] : []);
+  }
+
   private refresh() {
+    showCredit($('ex-credit'), this.credit());
     void this.note();
     document.querySelectorAll<HTMLButtonElement>('.ex-layer').forEach((b) => b.classList.toggle('current', b.dataset.layer === this.layer.id));
     $('ex-years').classList.toggle('on', !!this.layer.people);

@@ -226,10 +226,11 @@ const ORBITS: ['jupiter' | 'saturn' | 'uranus' | 'neptune' | '', number][] = [['
 /** A label placed where it overlaps nothing already placed, around (x, y), with a leader line
  *  when it had to move away. Boxes are estimated from the length of the text. */
 interface Box { x0: number; y0: number; x1: number; y1: number }
-function place(g: Element, taken: Box[], x: number, y: number, s: string, cls: string, size: number, W: number, H: number, color?: string) {
-  const w = s.length * size * 0.56, h = size * 1.2;
+function place(g: Element, taken: Box[], x: number, y: number, s: string | string[], cls: string, size: number, W: number, H: number, color?: string) {
+  const rows = Array.isArray(s) ? s : [s];
+  const w = Math.max(...rows.map((r) => r.length)) * size * 0.56, h = size * 1.2 * rows.length;
   const tries: [number, number][] = [[10, -8], [10, 16], [-10, -8], [-10, 16]];
-  for (const r of [28, 46, 64]) for (const a of [-60, -120, 60, 120, -30, -150, 30, 150]) tries.push([Math.cos((a * Math.PI) / 180) * r, Math.sin((a * Math.PI) / 180) * r]);
+  for (const r of [28, 46, 64, 90, 120, 150]) for (const a of [-60, -120, 60, 120, -30, -150, 30, 150, -90, 90]) tries.push([Math.cos((a * Math.PI) / 180) * r, Math.sin((a * Math.PI) / 180) * r]);
   for (const [dx, dy] of tries) {
     const left = dx < 0, bx = left ? x + dx - w : x + dx, by = y + dy - size;
     const b = { x0: bx - 3, y0: by - 3, x1: bx + w + 3, y1: by + h + 3 };
@@ -237,15 +238,19 @@ function place(g: Element, taken: Box[], x: number, y: number, s: string, cls: s
     if (taken.some((o) => b.x0 < o.x1 && b.x1 > o.x0 && b.y0 < o.y1 && b.y1 > o.y0)) continue;
     taken.push(b);
     if (Math.hypot(dx, dy) > 20) el('line', { x1: x, y1: y, x2: left ? bx + w : bx, y2: by + size * 0.75, class: 'ch-leader' }, g);
-    const e = text(g, left ? bx + w : bx, y + dy, s, cls, left ? 'end' : 'start');
-    if (color) e.setAttribute('fill', color);
+    rows.forEach((r, i) => {
+      const e = text(g, left ? bx + w : bx, y + dy + i * size * 1.2, r, cls, left ? 'end' : 'start');
+      if (color) e.setAttribute('fill', color);
+    });
     return true;
   }
   return false;
 }
 
-/** A few lines of text, right-aligned on the panel's edge, at the free height nearest to y. */
-function block(g: Element, taken: Box[], s: string, y: number, W: number, H: number) {
+/** A few lines of text beside a probe: right-aligned, at the free place nearest to it, with a
+ *  leader line when it had to move away. */
+function block(g: Element, taken: Box[], s: string, [px, py]: [number, number], W: number, H: number) {
+  const y = py - 20;
   const out: string[] = [];
   const width = W < 700 ? 30 : 40;
   for (const w of s.split(' ')) { const l = out.at(-1); if (l && (l + ' ' + w).length <= width) out[out.length - 1] = l + ' ' + w; else out.push(w); }
@@ -259,6 +264,13 @@ function block(g: Element, taken: Box[], s: string, y: number, W: number, H: num
         if (taken.some((o) => b.x0 < o.x1 && b.x1 > o.x0 && b.y0 < o.y1 && b.y1 > o.y0)) continue;
         taken.push(b);
         out.forEach((l, i) => text(g, right, top + 13 + i * 18, l, 'ch-dest', 'end'));
+        // The nearest corner of the block to the probe, joined to it when they are apart.
+        const cx = Math.min(Math.max(px, b.x0), b.x1), cy = Math.min(Math.max(py, b.y0), b.y1);
+        if (Math.hypot(cx - px, cy - py) > 26) {
+          el('line', { x1: px, y1: py, x2: cx, y2: cy, class: 'ch-leader' }, g);
+          const n = Math.ceil(Math.hypot(cx - px, cy - py) / 6);
+          for (let j = 0; j <= n; j++) { const x = px + ((cx - px) * j) / n, yy = py + ((cy - py) * j) / n; taken.push({ x0: x - 3, y0: yy - 3, x1: x + 3, y1: yy + 3 }); }
+        }
         return;
       }
     }
@@ -361,31 +373,40 @@ async function voyager(svg: SVGElement, cap: HTMLElement) {
     const spots: { planet: string; years: string; x: number; y: number }[] = [];
     for (const m of meetings) {
       const seen = m.who.filter((w) => w.when <= year);
-      if (!seen.length || s * 5 < 9) continue;
+      if (!seen.length) continue;
       let mx = 0, my = 0;
       for (const w of seen) {
         const f = at(w.k, w.when), [fx, fy] = project(f[1], f[2], f[3], s);
-        el('circle', { cx: fx, cy: fy, r: 3, fill: COL[w.k], class: 'ch-meet' }, g);
-        taken.push({ x0: fx - 5, y0: fy - 5, x1: fx + 5, y1: fy + 5 });
+        // The dots only while the planets stand apart; the place is kept for the label.
+        if (s * 5 >= 9) {
+          el('circle', { cx: fx, cy: fy, r: 3, fill: COL[w.k], class: 'ch-meet' }, g);
+          taken.push({ x0: fx - 5, y0: fy - 5, x1: fx + 5, y1: fy + 5 });
+        }
         mx += fx / seen.length; my += fy / seen.length;
       }
       spots.push({ planet: t.charts[m.planet], years: [...new Set(seen.map((w) => Math.floor(w.when)))].join(', '), x: mx, y: my });
     }
     // The words, around what is drawn.
     place(g, taken, cx, cy, t.charts.theSun, 'ch-tick ch-sunname', 14, W, H);
-    if (helio) place(g, taken, cx + 120 * s * 0.7, cy + 120 * s * Math.sin(tilt) * 0.72, t.charts.heliopause, 'ch-tick', 14, W, H);
     // One label per meeting while they stand apart; once the view has widened and they crowd
     // around the Sun, one label for all of them, with a leader line.
     const crowded = spots.some((a, i) => spots.some((b, j) => j > i && Math.hypot(a.x - b.x, a.y - b.y) < 54));
     if (spots.length && (crowded || s * 5 <= 22)) {
       const gx = spots.reduce((a, p) => a + p.x, 0) / spots.length, gy = spots.reduce((a, p) => a + p.y, 0) / spots.length;
-      place(g, taken, gx, gy, spots.map((p) => p.planet).join(' · '), 'ch-tick ch-meetname', 14, W, H);
+      const names = spots.map((p) => p.planet), half = Math.ceil(names.length / 2);
+      const rows = names.length > 2 ? [names.slice(0, half).join(' · '), names.slice(half).join(' · ')] : [names.join(' · ')];
+      if (!place(g, taken, gx, gy, rows, 'ch-tick ch-meetname', 14, W, H)) {
+        // No room around the Sun: under the year, joined to the planets by a leader line.
+        rows.forEach((r, i) => text(g, 14, 76 + i * 17, r, 'ch-tick ch-meetname', 'start'));
+        el('line', { x1: gx, y1: gy, x2: 22, y2: 76 + rows.length * 17 - 8, class: 'ch-leader' }, g);
+      }
     } else for (const p of spots) place(g, taken, p.x, p.y, `${p.planet} · ${p.years}`, 'ch-tick ch-meetname', 14, W, H);
     if (k >= 1) {
       // Each destination as a block beside its probe, where it covers no path and no dot.
-      block(g, taken, t.charts.heading1, heads.v1[1] + 30, W, H);
-      block(g, taken, t.charts.heading2, heads.v2[1] - 90, W, H);
+      block(g, taken, t.charts.heading1, heads.v1, W, H);
+      block(g, taken, t.charts.heading2, heads.v2, W, H);
     }
+    if (helio) place(g, taken, cx + 120 * s * 0.7, cy + 120 * s * Math.sin(tilt) * 0.72, t.charts.heliopause, 'ch-tick', 14, W, H);
     text(g, 14, 40, String(Math.floor(year)), 'ch-big');
     if (k < 1) requestAnimationFrame(draw);
   };

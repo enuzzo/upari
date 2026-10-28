@@ -41,11 +41,14 @@ export function createAuroraCurtains(read: (lon: number, lat: number) => number)
       const spread = sumW ? Math.sqrt(Math.max(0, sumLat2 / sumW - mean * mean)) : 2;
       ring.push({ lat: mean, p: best, w: Math.min(7, Math.max(2, spread * 1.4)) });
     }
-    const smooth = ring.map((_, i) => {
+    // A low-pass along the oval (about ±8°, twice): the forecast grid is coarse, and its steps
+    // would zigzag the curtains.
+    const blur = (src: { lat: number; p: number; w: number }[]) => src.map((_, i) => {
       let lat = 0, p = 0, w = 0, m = 0;
-      for (let k = -6; k <= 6; k++) { const r = ring[(i + k + N) % N], g = Math.exp(-(k * k) / 18); lat += r.lat * g; p += r.p * g; w += r.w * g; m += g; }
+      for (let k = -16; k <= 16; k++) { const r = src[(i + k + N) % N], g = Math.exp(-(k * k) / 128); lat += r.lat * g; p += r.p * g; w += r.w * g; m += g; }
       return { lat: lat / m, p: p / m, w: w / m };
     });
+    const smooth = blur(blur(ring));
     // Five ribbons across the band, the middle ones brightest. Each folds sideways with a few
     // waves of its own (whole numbers of them around the oval, so there is no seam).
     const RIBBONS: [number, number][] = [[-0.62, 0.45], [-0.3, 0.8], [0, 1], [0.32, 0.75], [0.64, 0.4]];
@@ -86,7 +89,7 @@ export function createAuroraCurtains(read: (lon: number, lat: number) => number)
       const j = i % N, lon = -180 + i * 0.5, r = smooth[j];
       for (let k = 0; k < ACROSS; k++) {
         const u = (k / (ACROSS - 1)) * 2 - 1;
-        lonLatToVec(lon, r.lat + u * r.w * 0.85 * Math.sign(r.lat), VEIL, v);
+        lonLatToVec(lon, r.lat + u * r.w * 1.35 * Math.sign(r.lat), VEIL, v);
         veilPos.push(v.x, v.y, v.z);
         veilAttr.push(r.p, u, (i / N) * 0.999);
       }
@@ -140,7 +143,7 @@ export function createAuroraCurtains(read: (lon: number, lat: number) => number)
         // A sharp lower edge, a soft top.
         float edge = smoothstep(0.0, 0.03, h) * (1.0 - smoothstep(0.8, 1.0, h));
         // Edge-on, a sheet would draw a hard line: its light follows how much of its face shows.
-        float face = mix(0.4, 1.0, smoothstep(0.05, 0.6, vFace));
+        float face = mix(0.22, 1.0, smoothstep(0.05, 0.6, vFace));
         float dark = smoothstep(0.08, -0.15, dot(normalize(vPos), uSun));
         float I = strength * glow * edge * face * dark * uOpacity;
         // Each sheet saturates softly, so where several overlap the green stays green, never white.
@@ -172,10 +175,10 @@ export function createAuroraCurtains(read: (lon: number, lat: number) => number)
         float along = vAur.z * 6.2831853;
         vec2 ring = vec2(cos(along + uTime * 0.004), sin(along + uTime * 0.004));
         float patches = fbm(vec3(ring * 3.4, vAur.y * 0.8 + uTime * 0.03));
-        float across = exp(-vAur.y * vAur.y * 2.4);
+        float across = exp(-vAur.y * vAur.y * 1.6) * smoothstep(1.0, 0.7, abs(vAur.y));
         float dark = smoothstep(0.08, -0.15, dot(normalize(vPos), uSun));
         float I = strength * across * (0.35 + 0.65 * smoothstep(0.25, 0.75, patches)) * dark * uOpacity;
-        gl_FragColor = vec4(vec3(0.22, 1.0, 0.5) * (1.0 - exp(-I * 1.6)) * 0.22, 1.0);
+        gl_FragColor = vec4(vec3(0.22, 1.0, 0.5) * (1.0 - exp(-I * 2.2)) * 0.55, 1.0);
       }`,
     blending: AdditiveBlending, depthWrite: false, transparent: true, side: DoubleSide,
   }));

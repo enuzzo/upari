@@ -301,8 +301,9 @@ export const SKY_CHAPTERS: Chapter[] = titled([
       // towards Voyager 2 (far south, in Pavo): they are too far apart for one shot.
       return [
         // The Earth small and far: the diagram beside it is the picture.
-        { shot: { lon: v1.lon + 180 + 12, lat: -v1.lat * 0.6 - 6, dist: 15 }, seconds: 6, drift: 0.12, hold: 12 },
-        { shot: { lon: v2.lon + 180 + 24, lat: -v2.lat, dist: 15 }, seconds: 5, drift: 0.1 },
+        // The Earth out of the frame on a wide screen: the diagram and the spacecraft are the picture.
+        { shot: { lon: v1.lon + 180 + 12, lat: -v1.lat * 0.6 - 6, dist: 15 }, seconds: 6, drift: 0.12, hold: 12, frameShift: 0.75 },
+        { shot: { lon: v2.lon + 180 + 24, lat: -v2.lat, dist: 15 }, seconds: 5, drift: 0.1, frameShift: 0.75 },
       ];
     },
   },

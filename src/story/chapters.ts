@@ -28,6 +28,8 @@ export interface Beat {
   clear?: boolean;
   /** On a phone held upright, how far up the planet sits for this shot (default 0.14). */
   portraitShift?: number;
+  /** On a wide screen, how far right the planet sits (default 0.14; past 0.6 it leaves the frame). */
+  frameShift?: number;
 }
 export interface Fact { value: string; label: string }
 export type Kind = keyof typeof t.kinds;

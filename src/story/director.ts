@@ -290,6 +290,7 @@ export class Director {
       if (b.look) this.globe.setLook({ ...c.look, ...b.look });
       if (b.clear) this.clearAnchors();
       if (this.globe.rig.portrait && !this.drawerOpen) this.globe.rig.setFrameShift(b.portraitShift ?? 0.14);
+      else if (!this.drawerOpen) this.globe.rig.setFrameShift(b.frameShift ?? 0.14);
       await this.globe.rig.flyTo(b.shot, k === skip && from > 0 ? 1.2 : b.seconds);
       if (token !== this.token || run !== this.frameRun || !this.playing) return;
       this.globe.rig.drift = b.drift ?? 0;

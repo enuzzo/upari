@@ -55,7 +55,6 @@ const ko: Dict = {
   lang: { name: '한국어', locale: 'ko-KR', dir: 'ltr' },
 
   rail: {
-    integrita: '남은 자연', accendersi: '불이 켜진다',
   },
 
   page: {
@@ -760,7 +759,7 @@ const ko: Dict = {
     now: (day: string) => `Mauna Loa 공기 속 CO₂, ${day}`,
     year: '1년 전보다 늘어난 양',
     preindustrial: '산업 혁명 이전',
-    swing: (from: string, to: string) => `북쪽 숲이 공기에서 빨아들이는 CO₂(북위 45–70°): ${from} → ${to}`,
+    swing: (from: string, to: string) => `공기 중에서 줄어드는 CO₂(북위 45–70° 평균): ${from} → ${to}`,
     text: '킬링 곡선: 도시와 숲에서 멀리 떨어져 공기가 잘 섞이는 Mauna Loa 화산의 해발 3,400미터에서 이어 온 연속 측정이다. 톱니 모양은 북반구 식물의 계절이고, 오르막은 우리가 태우는 화석 탄소다. 지구본에는 같은 계절이 장소마다 보인다. 수백 곳 관측소의 측정을 바람 모델과 결합한 NOAA CarbonTracker에 따른 2025년 고도 400미터의 CO₂를, 각 지점의 연평균과 비교하고 해마다의 상승은 뺐다. 초록은 여름에 식물이 비워 내는 공기, 호박색은 겨울에 다시 차오르는 공기와 계절 산불이 타는 곳이다.',
     source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa · NOAA CarbonTracker CT2026 (Jacobson et al. 2026)',
   },

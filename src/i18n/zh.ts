@@ -721,7 +721,7 @@ const zh: Dict = {
     now: (day: string) => `Mauna Loa 空气中的 CO₂，${day}`,
     year: '比一年前多出',
     preindustrial: '工业革命之前',
-    swing: (from: string, to: string) => `北方森林从空气中吸走的二氧化碳（北纬 45–70°）：${from} → ${to}`,
+    swing: (from: string, to: string) => `空气中减少的二氧化碳（北纬 45–70° 平均）：${from} → ${to}`,
     text: '基林曲线：在 Mauna Loa 火山海拔 3,400 米处的连续测量，远离城市和森林，那里的空气混合均匀。锯齿是北半球植物的季节；上升，是我们燃烧的化石碳。地球仪上是同一个季节，逐地呈现：根据 NOAA CarbonTracker（把数百个站点的测量与风的模型结合起来），2025 年离地 400 米的二氧化碳，与每个地点的全年平均相比，并去掉了逐年上升。绿色是夏天被植物吸空的空气，琥珀色是冬天重新充满的空气，以及季节性火灾燃烧的地方。',
     source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa · NOAA CarbonTracker CT2026 (Jacobson et al. 2026)',
   },

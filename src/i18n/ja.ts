@@ -28,7 +28,7 @@ const ja: Dict = {
   lang: { name: '日本語', locale: 'ja-JP', dir: 'ltr' },
 
   rail: {
-    integrita: '残る自然', accendersi: '灯がともる', esilio: '故郷を離れて',
+    integrita: '残る自然',
   },
 
   page: {
@@ -731,7 +731,7 @@ const ja: Dict = {
     now: (day: string) => `Mauna Loaの大気中のCO₂、${day}`,
     year: '1年前からの増加分',
     preindustrial: '産業革命以前',
-    swing: (from: string, to: string) => `北の森が大気から吸い取るCO₂（北緯45〜70°）：${from} → ${to}`,
+    swing: (from: string, to: string) => `大気中で減るCO₂（北緯45〜70°の平均）：${from} → ${to}`,
     text: 'キーリング曲線。都市や森から遠く、空気がよく混ざったMauna Loa火山の標高3,400メートルで続けられてきた測定だ。のこぎりの歯のようなぎざぎざは北半球の植物の季節、上昇は私たちが燃やす化石の炭素である。地球儀には同じ季節が場所ごとに見える。NOAA CarbonTracker（数百の観測所の測定を風のモデルと結びつけたもの）による2025年の高度400メートルのCO₂を、各地点の年平均と比べ、毎年の上昇を除いたものだ。緑は夏に植物が吸い尽くす空気、琥珀色は冬にふたたび満ちる空気と、季節の火事が燃える場所である。',
     source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa · NOAA CarbonTracker CT2026 (Jacobson et al. 2026)',
   },

@@ -61,7 +61,7 @@ async function greenSeasons(g: Globe) {
   return { meta, share, hi, lo };
 }
 
-/** How much CO2 the northern forests draw down between the fullest and the emptiest air of the year (45–70° N). */
+/** How far CO2 falls between the fullest and the emptiest air of the year, averaged over 45–70° N (land and sea). */
 async function breathOfTheNorth(g: Globe) {
   const { meta } = await g.layers.get('carbon');
   const f = meta.frames!, n = (x: (typeof f)[number]) => x.north ?? 0;

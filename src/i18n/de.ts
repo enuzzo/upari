@@ -724,7 +724,7 @@ const de: Dict = {
     now: (day: string) => `CO₂ in der Luft am Mauna Loa, am ${day}`,
     year: 'mehr als vor einem Jahr',
     preindustrial: 'vor der industriellen Revolution',
-    swing: (from: string, to: string) => `CO₂, das die nördlichen Wälder der Luft zwischen ${from} und ${to} entziehen (45–70° N)`,
+    swing: (from: string, to: string) => `weniger CO₂ in der Luft zwischen ${from} und ${to}, gemittelt über 45–70° N`,
     text: 'Die Keeling-Kurve: fortlaufende Messungen in 3.400 Metern Höhe auf dem Vulkan Mauna Loa, fern von Städten und Wäldern, wo die Luft gut durchmischt ist. Das Sägezahnmuster ist der Jahreslauf der Pflanzen auf der Nordhalbkugel; der Anstieg ist der fossile Kohlenstoff, den wir verbrennen. Auf dem Globus dieselbe Jahreszeit, Ort für Ort: CO₂ in 400 Metern Höhe im Jahr 2025 nach NOAA CarbonTracker, das die Messungen Hunderter Stationen mit einem Modell der Winde verbindet, verglichen mit dem Jahresmittel an jedem Punkt, ohne den Anstieg. Grün ist die Luft, die die Pflanzen im Sommer leeren, Bernstein die Luft, die sich im Winter wieder füllt, und wo die Feuer der Saison brennen.',
     source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa · NOAA CarbonTracker CT2026 (Jacobson et al. 2026)',
   },

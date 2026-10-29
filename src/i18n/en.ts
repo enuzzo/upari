@@ -718,7 +718,7 @@ const en: Dict = {
     now: (day: string) => `of CO₂ in the air at Mauna Loa, on ${day}`,
     year: 'more than a year ago',
     preindustrial: 'before the industrial revolution',
-    swing: (from: string, to: string) => `of CO₂ the northern forests draw from the air between ${from} and ${to} (45–70° N)`,
+    swing: (from: string, to: string) => `less CO₂ in the air between ${from} and ${to}, averaged from 45° to 70° N`,
     text: 'The Keeling curve: continuous measurements 3,400 metres up the Mauna Loa volcano, far from cities and forests, where the air is well mixed. The sawtooth is the season of the plants of the northern hemisphere; the climb is the fossil carbon we burn. On the globe, the same season place by place: CO₂ 400 metres up in 2025 according to NOAA CarbonTracker, which joins the measurements of hundreds of stations to a model of the winds, set against the yearly mean of each place, with the rise taken out. Green is the air the plants empty in summer, amber the air that fills up again in winter and where the season’s fires burn.',
     source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa · NOAA CarbonTracker CT2026 (Jacobson et al. 2026)',
   },

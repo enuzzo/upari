@@ -784,7 +784,7 @@ const fr: Dict = {
     now: (day: string) => `de CO₂ dans l’air de Mauna Loa, le ${first(day)}`,
     year: 'de plus qu’il y a un an',
     preindustrial: 'avant la révolution industrielle',
-    swing: (from: string, to: string) => `de CO₂ que les forêts du Nord retirent de l’air entre ${from} et ${to} (45–70° N)`,
+    swing: (from: string, to: string) => `de CO₂ en moins dans l’air entre ${from} et ${to}, en moyenne de 45° à 70° N`,
     text: 'La courbe de Keeling : des mesures continues à 3 400 mètres d’altitude sur le volcan Mauna Loa, loin des villes et des forêts, là où l’air est bien mélangé. Les dents de scie sont la saison des plantes de l’hémisphère Nord ; la montée, c’est le carbone fossile que nous brûlons. Sur le globe, la même saison lieu par lieu : le CO₂ à 400 mètres d’altitude en 2025 selon NOAA CarbonTracker, qui associe les mesures de centaines de stations à un modèle des vents, comparé à la moyenne de l’année en chaque point, sans la hausse. En vert, l’air que les plantes vident l’été ; en ambre, celui qui se recharge l’hiver et là où brûlent les feux de saison.',
     source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa · NOAA CarbonTracker CT2026 (Jacobson et al. 2026)',
   },

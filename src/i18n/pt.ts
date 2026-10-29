@@ -772,7 +772,7 @@ const pt: Dict = {
     now: (day: string) => `de CO₂ no ar de Mauna Loa, em ${day}`,
     year: 'a mais do que um ano atrás',
     preindustrial: 'antes da Revolução Industrial',
-    swing: (from: string, to: string) => `de CO₂ que as florestas do norte retiram do ar entre ${from} e ${to} (45–70° N)`,
+    swing: (from: string, to: string) => `de CO₂ a menos no ar entre ${from} e ${to}, em média entre 45° e 70° N`,
     text: 'A curva de Keeling: medições contínuas a 3.400 metros de altitude no vulcão Mauna Loa, longe de cidades e florestas, onde o ar é bem misturado. O dente de serra é a estação das plantas do hemisfério norte; a subida é o carbono fóssil que queimamos. No globo, a mesma estação lugar a lugar: o CO₂ a 400 metros de altura em 2025 segundo o NOAA CarbonTracker, que une as medições de centenas de estações a um modelo dos ventos, comparado com a média do ano em cada ponto, sem a subida. Em verde, o ar que as plantas esvaziam no verão; em âmbar, o que volta a se encher no inverno e onde ardem os fogos da estação.',
     source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa · NOAA CarbonTracker CT2026 (Jacobson et al. 2026)',
   },

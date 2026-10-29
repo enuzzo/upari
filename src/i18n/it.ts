@@ -9,7 +9,10 @@ const WDI_NOTE = 'Valori annuali originali, senza stime aggiunte da Upari: un pa
 const it = {
   lang: { name: 'Italiano', locale: 'it-IT', dir: 'ltr' },
 
-  /** Short names for the chapter rail, where the title is long: a missing one falls back to the title. */
+  /**
+   * Short names for the chapter rail, where the title is long: a missing one falls back to the title.
+   * In a language nobody on the project reads natively, only where the title would not fit in two lines.
+   */
   rail: {
     pianeta: 'Pianeta', termometro: 'Termometro', respiro: 'Respiro', tempeste: 'Tempeste',
     fulmini: 'Fulmini', correnti: 'Correnti', calore: 'Calore del mare',
@@ -747,7 +750,7 @@ const it = {
     now: (day: string) => `di CO₂ nell’aria di Mauna Loa, il ${day}`,
     year: 'in più rispetto a un anno fa',
     preindustrial: 'prima della rivoluzione industriale',
-    swing: (from: string, to: string) => `di CO₂ che le foreste del nord tolgono all’aria fra ${from} e ${to} (45–70° N)`,
+    swing: (from: string, to: string) => `di CO₂ in meno nell’aria fra ${from} e ${to}, in media fra 45° e 70° nord`,
     text: 'La curva di Keeling: misure continue a 3.400 metri sul vulcano Mauna Loa, lontano da città e foreste, dove l’aria è ben mescolata. Il dente di sega è la stagione delle piante dell’emisfero nord; la salita è il carbonio fossile che bruciamo. Sul globo la stessa stagione, luogo per luogo: la CO₂ a 400 metri d’altezza nel 2025 secondo NOAA CarbonTracker, che unisce le misure di centinaia di stazioni a un modello dei venti, confrontata con la media dell’anno in quel punto, tolta la salita. In verde l’aria che le piante svuotano d’estate, in ambra quella che si ricarica d’inverno e dove bruciano i fuochi di stagione.',
     source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa · NOAA CarbonTracker CT2026 (Jacobson et al. 2026)',
   },

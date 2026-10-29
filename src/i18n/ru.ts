@@ -17,6 +17,14 @@ const WDI_NOTE = 'Исходные годовые значения, без оц�
 const ru: Dict = {
   lang: { name: 'Русский', locale: 'ru-RU', dir: 'ltr' },
 
+  rail: {
+    ondate: 'Волны жары', lassu: 'Наверху', giorno: 'Сутки', carbonio: 'Углерод',
+    integrita: 'Сколько природы', acido: 'Закисление', aurora: 'Сияние',
+    popolazione: '8 млрд', luce: 'Электричество', accendersi: 'Мир в огнях',
+    nascite: 'Рождаемость',
+    rotte_asilo: 'Пути убежища',
+  },
+
   page: {
     title: 'Upari · Планета прямо сейчас',
     description: 'Upari: планета Земля в сегодняшних спутниковых данных. Ветры, течения, моря, дожди, пожары, лёд, огни и Космическая станция.',
@@ -44,6 +52,7 @@ const ru: Dict = {
     chapters: 'Главы',
     pause: 'Пауза',
     resume: 'Продолжить рассказ',
+    nextChapter: 'Следующая глава',
     zoomIn: 'Приблизить',
     zoomOut: 'Отдалить',
     close: 'Закрыть',

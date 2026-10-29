@@ -54,6 +54,10 @@ const WDI_NOTE = '원래의 연간 값이며, Upari가 덧붙인 추정치는 �
 const ko: Dict = {
   lang: { name: '한국어', locale: 'ko-KR', dir: 'ltr' },
 
+  rail: {
+    integrita: '남은 자연', accendersi: '불이 켜진다',
+  },
+
   page: {
     title: 'Upari · 지금, 이 행성',
     description: 'Upari: 오늘의 위성 데이터로 들려주는 지구 이야기. 바람, 해류, 바다, 비, 불, 얼음, 밤의 불빛, 그리고 우주정거장.',
@@ -81,6 +85,7 @@ const ko: Dict = {
     chapters: '챕터',
     pause: '일시 정지',
     resume: '이야기 이어 보기',
+    nextChapter: '다음 장',
     zoomIn: '확대',
     zoomOut: '축소',
     close: '닫기',

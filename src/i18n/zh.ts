@@ -18,6 +18,9 @@ const wanK = (k: string) => num(value(k) / 10, value(k) % 10 ? 1 : 0);
 const zh: Dict = {
   lang: { name: '中文', locale: 'zh-CN', dir: 'ltr' },
 
+  rail: {
+  },
+
   page: {
     title: 'Upari · 此刻的地球',
     description: 'Upari：用今天的卫星数据讲述地球。风、洋流、海洋、降雨、野火、冰、灯光，还有国际空间站。',
@@ -45,6 +48,7 @@ const zh: Dict = {
     chapters: '章节',
     pause: '暂停',
     resume: '继续讲述',
+    nextChapter: '下一章',
     zoomIn: '放大',
     zoomOut: '缩小',
     close: '关闭',

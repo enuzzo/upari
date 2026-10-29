@@ -65,6 +65,21 @@ const ENGLISH = /\b(of|the|Sea|Ridge|Rise|Zone|Islands?|Ocean|Gulf|Basin|Coast|S
 const fr: Dict = {
   lang: { name: 'Français', locale: 'fr-FR', dir: 'ltr' },
 
+  rail: {
+    pianeta: 'Planète', termometro: 'Thermomètre', respiro: 'Souffle', tempeste: 'Tempêtes',
+    fulmini: 'Éclairs', correnti: 'Courants', calore: 'Chaleur de la mer',
+    ondate: 'Canicules', febbre: 'Fièvre', fioritura: 'Mer en fleur', pioggia: 'Pluie',
+    fuoco: 'Feu', terremoti: 'Séismes', ghiaccio: 'Glace', luci: 'Lumières', giorno: 'Un jour',
+    verde: 'Souffle vert', carbonio: 'Carbone', foreste: 'Forêts perdues',
+    mangrovie: 'Mangroves', integrita: 'Nature restante', neve: 'Neige', aria: 'Air',
+    smog: 'Air des villes', ozono: 'Bouclier', petrolio: 'Mer blessée', coralli: 'Coraux',
+    acido: 'Mer acide', citta: 'Villes', dighe: 'Barrages', guerre: 'Guerres', rotte: 'Routes',
+    vita: 'Vies plus longues', bambini: 'Enfants', saldo: 'Solde', luce: 'Électricité',
+    impronta: 'Empreinte', rotte_asilo: 'Routes de l’asile', sole: 'Soleil', aurora: 'Aurore',
+    satelliti: 'Satellites', bolidi: 'Étoiles filantes',
+    nascite: 'Naissances',
+  },
+
   page: {
     title: 'Upari · La planète, en ce moment',
     description: 'Upari : la planète Terre racontée par les données satellitaires du jour. Vents, courants, mers, pluie, feux, glace, lumières et la Station spatiale.',
@@ -92,6 +107,7 @@ const fr: Dict = {
     chapters: 'Chapitres',
     pause: 'Pause',
     resume: 'Reprendre le récit',
+    nextChapter: 'Chapitre suivant',
     zoomIn: 'Rapprocher',
     zoomOut: 'Éloigner',
     close: 'Fermer',

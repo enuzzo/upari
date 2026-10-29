@@ -33,6 +33,10 @@ const WDI_NOTE = 'قيم سنوية أصلية، بلا تقديرات يضيف�
 const ar: Dict = {
   lang: { name: 'العربية', locale: 'ar-u-nu-latn', dir: 'rtl' },
 
+  rail: {
+    integrita: 'ما بقي من الطبيعة', acido: 'حموضة البحر', partenze: 'الانطلاق',
+  },
+
   page: {
     title: 'Upari · الكوكب، الآن',
     description: 'كوكب الأرض كما ترويه بيانات الأقمار الصناعية اليوم: الرياح والتيارات والبحار والمطر والنيران والجليد والأضواء، ومحطة الفضاء الدولية. هذا هو Upari.',
@@ -60,6 +64,7 @@ const ar: Dict = {
     chapters: 'الفصول',
     pause: 'إيقاف مؤقت',
     resume: 'استأنف الحكاية',
+    nextChapter: 'الفصل التالي',
     zoomIn: 'تقريب',
     zoomOut: 'تبعيد',
     close: 'إغلاق',

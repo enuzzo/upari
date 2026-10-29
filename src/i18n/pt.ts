@@ -49,6 +49,22 @@ const bilhoes = (s: string) => (below2(s) ? 'bilhão' : 'bilhões');
 const pt: Dict = {
   lang: { name: 'Português', locale: 'pt-BR', dir: 'ltr' },
 
+  rail: {
+    pianeta: 'Planeta', termometro: 'Termômetro', respiro: 'Sopro', tempeste: 'Tempestades',
+    fulmini: 'Raios', correnti: 'Correntes', calore: 'Calor do mar', ondate: 'Ondas de calor',
+    febbre: 'Febre', fioritura: 'Mar em flor', pioggia: 'Chuva', fuoco: 'Fogo',
+    terremoti: 'Terremotos', ghiaccio: 'Gelo', luci: 'Luzes', giorno: 'Um dia',
+    verde: 'Respiração verde', carbonio: 'Carbono', foreste: 'Florestas perdidas',
+    mangrovie: 'Manguezais', integrita: 'Natureza que resta', neve: 'Neve', aria: 'Ar',
+    smog: 'Ar urbano', ozono: 'Escudo', petrolio: 'Mar ferido', coralli: 'Corais',
+    acido: 'Mar ácido', citta: 'Cidades', dighe: 'Barragens', guerre: 'Guerras', rotte: 'Rotas',
+    bambini: 'Crianças', saldo: 'Saldo', luce: 'Luz elétrica', impronta: 'Pegada',
+    rotte_asilo: 'Rotas do asilo', sole: 'Sol', aurora: 'Aurora', satelliti: 'Satélites',
+    nascite: 'Natalidade',
+    vita: 'Longevidade',
+    accendersi: 'Mundo aceso',
+  },
+
   page: {
     title: 'Upari · O planeta, agora',
     description: 'Upari: o planeta Terra contado pelos dados de satélite de hoje. Ventos, correntes, mares, chuva, incêndios, gelo, luzes e a Estação Espacial.',
@@ -76,6 +92,7 @@ const pt: Dict = {
     chapters: 'Capítulos',
     pause: 'Pausar',
     resume: 'Retomar a história',
+    nextChapter: 'Próximo capítulo',
     zoomIn: 'Aproximar',
     zoomOut: 'Afastar',
     close: 'Fechar',

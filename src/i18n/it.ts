@@ -9,6 +9,23 @@ const WDI_NOTE = 'Valori annuali originali, senza stime aggiunte da Upari: un pa
 const it = {
   lang: { name: 'Italiano', locale: 'it-IT', dir: 'ltr' },
 
+  /** Short names for the chapter rail, where the title is long: a missing one falls back to the title. */
+  rail: {
+    pianeta: 'Pianeta', termometro: 'Termometro', respiro: 'Respiro', tempeste: 'Tempeste',
+    fulmini: 'Fulmini', correnti: 'Correnti', calore: 'Calore del mare',
+    ondate: 'Ondate di calore', febbre: 'Febbre', fioritura: 'Mare in fiore', pioggia: 'Pioggia',
+    fuoco: 'Fuoco', terremoti: 'Terremoti', ghiaccio: 'Ghiaccio', luci: 'Luci',
+    giorno: 'Un giorno', verde: 'Respiro verde', carbonio: 'Carbonio',
+    foreste: 'Foreste perdute', mangrovie: 'Mangrovie', integrita: 'Natura rimasta',
+    neve: 'Neve', aria: 'Aria', smog: 'Aria delle città', ozono: 'Scudo',
+    petrolio: 'Mare ferito', coralli: 'Coralli', acido: 'Mare acido', citta: 'Città',
+    dighe: 'Dighe', guerre: 'Guerre', rotte: 'Rotte', nascite: 'Meno nascite',
+    vita: 'Vite più lunghe', bambini: 'Bambini', saldo: 'Saldo', luce: 'Luce elettrica',
+    accendersi: 'Si accende', impronta: 'Impronta', rotte_asilo: 'Rotte dell’asilo',
+    sole: 'Sole', aurora: 'Aurora', satelliti: 'Satelliti', partenze: 'Partenze',
+    bolidi: 'Stelle cadenti',
+  } as Record<string, string>,
+
   page: {
     title: 'Upari · Il pianeta, adesso',
     description: 'Upari: il pianeta Terra raccontato dai dati satellitari di oggi. Venti, correnti, mari, pioggia, fuochi, ghiaccio, luci e la Stazione Spaziale.',
@@ -36,6 +53,7 @@ const it = {
     chapters: 'Capitoli',
     pause: 'Pausa',
     resume: 'Riprendi il racconto',
+    nextChapter: 'Capitolo successivo',
     zoomIn: 'Avvicina',
     zoomOut: 'Allontana',
     close: 'Chiudi',

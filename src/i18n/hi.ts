@@ -14,6 +14,10 @@ const ordinal = (n: number) => ({ 1: 'पहली', 2: 'दूसरी', 3: '�
 const hi: Dict = {
   lang: { name: 'हिन्दी', locale: 'hi-IN', dir: 'ltr' },
 
+  rail: {
+    integrita: 'बची प्रकृति', accendersi: 'जगमगाती दुनिया', giorno: 'एक दिन',
+  },
+
   page: {
     title: 'Upari · यह ग्रह, इस वक़्त',
     description: 'Upari: आज के उपग्रह आँकड़ों की ज़ुबानी पृथ्वी की कहानी। हवाएँ, धाराएँ, समुद्र, बारिश, आग, बर्फ़, रोशनियाँ और अंतरिक्ष स्टेशन।',
@@ -41,6 +45,7 @@ const hi: Dict = {
     chapters: 'अध्याय',
     pause: 'रोकें',
     resume: 'कहानी फिर शुरू करें',
+    nextChapter: 'अगला अध्याय',
     zoomIn: 'पास जाएँ',
     zoomOut: 'दूर जाएँ',
     close: 'बंद करें',

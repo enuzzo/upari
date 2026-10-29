@@ -48,6 +48,7 @@ export class Director {
       void this.go(0);
     });
     $('play-btn').addEventListener('click', () => this.setPlaying(!this.playing));
+    $('next-btn').addEventListener('click', () => this.next());
     $('resume-btn').addEventListener('click', () => this.setPlaying(true));
     $('more-btn').addEventListener('click', () => this.openDrawer());
     $('drawer-close').addEventListener('click', () => this.closeDrawer());
@@ -92,13 +93,19 @@ export class Director {
   private buildRail() {
     const ol = $('chapters');
     ol.innerHTML = '';
+    $('next-btn').title = `${t.page.nextChapter} (→)`;
     this.chapterEls = [];
     this.chapters.forEach((c, i) => {
       const li = document.createElement('li');
-      li.innerHTML = '<button><span class="bar"><span class="fill"></span></span><i class="knob" aria-hidden="true"></i><span class="label"></span></button>';
+      // The chapter playing gets the room for its whole title; the others show their short name,
+      // and the whole title floats above the bar when pointed at.
+      li.innerHTML = '<button><span class="bar"><span class="fill"></span></span><i class="knob" aria-hidden="true"></i>'
+        + '<span class="num" aria-hidden="true"></span><span class="label"></span><span class="full" aria-hidden="true"></span></button>';
       const button = li.querySelector('button')!;
       button.setAttribute('aria-label', c.title);
-      li.querySelector('.label')!.textContent = c.title;
+      li.querySelector('.num')!.innerHTML = `${roman(i)}<span class="of"> / ${roman(this.chapters.length - 1)}</span>`;
+      li.querySelector('.label')!.textContent = t.rail[c.id] ?? c.title;
+      li.querySelector('.full')!.textContent = c.title;
       // A click starts the chapter; a drag along its bar moves to that moment of it.
       let down: { x: number; moved: boolean } | null = null;
       const at = (e: PointerEvent) => { const r = button.getBoundingClientRect(); return Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)); };

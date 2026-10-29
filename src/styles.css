@@ -226,8 +226,15 @@ body.paused .resume { display: grid; animation: resumeGlow 2.6s ease-in-out infi
 body.paused .play.paused { animation: resumeGlow 2.6s ease-in-out infinite; }
 @keyframes resumeGlow { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 217, 160, 0); opacity: 0.6; } 50% { box-shadow: 0 0 18px 3px rgba(255, 217, 160, 0.35); opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { body.paused .resume, body.paused .play.paused { animation: none; opacity: 1; } }
+/* Next chapter, beside play: a lighter twin. */
+.play.skip { width: 34px; height: 34px; margin-left: -12px; }
+.play.skip svg { width: 15px; height: 15px; }
+.play.skip path { fill: currentColor; }
+/* The chapter playing takes three shares of the rail, so its whole title fits; the width moves
+   along with the story. */
 .chapters { flex: 1; display: flex; gap: 6px; list-style: none; margin: 0; padding: 0; }
-.chapters li { flex: 1; min-width: 0; }
+.chapters li { flex: 1 1 0; min-width: 0; transition: flex-grow 0.9s var(--ease); }
+.chapters li.current { flex-grow: 3; }
 .chapters button { width: 100%; text-align: left; padding: 14px 0 0; position: relative; }
 .chapters .bar { display: block; height: 2px; background: var(--ink-4); border-radius: 1px; overflow: hidden; position: relative; }
 .chapters .fill { position: absolute; inset: 0; transform-origin: left; transform: scaleX(0); background: var(--ink); }
@@ -243,11 +250,30 @@ body.paused .play.paused { animation: resumeGlow 2.6s ease-in-out infinite; }
 .chapters button:hover .knob { opacity: 1; }
 .chapters li.scrub .knob { opacity: 1; transform: scale(1.35); border-color: var(--warm); }
 .chapters button { cursor: ew-resize; touch-action: none; }
-.chapters .label {
-  display: block; margin-top: 10px; font-size: 11px; letter-spacing: 0.08em; color: var(--ink-2); text-shadow: var(--halo-soft);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color 0.3s;
+.chapters .num {
+  display: block; margin-top: 10px; font-size: 10px; letter-spacing: 0.16em; color: var(--ink-3); text-shadow: var(--halo-soft);
+  white-space: nowrap; transition: color 0.3s;
 }
-.chapters button:hover .label, .chapters li.current .label { color: var(--ink); }
+.chapters .num .of { display: none; }
+.chapters li.current .num { color: var(--warm); }
+/* The short name goes to a second line rather than losing its end. */
+.chapters .label {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+  margin-top: 3px; font-size: 11px; line-height: 1.3; letter-spacing: 0.01em; color: var(--ink-2); text-shadow: var(--halo-soft);
+  overflow-wrap: break-word; hyphens: auto; transition: color 0.3s;
+}
+.chapters button:hover .label { color: var(--ink); }
+/* The whole title: in place of the short name on the chapter playing, above the bar on the others. */
+.chapters .full {
+  display: block; position: absolute; left: 0; top: -10px; transform: translateY(-100%); white-space: nowrap; pointer-events: none;
+  font-family: var(--serif); font-size: 19px; line-height: 1.05; color: var(--ink); text-shadow: var(--halo);
+  opacity: 0; transition: opacity 0.25s;
+}
+.chapters li:nth-last-child(-n+3) .full { left: auto; right: 0; }
+.chapters button:hover .full, .chapters button:focus-visible .full { opacity: 1; }
+.chapters li.current .label { display: none; }
+.chapters li.current .full { position: static; transform: none; white-space: normal; text-wrap: balance; margin-top: 3px; opacity: 1; animation: railTitle 0.9s var(--ease); }
+@keyframes railTitle { from { opacity: 0; } 40% { opacity: 0; } to { opacity: 1; } }
 .chapters button:hover .bar { background: var(--ink-3); }
 .zoom { display: flex; gap: 2px; flex: none; }
 
@@ -755,6 +781,11 @@ button.about-link:hover { color: var(--ink); border-color: var(--ink-3); }
   .chart.on { transform: none; }
 
   .rail { gap: 12px; }
+  .play.skip { margin-left: -6px; }
+  /* No room for words: bars only, and "VIII / XVII" on the chapter playing (its title is in the caption). */
+  .chapters .label, .chapters .full, .chapters .num, .chapters li:not(.current) .knob { display: none; }
+  .chapters li.current .num { display: block; }
+  .chapters .num .of { display: inline; }
   .drawer { width: 100vw; padding: 64px 20px 24px; background: rgba(4, 6, 10, 0.95); }
   .drawer-kicker, .drawer h2, .facts, .drawer-text { padding-left: 0; }
   .drawer-source { margin-left: 0; }

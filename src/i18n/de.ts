@@ -10,6 +10,20 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const de: Dict = {
   lang: { name: 'Deutsch', locale: 'de-DE', dir: 'ltr' },
 
+  rail: {
+    pianeta: 'Planet', termometro: 'Thermometer', respiro: 'Atem', tempeste: 'Stürme',
+    fulmini: 'Blitze', correnti: 'Strömungen', calore: 'Meereswärme', ondate: 'Hitzewellen',
+    febbre: 'Fieber', fioritura: 'Meeresblüte', pioggia: 'Regen', fuoco: 'Feuer',
+    terremoti: 'Erdbeben', ghiaccio: 'Eis', luci: 'Lichter', giorno: 'Ein Tag',
+    verde: 'Grüner Atem', carbonio: 'Kohlenstoff', foreste: 'Verlorene Wälder',
+    mangrovie: 'Mangroven', integrita: 'Wie viel Natur', neve: 'Schnee', aria: 'Luft',
+    smog: 'Stadtluft', ozono: 'Schild', petrolio: 'Verwundetes Meer', coralli: 'Korallen',
+    acido: 'Saures Meer', citta: 'Städte', dighe: 'Staudämme', guerre: 'Kriege', rotte: 'Routen',
+    bambini: 'Kinder', saldo: 'Bilanz', accendersi: 'Die Welt leuchtet', impronta: 'Fußabdruck',
+    rotte_asilo: 'Asylrouten', sole: 'Sonne', aurora: 'Polarlicht', satelliti: 'Satelliten',
+    luce: 'Strom',
+  },
+
   page: {
     title: 'Upari · Der Planet, jetzt',
     description: 'Upari: der Planet Erde, erzählt mit den Satellitendaten von heute. Winde, Strömungen, Meere, Regen, Brände, Eis, Lichter und die Raumstation.',
@@ -37,6 +51,7 @@ const de: Dict = {
     chapters: 'Kapitel',
     pause: 'Pause',
     resume: 'Erzählung fortsetzen',
+    nextChapter: 'Nächstes Kapitel',
     zoomIn: 'Näher heran',
     zoomOut: 'Weiter weg',
     close: 'Schließen',

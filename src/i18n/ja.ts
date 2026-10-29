@@ -27,6 +27,10 @@ const manK = (k: string) => num(value(k) / 10, value(k) % 10 ? 1 : 0);
 const ja: Dict = {
   lang: { name: '日本語', locale: 'ja-JP', dir: 'ltr' },
 
+  rail: {
+    integrita: '残る自然', accendersi: '灯がともる', esilio: '故郷を離れて',
+  },
+
   page: {
     title: 'Upari · いまの地球',
     description: 'Upari：今日の衛星データが語る地球。風、海流、海、雨、火災、氷、夜の灯り、そして宇宙ステーション。',
@@ -54,6 +58,7 @@ const ja: Dict = {
     chapters: '章',
     pause: '一時停止',
     resume: '物語を再開',
+    nextChapter: '次の章',
     zoomIn: '近づく',
     zoomOut: '遠ざかる',
     close: '閉じる',

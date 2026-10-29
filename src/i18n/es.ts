@@ -37,6 +37,21 @@ const art = (place: string) => WITH_ARTICLE.get(place) ?? place;
 const es: Dict = {
   lang: { name: 'Español', locale: 'es-ES', dir: 'ltr' },
 
+  rail: {
+    pianeta: 'Planeta', termometro: 'Termómetro', respiro: 'Aliento', tempeste: 'Tormentas',
+    fulmini: 'Rayos', correnti: 'Corrientes', calore: 'Calor del mar', ondate: 'Olas de calor',
+    febbre: 'Fiebre', fioritura: 'Mar en flor', pioggia: 'Lluvia', fuoco: 'Fuego',
+    terremoti: 'Terremotos', ghiaccio: 'Hielo', luci: 'Luces', giorno: 'Un día',
+    verde: 'Aliento verde', carbonio: 'Carbono', foreste: 'Bosques perdidos',
+    mangrovie: 'Manglares', integrita: 'Naturaleza que queda', neve: 'Nieve', aria: 'Aire',
+    smog: 'Aire urbano', ozono: 'Escudo', petrolio: 'Mar herido', coralli: 'Corales',
+    acido: 'Mar ácido', citta: 'Ciudades', dighe: 'Presas', guerre: 'Guerras', rotte: 'Rutas',
+    bambini: 'Niños', saldo: 'Saldo', luce: 'Luz eléctrica', impronta: 'Huella',
+    rotte_asilo: 'Rutas del asilo', sole: 'Sol', aurora: 'Aurora', satelliti: 'Satélites',
+    bolidi: 'Estrellas fugaces',
+    accendersi: 'Se enciende',
+  },
+
   page: {
     title: 'Upari · El planeta, ahora',
     description: 'Upari: el planeta Tierra contado con los datos satelitales de hoy. Vientos, corrientes, mares, lluvia, incendios, hielo, luces y la Estación Espacial.',
@@ -64,6 +79,7 @@ const es: Dict = {
     chapters: 'Capítulos',
     pause: 'Pausa',
     resume: 'Reanudar el relato',
+    nextChapter: 'Capítulo siguiente',
     zoomIn: 'Acercar',
     zoomOut: 'Alejar',
     close: 'Cerrar',

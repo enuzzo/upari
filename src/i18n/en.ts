@@ -8,6 +8,16 @@ const WDI_NOTE = 'Original yearly values, with no estimates added by Upari: a co
 const en: Dict = {
   lang: { name: 'English', locale: 'en-GB', dir: 'ltr' },
 
+  rail: {
+    pianeta: 'Planet', termometro: 'Thermometer', tempeste: 'Storms', calore: 'Sea warmth',
+    ondate: 'Heatwaves', fioritura: 'Sea in bloom', terremoti: 'Earthquakes', giorno: 'A day',
+    carbonio: 'Carbon', mangrovie: 'Mangroves', integrita: 'Nature left', smog: 'City air',
+    ozono: 'Shield', petrolio: 'Wounded sea', coralli: 'Corals', acido: 'Acid sea',
+    citta: 'Cities', dighe: 'Dams', guerre: 'Wars', rotte: 'Lanes', bambini: 'Children',
+    saldo: 'Balance', accendersi: 'Lighting up', impronta: 'Footprint',
+    rotte_asilo: 'Asylum routes', sole: 'Sun', aurora: 'Aurora', satelliti: 'Satellites',
+  },
+
   page: {
     title: 'Upari · The planet, right now',
     description: 'Upari: planet Earth told by today’s satellite data. Winds, currents, seas, rain, fires, ice, lights and the Space Station.',
@@ -35,6 +45,7 @@ const en: Dict = {
     chapters: 'Chapters',
     pause: 'Pause',
     resume: 'Resume the story',
+    nextChapter: 'Next chapter',
     zoomIn: 'Zoom in',
     zoomOut: 'Zoom out',
     close: 'Close',

@@ -1,0 +1,147 @@
+{
+ "id": "carbon",
+ "width": 720,
+ "height": 360,
+ "cadence": "day",
+ "unit": "ppm",
+ "scale": "linear",
+ "min": -12.0,
+ "max": 12.0,
+ "dates": [
+  "2025-12-24"
+ ],
+ "source": "NOAA CarbonTracker CT2026 \u00b7 CO2 at 400 m, 13:30 local time \u00b7 each place against its own year",
+ "trend": 1.49,
+ "frames": [
+  {
+   "file": "carbon-2025-01-08.png",
+   "time": "2025-01-08",
+   "north": 4.74
+  },
+  {
+   "file": "carbon-2025-01-22.png",
+   "time": "2025-01-22",
+   "north": 5.07
+  },
+  {
+   "file": "carbon-2025-02-05.png",
+   "time": "2025-02-05",
+   "north": 5.51
+  },
+  {
+   "file": "carbon-2025-02-19.png",
+   "time": "2025-02-19",
+   "north": 5.78
+  },
+  {
+   "file": "carbon-2025-03-05.png",
+   "time": "2025-03-05",
+   "north": 6.25
+  },
+  {
+   "file": "carbon-2025-03-19.png",
+   "time": "2025-03-19",
+   "north": 6.46
+  },
+  {
+   "file": "carbon-2025-04-02.png",
+   "time": "2025-04-02",
+   "north": 6.55
+  },
+  {
+   "file": "carbon-2025-04-16.png",
+   "time": "2025-04-16",
+   "north": 6.38
+  },
+  {
+   "file": "carbon-2025-04-30.png",
+   "time": "2025-04-30",
+   "north": 5.73
+  },
+  {
+   "file": "carbon-2025-05-14.png",
+   "time": "2025-05-14",
+   "north": 4.32
+  },
+  {
+   "file": "carbon-2025-05-28.png",
+   "time": "2025-05-28",
+   "north": 1.6
+  },
+  {
+   "file": "carbon-2025-06-11.png",
+   "time": "2025-06-11",
+   "north": -2.85
+  },
+  {
+   "file": "carbon-2025-06-25.png",
+   "time": "2025-06-25",
+   "north": -6.87
+  },
+  {
+   "file": "carbon-2025-07-09.png",
+   "time": "2025-07-09",
+   "north": -10.33
+  },
+  {
+   "file": "carbon-2025-07-23.png",
+   "time": "2025-07-23",
+   "north": -11.86
+  },
+  {
+   "file": "carbon-2025-08-06.png",
+   "time": "2025-08-06",
+   "north": -12.14
+  },
+  {
+   "file": "carbon-2025-08-20.png",
+   "time": "2025-08-20",
+   "north": -10.69
+  },
+  {
+   "file": "carbon-2025-09-03.png",
+   "time": "2025-09-03",
+   "north": -8.77
+  },
+  {
+   "file": "carbon-2025-09-17.png",
+   "time": "2025-09-17",
+   "north": -7.0
+  },
+  {
+   "file": "carbon-2025-10-01.png",
+   "time": "2025-10-01",
+   "north": -4.45
+  },
+  {
+   "file": "carbon-2025-10-15.png",
+   "time": "2025-10-15",
+   "north": -1.37
+  },
+  {
+   "file": "carbon-2025-10-29.png",
+   "time": "2025-10-29",
+   "north": 1.29
+  },
+  {
+   "file": "carbon-2025-11-12.png",
+   "time": "2025-11-12",
+   "north": 2.96
+  },
+  {
+   "file": "carbon-2025-11-26.png",
+   "time": "2025-11-26",
+   "north": 3.9
+  },
+  {
+   "file": "carbon-2025-12-10.png",
+   "time": "2025-12-10",
+   "north": 4.71
+  },
+  {
+   "file": "carbon-2025-12-24.png",
+   "time": "2025-12-24",
+   "north": 5.03
+  }
+ ]
+}

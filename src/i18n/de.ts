@@ -158,6 +158,7 @@ const de: Dict = {
       ['Sterne', 'Yale Bright Star Catalogue'],
       ['Temperatur des Planeten', 'Copernicus Climate Change Service (C3S) / ECMWF, Climate Pulse, Reanalyse ERA5, CC BY 4.0'],
       ['Kohlendioxid', 'NOAA Global Monitoring Laboratory und Scripps Institution of Oceanography, Mauna Loa'],
+      ['Kohlendioxid auf dem Globus', 'NOAA CarbonTracker CT2026, Jacobson et al. 2026, doi:10.25925/hqp0-rk68. CarbonTracker results provided by NOAA/ESRL, Boulder, Colorado, USA, http://carbontracker.noaa.gov'],
       ['Wirbelstürme', 'NOAA NCEI, IBTrACS v04r01; Vorhersagen vom Global Disaster Alert and Coordination System (GDACS, Europäische Kommission JRC und UN OCHA), CC BY 4.0'],
       ['Säuregrad des Ozeans', 'OceanSODA-ETHZ v2025, Luke Gregor und Nicolas Gruber, ETH Zürich, via NOAA NCEI'],
       ['Bewaffnete Konflikte', 'Uppsala Conflict Data Program, UCDP Georeferenced Event Dataset 26.1 und Candidate Events, CC BY 4.0'],
@@ -306,6 +307,7 @@ const de: Dict = {
     noMangroves: 'keine Mangroven',
     bii: (v: string) => `verbliebene Natur: ${v}%`,
     sealevel: (cm: string) => `${cm} cm gegenüber dem mittleren Niveau`,
+    carbon: (ppm: string) => `${ppm} ppm CO₂ gegenüber dem Jahresmittel dieses Ortes`,
     waves: (m: string) => `Wellen von ${m} m`,
   },
 
@@ -515,6 +517,7 @@ const de: Dict = {
     ships: { title: 'Schiffsverkehr, 2015–2021', left: 'selten', right: 'dicht' },
     built: { title: 'von Gebäuden bedeckte Fläche', left: 'Dörfer', right: 'Städte' },
     sealevel: { title: 'Meer höher oder tiefer als normal', left: '−50 cm', right: '+50 cm' },
+    carbon: { title: 'CO₂ gegenüber dem Jahresmittel, Ort für Ort', left: '−12 ppm', right: '+12 ppm' },
     waves: { title: 'Wellenhöhe', left: 'ruhig', right: '12 m' },
   },
 
@@ -721,8 +724,9 @@ const de: Dict = {
     now: (day: string) => `CO₂ in der Luft am Mauna Loa, am ${day}`,
     year: 'mehr als vor einem Jahr',
     preindustrial: 'vor der industriellen Revolution',
-    text: 'Die Keeling-Kurve: fortlaufende Messungen in 3.400 Metern Höhe auf dem Vulkan Mauna Loa, fern von Städten und Wäldern, wo die Luft gut durchmischt ist. Das Sägezahnmuster ist der Jahreslauf der Pflanzen auf der Nordhalbkugel; der Anstieg ist der fossile Kohlenstoff, den wir verbrennen.',
-    source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa',
+    swing: (from: string, to: string) => `CO₂, das die nördlichen Wälder der Luft zwischen ${from} und ${to} entziehen (45–70° N)`,
+    text: 'Die Keeling-Kurve: fortlaufende Messungen in 3.400 Metern Höhe auf dem Vulkan Mauna Loa, fern von Städten und Wäldern, wo die Luft gut durchmischt ist. Das Sägezahnmuster ist der Jahreslauf der Pflanzen auf der Nordhalbkugel; der Anstieg ist der fossile Kohlenstoff, den wir verbrennen. Auf dem Globus dieselbe Jahreszeit, Ort für Ort: CO₂ in 400 Metern Höhe im Jahr 2025 nach NOAA CarbonTracker, das die Messungen Hunderter Stationen mit einem Modell der Winde verbindet, verglichen mit dem Jahresmittel an jedem Punkt, ohne den Anstieg. Grün ist die Luft, die die Pflanzen im Sommer leeren, Bernstein die Luft, die sich im Winter wieder füllt, und wo die Feuer der Saison brennen.',
+    source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa · NOAA CarbonTracker CT2026 (Jacobson et al. 2026)',
   },
   foreste: {
     title: 'Die verlorenen Wälder', kicker: 'Verlorene Baumbedeckung, 2001 – 2024',

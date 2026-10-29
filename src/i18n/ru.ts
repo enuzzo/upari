@@ -159,6 +159,7 @@ const ru: Dict = {
       ['Звёзды', 'Yale Bright Star Catalogue'],
       ['Температура планеты', 'Copernicus Climate Change Service (C3S) / ECMWF, Climate Pulse, реанализ ERA5, CC BY 4.0'],
       ['Углекислый газ', 'NOAA Global Monitoring Laboratory и Scripps Institution of Oceanography, Mauna Loa'],
+      ['Углекислый газ на глобусе', 'NOAA CarbonTracker CT2026, Jacobson et al. 2026, doi:10.25925/hqp0-rk68. CarbonTracker results provided by NOAA/ESRL, Boulder, Colorado, USA, http://carbontracker.noaa.gov'],
       ['Циклоны', 'NOAA NCEI, IBTrACS v04r01; прогнозы Global Disaster Alert and Coordination System (GDACS, Европейская комиссия JRC и UN OCHA), CC BY 4.0'],
       ['Кислотность океана', 'OceanSODA-ETHZ v2025, Luke Gregor и Nicolas Gruber, ETH Zürich, через NOAA NCEI'],
       ['Вооружённые конфликты', 'Uppsala Conflict Data Program, UCDP Georeferenced Event Dataset 26.1 и Candidate Events, CC BY 4.0'],
@@ -309,6 +310,7 @@ const ru: Dict = {
     noMangroves: 'мангровых лесов нет',
     bii: (v: string) => `сохранившаяся природа: ${v}%`,
     sealevel: (cm: string) => `${cm} см относительно среднего уровня`,
+    carbon: (ppm: string) => `${ppm} ppm CO₂ относительно среднего за год в этом месте`,
     waves: (m: string) => `волны высотой ${m} м`,
   },
 
@@ -518,6 +520,7 @@ const ru: Dict = {
     ships: { title: 'судоходство, 2015–2021', left: 'редкое', right: 'оживлённое' },
     built: { title: 'земля под зданиями', left: 'деревни', right: 'города' },
     sealevel: { title: 'море выше или ниже обычного', left: '−50 см', right: '+50 см' },
+    carbon: { title: 'CO₂ относительно среднего за год, для каждого места', left: '−12 ppm', right: '+12 ppm' },
     waves: { title: 'высота волн', left: 'штиль', right: '12 м' },
   },
 
@@ -724,8 +727,9 @@ const ru: Dict = {
     now: (day: string) => `CO₂ в воздухе на Мауна-Лоа, ${day}`,
     year: 'больше, чем год назад',
     preindustrial: 'до промышленной революции',
-    text: 'Кривая Килинга: непрерывные измерения на высоте 3400 метров на вулкане Мауна-Лоа, вдали от городов и лесов, где воздух хорошо перемешан. Зубцы пилы — смена сезонов у растений Северного полушария; подъём — ископаемый углерод, который мы сжигаем.',
-    source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa',
+    swing: (from: string, to: string) => `CO₂, которые северные леса забирают из воздуха (45–70° с. ш.): ${from} → ${to}`,
+    text: 'Кривая Килинга: непрерывные измерения на высоте 3400 метров на вулкане Мауна-Лоа, вдали от городов и лесов, где воздух хорошо перемешан. Зубцы пилы — смена сезонов у растений Северного полушария; подъём — ископаемый углерод, который мы сжигаем. На глобусе тот же сезон, место за местом: CO₂ на высоте 400 метров в 2025 году по данным NOAA CarbonTracker, где измерения сотен станций соединены с моделью ветров, в сравнении со средним за год в каждой точке, без общего роста. Зелёным — воздух, который растения опустошают летом, янтарным — воздух, который снова наполняется зимой, и места сезонных пожаров.',
+    source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa · NOAA CarbonTracker CT2026 (Jacobson et al. 2026)',
   },
   foreste: {
     title: 'Утраченные леса', kicker: 'Потеря древесного покрова, 2001 – 2024',

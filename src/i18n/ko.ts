@@ -192,6 +192,7 @@ const ko: Dict = {
       ['별', 'Yale Bright Star Catalogue'],
       ['행성의 기온', 'Copernicus Climate Change Service (C3S) / ECMWF, Climate Pulse, ERA5 재분석, CC BY 4.0'],
       ['이산화탄소', 'NOAA Global Monitoring Laboratory와 Scripps Institution of Oceanography, Mauna Loa'],
+      ['지구본 위의 이산화탄소', 'NOAA CarbonTracker CT2026, Jacobson et al. 2026, doi:10.25925/hqp0-rk68. CarbonTracker results provided by NOAA/ESRL, Boulder, Colorado, USA, http://carbontracker.noaa.gov'],
       ['열대 저기압', 'NOAA NCEI, IBTrACS v04r01; 예보는 Global Disaster Alert and Coordination System(GDACS, 유럽연합 집행위원회 JRC와 UN OCHA), CC BY 4.0'],
       ['해양 산성도', 'OceanSODA-ETHZ v2025, Luke Gregor와 Nicolas Gruber, ETH Zürich, NOAA NCEI 경유'],
       ['무력 충돌', 'Uppsala Conflict Data Program, UCDP Georeferenced Event Dataset 26.1과 Candidate Events, CC BY 4.0'],
@@ -342,6 +343,7 @@ const ko: Dict = {
     noMangroves: '맹그로브 없음',
     bii: (v: string) => `남은 자연 ${v}%`,
     sealevel: (cm: string) => `평균 해수면보다 ${cm} cm`,
+    carbon: (ppm: string) => `이곳의 연평균 대비 CO₂ ${ppm} ppm`,
     waves: (m: string) => `파고 ${m} m`,
   },
 
@@ -551,6 +553,7 @@ const ko: Dict = {
     ships: { title: '선박 통행량, 2015–2021', left: '드묾', right: '많음' },
     built: { title: '건물이 덮은 땅', left: '마을', right: '도시' },
     sealevel: { title: '평소보다 높거나 낮은 바다', left: '−50 cm', right: '+50 cm' },
+    carbon: { title: '그곳의 연평균 대비 CO₂', left: '−12 ppm', right: '+12 ppm' },
     waves: { title: '파도의 높이', left: '잔잔함', right: '12 m' },
   },
 
@@ -757,8 +760,9 @@ const ko: Dict = {
     now: (day: string) => `Mauna Loa 공기 속 CO₂, ${day}`,
     year: '1년 전보다 늘어난 양',
     preindustrial: '산업 혁명 이전',
-    text: '킬링 곡선: 도시와 숲에서 멀리 떨어져 공기가 잘 섞이는 Mauna Loa 화산의 해발 3,400미터에서 이어 온 연속 측정이다. 톱니 모양은 북반구 식물의 계절이고, 오르막은 우리가 태우는 화석 탄소다.',
-    source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa',
+    swing: (from: string, to: string) => `북쪽 숲이 공기에서 빨아들이는 CO₂(북위 45–70°): ${from} → ${to}`,
+    text: '킬링 곡선: 도시와 숲에서 멀리 떨어져 공기가 잘 섞이는 Mauna Loa 화산의 해발 3,400미터에서 이어 온 연속 측정이다. 톱니 모양은 북반구 식물의 계절이고, 오르막은 우리가 태우는 화석 탄소다. 지구본에는 같은 계절이 장소마다 보인다. 수백 곳 관측소의 측정을 바람 모델과 결합한 NOAA CarbonTracker에 따른 2025년 고도 400미터의 CO₂를, 각 지점의 연평균과 비교하고 해마다의 상승은 뺐다. 초록은 여름에 식물이 비워 내는 공기, 호박색은 겨울에 다시 차오르는 공기와 계절 산불이 타는 곳이다.',
+    source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa · NOAA CarbonTracker CT2026 (Jacobson et al. 2026)',
   },
   foreste: {
     title: '사라진 숲', kicker: '사라진 수목 피복, 2001 – 2024',

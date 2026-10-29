@@ -155,6 +155,7 @@ const zh: Dict = {
       ['星空', 'Yale Bright Star Catalogue'],
       ['地球的温度', 'Copernicus Climate Change Service (C3S) / ECMWF，Climate Pulse，ERA5 再分析，CC BY 4.0'],
       ['二氧化碳', 'NOAA Global Monitoring Laboratory 与 Scripps Institution of Oceanography，Mauna Loa'],
+      ['地球仪上的二氧化碳', 'NOAA CarbonTracker CT2026, Jacobson et al. 2026, doi:10.25925/hqp0-rk68. CarbonTracker results provided by NOAA/ESRL, Boulder, Colorado, USA, http://carbontracker.noaa.gov'],
       ['气旋', 'NOAA NCEI，IBTrACS v04r01；预报来自 Global Disaster Alert and Coordination System（GDACS，欧盟委员会 JRC 与 UN OCHA），CC BY 4.0'],
       ['海洋酸度', 'OceanSODA-ETHZ v2025，Luke Gregor 和 Nicolas Gruber，ETH Zürich，来自 NOAA NCEI'],
       ['武装冲突', 'Uppsala Conflict Data Program，UCDP Georeferenced Event Dataset 26.1 与 Candidate Events，CC BY 4.0'],
@@ -303,6 +304,7 @@ const zh: Dict = {
     noMangroves: '没有红树林',
     bii: (v: string) => `剩余自然 ${v}%`,
     sealevel: (cm: string) => `较平均海平面 ${cm} 厘米`,
+    carbon: (ppm: string) => `二氧化碳较当地全年平均 ${ppm} ppm`,
     waves: (m: string) => `浪高 ${m} 米`,
   },
 
@@ -512,6 +514,7 @@ const zh: Dict = {
     ships: { title: '船舶交通，2015–2021', left: '稀少', right: '繁忙' },
     built: { title: '被建筑覆盖的土地', left: '村庄', right: '城市' },
     sealevel: { title: '海面高于或低于常年', left: '−50 厘米', right: '+50 厘米' },
+    carbon: { title: '二氧化碳相对当地全年平均', left: '−12 ppm', right: '+12 ppm' },
     waves: { title: '浪高', left: '平静', right: '12 米' },
   },
 
@@ -718,8 +721,9 @@ const zh: Dict = {
     now: (day: string) => `Mauna Loa 空气中的 CO₂，${day}`,
     year: '比一年前多出',
     preindustrial: '工业革命之前',
-    text: '基林曲线：在 Mauna Loa 火山海拔 3,400 米处的连续测量，远离城市和森林，那里的空气混合均匀。锯齿是北半球植物的季节；上升，是我们燃烧的化石碳。',
-    source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa',
+    swing: (from: string, to: string) => `北方森林从空气中吸走的二氧化碳（北纬 45–70°）：${from} → ${to}`,
+    text: '基林曲线：在 Mauna Loa 火山海拔 3,400 米处的连续测量，远离城市和森林，那里的空气混合均匀。锯齿是北半球植物的季节；上升，是我们燃烧的化石碳。地球仪上是同一个季节，逐地呈现：根据 NOAA CarbonTracker（把数百个站点的测量与风的模型结合起来），2025 年离地 400 米的二氧化碳，与每个地点的全年平均相比，并去掉了逐年上升。绿色是夏天被植物吸空的空气，琥珀色是冬天重新充满的空气，以及季节性火灾燃烧的地方。',
+    source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa · NOAA CarbonTracker CT2026 (Jacobson et al. 2026)',
   },
   foreste: {
     title: '消失的森林', kicker: '树木覆盖损失，2001 – 2024',

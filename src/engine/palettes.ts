@@ -158,6 +158,17 @@ export const PALETTES: Record<string, Stop[]> = {
     [0.75, '#f08a4b', 0.85],
     [1.0, '#e0475b', 1],
   ],
+  // The breath of carbon: air drawn down by the plants in green, air given back in a light warm veil (centre
+  // transparent). In spring the whole north is above its mean: a thin veil keeps the continents readable.
+  carbon: [
+    [0.0, '#7af2cf', 0.5],
+    [0.25, '#4fd3a8', 0.25],
+    [0.4, '#3a9e82', 0.06],
+    [0.5, '#4a5550', 0.0],
+    [0.6, '#e9b98a', 0.02],
+    [0.75, '#f0b47c', 0.12],
+    [1.0, '#ffc98e', 0.36],
+  ],
   // Waves: calm seas stay dark, storm seas foam white, the highest turn amber.
   waves: [
     [0.0, '#0b3d5c', 0.0],

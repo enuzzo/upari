@@ -165,6 +165,7 @@ const it = {
       ['Stelle', 'Yale Bright Star Catalogue'],
       ['Temperatura del pianeta', 'Copernicus Climate Change Service (C3S) / ECMWF, Climate Pulse, rianalisi ERA5, CC BY 4.0'],
       ['Anidride carbonica', 'NOAA Global Monitoring Laboratory e Scripps Institution of Oceanography, Mauna Loa'],
+      ['Il respiro del carbonio sul globo', 'NOAA CarbonTracker CT2026, Jacobson et al. 2026, doi:10.25925/hqp0-rk68. CarbonTracker results provided by NOAA/ESRL, Boulder, Colorado, USA, http://carbontracker.noaa.gov'],
       ['Cicloni', 'NOAA NCEI, IBTrACS v04r01; previsioni dal Global Disaster Alert and Coordination System (GDACS, Commissione europea JRC e UN OCHA), CC BY 4.0'],
       ['Acidità del mare', 'OceanSODA-ETHZ v2025, Luke Gregor e Nicolas Gruber, ETH Zürich, via NOAA NCEI'],
       ['Conflitti armati', 'Uppsala Conflict Data Program, UCDP Georeferenced Event Dataset 26.1 e Candidate Events, CC BY 4.0'],
@@ -317,6 +318,7 @@ const it = {
     noMangroves: 'niente mangrovie',
     bii: (v: string) => `natura rimasta: ${v}%`,
     sealevel: (cm: string) => `${cm} cm rispetto al livello medio`,
+    carbon: (ppm: string) => `${ppm} ppm di CO₂ rispetto alla media dell’anno, qui`,
     waves: (m: string) => `onde di ${m} m`,
   },
 
@@ -535,6 +537,7 @@ const it = {
     ships: { title: 'traffico navale, 2015–2021', left: 'raro', right: 'intenso' },
     built: { title: 'terra coperta da edifici', left: 'villaggi', right: 'città' },
     sealevel: { title: 'mare più alto o più basso del normale', left: '−50 cm', right: '+50 cm' },
+    carbon: { title: 'CO₂ rispetto alla media dell’anno, luogo per luogo', left: '−12 ppm', right: '+12 ppm' },
     waves: { title: 'altezza delle onde', left: 'calma', right: '12 m' },
   },
 
@@ -744,8 +747,9 @@ const it = {
     now: (day: string) => `di CO₂ nell’aria di Mauna Loa, il ${day}`,
     year: 'in più rispetto a un anno fa',
     preindustrial: 'prima della rivoluzione industriale',
-    text: 'La curva di Keeling: misure continue a 3.400 metri sul vulcano Mauna Loa, lontano da città e foreste, dove l’aria è ben mescolata. Il dente di sega è la stagione delle piante dell’emisfero nord; la salita è il carbonio fossile che bruciamo.',
-    source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa',
+    swing: (from: string, to: string) => `di CO₂ che le foreste del nord tolgono all’aria fra ${from} e ${to} (45–70° N)`,
+    text: 'La curva di Keeling: misure continue a 3.400 metri sul vulcano Mauna Loa, lontano da città e foreste, dove l’aria è ben mescolata. Il dente di sega è la stagione delle piante dell’emisfero nord; la salita è il carbonio fossile che bruciamo. Sul globo la stessa stagione, luogo per luogo: la CO₂ a 400 metri d’altezza nel 2025 secondo NOAA CarbonTracker, che unisce le misure di centinaia di stazioni a un modello dei venti, confrontata con la media dell’anno in quel punto, tolta la salita. In verde l’aria che le piante svuotano d’estate, in ambra quella che si ricarica d’inverno e dove bruciano i fuochi di stagione.',
+    source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa · NOAA CarbonTracker CT2026 (Jacobson et al. 2026)',
   },
   foreste: {
     title: 'Le foreste perdute', kicker: 'Copertura arborea perduta, 2001 – 2024',

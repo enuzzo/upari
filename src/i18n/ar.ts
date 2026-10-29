@@ -171,6 +171,7 @@ const ar: Dict = {
       ['النجوم', 'Yale Bright Star Catalogue'],
       ['حرارة الكوكب', 'Copernicus Climate Change Service (C3S) / ECMWF، Climate Pulse، إعادة التحليل ERA5، CC BY 4.0'],
       ['ثاني أكسيد الكربون', 'NOAA Global Monitoring Laboratory وScripps Institution of Oceanography، Mauna Loa'],
+      ['ثاني أكسيد الكربون على الكرة', 'NOAA CarbonTracker CT2026, Jacobson et al. 2026, doi:10.25925/hqp0-rk68. CarbonTracker results provided by NOAA/ESRL, Boulder, Colorado, USA, http://carbontracker.noaa.gov'],
       ['الأعاصير', 'NOAA NCEI، IBTrACS v04r01؛ والتوقعات من Global Disaster Alert and Coordination System (GDACS، المفوضية الأوروبية JRC وUN OCHA)، CC BY 4.0'],
       ['حموضة المحيط', 'OceanSODA-ETHZ v2025، Luke Gregor و Nicolas Gruber، ETH Zürich، عبر NOAA NCEI'],
       ['النزاعات المسلحة', 'Uppsala Conflict Data Program، UCDP Georeferenced Event Dataset 26.1 وCandidate Events، CC BY 4.0'],
@@ -319,6 +320,7 @@ const ar: Dict = {
     noMangroves: 'لا مانغروف',
     bii: (v: string) => `الطبيعة المتبقية: ${v}%`,
     sealevel: (cm: string) => `${ltr(cm)} سم عن المستوى المتوسط`,
+    carbon: (ppm: string) => `${ltr(`${ppm} ppm`)} من ثاني أكسيد الكربون مقارنة بمتوسط السنة هنا`,
     waves: (m: string) => `أمواج بارتفاع ${m} م`,
   },
 
@@ -528,6 +530,7 @@ const ar: Dict = {
     ships: { title: 'حركة السفن، 2015–2021', left: 'نادرة', right: 'كثيفة' },
     built: { title: 'أرض تغطيها المباني', left: 'قرى', right: 'مدن' },
     sealevel: { title: 'بحر أعلى أو أدنى من المعتاد', left: `${ltr('−50')} سم`, right: `${ltr('+50')} سم` },
+    carbon: { title: 'ثاني أكسيد الكربون مقارنة بمتوسط السنة في كل مكان', left: ltr('−12 ppm'), right: ltr('+12 ppm') },
     waves: { title: 'ارتفاع الأمواج', left: 'هدوء', right: '12 م' },
   },
 
@@ -734,8 +737,9 @@ const ar: Dict = {
     now: (day: string) => `من CO₂ في هواء ماونا لوا، في ${day}`,
     year: 'زيادةً عمّا كان قبل عام',
     preindustrial: 'قبل الثورة الصناعية',
-    text: 'منحنى كيلنغ: قياسات متواصلة على ارتفاع 3,400 متر فوق بركان ماونا لوا، بعيدًا عن المدن والغابات، حيث يكون الهواء جيد الامتزاج. أسنان المنشار هي مواسم نباتات نصف الكرة الشمالي؛ والصعود هو الكربون الأحفوري الذي نحرقه.',
-    source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa',
+    swing: (from: string, to: string) => `من ثاني أكسيد الكربون تسحبه غابات الشمال من الهواء بين ${from} و${to} (45–70° شمالًا)`,
+    text: 'منحنى كيلنغ: قياسات متواصلة على ارتفاع 3,400 متر فوق بركان ماونا لوا، بعيدًا عن المدن والغابات، حيث يكون الهواء جيد الامتزاج. أسنان المنشار هي مواسم نباتات نصف الكرة الشمالي؛ والصعود هو الكربون الأحفوري الذي نحرقه. وعلى الكرة الأرضية الموسم نفسه مكانًا مكانًا: ثاني أكسيد الكربون على ارتفاع 400 متر في 2025 بحسب NOAA CarbonTracker، الذي يجمع قياسات مئات المحطات مع نموذج للرياح، مقارنةً بمتوسط السنة في كل نقطة، بعد طرح الارتفاع السنوي. بالأخضر الهواء الذي تفرغه النباتات صيفًا، وبالكهرماني الهواء الذي يمتلئ من جديد شتاءً، والأماكن التي تشتعل فيها حرائق الموسم.',
+    source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa · NOAA CarbonTracker CT2026 (Jacobson et al. 2026)',
   },
   foreste: {
     title: 'الغابات المفقودة', kicker: 'الغطاء الشجري المفقود، 2001 – 2024',

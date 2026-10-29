@@ -5,7 +5,7 @@ import { num } from '../i18n/format';
 import { fresh } from './fresh';
 
 export type DataId = 'chlorophyll' | 'sst' | 'anomaly' | 'rain' | 'ice' | 'ndvi' | 'aerosol' | 'coral' | 'forest'
-  | 'ozone' | 'no2' | 'snow' | 'so2' | 'aurora' | 'ships' | 'built' | 'sealevel' | 'waves' | 'mangroves' | 'bii' | 'nightlights' | 'ims' | 'lightning' | 'mhw' | 'odiac' | 'acid';
+  | 'ozone' | 'no2' | 'snow' | 'so2' | 'aurora' | 'ships' | 'built' | 'sealevel' | 'waves' | 'mangroves' | 'bii' | 'nightlights' | 'ims' | 'lightning' | 'mhw' | 'odiac' | 'acid' | 'carbon';
 
 export interface LayerMeta {
   id: string;
@@ -18,7 +18,7 @@ export interface LayerMeta {
   dates?: string[];
   source?: string;
   /** A time series: each frame is a value image, with its coverage apart when `conf` is set. */
-  frames?: { file: string; time: string; conf?: string; km2?: number }[];
+  frames?: { file: string; time: string; conf?: string; km2?: number; north?: number }[];
   cadence?: 'hour' | 'day' | 'month' | 'year';
 }
 
@@ -143,6 +143,11 @@ export const DATA: Record<DataId, DataDef> = {
     // Surface pH on the total scale, 7.94..8.18, a yearly mean every four years.
     palette: PALETTES.acid, style: [0.3, 0.5, 1, 0], fps: 0.9, hold: 3,
     decode: (v) => 7.94 + v * 0.24, format: (x) => t.data.acid(num(x, 2)),
+  },
+  carbon: {
+    // CO2 at 400 m against each place's own yearly mean, −12..+12 ppm: a year every twelve seconds, looping.
+    palette: PALETTES.carbon, style: [0.3, 0.35, 0, 0], fps: 2.2,
+    decode: lin, format: (x) => t.data.carbon(`${x > 0 ? '+' : x < 0 ? '−' : ''}${num(Math.abs(x), 1)}`),
   },
   bii: {
     palette: PALETTES.bii, style: [0.35, 0.55, 2, 0], fps: 0.5, hold: 3,

@@ -34,6 +34,8 @@ export class Director {
   private following = false;
   /** The viewer left the chapter (a place search): resuming restarts it. */
   private detour = false;
+  /** The chapter's chart is up (some wait for the planet to speak first: `chartAfter`). */
+  private chartShown = false;
   private countries: Country[] | null = null;
   story: Story = STORIES[0];
   private telemetryAt = 0;
@@ -145,7 +147,7 @@ export class Director {
     $('cap-title').textContent = c.title;
     showCredit($('cap-credit'), c.credit);
     this.legend(c);
-    if (!this.detour && c.chart) showChart(c.chart);
+    if (!this.detour && c.chart && this.chartShown) showChart(c.chart);
     if (!this.detour) showProbe(!!c.probe);
     const token = this.token;
     if (this.lineReady) void c.narrate(this.globe).catch(() => '').then((text) => { if (token === this.token && text) this.speak(text); });
@@ -234,7 +236,8 @@ export class Director {
     this.globe.setLook({ ...c.look });
     const ready = this.globe.prepare(c.look);
     this.legend(c);
-    showChart(c.chart ?? null);
+    this.chartShown = !c.chartAfter;
+    showChart(this.chartShown ? c.chart ?? null : null);
     showProbe(!!c.probe);
     await new Promise((r) => setTimeout(r, 650));
     if (token !== this.token) return;
@@ -499,6 +502,7 @@ export class Director {
     const c = this.chapter;
     if (c && this.playing && this.lineReady && !this.drawerOpen) {
       this.elapsed += dt;
+      if (c.chart && !this.chartShown && !this.detour && this.elapsed >= (c.chartAfter ?? 0)) { this.chartShown = true; showChart(c.chart); }
       const li = this.chapterEls[this.index];
       if (!li.classList.contains('scrub')) this.progress(li, Math.min(1, this.elapsed / c.duration));
       if (this.elapsed >= c.duration) {

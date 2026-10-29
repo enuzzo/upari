@@ -165,6 +165,7 @@ const ja: Dict = {
       ['星', 'Yale Bright Star Catalogue'],
       ['地球の気温', 'Copernicus Climate Change Service（C3S）/ ECMWF、Climate Pulse、ERA5再解析、CC BY 4.0'],
       ['二酸化炭素', 'NOAA Global Monitoring LaboratoryおよびScripps Institution of Oceanography、Mauna Loa'],
+      ['地球儀のCO₂', 'NOAA CarbonTracker CT2026, Jacobson et al. 2026, doi:10.25925/hqp0-rk68. CarbonTracker results provided by NOAA/ESRL, Boulder, Colorado, USA, http://carbontracker.noaa.gov'],
       ['熱帯低気圧', 'NOAA NCEI、IBTrACS v04r01。予報はGlobal Disaster Alert and Coordination System（GDACS、欧州委員会JRCとUN OCHA）、CC BY 4.0'],
       ['海洋の酸性度', 'OceanSODA-ETHZ v2025、Luke GregorとNicolas Gruber、ETH Zürich、NOAA NCEI経由'],
       ['武力紛争', 'Uppsala Conflict Data Program、UCDP Georeferenced Event Dataset 26.1とCandidate Events、CC BY 4.0'],
@@ -313,6 +314,7 @@ const ja: Dict = {
     noMangroves: 'マングローブなし',
     bii: (v: string) => `残る自然${v}%`,
     sealevel: (cm: string) => `平均海面から${cm} cm`,
+    carbon: (ppm: string) => `この場所の年平均よりCO₂ ${ppm} ppm`,
     waves: (m: string) => `波の高さ${m} m`,
   },
 
@@ -522,6 +524,7 @@ const ja: Dict = {
     ships: { title: '船の交通量（2015–2021年）', left: '少ない', right: '多い' },
     built: { title: '建物に覆われた土地', left: '村', right: '都市' },
     sealevel: { title: '海面が平常より高いか低いか', left: '−50 cm', right: '+50 cm' },
+    carbon: { title: 'その場所の年平均と比べたCO₂', left: '−12 ppm', right: '+12 ppm' },
     waves: { title: '波の高さ', left: '穏やか', right: '12 m' },
   },
 
@@ -728,8 +731,9 @@ const ja: Dict = {
     now: (day: string) => `Mauna Loaの大気中のCO₂、${day}`,
     year: '1年前からの増加分',
     preindustrial: '産業革命以前',
-    text: 'キーリング曲線。都市や森から遠く、空気がよく混ざったMauna Loa火山の標高3,400メートルで続けられてきた測定だ。のこぎりの歯のようなぎざぎざは北半球の植物の季節、上昇は私たちが燃やす化石の炭素である。',
-    source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa',
+    swing: (from: string, to: string) => `北の森が大気から吸い取るCO₂（北緯45〜70°）：${from} → ${to}`,
+    text: 'キーリング曲線。都市や森から遠く、空気がよく混ざったMauna Loa火山の標高3,400メートルで続けられてきた測定だ。のこぎりの歯のようなぎざぎざは北半球の植物の季節、上昇は私たちが燃やす化石の炭素である。地球儀には同じ季節が場所ごとに見える。NOAA CarbonTracker（数百の観測所の測定を風のモデルと結びつけたもの）による2025年の高度400メートルのCO₂を、各地点の年平均と比べ、毎年の上昇を除いたものだ。緑は夏に植物が吸い尽くす空気、琥珀色は冬にふたたび満ちる空気と、季節の火事が燃える場所である。',
+    source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa · NOAA CarbonTracker CT2026 (Jacobson et al. 2026)',
   },
   foreste: {
     title: '失われた森', kicker: '失われた樹冠被覆、2001–2024年',

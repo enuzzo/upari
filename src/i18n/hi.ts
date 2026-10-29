@@ -152,6 +152,7 @@ const hi: Dict = {
       ['तारे', 'Yale Bright Star Catalogue'],
       ['ग्रह का तापमान', 'Copernicus Climate Change Service (C3S) / ECMWF, Climate Pulse, ERA5 पुनर्विश्लेषण, CC BY 4.0'],
       ['कार्बन डाइऑक्साइड', 'NOAA Global Monitoring Laboratory और Scripps Institution of Oceanography, Mauna Loa'],
+      ['ग्लोब पर कार्बन डाइऑक्साइड', 'NOAA CarbonTracker CT2026, Jacobson et al. 2026, doi:10.25925/hqp0-rk68. CarbonTracker results provided by NOAA/ESRL, Boulder, Colorado, USA, http://carbontracker.noaa.gov'],
       ['चक्रवात', 'NOAA NCEI, IBTrACS v04r01; पूर्वानुमान Global Disaster Alert and Coordination System (GDACS, यूरोपीय आयोग JRC और UN OCHA) से, CC BY 4.0'],
       ['महासागर की अम्लता', 'OceanSODA-ETHZ v2025, Luke Gregor और Nicolas Gruber, ETH Zürich, NOAA NCEI के ज़रिए'],
       ['सशस्त्र संघर्ष', 'Uppsala Conflict Data Program, UCDP Georeferenced Event Dataset 26.1 और Candidate Events, CC BY 4.0'],
@@ -300,6 +301,7 @@ const hi: Dict = {
     noMangroves: 'कोई मैंग्रोव नहीं',
     bii: (v: string) => `बची हुई प्रकृति: ${v}%`,
     sealevel: (cm: string) => `औसत स्तर से ${cm} cm`,
+    carbon: (ppm: string) => `यहाँ के सालाना औसत से CO₂ ${ppm} ppm`,
     waves: (m: string) => `${m} m ऊँची लहरें`,
   },
 
@@ -509,6 +511,7 @@ const hi: Dict = {
     ships: { title: 'जहाज़ों की आवाजाही, 2015–2021', left: 'कम', right: 'भारी' },
     built: { title: 'इमारतों से ढकी ज़मीन', left: 'गाँव', right: 'शहर' },
     sealevel: { title: 'सामान्य से ऊँचा या नीचा समुद्र', left: '−50 cm', right: '+50 cm' },
+    carbon: { title: 'हर जगह के सालाना औसत की तुलना में CO₂', left: '−12 ppm', right: '+12 ppm' },
     waves: { title: 'लहरों की ऊँचाई', left: 'शांत', right: '12 m' },
   },
 
@@ -715,8 +718,9 @@ const hi: Dict = {
     now: (day: string) => `मौना लोआ की हवा में CO₂, ${day} को`,
     year: 'एक साल पहले से ज़्यादा',
     preindustrial: 'औद्योगिक क्रांति से पहले',
-    text: 'कीलिंग वक्र: मौना लोआ ज्वालामुखी पर 3,400 मीटर की ऊँचाई पर लगातार माप, शहरों और जंगलों से दूर, जहाँ हवा अच्छी तरह मिली होती है। आरी जैसे दाँते उत्तरी गोलार्ध के पौधों के मौसम हैं; चढ़ाव वह जीवाश्म कार्बन है जिसे हम जलाते हैं।',
-    source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa',
+    swing: (from: string, to: string) => `CO₂ जो उत्तरी जंगल हवा से खींच लेते हैं (45–70° उ.), ${from} से ${to} तक`,
+    text: 'कीलिंग वक्र: मौना लोआ ज्वालामुखी पर 3,400 मीटर की ऊँचाई पर लगातार माप, शहरों और जंगलों से दूर, जहाँ हवा अच्छी तरह मिली होती है। आरी जैसे दाँते उत्तरी गोलार्ध के पौधों के मौसम हैं; चढ़ाव वह जीवाश्म कार्बन है जिसे हम जलाते हैं। ग्लोब पर वही मौसम, जगह-जगह: NOAA CarbonTracker के अनुसार 2025 में 400 मीटर की ऊँचाई पर CO₂, जो सैकड़ों स्टेशनों के माप को हवाओं के एक मॉडल से जोड़ता है, हर बिंदु के सालाना औसत से तुलना करके, सालाना बढ़त हटाकर। हरा वह हवा है जिसे पौधे गर्मियों में खाली कर देते हैं, कहरुबा रंग वह जो सर्दियों में फिर भर जाती है, और जहाँ मौसमी आग जलती है।',
+    source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa · NOAA CarbonTracker CT2026 (Jacobson et al. 2026)',
   },
   foreste: {
     title: 'खोए हुए जंगल', kicker: 'पेड़ों का खोया आवरण, 2001 – 2024',

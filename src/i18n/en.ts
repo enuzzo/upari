@@ -152,6 +152,7 @@ const en: Dict = {
       ['Stars', 'Yale Bright Star Catalogue'],
       ['Temperature of the planet', 'Copernicus Climate Change Service (C3S) / ECMWF, Climate Pulse, ERA5 reanalysis, CC BY 4.0'],
       ['Carbon dioxide', 'NOAA Global Monitoring Laboratory and Scripps Institution of Oceanography, Mauna Loa'],
+      ['Carbon dioxide on the globe', 'NOAA CarbonTracker CT2026, Jacobson et al. 2026, doi:10.25925/hqp0-rk68. CarbonTracker results provided by NOAA/ESRL, Boulder, Colorado, USA, http://carbontracker.noaa.gov'],
       ['Cyclones', 'NOAA NCEI, IBTrACS v04r01; forecasts from the Global Disaster Alert and Coordination System (GDACS, European Commission JRC and UN OCHA), CC BY 4.0'],
       ['Ocean acidity', 'OceanSODA-ETHZ v2025, Luke Gregor and Nicolas Gruber, ETH Zürich, via NOAA NCEI'],
       ['Armed conflicts', 'Uppsala Conflict Data Program, UCDP Georeferenced Event Dataset 26.1 and Candidate Events, CC BY 4.0'],
@@ -300,6 +301,7 @@ const en: Dict = {
     noMangroves: 'no mangroves',
     bii: (v: string) => `nature left: ${v}%`,
     sealevel: (cm: string) => `${cm} cm against the mean level`,
+    carbon: (ppm: string) => `${ppm} ppm of CO₂ against this place’s yearly mean`,
     waves: (m: string) => `waves of ${m} m`,
   },
 
@@ -509,6 +511,7 @@ const en: Dict = {
     ships: { title: 'ship traffic, 2015–2021', left: 'rare', right: 'busy' },
     built: { title: 'land covered by buildings', left: 'villages', right: 'cities' },
     sealevel: { title: 'sea higher or lower than normal', left: '−50 cm', right: '+50 cm' },
+    carbon: { title: 'CO₂ against the yearly mean, place by place', left: '−12 ppm', right: '+12 ppm' },
     waves: { title: 'wave height', left: 'calm', right: '12 m' },
   },
 
@@ -715,8 +718,9 @@ const en: Dict = {
     now: (day: string) => `of CO₂ in the air at Mauna Loa, on ${day}`,
     year: 'more than a year ago',
     preindustrial: 'before the industrial revolution',
-    text: 'The Keeling curve: continuous measurements 3,400 metres up the Mauna Loa volcano, far from cities and forests, where the air is well mixed. The sawtooth is the season of the plants of the northern hemisphere; the climb is the fossil carbon we burn.',
-    source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa',
+    swing: (from: string, to: string) => `of CO₂ the northern forests draw from the air between ${from} and ${to} (45–70° N)`,
+    text: 'The Keeling curve: continuous measurements 3,400 metres up the Mauna Loa volcano, far from cities and forests, where the air is well mixed. The sawtooth is the season of the plants of the northern hemisphere; the climb is the fossil carbon we burn. On the globe, the same season place by place: CO₂ 400 metres up in 2025 according to NOAA CarbonTracker, which joins the measurements of hundreds of stations to a model of the winds, set against the yearly mean of each place, with the rise taken out. Green is the air the plants empty in summer, amber the air that fills up again in winter and where the season’s fires burn.',
+    source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa · NOAA CarbonTracker CT2026 (Jacobson et al. 2026)',
   },
   foreste: {
     title: 'Lost forests', kicker: 'Tree cover lost, 2001 – 2024',

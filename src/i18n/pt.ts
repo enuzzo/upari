@@ -199,6 +199,7 @@ const pt: Dict = {
       ['Estrelas', 'Yale Bright Star Catalogue'],
       ['Temperatura do planeta', 'Copernicus Climate Change Service (C3S) / ECMWF, Climate Pulse, reanálise ERA5, CC BY 4.0'],
       ['Dióxido de carbono', 'NOAA Global Monitoring Laboratory e Scripps Institution of Oceanography, Mauna Loa'],
+      ['Dióxido de carbono no globo', 'NOAA CarbonTracker CT2026, Jacobson et al. 2026, doi:10.25925/hqp0-rk68. CarbonTracker results provided by NOAA/ESRL, Boulder, Colorado, USA, http://carbontracker.noaa.gov'],
       ['Ciclones', 'NOAA NCEI, IBTrACS v04r01; previsões do Global Disaster Alert and Coordination System (GDACS, Comissão Europeia JRC e UN OCHA), CC BY 4.0'],
       ['Acidez do oceano', 'OceanSODA-ETHZ v2025, Luke Gregor e Nicolas Gruber, ETH Zürich, via NOAA NCEI'],
       ['Conflitos armados', 'Uppsala Conflict Data Program, UCDP Georeferenced Event Dataset 26.1 e Candidate Events, CC BY 4.0'],
@@ -347,6 +348,7 @@ const pt: Dict = {
     noMangroves: 'sem manguezais',
     bii: (v: string) => `natureza que resta: ${v}%`,
     sealevel: (cm: string) => `${cm} cm em relação ao nível médio`,
+    carbon: (ppm: string) => `${ppm} ppm de CO₂ em relação à média anual deste lugar`,
     waves: (m: string) => `ondas de ${m} m`,
   },
 
@@ -560,6 +562,7 @@ const pt: Dict = {
     ships: { title: 'tráfego marítimo, 2015–2021', left: 'raro', right: 'intenso' },
     built: { title: 'terra coberta por edifícios', left: 'vilarejos', right: 'cidades' },
     sealevel: { title: 'mar mais alto ou mais baixo que o normal', left: '−50 cm', right: '+50 cm' },
+    carbon: { title: 'CO₂ em relação à média do ano, lugar a lugar', left: '−12 ppm', right: '+12 ppm' },
     waves: { title: 'altura das ondas', left: 'calmaria', right: '12 m' },
   },
 
@@ -769,8 +772,9 @@ const pt: Dict = {
     now: (day: string) => `de CO₂ no ar de Mauna Loa, em ${day}`,
     year: 'a mais do que um ano atrás',
     preindustrial: 'antes da Revolução Industrial',
-    text: 'A curva de Keeling: medições contínuas a 3.400 metros de altitude no vulcão Mauna Loa, longe de cidades e florestas, onde o ar é bem misturado. O dente de serra é a estação das plantas do hemisfério norte; a subida é o carbono fóssil que queimamos.',
-    source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa',
+    swing: (from: string, to: string) => `de CO₂ que as florestas do norte retiram do ar entre ${from} e ${to} (45–70° N)`,
+    text: 'A curva de Keeling: medições contínuas a 3.400 metros de altitude no vulcão Mauna Loa, longe de cidades e florestas, onde o ar é bem misturado. O dente de serra é a estação das plantas do hemisfério norte; a subida é o carbono fóssil que queimamos. No globo, a mesma estação lugar a lugar: o CO₂ a 400 metros de altura em 2025 segundo o NOAA CarbonTracker, que une as medições de centenas de estações a um modelo dos ventos, comparado com a média do ano em cada ponto, sem a subida. Em verde, o ar que as plantas esvaziam no verão; em âmbar, o que volta a se encher no inverno e onde ardem os fogos da estação.',
+    source: 'NOAA Global Monitoring Laboratory · Scripps Institution of Oceanography · Mauna Loa · NOAA CarbonTracker CT2026 (Jacobson et al. 2026)',
   },
   foreste: {
     title: 'As florestas perdidas', kicker: 'Cobertura arbórea perdida, 2001 – 2024',

@@ -61,6 +61,14 @@ async function greenSeasons(g: Globe) {
   return { meta, share, hi, lo };
 }
 
+/** How much CO2 the northern forests draw down between the fullest and the emptiest air of the year (45–70° N). */
+async function breathOfTheNorth(g: Globe) {
+  const { meta } = await g.layers.get('carbon');
+  const f = meta.frames!, n = (x: (typeof f)[number]) => x.north ?? 0;
+  const hi = f.reduce((a, b) => (n(b) > n(a) ? b : a)), lo = f.reduce((a, b) => (n(b) < n(a) ? b : a));
+  return { value: `${num(n(hi) - n(lo), 0)} ppm`, label: t.carbonio.swing(monthOf(hi.time), monthYearOf(lo.time)) };
+}
+
 async function haziest(g: Globe) {
   let best = { v: 0, lon: 0, lat: 0, frame: 0 };
   const sum = new Float64Array(16), area = new Float64Array(16);
@@ -164,22 +172,25 @@ export const NATURE: Chapter[] = titled([
   },
   {
     id: 'carbonio',
-    credit: ['gml'],
-    kind: 'observed',
+    credit: ['gml', 'carbontracker'],
+    kind: 'reanalysis',
     mood: 'curious',
-    look: { ...LOOK, dim: 0.62, desat: 0.6 },
-    duration: 24, chart: 'co2',
+    look: { ...LOOK, data: 'carbon', dim: 0.5, desat: 0.65 },
+    // A year of breath on the globe first, then the same breath measured on Mauna Loa.
+    duration: 24, chart: 'co2', chartAfter: 12, clock: 'data',
+    legend: legend(PALETTES.carbon, 'carbon'),
     narrate: async () => {
       const d = await climate.co2();
       return t.carbonio.narrate({ then: num(d.first.ppm, 0), now: num(d.last.ppm, 1) });
     },
-    detail: async () => {
+    detail: async (g) => {
       const d = await climate.co2();
       return {
         facts: [
           { value: `${num(d.last.ppm, 1)} ppm`, label: t.carbonio.now(dayMonth(d.last.date)) },
           { value: `${signed(d.last.ppm - d.yearAgo.ppm, 1)} ppm`, label: t.carbonio.year },
           { value: '≈ 280 ppm', label: t.carbonio.preindustrial },
+          await breathOfTheNorth(g),
         ],
         text: t.carbonio.text,
         source: t.carbonio.source,

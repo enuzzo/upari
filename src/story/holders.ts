@@ -34,6 +34,7 @@ export const HOLDERS = {
   celestrak: { name: 'CelesTrak', url: 'https://celestrak.org' },
   nasa3d: { name: 'NASA 3D Resources', url: 'https://science.nasa.gov/3d-resources/' },
   gml: { name: 'NOAA GML, Scripps', url: 'https://gml.noaa.gov/ccgg/trends/' },
+  carbontracker: { name: 'NOAA CarbonTracker CT2026', url: 'https://gml.noaa.gov/ccgg/carbontracker/' },
   hansen: { name: 'Hansen et al., UMD / Global Forest Watch', url: 'https://www.globalforestwatch.org', licence: 'CC BY 4.0' },
   gmw: { name: 'Global Mangrove Watch', url: 'https://www.globalmangrovewatch.org', licence: 'CC BY 4.0' },
   bii: { name: 'Impact Observatory, Vizzuality', url: 'https://planetarycomputer.microsoft.com/dataset/io-biodiversity', licence: 'CC BY 4.0' },
